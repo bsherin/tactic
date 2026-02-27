@@ -216,10 +216,10 @@ var input_style = {
 };
 var idle_statuses = ["completed", "expired", "cancelled", "failed"];
 function ChatModule(props) {
-  var top_ref = /*#__PURE__*/_react["default"].createRef();
-  var control_ref = /*#__PURE__*/_react["default"].createRef();
-  var list_ref = /*#__PURE__*/_react["default"].createRef();
-  var stream_dict_ref = /*#__PURE__*/_react["default"].createRef();
+  var top_ref = (0, _react.useRef)();
+  var control_ref = (0, _react.useRef)();
+  var list_ref = (0, _react.useRef)();
+  var stream_dict_ref = (0, _react.useRef)({});
   var _useStateAndRef9 = (0, _utilities_react.useStateAndRef)(0),
     _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
     set_response_counter = _useStateAndRef0[1],
@@ -250,7 +250,11 @@ function ChatModule(props) {
   }, []);
   (0, _tactic_socket.useSocketListener)(props.tsocket, "chat_delta", function (data) {
     var current_stream_dict = stream_dict_ref.current;
+    if (!current_stream_dict) {
+      current_stream_dict = {};
+    }
     current_stream_dict[data.counter] = data.delta;
+    stream_dict_ref.current = current_stream_dict;
     var new_text = stream_dict_to_string();
     assistantDrawerFuncs.set_stream_text(new_text);
     pushCallback(function () {

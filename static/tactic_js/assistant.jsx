@@ -203,10 +203,10 @@ AssistantDrawer = memo(AssistantDrawer);
 const input_style = {position: "relative", bottom: 0, margin: 10};
 const idle_statuses = ["completed", "expired", "cancelled", "failed"];
 function ChatModule(props) {
-    const top_ref = React.createRef();
-    const control_ref = React.createRef();
-    const list_ref = React.createRef();
-    const stream_dict_ref = React.createRef();
+    const top_ref = useRef();
+    const control_ref = useRef();
+    const list_ref = useRef();
+    const stream_dict_ref = useRef({});
 
     const [, set_response_counter, response_counter_ref] = useStateAndRef(0);
 
@@ -242,7 +242,11 @@ function ChatModule(props) {
 
     useSocketListener(props.tsocket, "chat_delta", (data) => {
         let current_stream_dict = stream_dict_ref.current;
+        if (!current_stream_dict) {
+            current_stream_dict = {};
+        }
         current_stream_dict[data.counter] = data.delta;
+        stream_dict_ref.current = current_stream_dict;
         const new_text = stream_dict_to_string();
         assistantDrawerFuncs.set_stream_text(new_text);
         pushCallback(() => {
