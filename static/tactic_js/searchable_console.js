@@ -69,7 +69,10 @@ function SearchableConsole(props, inner_ref) {
   var cont_id = (0, _react.useRef)(props.container_id);
   var sc_id = (0, _react.useRef)(null);
   var streamer_info = (0, _react.useRef)(null);
-  var tsocket = (0, _react.useRef)(null);
+  var _useDebounce = (0, _utilities_react.useDebounce)(set_log_content),
+    _useDebounce2 = _slicedToArray(_useDebounce, 2),
+    waiting = _useDebounce2[0],
+    doUpdate = _useDebounce2[1];
   var past_commands = (0, _react.useRef)([]);
   var past_commands_index = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -79,9 +82,6 @@ function SearchableConsole(props, inner_ref) {
   });
   (0, _react.useEffect)(function () {
     sc_id.current = (0, _utilities_react.guid)();
-    // tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.local_id);
-    // tsocket.current.socket.emit("join", {"room": my_room.current});
-
     function cleanup() {
       _stopLogStreaming().then(function () {
         props.tsocket.detachListener("searchable-console-message");
@@ -179,7 +179,7 @@ function SearchableConsole(props, inner_ref) {
             }, props.local_id);
           case 3:
             res = _context3.v;
-            set_log_content(res["log_text"]);
+            _addToLog(res["log_text"]);
             _context3.n = 4;
             return (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
               cont_id: cont_id.current,
@@ -229,7 +229,7 @@ function SearchableConsole(props, inner_ref) {
     return _stopLogStreaming2.apply(this, arguments);
   }
   function _addToLog(new_line) {
-    set_log_content(function (prev_log_content) {
+    doUpdate(function (prev_log_content) {
       return prev_log_content + new_line;
     });
   }

@@ -4,7 +4,7 @@ import {useState, useEffect, useRef, memo, forwardRef} from "react";
 import {Button, ControlGroup, HTMLSelect, InputGroup, Switch} from "@blueprintjs/core";
 import {FilterSearchForm} from "./search_form";
 import {postPromise} from "./communication_react";
-import {guid, useStateAndRef, useDidMount} from "./utilities_react";
+import {guid, useStateAndRef, useDidMount, useDebounce} from "./utilities_react";
 import {useSocketListener} from "./tactic_socket";
 
 export {SearchableConsole, ResponsiveFlex}
@@ -25,8 +25,7 @@ function SearchableConsole(props, inner_ref) {
     const cont_id = useRef(props.container_id);
     const sc_id = useRef(null);
     const streamer_info = useRef(null);
-
-    const tsocket = useRef(null);
+    const [waiting, doUpdate] = useDebounce(set_log_content);
 
     const past_commands = useRef([]);
     const past_commands_index = useRef(null);
@@ -39,9 +38,6 @@ function SearchableConsole(props, inner_ref) {
 
     useEffect(() => {
         sc_id.current = guid();
-        // tsocket.current = new TacticSocket("main", 5000, "searchable-console", props.local_id);
-        // tsocket.current.socket.emit("join", {"room": my_room.current});
-
         function cleanup() {
             _stopLogStreaming().then(() => {
                 props.tsocket.detachListener("searchable-console-message")
@@ -109,7 +105,7 @@ function SearchableConsole(props, inner_ref) {
             {cont_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current,
                 local_id: props.local_id},
             props.local_id);
-        set_log_content(res["log_text"]);
+        _addToLog(res["log_text"]);
         let data = await postPromise("log_streamer", "start_log_stream",
             {cont_id: cont_id.current, local_id: props.local_id, sc_id: sc_id.current, user_id: window.user_id},
             props.local_id);
@@ -129,7 +125,7 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _addToLog(new_line) {
-        set_log_content(prev_log_content => prev_log_content + new_line)
+        doUpdate(prev_log_content => prev_log_content + new_line)
     }
 
     function _prepareText() {
