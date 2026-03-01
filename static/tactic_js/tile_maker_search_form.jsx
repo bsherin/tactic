@@ -58,7 +58,7 @@ function TileMakerSearchForm(props) {
                 <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
                     <InputGroup type="search"
                                 className="search-input"
-                                placeholder="Search"
+                                placeholder="Search code..."
                                 leftIcon="search"
                                 value={props.searchStateRef.current.temp_search_string}
                                 onChange={_handleSearchFieldChange}

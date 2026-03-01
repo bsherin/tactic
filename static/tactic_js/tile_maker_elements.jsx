@@ -33,12 +33,13 @@ import {ErrorBoundary} from "./error_boundary";
 
 import {BpSelectAdvanced} from "./selector_advanced";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {guid, isInt, useRegisterActivity} from "./utilities_react"
+import {guid, isInt, useRegisterActivity, useStateAndRef} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./combined_metadata";
 import {postPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
+import {SearchForm} from "./library_widgets";
 
 export {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, DividerElement, pane_type_icons,
@@ -967,9 +968,19 @@ function MakerNavigator(props) {
         },
         ...props
     };
+    const [, setSearchString, searchStringRef] = useStateAndRef("");
     const sections = props.sections.filter(section => section.visible === true);  // saveattrs may be hidden
+    function _update_search_state(new_state) {
+        setSearchString(new_state.search_string)
+    }
     return (
         <ErrorBoundary custom_message="There was an error in the Maker Navigator">
+            <SearchForm allow_search_inside={false}
+                        placeholder="Filter items..."
+                            allow_search_metadata={false}
+                            update_search_state={_update_search_state}
+                            search_string={searchStringRef.current}
+                />
             <div style={{overflow: "auto", height: "100%"}} className="maker-navigator">
                 {sections.map((section,) => {
                     let createFromlist = section.createFromList ? section.createFromList : false;
@@ -993,6 +1004,7 @@ function MakerNavigator(props) {
                                             sub_items={section.sub_items} icon={section.icon}
                                             pushCallback={props.pushCallback} startExpaneded={section.start_expanded}
                                             createFromList={createFromlist}
+                                            searchStringRef={searchStringRef}
                                             choiceDict={choiceDict}
                                                 item_base={section.item_base}
                                             icon_dict={section.icon_dict} icon_field={section.icon_field}/>
@@ -1002,6 +1014,7 @@ function MakerNavigator(props) {
                         return (
                             <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                         sub_items={section.sub_items} icon={section.icon}
+                                        searchStringRef={searchStringRef}
                                         startExpaneded={section.start_expanded}
                                         icon_dict={section.icon_dict} icon_field={section.icon_field}/>
                         )
@@ -1020,9 +1033,14 @@ function NavSection(props) {
         "right_button": null,
         icon_dict: null,
         icon_field: null,
+        searchStringRef: null,
         ...props
     };
     const [isOpen, setIsOpen] = React.useState(props.startExpanded);
+
+    function filterItem(item) {
+        return props.searchStringRef.current == null || props.searchStringRef.current === "" || item.name.toLowerCase().includes(props.searchStringRef.current.toLowerCase())
+    }
 
     // noinspection JSValidateTypes
     return (
@@ -1040,7 +1058,9 @@ function NavSection(props) {
                 {props.right_button != null && props.right_button}
             </ButtonGroup>
             <Collapse key="collapse" isOpen={isOpen}>
-                {props.sub_items.map((item,) => {
+                {props.sub_items
+                    .filter(filterItem)
+                    .map((item,) => {
                     let icon = props.icon_dict ?
                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                     let isDivider = props.icon_dict && item[props.icon_field] === "divider";
@@ -1161,6 +1181,7 @@ function SortableNavSection(props) {
         selectedChoice: null,
         setSelectedChoice: null,
         startExpanded: false,
+        searchStringRef: null,
         pushCallback: () => {
         },
         dispatch: () => {
@@ -1196,6 +1217,11 @@ function SortableNavSection(props) {
     };
 
     const mpContext = useContext(MakerPaneContext);
+
+    function filterItem(item) {
+        return props.searchStringRef.current == null || props.searchStringRef.current === "" || item.name.toLowerCase().includes(props.searchStringRef.current.toLowerCase())
+    }
+
 
     function createItem() {
         const uid = guid();
@@ -1253,21 +1279,23 @@ function SortableNavSection(props) {
                     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
                         <SortableContext items={[...props.sub_items.map(i => i.identifier), '__drop_spacer__']}
                                          strategy={verticalListSortingStrategy}>
-                            {props.sub_items.map((item,) => {
-                                if (item.identifier === activeId) {
-                                    return null; // Don't render the item being dragged
-                                }
-                                let icon = props.icon_dict ?
-                                    <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
-                                let isDivider = props.icon_dict && item[props.icon_field] === "divider";
-                                return (
-                                    <SortableNavItem key={item.identifier} identifier={item.identifier}
-                                                     title={item.name}
-                                                     activeId={activeId}
-                                                     isDivider={isDivider}
-                                                     icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
-                                )
-                            })}
+                            {props.sub_items
+                                .filter(filterItem)
+                                .map((item,) => {
+                                    if (item.identifier === activeId) {
+                                        return null; // Don't render the item being dragged
+                                    }
+                                    let icon = props.icon_dict ?
+                                        <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                                    let isDivider = props.icon_dict && item[props.icon_field] === "divider";
+                                    return (
+                                        <SortableNavItem key={item.identifier} identifier={item.identifier}
+                                                         title={item.name}
+                                                         activeId={activeId}
+                                                         isDivider={isDivider}
+                                                         icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
+                                    )
+                                })}
                             <SortableNavItem
                                 key="__drop_spacer__"
                                 is_empty_section={props.sub_items.length === 0}

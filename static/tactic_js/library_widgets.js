@@ -57,7 +57,8 @@ function SearchForm(props) {
     number_matches: null,
     update_delay: 500,
     update_search_state: null,
-    search_string: ""
+    search_string: "",
+    placeholder: "Search"
   }, props);
   var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
@@ -126,7 +127,7 @@ function SearchForm(props) {
   }, /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     type: "search",
     className: "search-input",
-    placeholder: "Search",
+    placeholder: props.placeholder,
     leftIcon: "search",
     value: current_text,
     onChange: _handleSearchFieldChange,

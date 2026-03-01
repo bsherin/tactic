@@ -51,6 +51,7 @@ function SearchForm(props) {
         update_delay: 500,
         update_search_state: null,
         search_string: "",
+        placeholder: "Search",
         ...props
     };
     const [temp_text, set_temp_text] = useState(null);
@@ -103,7 +104,7 @@ function SearchForm(props) {
                 <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
                     <InputGroup type="search"
                                 className="search-input"
-                                placeholder="Search"
+                                placeholder={props.placeholder}
                                 leftIcon="search"
                                 value={current_text}
                                 onChange={_handleSearchFieldChange}
