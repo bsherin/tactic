@@ -1,13 +1,14 @@
 import React from "react";
-import { memo, useState, useContext } from 'react';
+import {memo, useState, useContext} from 'react';
 import PropTypes from 'prop-types';
 
 import {Menu, MenuItem, ContextMenuPopover, Tree} from "@blueprintjs/core";
 
-import {arraysMatch, remove_duplicates} from "./utilities_react";
+import {arraysMatch, remove_duplicates, useStateAndRef} from "./utilities_react";
 
 import {SettingsContext} from "./settings"
 import {DialogContext} from "./modal_react";
+import {SearchForm} from "./library_widgets";
 
 export {TagButtonList, get_all_parent_tags}
 
@@ -50,7 +51,7 @@ function TagMenu(props) {
     let disabled = props.tagstring == "all";
     return (
         <Menu>
-             <MenuItem icon="target" disabled={disabled} onClick={() => {
+            <MenuItem icon="target" disabled={disabled} onClick={() => {
                 props.setTagRoot(props.tagstring);
                 props.setShowContextMenu(false)
             }} text="Focus on Tag"/>
@@ -74,11 +75,17 @@ TagMenu = memo(TagMenu);
 
 function TagButtonList(props) {
     const [showContextMenu, setShowContextMenu] = useState(false);
-    const [contextMenuTarget, setContentMenuTarget] = useState({left:0, top:0});
+    const [contextMenuTarget, setContentMenuTarget] = useState({left: 0, top: 0});
     const [contextMenuTagString, setContextMenuTagString] = useState("");
 
     const settingsContext = useContext(SettingsContext);
     const dialogFuncs = useContext(DialogContext);
+
+    const [, setSearchString, searchStringRef] = useStateAndRef("");
+
+    function _update_search_state(new_state) {
+        setSearchString(new_state.search_string)
+    }
 
     function _renameTagPrep(old_tag, new_tag_base) {
         let old_tag_list = tag_to_list(old_tag);
@@ -142,8 +149,7 @@ function TagButtonList(props) {
     function _handleNodeClick(node) {
         if (node.nodeData.tag_string == "unfocus") {
             props.updateTagState({tagRoot: "all"})
-        }
-        else {
+        } else {
             props.updateTagState({active_tag: node.nodeData.tag_string})
         }
     }
@@ -207,15 +213,16 @@ function TagButtonList(props) {
         let self = this;
         let tag_base = get_tag_base(tagstring);
         dialogFuncs.showModal("ModalDialog", {
-                    title: `Rename tag "${tag_base}`,
-                    field_title: `New name for this tag`,
-                    handleSubmit: RenameTag,
-                    default_value: tag_base,
-                    existing_names: [],
-                    checkboxes: [],
-                    handleCancel: null,
-                    handleClose: dialogFuncs.hideModal,
-                });
+            title: `Rename tag "${tag_base}`,
+            field_title: `New name for this tag`,
+            handleSubmit: RenameTag,
+            default_value: tag_base,
+            existing_names: [],
+            checkboxes: [],
+            handleCancel: null,
+            handleClose: dialogFuncs.hideModal,
+        });
+
         function RenameTag(new_tag_base) {
             _renameTagPrep(tagstring, new_tag_base)
         }
@@ -233,7 +240,7 @@ function TagButtonList(props) {
             text_body: confirm_text,
             cancel_text: "do nothing",
             submit_text: "delete",
-            handleSubmit: ()=>{
+            handleSubmit: () => {
                 props.doTagDelete(tagstring)
             },
             handleClose: dialogFuncs.hideModal,
@@ -248,6 +255,10 @@ function TagButtonList(props) {
         setContentMenuTarget({left: e.clientX, top: e.clientY});
     }
 
+    function filterItem(item) {
+        return searchStringRef.current == null || searchStringRef.current === "" || item.toLowerCase().includes(searchStringRef.current.toLowerCase())
+    }
+
     let tlist = props.tag_list == undefined ? [] : props.tag_list;
     let parent_tags = get_all_parent_tags(tlist);
 
@@ -257,6 +268,7 @@ function TagButtonList(props) {
     if (props.tagRoot != "all") {
         tag_list = tag_list.filter(x => x.startsWith(props.tagRoot))
     }
+    tag_list = tag_list.filter(filterItem);
     tag_list.sort();
     let tree = _buildTree(tag_list);
     let tmenu = <TagMenu tagstring={contextMenuTagString}
@@ -266,11 +278,21 @@ function TagButtonList(props) {
                          rename_tag={_rename_tag}/>;
     return (
         <div tabIndex="0" className="tactic-tag-button-list">
-            <ContextMenuPopover onClose={()=>{setShowContextMenu(false)}}  // Without this doesn't close
+            <SearchForm allow_search_inside={false}
+                        placeholder="Filter tags..."
+                        field_width="100%"
+                        marginBottom={10}
+                        allow_search_metadata={false}
+                        update_search_state={_update_search_state}
+                        search_string={searchStringRef.current}
+            />
+            <ContextMenuPopover onClose={() => {
+                setShowContextMenu(false)
+            }}  // Without this doesn't close
                                 content={tmenu}
                                 isOpen={showContextMenu}
                                 isDarkTheme={settingsContext.isDark()}
-                                targetOffset={contextMenuTarget} />
+                                targetOffset={contextMenuTarget}/>
             <Tree contents={tree}
                   onNodeContextMenu={_showContextMenu}
                   onNodeClick={_handleNodeClick}

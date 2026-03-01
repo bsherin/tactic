@@ -58,7 +58,8 @@ function SearchForm(props) {
     update_delay: 500,
     update_search_state: null,
     search_string: "",
-    placeholder: "Search"
+    placeholder: "Search",
+    marginBottom: 0
   }, props);
   var _useState = (0, _react.useState)(null),
     _useState2 = _slicedToArray(_useState, 2),
@@ -116,7 +117,7 @@ function SearchForm(props) {
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     helperText: match_text,
     style: {
-      marginBottom: 0
+      marginBottom: props.marginBottom
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row",
