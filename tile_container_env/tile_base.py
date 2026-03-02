@@ -21,6 +21,7 @@ import document_object
 import copy
 from qworker_alt import task_worthy_methods, task_worthy_manual_submit_methods
 from aws_helpers import get_ssm_parameter
+from pool_fs import PoolFS
 
 allow_heavy_saves = get_ssm_parameter("ALLOW_HEAVY_SAVES","false").lower() == "true"
 
@@ -154,9 +155,13 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._last_exports = {}
         self._widgets = {}
         self.in_pseudo_tile = False
+        self.pool = None
         return
 
     # <editor-fold desc="_task_worthy methods (events)">
+
+    def init_pool(self):
+        self.pool = PoolFS(self.username)
 
     @_task_worthy
     def os_command_exec(self, data):

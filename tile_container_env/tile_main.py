@@ -324,6 +324,7 @@ class TileWorker(QWorker):
             self.handler_instances["tilebase"] = self.tile_instance
             self.tile_instance.recreate_from_save(data)
             self.tile_instance.base_figure_url = data["new_base_figure_url"]
+            self.tile_instance.init_pool()
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
@@ -406,6 +407,7 @@ class TileWorker(QWorker):
         for (attr, val) in reload_dict.items():
             setattr(self.tile_instance, attr, val)
         form_data = self.tile_instance._create_form_data(reload_dict["form_info"])["form_data"]
+        self.tile_instance.init_pool()
         document_object.Collection.__fully_initialize__()
 
         if not self.tile_instance.exports:
@@ -426,7 +428,7 @@ class TileWorker(QWorker):
         self.handler_instances["tilebase"] = self.tile_instance
         for k, val in data["instance_params"].items():
             setattr(self.tile_instance, k, val)
-
+        self.tile_instance.init_pool()
         # The if statement below is because older notebooks saves won't have the globals dict
         # There won't be many of these old notebooks
         if (data["globals_dict"] is not None) and (isinstance(data["globals_dict"], dict)):  # legacy
@@ -480,7 +482,7 @@ class TileWorker(QWorker):
 
             for k, val in data["instance_params"].items():
                 setattr(self.tile_instance, k, val)
-
+            self.tile_instance.init_pool()
             if "doc_type" in data:
                 self.tile_instance.doc_type = data["doc_type"]
             else:
