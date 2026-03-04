@@ -22,10 +22,11 @@ class TempDataAccess(object):
         self.db["temp_data"].insert_one(ldata)
         return unique_id
 
-    def store_temp_data_with_compress(self, data_dict):
+    def store_temp_data_with_compress(self, sid, data_dict):
         cdict = make_jsonizable_and_compress(data_dict)
         fid = self.fs.put(cdict)
-        save_dict = {"file_id": fid, "user_id": self.user_id}
+        user_id = self.get_session(sid).user_id
+        save_dict = {"file_id": fid, "user_id": user_id}
         unique_id = self.store_temp_data(save_dict)
         return unique_id
 

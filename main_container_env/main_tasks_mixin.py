@@ -824,7 +824,7 @@ class LoadSaveTasksMixin:
             try:
                 console_dict["doc_type"] = "notebook"
                 console_dict["interface_state"] = {"console_items": data_dict["console_items"]}
-                unique_id = self.store_temp_data_with_compress(console_dict)
+                unique_id = self.store_temp_data_with_compress(sid, console_dict)
                 self.mworker.emit_to_main_client(sid, "notebook-open", {"message": "notebook-open", "temp_data_id": unique_id})
             except Exception as ex:
                 log.exception("error in console_to_notebook")
