@@ -277,7 +277,6 @@ function PoolBrowser(props) {
   function _viewTextFile() {
     _viewTextFile = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
       var node,
-        data,
         path,
         _args16 = arguments,
         _t2;

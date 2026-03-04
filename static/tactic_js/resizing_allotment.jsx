@@ -133,7 +133,7 @@ export function HorizontalPanes({
                          className="horizontal-right-pane"
                          style={{
                             height: "100%", width: "100%",
-                            overflow: "hidden",
+                            // overflow: "hidden",
                             position: "relative",
                              display: "flex",
                              flexDirection: "column"

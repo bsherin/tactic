@@ -1,0 +1,21 @@
+{
+  "BackupPlanName": "tactic-ebs-weekly-monthly",
+  "Rules": [
+    {
+      "RuleName": "weekly",
+      "TargetBackupVaultName": "tactic-backup-vault",
+      "ScheduleExpression": "cron(0 9 ? * SUN *)",
+      "StartWindowMinutes": 60,
+      "CompletionWindowMinutes": 180,
+      "Lifecycle": { "DeleteAfterDays": 84 }
+    },
+    {
+      "RuleName": "monthly",
+      "TargetBackupVaultName": "tactic-backup-vault",
+      "ScheduleExpression": "cron(0 9 1 * ? *)",
+      "StartWindowMinutes": 60,
+      "CompletionWindowMinutes": 180,
+      "Lifecycle": { "DeleteAfterDays": 365 }
+    }
+  ]
+}

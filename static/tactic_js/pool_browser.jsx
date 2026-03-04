@@ -147,7 +147,6 @@ function PoolBrowser(props) {
 
     async function viewTextFile(node = null) {
         if (!valueRef.current && !node) return;
-        let data;
         try {
             const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
             if (node.isDirectory) return;
