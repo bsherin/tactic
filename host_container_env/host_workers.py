@@ -172,7 +172,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy_manual_submit
     def start_log_stream(self, data, task_packet):
         cont_id = data["cont_id"]
-        session_start_ms = int(self.tile_registry.get_container_info(cont_id, "session_start_ms"))
+        session_start_ms = self.tile_registry.get_container_info(cont_id, "session_start_ms")
+        if session_start_ms is not None:
+            session_start_ms = int(session_start_ms)
+        else:
+            log.error("session_start_ms not found for container", cont_id=cont_id)
         data["session_start_ms"] = session_start_ms
         def started_stream(result_data):
             self.submit_response(task_packet, result_data)
@@ -183,7 +187,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy_manual_submit
     def get_container_log(self, data, task_packet):
         cont_id = data["cont_id"]
-        session_start_ms = int(self.tile_registry.get_container_info(cont_id, "session_start_ms"))
+        session_start_ms = self.tile_registry.get_container_info(cont_id, "session_start_ms")
+        if session_start_ms is not None:
+            session_start_ms = int(session_start_ms)
+        else:
+            log.error("session_start_ms not found for container", cont_id=cont_id)
         data["session_start_ms"] = session_start_ms
         def got_log(result_data):
             self.submit_response(task_packet, result_data)

@@ -24,7 +24,7 @@ function SearchableConsole(props, inner_ref) {
     const cont_id = useRef(props.container_id);
     const sc_id = useRef(null);
     const streamer_info = useRef(null);
-    const [, doUpdate] = useDebounce(set_log_content);
+    // const [, doUpdate] = useDebounce(set_log_content);
 
     const past_commands = useRef([]);
     const past_commands_index = useRef(null);
@@ -95,7 +95,7 @@ function SearchableConsole(props, inner_ref) {
                 local_id: props.local_id},
             props.local_id);
         _addToLog(res["log_text"]);
-        let data = await postPromise("log_streamer", "start_log_stream",
+        let data = await postPromise("host", "start_log_stream",
             {cont_id: cont_id.current, local_id: props.local_id, sc_id: sc_id.current, user_id: window.user_id},
             props.local_id);
         streamer_info.current = data["stream_info"]
@@ -114,7 +114,7 @@ function SearchableConsole(props, inner_ref) {
     }
 
     function _addToLog(new_line) {
-        doUpdate(prev_log_content => prev_log_content + new_line)
+        set_log_content(prev_log_content => prev_log_content + new_line)
     }
 
     function _prepareText() {

@@ -65,9 +65,8 @@ function SearchableConsole(props, inner_ref) {
   var cont_id = (0, _react.useRef)(props.container_id);
   var sc_id = (0, _react.useRef)(null);
   var streamer_info = (0, _react.useRef)(null);
-  var _useDebounce = (0, _utilities_react.useDebounce)(set_log_content),
-    _useDebounce2 = _slicedToArray(_useDebounce, 2),
-    doUpdate = _useDebounce2[1];
+  // const [, doUpdate] = useDebounce(set_log_content);
+
   var past_commands = (0, _react.useRef)([]);
   var past_commands_index = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -182,7 +181,7 @@ function SearchableConsole(props, inner_ref) {
             res = _context4.v;
             _addToLog(res["log_text"]);
             _context4.n = 4;
-            return (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
+            return (0, _communication_react.postPromise)("host", "start_log_stream", {
               cont_id: cont_id.current,
               local_id: props.local_id,
               sc_id: sc_id.current,
@@ -230,7 +229,7 @@ function SearchableConsole(props, inner_ref) {
     return _stopLogStreaming2.apply(this, arguments);
   }
   function _addToLog(new_line) {
-    doUpdate(function (prev_log_content) {
+    set_log_content(function (prev_log_content) {
       return prev_log_content + new_line;
     });
   }

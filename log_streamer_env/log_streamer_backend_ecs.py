@@ -104,6 +104,8 @@ def get_container_log_ecs(cont_id, max_lines=100, session_start_ms=None):
     events = []
     next_token = None
 
+    if max_lines is None:
+        max_lines = 10000
     while len(events) < max_lines:
         # Ask CloudWatch for the newest events first.
         kwargs = {
