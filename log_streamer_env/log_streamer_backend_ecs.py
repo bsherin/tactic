@@ -174,7 +174,7 @@ class ECSLogTailer:
         Stops when (a) task stops and no new logs for a poll, or (b) inactivity timeout.
         """
         next_token = None
-        last_seen_ts = 0
+        last_seen_ts = time.time() * 1000
         self.group, self.stream = resolve_log_stream_for_task(self.task_arn)
 
         # Initial announcement (optional)
