@@ -277,6 +277,17 @@ function consoleItemsReducer(console_items, action) {
         }
       });
       break;
+    case "open_all_dividers":
+      new_items = console_items.map(function (t) {
+        if (t.type == "divider") {
+          var new_t = _objectSpread({}, t);
+          new_t.am_shrunk = false;
+          return new_t;
+        } else {
+          return t;
+        }
+      });
+      break;
     default:
       console.log("Got Unknown action: " + action.type);
       return _toConsumableArray(console_items);

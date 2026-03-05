@@ -238,6 +238,17 @@ function consoleItemsReducer(console_items, action) {
                 }
             });
             break;
+        case "open_all_dividers":
+            new_items = console_items.map(t => {
+                if (t.type == "divider") {
+                    let new_t = {...t};
+                    new_t.am_shrunk = false;
+                    return new_t
+                } else {
+                    return t
+                }
+            });
+            break;
         default:
             console.log("Got Unknown action: " + action.type);
             return [...console_items]

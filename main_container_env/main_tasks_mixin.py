@@ -832,7 +832,7 @@ class LoadSaveTasksMixin:
                 self.mworker.send_error_entry(sid, "Error converting console to notebook", error_string)
             return
 
-        self.mworker.post_task("main_service", "compile_save_dict", {}, got_save_dict)
+        self.mworker.post_task("main_service", "compile_save_dict", {"sid": sid}, got_save_dict)
         return {"success": True}
 
     @task_worthy

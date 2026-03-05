@@ -335,16 +335,15 @@ function ProjectMenu(props) {
     return _exportAsPresentation2.apply(this, arguments);
   }
   function exportStyledSubtree(rootEl) {
+    var BLOCKED = new Set(["height", "min-height", "max-height", "block-size", "min-block-size", "max-block-size"]);
     var clone = rootEl.cloneNode(true);
     function copyComputedStyle(src, dest) {
       var cs = window.getComputedStyle(src);
-
-      // Copy every computed property as inline style
-      dest.style.cssText = Array.from(cs).map(function (prop) {
+      dest.style.cssText = Array.from(cs).filter(function (prop) {
+        return !BLOCKED.has(prop);
+      }).map(function (prop) {
         return "".concat(prop, ":").concat(cs.getPropertyValue(prop), ";");
       }).join("");
-
-      // If you rely on pseudo-elements, you may need a separate strategy (see notes).
       var srcKids = Array.from(src.children);
       var destKids = Array.from(dest.children);
       for (var i = 0; i < srcKids.length; i++) {
@@ -358,129 +357,142 @@ function ProjectMenu(props) {
     return _exportAsReport2.apply(this, arguments);
   }
   function _exportAsReport2() {
-    _exportAsReport2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, cell_list, _iterator3, _step3, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, title, _t6, _t7, _t8;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+    _exportAsReport2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+      var data, _yield$dialogFuncs$sh3, _yield$dialogFuncs$sh4, collapsible, include_summaries, use_dark_theme, save_as_collection, collection_name, title, _t8;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
           case 0:
-            _context6.p = 0;
-            _context6.n = 1;
+            _context7.p = 0;
+            _context7.n = 1;
             return (0, _communication_react.postPromise)("host", "get_collection_names_task", {
               "user_id": user_id
             }, props.local_id);
           case 1:
-            data = _context6.v;
-            _context6.n = 2;
+            data = _context7.v;
+            _context7.n = 2;
             return dialogFuncs.showModalPromise("ReportDialog", {
               default_value: "NewReport",
               existing_names: data.collection_names,
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            _yield$dialogFuncs$sh3 = _context6.v;
+            _yield$dialogFuncs$sh3 = _context7.v;
             _yield$dialogFuncs$sh4 = _slicedToArray(_yield$dialogFuncs$sh3, 5);
             collapsible = _yield$dialogFuncs$sh4[0];
             include_summaries = _yield$dialogFuncs$sh4[1];
             use_dark_theme = _yield$dialogFuncs$sh4[2];
             save_as_collection = _yield$dialogFuncs$sh4[3];
             collection_name = _yield$dialogFuncs$sh4[4];
-            cell_list = [];
-            _iterator3 = _createForOfIteratorHelper(props.console_items);
-            _context6.p = 3;
-            _iterator3.s();
-          case 4:
-            if ((_step3 = _iterator3.n()).done) {
-              _context6.n = 13;
-              break;
-            }
-            entry = _step3.value;
-            new_entry = {};
-            new_entry.type = entry.type;
-            _t6 = entry.type;
-            _context6.n = _t6 === "text" ? 5 : _t6 === "code" ? 6 : _t6 === "fixed" ? 7 : _t6 === "divider" ? 8 : _t6 === "figure" ? 9 : 10;
+            props.dispatch({
+              type: "open_all_dividers"
+            });
+            props.pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+              var cell_list, _iterator3, _step3, entry, new_entry, container, target, fcontainer, ftarget, result_dict, data_object, _t6, _t7;
+              return _regenerator().w(function (_context6) {
+                while (1) switch (_context6.n) {
+                  case 0:
+                    cell_list = [];
+                    _iterator3 = _createForOfIteratorHelper(props.console_items);
+                    _context6.p = 1;
+                    _iterator3.s();
+                  case 2:
+                    if ((_step3 = _iterator3.n()).done) {
+                      _context6.n = 11;
+                      break;
+                    }
+                    entry = _step3.value;
+                    new_entry = {};
+                    new_entry.type = entry.type;
+                    _t6 = entry.type;
+                    _context6.n = _t6 === "text" ? 3 : _t6 === "code" ? 4 : _t6 === "fixed" ? 5 : _t6 === "divider" ? 6 : _t6 === "figure" ? 7 : 8;
+                    break;
+                  case 3:
+                    new_entry.console_text = mdi.render(entry.console_text);
+                    new_entry.raw_text = entry.console_text;
+                    new_entry.summary_text = entry.summary_text;
+                    return _context6.a(3, 9);
+                  case 4:
+                    new_entry.console_text = entry.console_text;
+                    container = document.getElementById(entry.unique_id);
+                    target = container.querySelector(".log-code-output");
+                    new_entry.output_text = target ? exportStyledSubtree(target) : "";
+                    new_entry.summary_text = entry.summary_text;
+                    return _context6.a(3, 9);
+                  case 5:
+                    fcontainer = document.getElementById(entry.unique_id);
+                    ftarget = fcontainer.querySelector(".log-panel-body");
+                    new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
+                    new_entry.summary_text = entry.summary_text;
+                    return _context6.a(3, 9);
+                  case 6:
+                    new_entry.header_text = entry.header_text;
+                    return _context6.a(3, 9);
+                  case 7:
+                    new_entry.image_data_str = entry.image_data_str;
+                    new_entry.summary_text = entry.summary_text;
+                    return _context6.a(3, 9);
+                  case 8:
+                    new_entry.console_text = entry.console_text;
+                    new_entry.summary_text = entry.summary_text;
+                    return _context6.a(3, 9);
+                  case 9:
+                    cell_list.push(new_entry);
+                  case 10:
+                    _context6.n = 2;
+                    break;
+                  case 11:
+                    _context6.n = 13;
+                    break;
+                  case 12:
+                    _context6.p = 12;
+                    _t7 = _context6.v;
+                    _iterator3.e(_t7);
+                  case 13:
+                    _context6.p = 13;
+                    _iterator3.f();
+                    return _context6.f(13);
+                  case 14:
+                    result_dict = {
+                      "project_name": props.project_name,
+                      "collection_name": collection_name,
+                      "save_as_collection": save_as_collection,
+                      "use_dark_theme": use_dark_theme,
+                      "collapsible": collapsible,
+                      "include_summaries": include_summaries,
+                      "local_id": props.local_id,
+                      "cell_list": cell_list
+                    };
+                    _context6.n = 15;
+                    return (0, _communication_react.postPromiseMain)(props.local_id, "export_as_report", result_dict, props.local_id);
+                  case 15:
+                    data_object = _context6.v;
+                    statusFuncs.clearStatusMessage();
+                    if (save_as_collection) {
+                      data_object.alert_type = "alert-success";
+                      data_object.timeout = 2000;
+                      statusFuncs.statusMessage("Exported report");
+                    } else {
+                      window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
+                    }
+                  case 16:
+                    return _context6.a(2);
+                }
+              }, _callee6, null, [[1, 12, 13, 14]]);
+            })));
+            _context7.n = 4;
             break;
-          case 5:
-            new_entry.console_text = mdi.render(entry.console_text);
-            new_entry.raw_text = entry.console_text;
-            new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 11);
-          case 6:
-            new_entry.console_text = entry.console_text;
-            container = document.getElementById(entry.unique_id);
-            target = container.querySelector(".log-code-output");
-            new_entry.output_text = target ? exportStyledSubtree(target) : "";
-            new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 11);
-          case 7:
-            fcontainer = document.getElementById(entry.unique_id);
-            ftarget = fcontainer.querySelector(".log-panel-body");
-            new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
-            new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 11);
-          case 8:
-            new_entry.header_text = entry.header_text;
-            return _context6.a(3, 11);
-          case 9:
-            new_entry.image_data_str = entry.image_data_str;
-            new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 11);
-          case 10:
-            new_entry.console_text = entry.console_text;
-            new_entry.summary_text = entry.summary_text;
-            return _context6.a(3, 11);
-          case 11:
-            cell_list.push(new_entry);
-          case 12:
-            _context6.n = 4;
-            break;
-          case 13:
-            _context6.n = 15;
-            break;
-          case 14:
-            _context6.p = 14;
-            _t7 = _context6.v;
-            _iterator3.e(_t7);
-          case 15:
-            _context6.p = 15;
-            _iterator3.f();
-            return _context6.f(15);
-          case 16:
-            result_dict = {
-              "project_name": props.project_name,
-              "collection_name": collection_name,
-              "save_as_collection": save_as_collection,
-              "use_dark_theme": use_dark_theme,
-              "collapsible": collapsible,
-              "include_summaries": include_summaries,
-              "local_id": props.local_id,
-              "cell_list": cell_list
-            };
-            _context6.n = 17;
-            return (0, _communication_react.postPromiseMain)(props.local_id, "export_as_report", result_dict, props.local_id);
-          case 17:
-            data_object = _context6.v;
-            statusFuncs.clearStatusMessage();
-            if (save_as_collection) {
-              data_object.alert_type = "alert-success";
-              data_object.timeout = 2000;
-              statusFuncs.statusMessage("Exported report");
-            } else {
-              window.open("".concat($SCRIPT_ROOT, "/load_temp_page/").concat(data_object["temp_id"]));
-            }
-            _context6.n = 19;
-            break;
-          case 18:
-            _context6.p = 18;
-            _t8 = _context6.v;
+          case 3:
+            _context7.p = 3;
+            _t8 = _context7.v;
             if (_t8 != "canceled") {
               title = "title" in _t8 ? _t8.title : "Error exporting report";
               errorDrawerFuncs.addFromError(title, _t8);
             }
             statusFuncs.clearStatusMessage();
-          case 19:
-            return _context6.a(2);
+          case 4:
+            return _context7.a(2);
         }
-      }, _callee6, null, [[3, 14, 15, 16], [0, 18]]);
+      }, _callee7, null, [[0, 3]]);
     }));
     return _exportAsReport2.apply(this, arguments);
   }
@@ -488,20 +500,20 @@ function ProjectMenu(props) {
     return _exportAsJupyter2.apply(this, arguments);
   }
   function _exportAsJupyter2() {
-    _exportAsJupyter2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+    _exportAsJupyter2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
       var data, new_name, cell_list, _iterator4, _step4, entry, new_cell, result_dict, data_object, title, _t9, _t0;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.n) {
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
           case 0:
             statusFuncs.startSpinner();
-            _context7.p = 1;
-            _context7.n = 2;
+            _context8.p = 1;
+            _context8.n = 2;
             return (0, _communication_react.postPromise)("host", "get_project_names_task", {
               "user_id": user_id
             }, props.local_id);
           case 2:
-            data = _context7.v;
-            _context7.n = 3;
+            data = _context8.v;
+            _context8.n = 3;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Export Notebook in Jupyter Format",
               field_title: "New Project Name",
@@ -511,22 +523,22 @@ function ProjectMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 3:
-            new_name = _context7.v;
+            new_name = _context8.v;
             cell_list = [];
             _iterator4 = _createForOfIteratorHelper(props.console_items);
-            _context7.p = 4;
+            _context8.p = 4;
             _iterator4.s();
           case 5:
             if ((_step4 = _iterator4.n()).done) {
-              _context7.n = 8;
+              _context8.n = 8;
               break;
             }
             entry = _step4.value;
             if (!(entry.type == "section-end")) {
-              _context7.n = 6;
+              _context8.n = 6;
               break;
             }
-            return _context7.a(3, 7);
+            return _context8.a(3, 7);
           case 6:
             new_cell = {};
             if (entry.type == "divider") {
@@ -541,36 +553,36 @@ function ProjectMenu(props) {
             }
             cell_list.push(new_cell);
           case 7:
-            _context7.n = 5;
+            _context8.n = 5;
             break;
           case 8:
-            _context7.n = 10;
+            _context8.n = 10;
             break;
           case 9:
-            _context7.p = 9;
-            _t9 = _context7.v;
+            _context8.p = 9;
+            _t9 = _context8.v;
             _iterator4.e(_t9);
           case 10:
-            _context7.p = 10;
+            _context8.p = 10;
             _iterator4.f();
-            return _context7.f(10);
+            return _context8.f(10);
           case 11:
             result_dict = {
               "project_name": new_name,
               "local_id": props.local_id,
               "cell_list": cell_list
             };
-            _context7.n = 12;
+            _context8.n = 12;
             return (0, _communication_react.postPromiseMain)(props.local_id, "export_to_jupyter_notebook", result_dict, props.local_id);
           case 12:
-            data_object = _context7.v;
+            data_object = _context8.v;
             statusFuncs.statusMessage("Exported jupyter notebook");
             statusFuncs.stopSpinner();
-            _context7.n = 14;
+            _context8.n = 14;
             break;
           case 13:
-            _context7.p = 13;
-            _t0 = _context7.v;
+            _context8.p = 13;
+            _t0 = _context8.v;
             if (_t0 != "canceled") {
               title = "title" in _t0 ? _t0.title : "Error exporting as Jupyter notebook";
               errorDrawerFuncs.addFromError(title, _t0);
@@ -578,9 +590,9 @@ function ProjectMenu(props) {
             statusFuncs.clearStatusMessage();
             statusFuncs.stopSpinner();
           case 14:
-            return _context7.a(2);
+            return _context8.a(2);
         }
-      }, _callee7, null, [[4, 9, 10, 11], [1, 13]]);
+      }, _callee8, null, [[4, 9, 10, 11], [1, 13]]);
     }));
     return _exportAsJupyter2.apply(this, arguments);
   }
@@ -588,19 +600,19 @@ function ProjectMenu(props) {
     return _exportDataTable2.apply(this, arguments);
   }
   function _exportDataTable2() {
-    _exportDataTable2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+    _exportDataTable2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
       var data, new_name, result_dict, _t1;
-      return _regenerator().w(function (_context8) {
-        while (1) switch (_context8.n) {
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.n) {
           case 0:
-            _context8.p = 0;
-            _context8.n = 1;
+            _context9.p = 0;
+            _context9.n = 1;
             return (0, _communication_react.postPromise)("host", "get_collection_names_task", {
               "user_id": user_id
             });
           case 1:
-            data = _context8.v;
-            _context8.n = 2;
+            data = _context9.v;
+            _context9.n = 2;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Export Data",
               field_title: "New Collection NameName",
@@ -610,28 +622,28 @@ function ProjectMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            new_name = _context8.v;
+            new_name = _context9.v;
             result_dict = {
               "export_name": new_name,
               "local_id": props.local_id,
               "user_id": window.user_id
             };
-            _context8.n = 3;
+            _context9.n = 3;
             return (0, _communication_react.postAjaxPromise)("export_data", result_dict);
           case 3:
             statusFuncs.statusMessage("Exported table as collection");
-            _context8.n = 5;
+            _context9.n = 5;
             break;
           case 4:
-            _context8.p = 4;
-            _t1 = _context8.v;
+            _context9.p = 4;
+            _t1 = _context9.v;
             if (_t1 != "canceled") {
               errorDrawerFuncs.addFromError("Error exporting table", _t1);
             }
           case 5:
-            return _context8.a(2);
+            return _context9.a(2);
         }
-      }, _callee8, null, [[0, 4]]);
+      }, _callee9, null, [[0, 4]]);
     }));
     return _exportDataTable2.apply(this, arguments);
   }
@@ -639,30 +651,30 @@ function ProjectMenu(props) {
     return _consoleToNotebook2.apply(this, arguments);
   }
   function _consoleToNotebook2() {
-    _consoleToNotebook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+    _consoleToNotebook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
       var result_dict, _t10;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.n) {
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
-            _context9.p = 0;
+            _context0.p = 0;
             result_dict = {
               "local_id": props.local_id,
               "console_items": props.console_items,
               "user_id": window.user_id
             };
-            _context9.n = 1;
+            _context0.n = 1;
             return (0, _communication_react.postPromiseMain)(props.local_id, "console_to_notebook", result_dict, props.local_id);
           case 1:
-            _context9.n = 3;
+            _context0.n = 3;
             break;
           case 2:
-            _context9.p = 2;
-            _t10 = _context9.v;
+            _context0.p = 2;
+            _t10 = _context0.v;
             errorDrawerFuncs.addFromError("Error converting to notebook", _t10);
           case 3:
-            return _context9.a(2);
+            return _context0.a(2);
         }
-      }, _callee9, null, [[0, 2]]);
+      }, _callee0, null, [[0, 2]]);
     }));
     return _consoleToNotebook2.apply(this, arguments);
   }
@@ -797,14 +809,14 @@ function DocumentMenu(props) {
     return _newDocument2.apply(this, arguments);
   }
   function _newDocument2() {
-    _newDocument2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+    _newDocument2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
       var new_name, _t11;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
           case 0:
-            _context0.p = 0;
+            _context1.p = 0;
             statusFuncs.startSpinner();
-            _context0.n = 1;
+            _context1.n = 1;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New Document",
               field_title: "New Document Name",
@@ -814,27 +826,27 @@ function DocumentMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 1:
-            new_name = _context0.v;
-            _context0.n = 2;
+            new_name = _context1.v;
+            _context1.n = 2;
             return (0, _communication_react.postPromiseMain)(props.local_id, "new_blank_document", {
               model_document_name: props.currentDoc,
               new_document_name: new_name
             }, props.local_id);
           case 2:
             statusFuncs.stopSpinner();
-            _context0.n = 4;
+            _context1.n = 4;
             break;
           case 3:
-            _context0.p = 3;
-            _t11 = _context0.v;
+            _context1.p = 3;
+            _t11 = _context1.v;
             if (_t11 != "canceled") {
               errorDrawerFuncs.addFromError("Error adding new document", _t11);
             }
             statusFuncs.stopSpinner();
           case 4:
-            return _context0.a(2);
+            return _context1.a(2);
         }
-      }, _callee0, null, [[0, 3]]);
+      }, _callee1, null, [[0, 3]]);
     }));
     return _newDocument2.apply(this, arguments);
   }
@@ -842,14 +854,14 @@ function DocumentMenu(props) {
     return _duplicateDocument2.apply(this, arguments);
   }
   function _duplicateDocument2() {
-    _duplicateDocument2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+    _duplicateDocument2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
       var new_name, _t12;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.n) {
           case 0:
-            _context1.p = 0;
+            _context10.p = 0;
             statusFuncs.startSpinner();
-            _context1.n = 1;
+            _context10.n = 1;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Duplicate Document",
               field_title: "New Document Name",
@@ -859,27 +871,27 @@ function DocumentMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 1:
-            new_name = _context1.v;
-            _context1.n = 2;
+            new_name = _context10.v;
+            _context10.n = 2;
             return (0, _communication_react.postPromiseMain)(props.local_id, "duplicate_document", {
               original_document_name: props.currentDoc,
               new_document_name: new_name
             }, props.local_id);
           case 2:
             statusFuncs.stopSpinner();
-            _context1.n = 4;
+            _context10.n = 4;
             break;
           case 3:
-            _context1.p = 3;
-            _t12 = _context1.v;
+            _context10.p = 3;
+            _t12 = _context10.v;
             if (_t12 != "canceled") {
               errorDrawerFuncs.addFromError("Error duplicating document", _t12);
             }
             statusFuncs.stopSpinner();
           case 4:
-            return _context1.a(2);
+            return _context10.a(2);
         }
-      }, _callee1, null, [[0, 3]]);
+      }, _callee10, null, [[0, 3]]);
     }));
     return _duplicateDocument2.apply(this, arguments);
   }
@@ -887,14 +899,14 @@ function DocumentMenu(props) {
     return _renameDocument2.apply(this, arguments);
   }
   function _renameDocument2() {
-    _renameDocument2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+    _renameDocument2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
       var new_name, _t13;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.n) {
+      return _regenerator().w(function (_context11) {
+        while (1) switch (_context11.n) {
           case 0:
-            _context10.p = 0;
+            _context11.p = 0;
             statusFuncs.startSpinner();
-            _context10.n = 1;
+            _context11.n = 1;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Rename Document",
               field_title: "New Document Name",
@@ -904,27 +916,27 @@ function DocumentMenu(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 1:
-            new_name = _context10.v;
-            _context10.n = 2;
+            new_name = _context11.v;
+            _context11.n = 2;
             return (0, _communication_react.postPromiseMain)(props.local_id, "rename_document", {
               old_document_name: props.currentDoc,
               new_document_name: new_name
             }, props.local_id);
           case 2:
             statusFuncs.stopSpinner();
-            _context10.n = 4;
+            _context11.n = 4;
             break;
           case 3:
-            _context10.p = 3;
-            _t13 = _context10.v;
+            _context11.p = 3;
+            _t13 = _context11.v;
             if (_t13 != "canceled") {
               errorDrawerFuncs.addFromError("Error renaming document", _t13);
             }
             statusFuncs.stopSpinner();
           case 4:
-            return _context10.a(2);
+            return _context11.a(2);
         }
-      }, _callee10, null, [[0, 3]]);
+      }, _callee11, null, [[0, 3]]);
     }));
     return _renameDocument2.apply(this, arguments);
   }

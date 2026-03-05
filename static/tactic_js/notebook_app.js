@@ -248,6 +248,8 @@ function NotebookApp(props) {
     is_juptyer: props.is_jupyter,
     setProjectName: _setProjectName,
     console_items: console_items_ref.current,
+    dispatch: dispatch,
+    pushCallback: pushCallback,
     tile_list: [],
     mState: mState,
     setMainStateValue: _setMainStateValue,

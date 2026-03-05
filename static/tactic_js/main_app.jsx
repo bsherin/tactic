@@ -983,6 +983,8 @@ function MainApp(props) {
                          is_juptyer={props.is_jupyter}
                          setProjectName={_setProjectName}
                          console_items={console_items_ref.current}
+                         pushCallback={pushCallback}
+                         dispatch={dispatch}
                          tile_list={tile_list_ref.current}
                          mState={mState}
                          setMainStateValue={_setMainStateValue}

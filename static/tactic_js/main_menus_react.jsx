@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
-import { renderToString } from 'react-dom/server';
+import {renderToString} from 'react-dom/server';
 
 const mdi = markdownIt({html: true});
 mdi.use(markdownItLatex);
@@ -56,7 +56,7 @@ function ProjectMenu(props) {
         statusFuncs.startSpinner();
         let data = await postPromise("host", "get_project_names_task", {"user_id": window.user_id}, props.local_id);
         let checkboxes = null;
-        if (window.allow_heavy_saves){
+        if (window.allow_heavy_saves) {
             checkboxes = [{checkname: "lite_save", checktext: "create lite save"}];
         }
 
@@ -72,11 +72,10 @@ function ProjectMenu(props) {
             let lite_save;
             let new_name;
             let checkbox_states;
-            if (window.allow_heavy_saves){
+            if (window.allow_heavy_saves) {
                 [new_name, checkbox_states] = dialogRes;
                 lite_save = checkbox_states["lite_save"];
-            }
-            else {
+            } else {
                 new_name = dialogRes;
                 lite_save = true;
             }
@@ -214,17 +213,23 @@ function ProjectMenu(props) {
     }
 
     function exportStyledSubtree(rootEl) {
+        const BLOCKED = new Set([
+              "height",
+              "min-height",
+              "max-height",
+              "block-size",
+              "min-block-size",
+              "max-block-size"
+            ]);
         const clone = rootEl.cloneNode(true);
 
         function copyComputedStyle(src, dest) {
-            const cs = window.getComputedStyle(src);
-
-            // Copy every computed property as inline style
+            let cs = window.getComputedStyle(src);
             dest.style.cssText = Array.from(cs)
+                .filter(prop => !BLOCKED.has(prop))
                 .map((prop) => `${prop}:${cs.getPropertyValue(prop)};`)
                 .join("");
 
-            // If you rely on pseudo-elements, you may need a separate strategy (see notes).
             const srcKids = Array.from(src.children);
             const destKids = Array.from(dest.children);
             for (let i = 0; i < srcKids.length; i++) {
@@ -246,67 +251,70 @@ function ProjectMenu(props) {
                     existing_names: data.collection_names,
                     handleClose: dialogFuncs.hideModal
                 });
-            let cell_list = [];
-            for (let entry of props.console_items) {
-                let new_entry = {};
-                new_entry.type = entry.type;
-                switch (entry.type) {
-                    case "text":
-                        new_entry.console_text = mdi.render(entry.console_text);
-                        new_entry.raw_text = entry.console_text;
-                        new_entry.summary_text = entry.summary_text;
-                        break;
-                    case "code":
-                        new_entry.console_text = entry.console_text;
-                        const container = document.getElementById(entry.unique_id);
-                        const target = container.querySelector(".log-code-output");
+            props.dispatch({type: "open_all_dividers"});
+            props.pushCallback(async () => {
+                let cell_list = [];
+                for (let entry of props.console_items) {
+                    let new_entry = {};
+                    new_entry.type = entry.type;
+                    switch (entry.type) {
+                        case "text":
+                            new_entry.console_text = mdi.render(entry.console_text);
+                            new_entry.raw_text = entry.console_text;
+                            new_entry.summary_text = entry.summary_text;
+                            break;
+                        case "code":
+                            new_entry.console_text = entry.console_text;
+                            const container = document.getElementById(entry.unique_id);
+                            const target = container.querySelector(".log-code-output");
 
-                        new_entry.output_text = target ? exportStyledSubtree(target) : "";
-                        new_entry.summary_text = entry.summary_text;
-                        break;
-                    case "fixed":
-                        const fcontainer = document.getElementById(entry.unique_id);
-                        const ftarget = fcontainer.querySelector(".log-panel-body");
-                        new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
-                        new_entry.summary_text = entry.summary_text;
-                        break;
-                    case "divider":
-                        new_entry.header_text = entry.header_text;
-                        break;
-                    case "figure":
-                        new_entry.image_data_str = entry.image_data_str;
-                        new_entry.summary_text = entry.summary_text;
-                        break;
-                    default:
-                        new_entry.console_text = entry.console_text;
-                        new_entry.summary_text = entry.summary_text;
-                        break;
+                            new_entry.output_text = target ? exportStyledSubtree(target) : "";
+                            new_entry.summary_text = entry.summary_text;
+                            break;
+                        case "fixed":
+                            const fcontainer = document.getElementById(entry.unique_id);
+                            const ftarget = fcontainer.querySelector(".log-panel-body");
+                            new_entry.output_text = ftarget ? exportStyledSubtree(ftarget) : "";
+                            new_entry.summary_text = entry.summary_text;
+                            break;
+                        case "divider":
+                            new_entry.header_text = entry.header_text;
+                            break;
+                        case "figure":
+                            new_entry.image_data_str = entry.image_data_str;
+                            new_entry.summary_text = entry.summary_text;
+                            break;
+                        default:
+                            new_entry.console_text = entry.console_text;
+                            new_entry.summary_text = entry.summary_text;
+                            break;
+                    }
+                    cell_list.push(new_entry)
                 }
-                cell_list.push(new_entry)
-            }
 
-            var result_dict = {
-                "project_name": props.project_name,
-                "collection_name": collection_name,
-                "save_as_collection": save_as_collection,
-                "use_dark_theme": use_dark_theme,
-                "collapsible": collapsible,
-                "include_summaries": include_summaries,
-                "local_id": props.local_id,
-                "cell_list": cell_list,
-            };
-            let data_object = await postPromiseMain(props.local_id, "export_as_report", result_dict, props.local_id);
+                var result_dict = {
+                    "project_name": props.project_name,
+                    "collection_name": collection_name,
+                    "save_as_collection": save_as_collection,
+                    "use_dark_theme": use_dark_theme,
+                    "collapsible": collapsible,
+                    "include_summaries": include_summaries,
+                    "local_id": props.local_id,
+                    "cell_list": cell_list,
+                };
+                let data_object = await postPromiseMain(props.local_id, "export_as_report", result_dict, props.local_id);
 
-            statusFuncs.clearStatusMessage();
-            if (save_as_collection) {
-                data_object.alert_type = "alert-success";
-                data_object.timeout = 2000;
-                statusFuncs.statusMessage("Exported report")
-            } else {
-                window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
-            }
-        }
-        catch (e) {
+                statusFuncs.clearStatusMessage();
+                if (save_as_collection) {
+                    data_object.alert_type = "alert-success";
+                    data_object.timeout = 2000;
+                    statusFuncs.statusMessage("Exported report")
+                } else {
+                    window.open(`${$SCRIPT_ROOT}/load_temp_page/${data_object["temp_id"]}`)
+                }
+            })
+
+        } catch (e) {
             if (e != "canceled") {
                 let title = "title" in e ? e.title : "Error exporting report";
                 errorDrawerFuncs.addFromError(title, e)
@@ -334,8 +342,7 @@ function ProjectMenu(props) {
                 if (entry.type == "divider") {
                     new_cell.cell_type = "markdown";
                     new_cell.source = "# " + entry.header_text;
-                }
-                else {
+                } else {
                     new_cell.source = entry.console_text;
                     new_cell.cell_type = entry.type == "code" ? "code" : "markdown";
                     if (entry.type == "code") {
@@ -353,8 +360,7 @@ function ProjectMenu(props) {
                 result_dict, props.local_id);
             statusFuncs.statusMessage("Exported jupyter notebook");
             statusFuncs.stopSpinner();
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 let title = "title" in e ? e.title : "Error exporting as Jupyter notebook";
                 errorDrawerFuncs.addFromError(title, e)
@@ -368,13 +374,13 @@ function ProjectMenu(props) {
         try {
             let data = await postPromise("host", "get_collection_names_task", {"user_id": user_id});
             let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                    title: "Export Data",
-                    field_title: "New Collection NameName",
-                    default_value: "new collection",
-                    existing_names: data.collection_names,
-                    checkboxes: [],
-                    handleClose: dialogFuncs.hideModal,
-                });
+                title: "Export Data",
+                field_title: "New Collection NameName",
+                default_value: "new collection",
+                existing_names: data.collection_names,
+                checkboxes: [],
+                handleClose: dialogFuncs.hideModal,
+            });
             const result_dict = {
                 "export_name": new_name,
                 "local_id": props.local_id,
@@ -382,8 +388,7 @@ function ProjectMenu(props) {
             };
             await postAjaxPromise("export_data", result_dict);
             statusFuncs.statusMessage("Exported table as collection")
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError("Error exporting table", e)
             }
@@ -398,8 +403,7 @@ function ProjectMenu(props) {
                 "user_id": window.user_id,
             };
             await postPromiseMain(props.local_id, "console_to_notebook", result_dict, props.local_id)
-        }
-        catch (e) {
+        } catch (e) {
             errorDrawerFuncs.addFromError("Error converting to notebook", e);
         }
     }
@@ -416,7 +420,8 @@ function ProjectMenu(props) {
         }
         let items = [
             {name_text: "Save As...", icon_name: "floppy-disk", click_handler: _saveProjectAs},
-            {name_text: "Save", icon_name: "saved", click_handler: async () => {
+            {
+                name_text: "Save", icon_name: "saved", click_handler: async () => {
                     await _saveProject(!window.allow_heavy_saves)
                 }
             }
@@ -485,12 +490,11 @@ function DocumentMenu(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             await postPromiseMain(props.local_id, "new_blank_document", {
-                    model_document_name: props.currentDoc,
-                    new_document_name: new_name
-                }, props.local_id);
+                model_document_name: props.currentDoc,
+                new_document_name: new_name
+            }, props.local_id);
             statusFuncs.stopSpinner()
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error adding new document`, e)
             }
@@ -510,12 +514,11 @@ function DocumentMenu(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             await postPromiseMain(props.local_id, "duplicate_document", {
-                    original_document_name: props.currentDoc,
-                    new_document_name: new_name
-                }, props.local_id);
+                original_document_name: props.currentDoc,
+                new_document_name: new_name
+            }, props.local_id);
             statusFuncs.stopSpinner()
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error duplicating document`, e)
             }
@@ -535,12 +538,11 @@ function DocumentMenu(props) {
                 handleClose: dialogFuncs.hideModal,
             });
             await postPromiseMain(props.local_id, "rename_document", {
-                    old_document_name: props.currentDoc,
-                    new_document_name: new_name
-                }, props.local_id);
+                old_document_name: props.currentDoc,
+                new_document_name: new_name
+            }, props.local_id);
             statusFuncs.stopSpinner()
-        }
-        catch (e) {
+        } catch (e) {
             if (e != "canceled") {
                 errorDrawerFuncs.addFromError(`Error renaming document`, e)
             }
