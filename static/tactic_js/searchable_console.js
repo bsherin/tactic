@@ -73,7 +73,7 @@ function SearchableConsole(props, inner_ref) {
     if (livescroll && inner_ref && inner_ref.current) {
       inner_ref.current.scrollTo(0, inner_ref.current.scrollHeight);
     }
-  });
+  }, [log_content_ref.current]);
   (0, _react.useEffect)(function () {
     sc_id.current = (0, _utilities_react.guid)();
     function cleanup() {
