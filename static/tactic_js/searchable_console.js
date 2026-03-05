@@ -50,10 +50,6 @@ function SearchableConsole(props, inner_ref) {
     _useState0 = _slicedToArray(_useState9, 2),
     livescroll = _useState0[0],
     set_livescroll = _useState0[1];
-  var _useState1 = (0, _react.useState)(null),
-    _useState10 = _slicedToArray(_useState1, 2),
-    log_since = _useState10[0],
-    set_log_since = _useState10[1];
 
   // I need to have these as refs because they are accessed within the _handleUpdateMessage
   // callback. So they would have the old value.
@@ -71,7 +67,6 @@ function SearchableConsole(props, inner_ref) {
   var streamer_info = (0, _react.useRef)(null);
   var _useDebounce = (0, _utilities_react.useDebounce)(set_log_content),
     _useDebounce2 = _slicedToArray(_useDebounce, 2),
-    waiting = _useDebounce2[0],
     doUpdate = _useDebounce2[1];
   var past_commands = (0, _react.useRef)([]);
   var past_commands_index = (0, _react.useRef)(null);
@@ -95,17 +90,6 @@ function SearchableConsole(props, inner_ref) {
       window.removeEventListener('beforeunload', cleanup);
     };
   }, []);
-
-  // useEffect(() => {
-  //     if (!streamer_info.current) {
-  //         _getLogAndStartStreaming()
-  //             .then(() => {
-  //                 console.log("streamer_inf.current", streamer_info.current);
-  //             });
-  //     }
-  //
-  // }, [streamer_info.current]);
-
   (0, _utilities_react.useDidMount)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     return _regenerator().w(function (_context) {
       while (1) switch (_context.n) {
@@ -125,7 +109,6 @@ function SearchableConsole(props, inner_ref) {
           return _stopLogStreaming();
         case 1:
           cont_id.current = props.container_id;
-          set_log_since(null);
           set_max_console_lines(100);
           _context2.n = 2;
           return _getLogAndStartStreaming();
@@ -145,9 +128,28 @@ function SearchableConsole(props, inner_ref) {
     _addToLog(data["new_line"]);
   }
   function _setLogSince() {
-    var now = new Date().getTime();
-    set_log_since(now);
-    set_log_content("");
+    return _setLogSince2.apply(this, arguments);
+  }
+  function _setLogSince2() {
+    _setLogSince2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.n) {
+          case 0:
+            set_log_content("");
+            _context3.n = 1;
+            return (0, _communication_react.postPromise)("host", "set_log_since", {
+              cont_id: cont_id.current,
+              local_id: props.local_id
+            }, props.local_id);
+          case 1:
+            _context3.n = 2;
+            return _getLogAndStartStreaming();
+          case 2:
+            return _context3.a(2);
+        }
+      }, _callee3);
+    }));
+    return _setLogSince2.apply(this, arguments);
   }
   function _setMaxConsoleLines(event) {
     set_max_console_lines(parseInt(event.target.value));
@@ -156,31 +158,30 @@ function SearchableConsole(props, inner_ref) {
     return _getLogAndStartStreaming2.apply(this, arguments);
   }
   function _getLogAndStartStreaming2() {
-    _getLogAndStartStreaming2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+    _getLogAndStartStreaming2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
       var res, data;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
+      return _regenerator().w(function (_context4) {
+        while (1) switch (_context4.n) {
           case 0:
             if (props.container_id) {
-              _context3.n = 1;
+              _context4.n = 1;
               break;
             }
-            return _context3.a(2);
+            return _context4.a(2);
           case 1:
-            _context3.n = 2;
+            _context4.n = 2;
             return _stopLogStreaming();
           case 2:
-            _context3.n = 3;
-            return (0, _communication_react.postPromise)("log_streamer", "get_container_log", {
+            _context4.n = 3;
+            return (0, _communication_react.postPromise)("host", "get_container_log", {
               cont_id: cont_id.current,
-              since: log_since,
               max_lines: max_console_lines_ref.current,
               local_id: props.local_id
             }, props.local_id);
           case 3:
-            res = _context3.v;
+            res = _context4.v;
             _addToLog(res["log_text"]);
-            _context3.n = 4;
+            _context4.n = 4;
             return (0, _communication_react.postPromise)("log_streamer", "start_log_stream", {
               cont_id: cont_id.current,
               local_id: props.local_id,
@@ -188,12 +189,12 @@ function SearchableConsole(props, inner_ref) {
               user_id: window.user_id
             }, props.local_id);
           case 4:
-            data = _context3.v;
-            streamer_info.current = data.stream_info;
+            data = _context4.v;
+            streamer_info.current = data["stream_info"];
           case 5:
-            return _context3.a(2);
+            return _context4.a(2);
         }
-      }, _callee3);
+      }, _callee4);
     }));
     return _getLogAndStartStreaming2.apply(this, arguments);
   }
@@ -201,18 +202,18 @@ function SearchableConsole(props, inner_ref) {
     return _stopLogStreaming2.apply(this, arguments);
   }
   function _stopLogStreaming2() {
-    _stopLogStreaming2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+    _stopLogStreaming2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
       var callback,
-        _args4 = arguments;
-      return _regenerator().w(function (_context4) {
-        while (1) switch (_context4.n) {
+        _args5 = arguments;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.n) {
           case 0:
-            callback = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : null;
+            callback = _args5.length > 0 && _args5[0] !== undefined ? _args5[0] : null;
             if (!(streamer_info && streamer_info.current)) {
-              _context4.n = 2;
+              _context5.n = 2;
               break;
             }
-            _context4.n = 1;
+            _context5.n = 1;
             return (0, _communication_react.postPromise)(streamer_info.current.stream_host, "stop_log_stream", {
               streamer_id: streamer_info.current.stream_id
             }, props.local_id);
@@ -222,9 +223,9 @@ function SearchableConsole(props, inner_ref) {
               callback();
             }
           case 2:
-            return _context4.a(2, null);
+            return _context5.a(2, null);
         }
-      }, _callee4);
+      }, _callee5);
     }));
     return _stopLogStreaming2.apply(this, arguments);
   }
@@ -307,18 +308,18 @@ function SearchableConsole(props, inner_ref) {
     return _logExec2.apply(this, arguments);
   }
   function _logExec2() {
-    _logExec2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(command) {
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.n) {
+    _logExec2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(command) {
+      return _regenerator().w(function (_context6) {
+        while (1) switch (_context6.n) {
           case 0:
-            _context5.n = 1;
+            _context6.n = 1;
             return (0, _communication_react.postPromise)(cont_id.current, "os_command_exec", {
               "the_code": command
             }, props.local_id);
           case 1:
-            return _context5.a(2, _context5.v);
+            return _context6.a(2, _context6.v);
         }
-      }, _callee5);
+      }, _callee6);
     }));
     return _logExec2.apply(this, arguments);
   }
@@ -326,21 +327,21 @@ function SearchableConsole(props, inner_ref) {
     return _commandSubmit2.apply(this, arguments);
   }
   function _commandSubmit2() {
-    _commandSubmit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(e) {
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+    _commandSubmit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(e) {
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
           case 0:
             e.preventDefault();
             past_commands.current.push(console_command_value);
             past_commands_index.current = null;
-            _context6.n = 1;
+            _context7.n = 1;
             return _logExec(console_command_value);
           case 1:
             set_console_command_value("");
           case 2:
-            return _context6.a(2);
+            return _context7.a(2);
         }
-      }, _callee6);
+      }, _callee7);
     }));
     return _commandSubmit2.apply(this, arguments);
   }
@@ -467,10 +468,10 @@ function ResponsiveFlex(props) {
   var containerRef = (0, _react.useRef)(null);
   var leftContentRef = (0, _react.useRef)(null);
   var rightContentRef = (0, _react.useRef)(null);
-  var _useState11 = (0, _react.useState)(false),
-    _useState12 = _slicedToArray(_useState11, 2),
-    hideRight = _useState12[0],
-    setHideRight = _useState12[1];
+  var _useState1 = (0, _react.useState)(false),
+    _useState10 = _slicedToArray(_useState1, 2),
+    hideRight = _useState10[0],
+    setHideRight = _useState10[1];
   (0, _react.useEffect)(function () {
     var observer = new ResizeObserver(function (_ref3) {
       var _ref4 = _slicedToArray(_ref3, 1),

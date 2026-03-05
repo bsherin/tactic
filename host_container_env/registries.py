@@ -92,7 +92,7 @@ class TileContainerRegistry(ServiceRegistry):
     service_name = TILE_SERVICE
     prefix = TILE_SERVICE
     extra_valid_ids = ["tile_test_container"]
-    base_fields = ["username", "owner", "parent", "created", "project_name", "tile_name"]
+    base_fields = ["username", "owner", "parent", "created", "project_name", "tile_name", "session_start_ms"]
     wait_queue_key = "tile_queue_ids:z"
     packets_key = "tile_queue_packets"
     tasks_by_parent_key = "tile_queued_tasks_by_parent"
@@ -405,6 +405,7 @@ class TileContainerRegistry(ServiceRegistry):
             "parent": task_data.get("parent", "host"),
             "project_name": task_data.get("project_name", None),
             "tile_name": task_data.get("tile_name", None),
+            "session_start_ms": int(time.time() * 1000),
         }
 
         self.mark_status(tile_id, "busy", **status_args)

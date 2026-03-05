@@ -33,17 +33,14 @@ class LogStreamer(QWorker, ExceptionMixin):
         local_id = data["local_id"]
         is_ecs = get_container(cont_id) is None
         max_lines = data["max_lines"] if "max_lines" in data else None
-        if "since" in data and data["since"] is not None:
-            dt = datetime.datetime.fromtimestamp(data["since"] / 1000)
-        else:
-            dt = None
+        session_start_ms = data["session_start_ms"] if "session_start_ms" in data else None
         if is_ecs:
             if on_aws:
-                log_text = get_container_log_ecs(cont_id, max_lines)
+                log_text = get_container_log_ecs(cont_id, max_lines, session_start_ms)
             else:
                 log_text = "container not found getting log"
         else:
-            log_text = get_container_log(cont_id, dt)
+            log_text = get_container_log(cont_id, session_start_ms)
             if max_lines is not None:
                 ltlist = log_text.split("\n")[-1 * data["max_lines"]:]
                 log_text = "\n".join(ltlist)
@@ -64,6 +61,7 @@ class LogStreamer(QWorker, ExceptionMixin):
         sc_id = data["sc_id"]
         local_id = data["local_id"]
         cont_id = data["cont_id"]
+        session_start_ms = data["session_start_ms"] if "session_start_ms" in data else None
         if cont_id.startswith("log_streamer"):
             return {"success": False, "message": "can't stream the log streamer"}
         is_ecs = get_container(cont_id) is None
@@ -72,11 +70,11 @@ class LogStreamer(QWorker, ExceptionMixin):
         try:
             if is_ecs:
                 if on_aws:
-                    new_tailer = ECSLogTailer(self, local_id, sc_id, cont_id)
+                    new_tailer = ECSLogTailer(self, local_id, sc_id, cont_id, session_start_ms)
                 else:
                     return {"success": False, "message": "container not found starting stream"}
             else:
-                new_tailer = LogTailer(self, local_id, sc_id, cont_id)
+                new_tailer = LogTailer(self, local_id, sc_id, cont_id, session_start_ms)
 
             self.tailers[stream_id] = new_tailer
             new_tailer.start()

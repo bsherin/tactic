@@ -15,17 +15,19 @@ def bytes_to_string(bstr):
     else:
         return bstr
 
-def get_container_log(cont_id, since=None):
+def get_container_log(cont_id, session_start_ms=None):
+    since = session_start_ms / 1000 if session_start_ms else None
     log_text = bytes_to_string(get_log(cont_id, since=since))
     return log_text
 
 
 class LogTailer:
-    def __init__(self, ls_worker, local_id, sc_id, cont_id):
+    def __init__(self, ls_worker, local_id, sc_id, cont_id, session_start_ms=None):
         self.ls_worker = ls_worker
         self.sc_id = sc_id
         self.local_id = local_id
         self.cont_id = cont_id
+        self.session_start_ms = session_start_ms
         self.cont = get_container(cont_id)
         self._stop = threading.Event()
         self._t = None
@@ -47,8 +49,9 @@ class LogTailer:
         self.ls_worker.emit_to_client("searchable-console-message", base_data)
 
     def _run(self):
+        since = self.session_start_ms / 1000 if self.session_start_ms else None
         if self.cont is not None:
-            for line in self.cont.logs(stream=True, tail=0):
+            for line in self.cont.logs(stream=True, tail=0, since=since):
                 # Shouldn't do anything here that will cause something to be entered in the log of a
                 # container being streamed. That will give an infinite loop.
                 if self._stop.is_set():

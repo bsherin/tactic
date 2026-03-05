@@ -16,7 +16,6 @@ function SearchableConsole(props, inner_ref) {
     const [filter, set_filter] = useState(false);
     const [console_command_value, set_console_command_value] = useState("");
     const [livescroll, set_livescroll] = useState(true);
-    const [log_since, set_log_since] = useState(null);
 
     // I need to have these as refs because they are accessed within the _handleUpdateMessage
     // callback. So they would have the old value.
@@ -25,7 +24,7 @@ function SearchableConsole(props, inner_ref) {
     const cont_id = useRef(props.container_id);
     const sc_id = useRef(null);
     const streamer_info = useRef(null);
-    const [waiting, doUpdate] = useDebounce(set_log_content);
+    const [, doUpdate] = useDebounce(set_log_content);
 
     const past_commands = useRef([]);
     const past_commands_index = useRef(null);
@@ -54,16 +53,6 @@ function SearchableConsole(props, inner_ref) {
         })
     }, []);
 
-    // useEffect(() => {
-    //     if (!streamer_info.current) {
-    //         _getLogAndStartStreaming()
-    //             .then(() => {
-    //                 console.log("streamer_inf.current", streamer_info.current);
-    //             });
-    //     }
-    //
-    // }, [streamer_info.current]);
-
     useDidMount(async () => {
         await _stopLogStreaming(_getLogAndStartStreaming)
     }, [max_console_lines]);
@@ -71,7 +60,6 @@ function SearchableConsole(props, inner_ref) {
     useDidMount(async () => {
         await _stopLogStreaming();
         cont_id.current = props.container_id;
-        set_log_since(null);
         set_max_console_lines(100);
         await _getLogAndStartStreaming()
     }, [props.container_id]);
@@ -88,10 +76,11 @@ function SearchableConsole(props, inner_ref) {
         _addToLog(data["new_line"]);
     }
 
-    function _setLogSince() {
-        const now = new Date().getTime();
-        set_log_since(now);
+    async function _setLogSince() {
+
         set_log_content("")
+        await postPromise("host", "set_log_since", {cont_id: cont_id.current, local_id: props.local_id}, props.local_id)
+        await _getLogAndStartStreaming();
     }
 
     function _setMaxConsoleLines(event) {
@@ -101,15 +90,15 @@ function SearchableConsole(props, inner_ref) {
     async function _getLogAndStartStreaming() {
         if (!props.container_id) return;
         await _stopLogStreaming();
-        let res = await postPromise("log_streamer", "get_container_log",
-            {cont_id: cont_id.current, since: log_since, max_lines: max_console_lines_ref.current,
+        let res = await postPromise("host", "get_container_log",
+            {cont_id: cont_id.current, max_lines: max_console_lines_ref.current,
                 local_id: props.local_id},
             props.local_id);
         _addToLog(res["log_text"]);
         let data = await postPromise("log_streamer", "start_log_stream",
             {cont_id: cont_id.current, local_id: props.local_id, sc_id: sc_id.current, user_id: window.user_id},
             props.local_id);
-        streamer_info.current = data.stream_info
+        streamer_info.current = data["stream_info"]
     }
 
     async function _stopLogStreaming(callback = null) {

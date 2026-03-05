@@ -103,7 +103,10 @@ class OtherAPIMIxin:
 
     def get_container_log(self):
         self._save_stdout()
-        result = self._tworker.post_and_wait("log_streamer", "get_container_log", {"cont_id": self._tworker.my_id})
+        result = self._tworker.post_and_wait("host", "get_container_log",
+                                             {"cont_id": self._tworker.my_id,
+                                              "local_id": self.sid,
+                                              })
         self._restore_stdout()
         return result["log_text"]
 

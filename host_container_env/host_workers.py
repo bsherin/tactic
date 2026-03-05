@@ -169,6 +169,34 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.channel.basic_publish(exchange=CONTROL_EXCHANGE, routing_key="", body=body)
         return {"success": True, "level": new_level}
 
+    @task_worthy_manual_submit
+    def start_log_stream(self, data, task_packet):
+        cont_id = data["cont_id"]
+        session_start_ms = int(self.tile_registry.get_container_info(cont_id, "session_start_ms"))
+        data["session_start_ms"] = session_start_ms
+        def started_stream(result_data):
+            self.submit_response(task_packet, result_data)
+
+        self.post_task("log_streamer", "start_log_stream", data, started_stream)
+        return
+
+    @task_worthy_manual_submit
+    def get_container_log(self, data, task_packet):
+        cont_id = data["cont_id"]
+        session_start_ms = int(self.tile_registry.get_container_info(cont_id, "session_start_ms"))
+        data["session_start_ms"] = session_start_ms
+        def got_log(result_data):
+            self.submit_response(task_packet, result_data)
+
+        self.post_task("log_streamer", "get_container_log", data, got_log)
+        return
+
+    @task_worthy
+    def set_log_since(self, data):
+        cont_id = data["cont_id"]
+        self.tile_registry.mark_status(cont_id, "busy",
+                                       session_start_ms=int(time.time() * 1000))
+
     @staticmethod
     def user_to_true(user_path, user_obj):
         return re.sub("/mydisk", user_obj.pool_dir, user_path)

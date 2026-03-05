@@ -97,7 +97,7 @@ def resolve_log_stream_for_task(task_arn, container_name=None):
 #     text = "\n".join(e["message"].rstrip("\n") for e in events)
 #     return text
 
-def get_container_log_ecs(cont_id, max_lines=100):
+def get_container_log_ecs(cont_id, max_lines=100, session_start_ms=None):
     arn = arn_from_id(cont_id)
     group, log_stream = resolve_log_stream_for_task(arn)
 
@@ -109,6 +109,7 @@ def get_container_log_ecs(cont_id, max_lines=100):
         kwargs = {
             "logGroupName": group,
             "logStreamName": log_stream,
+            "startTime": session_start_ms,
             "startFromHead": False,          # start at end
             "limit": min(10000, max_lines - len(events)),  # CloudWatch max is 10k
         }
@@ -132,13 +133,13 @@ def get_container_log_ecs(cont_id, max_lines=100):
 
 class ECSLogTailer:
     def __init__(self, ls_worker, local_id, sc_id, task_id,
-                 start_ms=None, poll=1.5, batch_size=200):
+                 session_start_ms=None, poll=1.5, batch_size=200):
         self.ls_worker = ls_worker
         self.sc_id = sc_id
         self.local_id = local_id
         self.task_arn = arn_from_id(task_id)
         self.task_id = task_id
-        self.start_ms = start_ms
+        self.session_start_ms = session_start_ms
         self.batch_size = batch_size
         self._stop = threading.Event()
         self._t = None
@@ -186,7 +187,9 @@ class ECSLogTailer:
                 task_stopped = (task and task.get("lastStatus") == "STOPPED")
 
                 # Pull log events
-                kwargs = dict(logGroupName=self.group, logStreamName=self.stream, startFromHead=True)
+                kwargs = dict(logGroupName=self.group, logStreamName=self.stream,
+                              startTime=self.session_start_ms,
+                              startFromHead=True)
                 if next_token:
                     kwargs["nextToken"] = next_token
 
