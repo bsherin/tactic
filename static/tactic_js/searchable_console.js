@@ -179,7 +179,7 @@ function SearchableConsole(props, inner_ref) {
             }, props.local_id);
           case 3:
             res = _context4.v;
-            _addToLog(res["log_text"]);
+            set_log_content(res["log_text"]);
             _context4.n = 4;
             return (0, _communication_react.postPromise)("host", "start_log_stream", {
               cont_id: cont_id.current,

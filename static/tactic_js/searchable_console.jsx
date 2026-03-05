@@ -94,7 +94,7 @@ function SearchableConsole(props, inner_ref) {
             {cont_id: cont_id.current, max_lines: max_console_lines_ref.current,
                 local_id: props.local_id},
             props.local_id);
-        _addToLog(res["log_text"]);
+        set_log_content(res["log_text"]);
         let data = await postPromise("host", "start_log_stream",
             {cont_id: cont_id.current, local_id: props.local_id, sc_id: sc_id.current, user_id: window.user_id},
             props.local_id);
