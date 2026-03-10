@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.notebookReducer = notebookReducer;
 exports.notebook_props = notebook_props;
-var _utilities_react = require("./utilities_react");
 var _communication_react = require("./communication_react");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -22,7 +21,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
   tsocket.attachListener('handle-callback', function (task_packet) {
     (0, _communication_react.handleCallback)(task_packet, local_id);
   });
-  var is_totally_new = !data.is_jupyter && !data.is_project && data.temp_data_id == "";
   var opening_from_temp_id = data.temp_data_id != "";
   var interface_state;
   if (data.is_project || opening_from_temp_id) {

@@ -230,46 +230,6 @@ function useStateAndRef(initial) {
   valueRef.current = value;
   return [value, setValue, valueRef];
 }
-
-// function useStateAndRefWithUndo(initial, undoStackRef, doDebounce = true) {
-//     const [value, setValue] = useState(initial);
-//     const valueRef = useRef(value);
-//     const stagedUndoEntryRef = useRef(null);
-//     valueRef.current = value;
-//
-//     const commitUndoEntry = () => {
-//         if (stagedUndoEntryRef.current) {
-//             undoStackRef.current.push(stagedUndoEntryRef.current);
-//             stagedUndoEntryRef.current = null;
-//         }
-//     };
-//
-//     const scheduleCommit = debounce(commitUndoEntry, 1000);
-//
-//     let setFunc = function(newValue, skipUndo = false) {
-//         const oldValue = valueRef.current;
-//         if(!_.isEqual(oldValue, newValue)){
-//             setValue(newValue);
-//             if (!skipUndo) {
-//                 let undoEntry = {
-//                     dispatch: setValue,
-//                     undoAction: oldValue,
-//                     description: "Undo set"
-//                 }
-//                 if (doDebounce) {
-//                     stagedUndoEntryRef.current = undoEntry;
-//                     scheduleCommit();
-//                 }
-//                 else {
-//                     undoStackRef.current.push(undoEntry);
-//                 }
-//             }
-//         }
-//     }
-//
-//     return [value, setFunc, valueRef];
-// }
-
 function useStateAndRefAndCounter(initial) {
   function setMe(newValue) {
     setValue(newValue);

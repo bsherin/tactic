@@ -91,7 +91,7 @@ function withUndo(WrappedComponent) {
 
 
 function makeUndoable(dispatch, stateRef, createUndoAction) {
-    const {handleUndo, handleRedo, undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
+    const {undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
 
     return useCallback((action, skipUndo = false) => {
             if (skipUndo) {
@@ -135,7 +135,6 @@ function useStateAndRefWithUndo(initial, doDebounce = true) {
     const [value, setValue] = useState(initial);
     const valueRef = useRef(value);
     valueRef.current = value;
-    const {undoHandler, redoHandler, undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
 
     function createUndoAction(newValue, oldValueRef) {
         const oldValue = oldValueRef.current;

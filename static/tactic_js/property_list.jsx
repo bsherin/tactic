@@ -106,12 +106,12 @@ function usePropertyListNoUndo(initial, initial_pane_height = 330, default_value
 }
 
 
-function usePropertyList(initial, initial_pane_height = 330, default_values = {}, useUndo = false) {
+function usePropertyList(initial, initial_pane_height = 330, default_values = {}) {
 
     const [state, propListDispatch] = useReducer(propertyListReducer,
         {items: [], defaults: default_values}
     );
-    const {undoHandler, redoHandler, undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry} = useContext(UndoContext);
+    const {undoStackRef} = useContext(UndoContext);
     const propListRef = useRef(state.items);
     propListRef.current = state.items;
     default_values["pane_height"] = initial_pane_height;

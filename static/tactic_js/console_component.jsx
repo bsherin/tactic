@@ -57,7 +57,6 @@ import {DialogContext} from "./modal_react"
 import {useCallbackStack, useStateAndRef, useConstructor} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
-import {TextWidget} from "./widgets";
 import {MemoryIndicator} from "./memory_utilities";
 import {UndoContext} from "./undo";
 
@@ -117,7 +116,7 @@ function ConsoleComponent(props) {
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
-    const {handleUndo, handleRedo, undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
+    const {handleUndo, handleRedo} = useContext(UndoContext);
 
 
     useEffect(() => {
@@ -149,7 +148,7 @@ function ConsoleComponent(props) {
         if (window.in_context && !am_selected()) {
             return
         }
-        await _addCodeArea("");
+        _addCodeArea("");
     }, []);
 
 
@@ -235,6 +234,7 @@ function ConsoleComponent(props) {
 
     useSocketListener(props.tsocket, "console-message", (data)=> {
         if (data.local_id == props.local_id) {
+            // noinspection JSUnusedGlobalSymbols
             let handlerDict = {
                 consoleLog: (data) => _addConsoleEntry(data.message, data.force_open, true),
                 consoleLogMultiple: (data) => _addConsoleEntries(data.message, data.force_open, true),
@@ -803,7 +803,7 @@ function ConsoleComponent(props) {
             }
             next_index += 1;
         }
-        await _addCodeArea("");
+        _addCodeArea("");
     }, []);
 
     function _isDividerSelected() {

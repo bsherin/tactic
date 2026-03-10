@@ -276,7 +276,7 @@ function ContextApp(props) {
 
     function getViewerDataForResSocket(res_type, resource_name, temp_data_id = null, file_path = null) {
         let new_viewer_id = "a" + guid();
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, ) => {
             let tsocket = new TacticSocket("main", 5000, resource_name, new_viewer_id, async () => {
                 tsocket.attachListener('handle-callback', (task_packet) => {
                     handleCallback(task_packet, new_viewer_id)

@@ -1,5 +1,4 @@
-import {get_ppi, renderSpinnerMessage} from "./utilities_react";
-import {handleCallback, postWithCallback} from "./communication_react";
+import {handleCallback} from "./communication_react";
 
 export {notebook_props, notebookReducer}
 
@@ -13,7 +12,6 @@ function notebook_props(data, registerDirtyMethod, finalCallback) {
         handleCallback(task_packet, local_id)
     });
 
-    let is_totally_new = !data.is_jupyter && !data.is_project && (data.temp_data_id == "");
     let opening_from_temp_id = data.temp_data_id != "";
 
     let interface_state;

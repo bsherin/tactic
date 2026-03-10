@@ -350,7 +350,7 @@ function ContextApp(props) {
     var temp_data_id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     var file_path = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     var new_viewer_id = "a" + (0, _utilities_react.guid)();
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
       var tsocket = new _tactic_socket.TacticSocket("main", 5000, resource_name, new_viewer_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
         return _regenerator().w(function (_context2) {
           while (1) switch (_context2.n) {

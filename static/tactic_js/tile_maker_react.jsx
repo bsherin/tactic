@@ -39,14 +39,14 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {useConnection} from "./tactic_socket";
 
 import {usePropertyList, getListItemFromidentifier} from "./property_list"
-import {useStateAndRefWithUndo, withUndo, UndoContext, makeUndoable} from "./undo";
+import {useStateAndRefWithUndo, withUndo, UndoContext} from "./undo";
 import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, DividerElement,
     option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons,
 } from "./tile_maker_elements";
-import {useMetadata, createMetaDataUndo} from "./metadata_reducer";
+import {useMetadata} from "./metadata_reducer";
 import {TileMakerSearchForm} from "./tile_maker_search_form";
 
 export {CreatorApp}
@@ -69,7 +69,7 @@ function CreatorApp(props) {
     const rline_number = useRef(props.initial_line_number);
     const pane_scroll_ref = useRef(null);
 
-    const  {handleUndo, handleRedo, undoStackRef, redoStackRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
+    const  {handleUndo, handleRedo, undoStackRef, redoStackRef} = useContext(UndoContext);
 
 
     const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);

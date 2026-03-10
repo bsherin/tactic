@@ -33,7 +33,7 @@ import {ErrorBoundary} from "./error_boundary";
 
 import {BpSelectAdvanced} from "./selector_advanced";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {guid, isInt, useRegisterActivity, useStateAndRef} from "./utilities_react"
+import {guid, isInt, useStateAndRef} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./combined_metadata";

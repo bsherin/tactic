@@ -170,12 +170,7 @@ function ConsoleComponent(props) {
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var _useContext = (0, _react.useContext)(_undo.UndoContext),
     handleUndo = _useContext.handleUndo,
-    handleRedo = _useContext.handleRedo,
-    undoStackRef = _useContext.undoStackRef,
-    redoStackRef = _useContext.redoStackRef,
-    stagedUndoEntryRef = _useContext.stagedUndoEntryRef,
-    commitUndoEntry = _useContext.commitUndoEntry,
-    scheduleCommit = _useContext.scheduleCommit;
+    handleRedo = _useContext.handleRedo;
   (0, _react.useEffect)(function () {
     if (props.console_items.current.length == 0) {
       _addCodeArea("", false);
@@ -206,8 +201,7 @@ function ConsoleComponent(props) {
           }
           return _context.a(2);
         case 1:
-          _context.n = 2;
-          return _addCodeArea("");
+          _addCodeArea("");
         case 2:
           return _context.a(2);
       }
@@ -294,6 +288,7 @@ function ConsoleComponent(props) {
     handleKeyUp = _useHotkeys.handleKeyUp;
   (0, _tactic_socket.useSocketListener)(props.tsocket, "console-message", function (data) {
     if (data.local_id == props.local_id) {
+      // noinspection JSUnusedGlobalSymbols
       var handlerDict = {
         consoleLog: function consoleLog(data) {
           return _addConsoleEntry(data.message, data.force_open, true);
@@ -1188,8 +1183,7 @@ function ConsoleComponent(props) {
             _context0.n = 1;
             break;
           case 4:
-            _context0.n = 5;
-            return _addCodeArea("");
+            _addCodeArea("");
           case 5:
             return _context0.a(2);
         }
