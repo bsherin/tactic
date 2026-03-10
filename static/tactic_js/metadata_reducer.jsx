@@ -22,19 +22,35 @@ function metadataReducer(draft, action) {
 
 function createMetaDataUndo(action, stateRef, stagedUndoEntryRef) {
     const field = field_lookup[action.type];
+    let doDebounce = false;
+    let forceCommit = true;
+    let undoAction = null;
     if (!field) {
-        return [null, false];
+        return [null, false, false];
     }
     if (stateRef.current[field] === action.value) {
-        return [null, false];
+        return [null, false, false];
     }
-    return [{
-        type: action.type,
-        value: stateRef.current[field]
-    }, false, true];
+    if (field == "notes") {
+        if (stagedUndoEntryRef.current
+            && stagedUndoEntryRef.current.undoAction.type === "set_notes") {
+            forceCommit = false
+        }
+        undoAction = {
+            type: action.type,
+            value: stateRef.current[field]
+        }
+        doDebounce = true;
+    } else {
+        undoAction = {
+            type: action.type,
+            value: stateRef.current[field]
+        }
+    }
+    return [undoAction, doDebounce, forceCommit];
 }
 
-function useMetadata(initial, undoStackRef = null, redoStackRef = null) {
+function useMetadata(initial, doUndo = true) {
     if (!initial.hasOwnProperty("pane_height")) {
         initial.pane_height = "unset";
     }
@@ -54,7 +70,7 @@ function useMetadata(initial, undoStackRef = null, redoStackRef = null) {
 
 
     const [metadata, metadataDispatch, metadataRef] = useImmerReducerAndRef(metadataReducer, initial);
-    if (undoStackRef) {
+    if (doUndo) {
         return [
             metadata,
             makeUndoable(metadataDispatch, metadataRef, createMetaDataUndo),

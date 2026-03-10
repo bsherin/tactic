@@ -96,7 +96,7 @@ function CreatorApp(props) {
         ...props.globals_info
     });
 
-    const [, metadataDispatch, metadataRef] = useMetadata(props.mdata, undoStackRef, redoStackRef);
+    const [, metadataDispatch, metadataRef] = useMetadata(props.mdata, true);
 
     const [searchState, searchDispatch, searchStateRef] = useSearch([globalsInfoRef, renderContentInfoRef], [umListRef, hmListRef, jsListRef]);
 
@@ -1466,6 +1466,9 @@ function tile_creator_main() {
 
     renderSpinnerMessage("Starting up ...", '#creator-root');
     let local_id = "a" + guid();
+    if (!window.in_context) {
+        window.global_id = local_id;
+    }
     let tsocket = new TacticSocket("main", 5000, "creator", local_id, async () => {
         tsocket.attachListener('handle-callback', (task_packet) => {
             handleCallback(task_packet, local_id)
