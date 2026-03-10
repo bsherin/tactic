@@ -129,11 +129,11 @@ function ContextApp(props) {
     selectedTabId = _useStateAndRef2[0],
     setSelectedTabId = _useStateAndRef2[1],
     selectedTabIdRef = _useStateAndRef2[2];
-  var _usePropertyList = (0, _property_list.usePropertyList)(initialList),
-    _usePropertyList2 = _slicedToArray(_usePropertyList, 3),
-    tabPanelList = _usePropertyList2[0],
-    tabPanelListDispatch = _usePropertyList2[1],
-    tabPanelListRef = _usePropertyList2[2];
+  var _usePropertyListNoUnd = (0, _property_list.usePropertyListNoUndo)(initialList, 330, {}, false),
+    _usePropertyListNoUnd2 = _slicedToArray(_usePropertyListNoUnd, 3),
+    tabPanelList = _usePropertyListNoUnd2[0],
+    tabPanelListDispatch = _usePropertyListNoUnd2[1],
+    tabPanelListRef = _usePropertyListNoUnd2[2];
   var _useStateAndRef3 = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
     set_open_resources = _useStateAndRef4[1],

@@ -484,7 +484,6 @@ function ReactCodemirror6(props) {
     }, []);
 
     const handleAutocompleteDelta = useCallback((data) => {
-        console.log("Received autocomplete delta", data.text);
         if (!editorView.current.hasFocus) return;
         if (data.cmUniqueId !== cmUniqueId.current) {
             return
@@ -514,7 +513,6 @@ function ReactCodemirror6(props) {
             }
           }
 
-        console.log("Current AI text is", aiTextRef.current);
         const nextText = (aiTextRef.current ?? "") + data.text;
         aiTextRef.current = nextText;   // <-- add this line
         setAIText(nextText);

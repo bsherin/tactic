@@ -99,6 +99,7 @@ async function creator_props(data, registerDirtyMethod, finalCallback) {
         interface_state = mdata.interface_state;
         delete mdata.interface_state;
     }
+    
 
     finalCallback(
         {

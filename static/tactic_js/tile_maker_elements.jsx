@@ -890,10 +890,12 @@ function CmElement(props) {
 
     function setCmObject(cmObject) {
         if (props.updateItem) {
-            props.updateItem({cmObject: cmObject});
+            props.updateItem({cmObject: cmObject}, true);
         }
         else {
-            props.cmDispatch({type: "update_item", new_item: {cmObject: cmObject}, identifier: props.identifier});
+            props.cmDispatch({type: "update_item",
+                new_item: {cmObject: cmObject},
+                identifier: props.identifier}, true);
         }
 
         if (doScroll) {

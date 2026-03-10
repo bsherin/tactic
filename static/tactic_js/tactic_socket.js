@@ -77,7 +77,7 @@ class TacticSocket {
     }
 
     connectme() {
-        const protocol = window.location.protocol;
+        // const protocol = window.location.protocol;
         // this.socket = io.connect(`${protocol}//${document.domain}:${location.port}/${this.name_space}`);
 
         const ns = this.name_space.startsWith("/") ? this.name_space : `/${this.name_space}`;
@@ -109,7 +109,7 @@ class TacticSocket {
         this.socket.emit('join', {"room": window.user_id});
         if (this.local_id) {
             // If I pass a callback of null to socket.emit it gets treated as an extra argument,
-            // which cases problems
+            // which casues problems
             // So we have to split this isn't two cases, one with a callback and one without
             if (on_join) {
                 this.socket.emit('join', {
@@ -124,25 +124,6 @@ class TacticSocket {
             }
         }
     }
-
-
-    attachListenerOLd(event, newListener) {
-        if (!(event in this.listeners)) {
-            this.listeners[event] = new Set();
-            this.socket.on(event, (data) => {
-                // Fan-out to all registered listeners
-                for (const fn of this.listeners[event]) {
-                    try {
-                        fn(data);
-                    } catch (e) {
-                        console.error(`Error in listener for ${event}`, e);
-                    }
-                }
-            });
-        }
-        this.listeners[event].add(newListener);
-    }
-
 
     attachListener(event, newListener) {
         if (!(event in this.listeners)) {
@@ -170,7 +151,6 @@ class TacticSocket {
         if (listener) {
             this.listeners[event].delete(listener);
         } else {
-            // optional: clear all listeners for this event if no listener passed
             this.listeners[event].clear();
         }
     }

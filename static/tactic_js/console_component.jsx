@@ -59,6 +59,7 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
 import {TextWidget} from "./widgets";
 import {MemoryIndicator} from "./memory_utilities";
+import {UndoContext} from "./undo";
 
 export {ConsoleComponent}
 
@@ -115,6 +116,8 @@ function ConsoleComponent(props) {
 
     const selectedPane = useContext(SelectedPaneContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
+    const {handleUndo, handleRedo, undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
 
 
     useEffect(() => {
@@ -196,6 +199,34 @@ function ConsoleComponent(props) {
                     _clear_all_selected_items()
                 }
             },
+                       {
+                combo: "Ctrl+Z",
+                global: false,
+                group: "Tile Creator",
+                label: "Undo",
+                onKeyDown: handleUndo
+            },
+            {
+                combo: "Cmd+Z",
+                global: false,
+                group: "Tile Creator",
+                label: "Undo",
+                onKeyDown: handleUndo
+            },
+            {
+                combo: "Ctrl+X",
+                global: false,
+                group: "Tile Creator",
+                label: "Redo",
+                onKeyDown: handleRedo
+            },
+            {
+                combo: "Cmd+X",
+                global: false,
+                group: "Tile Creator",
+                label: "Redo",
+                onKeyDown: handleRedo
+            }
         ],
         [_addBlankCode, _addBlankText, _runSelected, _clear_all_selected_items]
     );
@@ -209,7 +240,7 @@ function ConsoleComponent(props) {
                 consoleLogMultiple: (data) => _addConsoleEntries(data.message, data.force_open, true),
                 createLink: async (data) => {
                     let unique_id = data.message.unique_id;
-                    await _addConsoleEntry(data.message, data.force_open, false, null, () => {
+                    _addConsoleEntry(data.message, data.force_open, false, null, () => {
                         _insertLinkInItem(unique_id)
                     })
                 },
@@ -233,7 +264,7 @@ function ConsoleComponent(props) {
             unique_id: widgetHomesRef.current[data["widgetId"]],
             widgetId: data["widgetId"],
             widgetData: data["widgetData"]
-        });
+        }, true);
     }
 
     function updateMemoryUsage(data) {
@@ -548,13 +579,13 @@ function ConsoleComponent(props) {
         props.setMainStateValue("show_exports_pane", !props.mState.show_exports_pane)
     }, [props.mState.show_exports_pane]);
 
-    const _setConsoleItemValue = useCallback((unique_id, field, new_value, callback = null) => {
+    const _setConsoleItemValue = useCallback((unique_id, field, new_value, callback = null, skipUndo = false) => {
         props.dispatch({
             type: "change_item_value",
             unique_id: unique_id,
             field: field,
             new_value: new_value
-        });
+        }, skipUndo);
         pushCallback(callback)
     }, []);
 
@@ -563,14 +594,14 @@ function ConsoleComponent(props) {
             type: "update_items",
             updates: updates
 
-        });
+        }, true);
         pushCallback(callback);
     }
 
     function _clear_all_selected_items(callback = null) {
         props.set_console_selected_items([]);
         pushCallback(() => {
-            props.dispatch({type: "clear_all_selected"})
+            props.dispatch({type: "clear_all_selected"}, true)
         });
         pushCallback(callback)
     }
@@ -763,10 +794,10 @@ function ConsoleComponent(props) {
                 if (!next_item.show_on_filtered) {
                     set_filter_console_items(false);
                     pushCallback(() => {
-                        _setConsoleItemValue(next_id, "set_focus", true)
+                        _setConsoleItemValue(next_id, "set_focus", true, null, true)
                     })
                 } else {
-                    _setConsoleItemValue(next_id, "set_focus", true)
+                    _setConsoleItemValue(next_id, "set_focus", true, null, true)
                 }
                 return
             }
@@ -935,7 +966,7 @@ function ConsoleComponent(props) {
         props.dispatch({
             type: "update_items",
             updates: updates
-        })
+        }, true);
     }
 
     function _stopConsoleSpinner(unique_id, execution_count = null) {
@@ -951,7 +982,7 @@ function ConsoleComponent(props) {
         props.dispatch({
             type: "update_items",
             updates: updates
-        })
+        }, true)
     }
 
     function _appendWidgetToConsoleItem(data) {
@@ -965,7 +996,7 @@ function ConsoleComponent(props) {
             unique_id: data.console_id,
             row: data.counter,
             new_value: vdict
-        });
+        }, true);
     }
 
     function _appendConsoleItemOutput(data) {
@@ -981,7 +1012,7 @@ function ConsoleComponent(props) {
             unique_id: data.console_id,
             row: data.counter,
             new_value: new_value
-        });
+        }, true);
     }
 
     function _setConsoleItemOutput(data) {
@@ -992,7 +1023,7 @@ function ConsoleComponent(props) {
             type: "change_code_output",
             unique_id: data.console_id,
             new_value: current
-        });
+        }, true);
     }
 
     function _glif_text(show_glif_text, txt) {
@@ -1076,7 +1107,7 @@ function ConsoleComponent(props) {
             if (entry.type == "code" || entry.type == "text") {
                 if (_selectIfMatching(entry, "console_text", () => {
                     if (entry.type == "text") {
-                        _setConsoleItemValue(entry.unique_id, "show_markdown", false)
+                        _setConsoleItemValue(entry.unique_id, "show_markdown", false, null, true)
                     }
                 })) {
                     set_search_helper_text(null);
@@ -1093,7 +1124,7 @@ function ConsoleComponent(props) {
             if (entry.am_shrunk) {
                 _setConsoleItemValue(entry.unique_id, "am_shrunk", false, () => {
                     _selectConsoleItem(entry.unique_id, null, callback)
-                })
+                }, true)
             } else {
                 _selectConsoleItem(entry.unique_id, null, callback)
             }
@@ -1114,7 +1145,7 @@ function ConsoleComponent(props) {
             if (entry.type == "code" || entry.type == "text") {
                 if (_selectIfMatching(entry, "console_text", () => {
                     if (entry.type == "text") {
-                        _setConsoleItemValue(entry.unique_id, "show_markdown", false)
+                        _setConsoleItemValue(entry.unique_id, "show_markdown", false, null, true)
                     }
                 })) {
                     set_search_helper_text(null);
@@ -1135,7 +1166,20 @@ function ConsoleComponent(props) {
                 {name_text: "Code Cell", icon_name: "code", click_handler: _addBlankCode, key_bindings: ["Ctrl+C"]},
                 {name_text: "Section", icon_name: "header", click_handler: _addBlankDivider},
                 {name_text: "Resource Link", icon_name: "link", click_handler: _insertResourceLink}],
-            Edit: [{
+            Edit: [
+                {
+                    name_text: "Undo",
+                    icon_name: "undo",
+                    click_handler: handleUndo,
+                    key_bindings: ['Ctrl+Z', 'Cmd+Z']
+                }, {
+                    name_text: "Redo",
+                    icon_name: "redo",
+                    click_handler: handleRedo,
+                    key_bindings: ['Ctrl+X', 'Cmd+X']
+                },
+                {name_text: "divider2", icon_name: null, click_handler: "divider"},
+                {
                 name_text: "Copy All", icon_name: "duplicate", click_handler: () => {
                     _copyAll()
                 }
@@ -1244,7 +1288,7 @@ function ConsoleComponent(props) {
     }, []);
 
     function _showTextItemMarkdown(unique_id) {
-        _setConsoleItemValue(unique_id, "show_markdown", true);
+        _setConsoleItemValue(unique_id, "show_markdown", true, null, true);
     }
 
     function _hideNonDividers() {
@@ -1511,7 +1555,7 @@ SuperItem = memo(SuperItem);
 
 function DividerItem(props) {
     const _toggleShrink = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
     }, [props.am_shrunk]);
 
     const _deleteMe = useCallback(() => {
@@ -1718,7 +1762,7 @@ function LogItem(props) {
     });
 
     const _toggleShrink = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
     }, [props.am_shrunk]);
 
     const _deleteMe = useCallback(() => {
@@ -1908,7 +1952,7 @@ function BlobItem(props) {
     });
 
     const _toggleShrink = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
     }, [props.am_shrunk]);
 
     const _deleteMe = useCallback(() => {
@@ -2074,6 +2118,8 @@ function ConsoleCodeItem(props) {
     const setFocusFunc = useRef(null);
     const simpleTableId = useRef(null);
 
+    const  {handleUndo, handleRedo} = useContext(UndoContext);
+
     useEffect(()=> {
         simpleTableId.current = guid();
     }, [props.table]);
@@ -2085,7 +2131,7 @@ function ConsoleCodeItem(props) {
         am_selected_previous.current = props.am_selected;
         if (props.set_focus && setFocusFunc.current) {
             setFocusFunc.current();
-            props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe)
+            props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe, true)
         }
     });
 
@@ -2148,10 +2194,13 @@ function ConsoleCodeItem(props) {
     }, []);
 
     function _stopMySpinner() {
-        props.setConsoleItemValue(props.unique_id, "show_spinner", false)
+        props.setConsoleItemValue(props.unique_id, "show_spinner", false, null, true)
     }
 
-    const _handleChange = useCallback((new_code) => {
+    const _handleChange = useCallback((new_code, isExternal) => {
+        if (isExternal) {
+            return
+        }
         props.setConsoleItemValue(props.unique_id, "console_text", new_code)
     }, []);
 
@@ -2160,7 +2209,7 @@ function ConsoleCodeItem(props) {
     });
 
     const _toggleShrink = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
     }, [props.am_shrunk]);
 
     const _deleteMe = useCallback(() => {
@@ -2180,6 +2229,26 @@ function ConsoleCodeItem(props) {
             {key: 'Cmd-Enter', run: () => props.runCodeItem(props.unique_id, true)},
             {key: 'Ctrl-c', run: props.addNewCodeItem},
             {key: 'Ctrl-t', run: props.addNewTextItem},
+            {
+                key: 'Ctrl-z', run: () => {
+                    handleUndo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-z', run: () => {
+                    handleUndo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-x', run: () => {
+                    handleRedo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-x', run: () => {
+                    handleRedo();
+                }, preventDefault: true
+            }
         ]
     }, []);
 
@@ -2397,6 +2466,7 @@ function ConsoleCodeItem(props) {
                                                       handleFocus={_handleFocus}
                                                       registerSetFocusFunc={registerSetFocusFunc}
                                                       readOnly={false}
+                                                      controlled={true}
                                                       show_line_numbers={true}
                                                       code_content={props.console_text}
                                                       extraKeys={_extraKeys}
@@ -2497,6 +2567,9 @@ function ConsoleTextItem(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
     const dialogFuncs = useContext(DialogContext);
 
+    const {handleUndo, handleRedo} = useContext(UndoContext);
+
+
     useEffect(() => {
         if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
             scrollMeIntoView()
@@ -2507,7 +2580,7 @@ function ConsoleTextItem(props) {
                 _hideMarkdown()
             } else if (setFocusFunc.current) {
                 setFocusFunc.current();
-                props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe)
+                props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe, null, true)
             }
 
         }
@@ -2537,7 +2610,7 @@ function ConsoleTextItem(props) {
     }
 
     function _showMarkdown() {
-        props.setConsoleItemValue(props.unique_id, "show_markdown", true);
+        props.setConsoleItemValue(props.unique_id, "show_markdown", true, null, true);
     }
 
     const _toggleMarkdown = useCallback(() => {
@@ -2549,10 +2622,13 @@ function ConsoleTextItem(props) {
     }, [props["show_markdown"]]);
 
     const _hideMarkdown = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "show_markdown", false);
+        props.setConsoleItemValue(props.unique_id, "show_markdown", false, null, true);
     }, []);
 
-    const _handleChange = useCallback((new_text) => {
+    const _handleChange = useCallback((new_text, isExternal) => {
+        if (isExternal) {
+            return
+        }
         props.setConsoleItemValue(props.unique_id, "console_text", new_text)
     }, []);
 
@@ -2561,7 +2637,7 @@ function ConsoleTextItem(props) {
     }
 
     const _toggleShrink = useCallback(() => {
-        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+        props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
     }, [props.am_shrunk]);
 
     const _deleteMe = useCallback(() => {
@@ -2693,6 +2769,26 @@ function ConsoleTextItem(props) {
             {key: 'Cmd-Enter', run: () => _gotEnter()},
             {key: 'Ctrl-c', run: props.addNewCodeItem},
             {key: 'Ctrl-t', run: props.addNewTextItem},
+            {
+                key: 'Ctrl-z', run: () => {
+                    handleUndo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-z', run: () => {
+                    handleUndo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-x', run: () => {
+                    handleRedo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-x', run: () => {
+                    handleRedo();
+                }, preventDefault: true
+            }
         ]
     }, []);
 
@@ -2773,6 +2869,7 @@ function ConsoleTextItem(props) {
                                     <Fragment>
                                         <ReactCodemirror6 handleChange={_handleChange}
                                                           readOnly={false}
+                                                          controlled={true}
                                                           handleFocus={_handleFocus}
                                                           registerSetFocusFunc={registerSetFocusFunc}
                                                           show_line_numbers={false}

@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.consoleItemsReducer = consoleItemsReducer;
+exports.createConsoleUndoAction = createConsoleUndoAction;
 var _utilities_react = require("./utilities_react");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
@@ -99,6 +100,121 @@ function fixItem(item) {
   var new_item = fixCodeOutputs(item);
   new_item = fixLogItem(new_item);
   return new_item;
+}
+function createConsoleUndoAction(action, stateRef, stagedUndoEntryRef) {
+  var undoAction = null;
+  var doDebounce = false;
+  var forceCommit = true;
+  switch (action.type) {
+    case "delete_item":
+      undoAction = {
+        type: "add_at_index",
+        new_items: stateRef.current.filter(function (t) {
+          return t.unique_id === action.unique_id;
+        }),
+        insert_index: stateRef.current.findIndex(function (t) {
+          return t.unique_id === action.unique_id;
+        })
+      };
+      break;
+    case "delete_items":
+      undoAction = {
+        type: "add_at_index",
+        new_items: stateRef.current.filter(function (t) {
+          return action.id_list.includes(t.unique_id);
+        }),
+        insert_index: Math.min.apply(Math, _toConsumableArray(stateRef.current.map(function (t, i) {
+          return action.id_list.includes(t.unique_id) ? i : Infinity;
+        })))
+      };
+      break;
+    case "delete_all_items":
+      undoAction = {
+        type: "initialize",
+        new_items: _toConsumableArray(stateRef.current)
+      };
+      break;
+    case "add_at_index":
+      undoAction = {
+        type: "delete_items",
+        id_list: action.new_items.map(function (t) {
+          return t.unique_id;
+        })
+      };
+      break;
+    case "change_item_value":
+      var old_item = stateRef.current.find(function (t) {
+        return t.unique_id === action.unique_id;
+      });
+      if (old_item && action.field in old_item && old_item[action.field] !== action.new_value) {
+        if (stagedUndoEntryRef.current && stagedUndoEntryRef.current.undoAction.type === "change_item_value" && stagedUndoEntryRef.current.undoAction.unique_id === action.unique_id) {
+          forceCommit = false;
+        }
+        undoAction = {
+          type: "change_item_value",
+          unique_id: action.unique_id,
+          field: action.field,
+          new_value: old_item[action.field]
+        };
+        doDebounce = true;
+      }
+      break;
+    case "change_code_output":
+      var old_code_item = stateRef.current.find(function (t) {
+        return t.unique_id === action.unique_id;
+      });
+      if (old_code_item) {
+        undoAction = {
+          type: "change_code_output",
+          unique_id: action.unique_id,
+          new_value: old_code_item["output_dict"]
+        };
+      }
+      break;
+    case "replace_code_output_row":
+      var old_row_item = stateRef.current.find(function (t) {
+        return t.unique_id === action.unique_id;
+      });
+      if (old_row_item) {
+        undoAction = {
+          type: "replace_code_output_row",
+          unique_id: action.unique_id,
+          row: action.row,
+          new_value: old_row_item["output_dict"][action.row]
+        };
+      }
+      break;
+    case "update_items":
+      var old_items = stateRef.current.filter(function (t) {
+        return t.unique_id in action.updates;
+      });
+      if (old_items.length > 0) {
+        var updates = {};
+        var _iterator2 = _createForOfIteratorHelper(old_items),
+          _step2;
+        try {
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            var item = _step2.value;
+            updates[item.unique_id] = {};
+            for (var field in action.updates[item.unique_id]) {
+              updates[item.unique_id][field] = item[field];
+            }
+          }
+        } catch (err) {
+          _iterator2.e(err);
+        } finally {
+          _iterator2.f();
+        }
+        undoAction = {
+          type: "update_items",
+          updates: updates
+        };
+      }
+      break;
+    default:
+      return [null, false];
+  }
+  return [undoAction, doDebounce, forceCommit];
 }
 function consoleItemsReducer(console_items, action) {
   var _new_items;

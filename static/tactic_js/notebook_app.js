@@ -13,6 +13,7 @@ var _menu_utilities = require("./menu_utilities");
 var _main_menus_react = require("./main_menus_react");
 var _console_component = require("./console_component");
 var _console_support = require("./console_support");
+var _undo = require("./undo");
 var _toaster = require("./toaster");
 var _sizing_tools = require("./sizing_tools");
 var _communication_react = require("./communication_react");
@@ -68,11 +69,14 @@ function NotebookApp(props) {
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     set_console_selected_items = _useStateAndRef2[1],
     console_selected_items_ref = _useStateAndRef2[2];
+  var _useContext = (0, _react.useContext)(_undo.UndoContext),
+    undoStackRef = _useContext.undoStackRef;
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, []),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
-    dispatch = _useReducerAndRef2[1],
+    dispatchBase = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
+  var dispatch = (0, _undo.makeUndoable)(dispatchBase, console_items_ref, _console_support.createConsoleUndoAction, undoStackRef);
   var _useReducerAndRef3 = (0, _utilities_react.useReducerAndRef)(_notebook_support.notebookReducer, {
       show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
       console_width_fraction: props.is_project && props.interface_state && "console_width_fraction" in props.interface_state ? props.interface_state["console_width_fraction"] : .5,
@@ -95,7 +99,7 @@ function NotebookApp(props) {
     dispatch({
       type: "initialize",
       new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
-    });
+    }, true);
   });
   (0, _react.useEffect)(function () {
     if (props.controlled) {
@@ -104,7 +108,6 @@ function NotebookApp(props) {
       window.addEventListener("beforeunload", function (e) {
         if (_dirty()) {
           e.preventDefault();
-          e.returnValue = '';
         }
         (0, _communication_react.postWithCallback)("host", "end_client_session_task", {
           global_id: window.global_id,
@@ -358,7 +361,7 @@ function NotebookApp(props) {
 exports.NotebookApp = NotebookApp = /*#__PURE__*/(0, _react.memo)(NotebookApp);
 function main_main() {
   function gotProps(the_props) {
-    var NotebookAppPlus = (0, _utilities_react.withRegisterActivity)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp))))));
+    var NotebookAppPlus = (0, _undo.withUndo)((0, _utilities_react.withRegisterActivity)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(NotebookApp)))))));
     var the_element = /*#__PURE__*/_react["default"].createElement(NotebookAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null

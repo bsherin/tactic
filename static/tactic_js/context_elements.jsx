@@ -1,5 +1,6 @@
 import React from "react";
 import {Fragment, useContext} from "react";
+import {withUndo} from "./undo";
 
 import {
     DndContext,
@@ -61,8 +62,9 @@ function ContextPaneElement(props) {
             {props.children}
         </div>
     )
-
 }
+
+ContextPaneElement = withUndo(ContextPaneElement);
 
 function ContextNavigator(props) {
     props = {

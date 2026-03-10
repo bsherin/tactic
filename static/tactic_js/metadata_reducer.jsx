@@ -1,48 +1,40 @@
-import {useRef} from "react";
-import {useImmerReducer} from "use-immer";
+import {useImmerReducerAndRef} from "./utilities_react";
+import { makeUndoable } from "./undo";
 
-export {useMetadata, metadataReducer}
+export {useMetadata, metadataReducer, createMetaDataUndo}
+
+const field_lookup = {
+    "set_tags": "tags",
+    "set_notes": "notes",
+    "set_icon": "icon",
+    "set_category": "category",
+    "set_all_tags": "allTags",
+    "set_created": "created",
+    "set_updated": "updated",
+    "set_couple": "couple_save_attrs_and_exports"
+}
 
 function metadataReducer(draft, action) {
-    switch (action.type) {
-        case "set_tags":
-            draft.tags = action.value;
-            break;
-        case "set_notes":
-            draft.notes = action.value;
-            break;
-        case "append_to_notes":
-            draft.notes = draft.notes + action.value;
-            break;
-        case "set_icon":
-            draft.icon = action.value;
-            break;
-        case "set_category":
-            draft.category = action.value;
-            break;
-        case "set_all_tags":
-            draft.allTags = action.value;
-            break;
-        case "set_created":
-            draft.created = action.value;
-            break;
-        case "set_updated":
-            draft.updated = action.value;
-            break;
-        case "set_couple":
-            draft.couple_save_attrs_and_exports = action.value;
-            break;
-        case "update_item":
-            for (let field in action.new_item) {
-                draft[field] = action.new_item[field]
-            }
-            break;
-        default:
-            break;
+    if (field_lookup.hasOwnProperty(action.type)) {
+        draft[field_lookup[action.type]] = action.value;
     }
 }
 
-function useMetadata(initial) {
+function createMetaDataUndo(action, stateRef, stagedUndoEntryRef) {
+    const field = field_lookup[action.type];
+    if (!field) {
+        return [null, false];
+    }
+    if (stateRef.current[field] === action.value) {
+        return [null, false];
+    }
+    return [{
+        type: action.type,
+        value: stateRef.current[field]
+    }, false, true];
+}
+
+function useMetadata(initial, undoStackRef = null, redoStackRef = null) {
     if (!initial.hasOwnProperty("pane_height")) {
         initial.pane_height = "unset";
     }
@@ -59,9 +51,18 @@ function useMetadata(initial) {
         initial.category = initial["additional_mdata"].category;
     }
 
-    const [metadata, metadataDispatch] = useImmerReducer(metadataReducer, initial);
-    const metadataRef = useRef(metadata);
-    metadataRef.current = metadata;
 
-    return [metadata, metadataDispatch, metadataRef]
+
+    const [metadata, metadataDispatch, metadataRef] = useImmerReducerAndRef(metadataReducer, initial);
+    if (undoStackRef) {
+        return [
+            metadata,
+            makeUndoable(metadataDispatch, metadataRef, createMetaDataUndo),
+            metadataRef
+        ];
+    }
+    else {
+        return [metadata, metadataDispatch, metadataRef];
+    }
+
 }

@@ -1,5 +1,5 @@
 import {guid} from "./utilities_react";
-export {consoleItemsReducer}
+export {consoleItemsReducer, createConsoleUndoAction}
 
 function fixOutputRowRecursively(wdict) {
     let new_wdict = wdict;
@@ -66,6 +66,96 @@ function fixItem(item) {
     let new_item = fixCodeOutputs(item);
     new_item = fixLogItem(new_item);
     return new_item;
+}
+
+function createConsoleUndoAction(action, stateRef, stagedUndoEntryRef) {
+    let undoAction = null;
+    let doDebounce = false;
+    let forceCommit = true;
+    switch (action.type) {
+        case "delete_item":
+            undoAction = {
+                type: "add_at_index",
+                new_items: stateRef.current.filter(t => t.unique_id === action.unique_id),
+                insert_index: stateRef.current.findIndex(t => t.unique_id === action.unique_id)
+            };
+            break;
+        case "delete_items":
+            undoAction = {
+                type: "add_at_index",
+                new_items: stateRef.current.filter(t => action.id_list.includes(t.unique_id)),
+                insert_index: Math.min(...stateRef.current.map((t, i) => action.id_list.includes(t.unique_id) ? i : Infinity))
+            };
+            break;
+        case "delete_all_items":
+            undoAction = {
+                type: "initialize",
+                new_items: [...stateRef.current]
+            };
+            break;
+        case "add_at_index":
+            undoAction = {
+                type: "delete_items",
+                id_list: action.new_items.map(t => t.unique_id)
+            }
+            break;
+        case "change_item_value":
+            const old_item = stateRef.current.find(t => t.unique_id === action.unique_id);
+            if (old_item && action.field in old_item && old_item[action.field] !== action.new_value) {
+                if (stagedUndoEntryRef.current && stagedUndoEntryRef.current.undoAction.type === "change_item_value"
+                    && stagedUndoEntryRef.current.undoAction.unique_id === action.unique_id) {
+                    forceCommit = false;
+                }
+                undoAction = {
+                    type: "change_item_value",
+                    unique_id: action.unique_id,
+                    field: action.field,
+                    new_value: old_item[action.field]
+                }
+                doDebounce = true
+            }
+            break;
+        case "change_code_output":
+            const old_code_item = stateRef.current.find(t => t.unique_id === action.unique_id);
+            if (old_code_item) {
+                undoAction = {
+                    type: "change_code_output",
+                    unique_id: action.unique_id,
+                    new_value: old_code_item["output_dict"]
+                }
+            }
+            break;
+        case "replace_code_output_row":
+            const old_row_item = stateRef.current.find(t => t.unique_id === action.unique_id);
+            if (old_row_item) {
+                undoAction = {
+                    type: "replace_code_output_row",
+                    unique_id: action.unique_id,
+                    row: action.row,
+                    new_value: old_row_item["output_dict"][action.row]
+                }
+            }
+            break;
+        case "update_items":
+            const old_items = stateRef.current.filter(t => t.unique_id in action.updates);
+            if (old_items.length > 0) {
+                let updates = {};
+                for (let item of old_items) {
+                    updates[item.unique_id] = {};
+                    for (let field in action.updates[item.unique_id]) {
+                        updates[item.unique_id][field] = item[field]
+                    }
+                }
+                undoAction = {
+                    type: "update_items",
+                    updates: updates
+                }
+            }
+            break;
+        default:
+            return [null, false];
+    }
+    return [undoAction, doDebounce, forceCommit];
 }
 
 function consoleItemsReducer(console_items, action) {

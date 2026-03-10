@@ -43,7 +43,7 @@ import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
 import {text_viewer_props, TextViewerApp} from "./text_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {HorizontalPanes} from "./resizing_allotment";
-import {usePropertyList} from "./property_list";
+import {usePropertyListNoUndo} from "./property_list";
 import {withAssistant} from "./assistant";
 import {Metabook} from "./metabook";
 import {
@@ -118,7 +118,7 @@ function _context_main() {
 
 function ContextApp(props) {
     const [selectedTabId, setSelectedTabId, selectedTabIdRef] = useStateAndRef("library");
-    const [tabPanelList, tabPanelListDispatch, tabPanelListRef] = usePropertyList(initialList);
+    const [tabPanelList, tabPanelListDispatch, tabPanelListRef] = usePropertyListNoUndo(initialList, 330, {}, false);
 
     const [, set_open_resources, open_resources_ref] = useStateAndRef([]);
     const [dirty_methods, set_dirty_methods] = useState({});

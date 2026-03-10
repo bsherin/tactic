@@ -38,14 +38,15 @@ import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {useConnection} from "./tactic_socket";
 
-import {usePropertyList, makeUndoableDispatch, getListItemFromidentifier} from "./property_list"
+import {usePropertyList, getListItemFromidentifier} from "./property_list"
+import {useStateAndRefWithUndo, withUndo, UndoContext, makeUndoable} from "./undo";
 import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, DividerElement,
     option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons,
 } from "./tile_maker_elements";
-import {useMetadata} from "./metadata_reducer";
+import {useMetadata, createMetaDataUndo} from "./metadata_reducer";
 import {TileMakerSearchForm} from "./tile_maker_search_form";
 
 export {CreatorApp}
@@ -68,31 +69,34 @@ function CreatorApp(props) {
     const rline_number = useRef(props.initial_line_number);
     const pane_scroll_ref = useRef(null);
 
+    const  {handleUndo, handleRedo, undoStackRef, redoStackRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
+
+
     const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
         props.interface_state.visibleMethodList : ["render_content"]);
 
-    const [, setRenderContentInfo, renderContentInfoRef] = useStateAndRef(props.render_content_info);
-    const [, setGlobalsInfo, globalsInfoRef] = useStateAndRef(props.globals_info);
 
-    const [, optionDispatchBase, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
-    const [, exportDispatchBase, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT, {tags: ""});
-    const [, saveDispatchBase, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
-    const [, umDispatchBase, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
-    const [, hmDispatchBase, hmListRef] = usePropertyList(props.used_handler_methods_list, INITIAL_CODE_PANE_HEIGHT);
-    const [, jsDispatchBase, jsListRef] = usePropertyList(props.javascript_functions_list, INITIAL_CODE_PANE_HEIGHT);
-
-    const [, metadataDispatch, metadataRef] = useMetadata(props.mdata);
-
-    const undoStackRef = useRef([]);
+    const [, optionDispatch, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
+    const [, exportDispatch, export_list_ref] = usePropertyList(props.export_list,  INITIAL_FORM_PANE_HEIGHT, {tags: ""});
+    const [, saveDispatch, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
+    const [, umDispatch, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
+    const [, hmDispatch, hmListRef] = usePropertyList(props.used_handler_methods_list, INITIAL_CODE_PANE_HEIGHT);
+    const [, jsDispatch, jsListRef] = usePropertyList(props.javascript_functions_list, INITIAL_CODE_PANE_HEIGHT);
+    
     const otherCmObjects = useRef([]);
 
-    const optionDispatch = makeUndoableDispatch(optionDispatchBase, option_list_ref, "Options", undoStackRef);
-    const exportDispatch = makeUndoableDispatch(exportDispatchBase, export_list_ref, "Exports", undoStackRef);
-    const saveDispatch = makeUndoableDispatch(saveDispatchBase, save_list_ref, "Saves", undoStackRef);
-    const umDispatch = makeUndoableDispatch(umDispatchBase, umListRef, "UserMethods", undoStackRef);
-    const hmDispatch = makeUndoableDispatch(hmDispatchBase, hmListRef, "HandlerMethods", undoStackRef);
-    const jsDispatch = makeUndoableDispatch(jsDispatchBase, jsListRef, "JavaScriptFunctions", undoStackRef);
+    const [, setRenderContentInfo, renderContentInfoRef] = useStateAndRefWithUndo({
+        pane_height: INITIAL_CODE_PANE_HEIGHT,
+        ...props.render_content_info
+    });
+
+    const [, setGlobalsInfo, globalsInfoRef] = useStateAndRefWithUndo({
+        pane_height: INITIAL_CODE_PANE_HEIGHT,
+        ...props.globals_info
+    });
+
+    const [, metadataDispatch, metadataRef] = useMetadata(props.mdata, undoStackRef, redoStackRef);
 
     const [searchState, searchDispatch, searchStateRef] = useSearch([globalsInfoRef, renderContentInfoRef], [umListRef, hmListRef, jsListRef]);
 
@@ -141,6 +145,20 @@ function CreatorApp(props) {
                 group: "Tile Creator",
                 label: "Undo",
                 onKeyDown: handleUndo
+            },
+            {
+                combo: "Ctrl+X",
+                global: false,
+                group: "Tile Creator",
+                label: "Redo",
+                onKeyDown: handleRedo
+            },
+            {
+                combo: "Cmd+X",
+                global: false,
+                group: "Tile Creator",
+                label: "Redo",
+                onKeyDown: handleRedo
             }
         ], [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]
     );
@@ -309,7 +327,13 @@ function CreatorApp(props) {
                 icon_name: "undo",
                 click_handler: handleUndo,
                 key_bindings: ['Ctrl+Z', 'Cmd+Z']
-            }],
+            }, {
+                name_text: "Redo",
+                icon_name: "redo",
+                click_handler: handleRedo,
+                key_bindings: ['Ctrl+X', 'Cmd+X']
+            }
+            ],
             Load: [{
                 name_text: "Save and Load",
                 icon_name: "upload",
@@ -327,14 +351,6 @@ function CreatorApp(props) {
                     }
                 }
             ]
-        }
-    }
-
-    function handleUndo() {
-        const stack = undoStackRef.current;
-        if (stack.length > 0) {
-            const {dispatch, undoAction} = stack.pop();
-            dispatch(undoAction);
         }
     }
 
@@ -394,6 +410,16 @@ function CreatorApp(props) {
             {
                 key: 'Cmd-z', run: () => {
                     handleUndo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-x', run: () => {
+                    handleRedo();
+                }, preventDefault: true
+            },
+            {
+                key: 'Cmd-x', run: () => {
+                    handleRedo();
                 }, preventDefault: true
             }
 
@@ -571,6 +597,16 @@ function CreatorApp(props) {
                 }
             }
         }
+        if (redoStackRef.current) {
+            for (let entry of redoStackRef.current) {
+                if (entry) {
+                    if (entry.cmObject) {
+                        entry.cmObject.destroy();
+                        entry.cmObject = null;
+                    }
+                }
+            }
+        }
     }
 
     function destroyCmObjects(listRef) {
@@ -697,17 +733,17 @@ function CreatorApp(props) {
 
     function updateGlobals(itemUpdate) {
 
-        setGlobalsInfo(prevGlobalsInfo => ({
-            ...prevGlobalsInfo,
+        setGlobalsInfo({
+            ...globalsInfoRef.current,
             ...itemUpdate
-        }));
+        });
     }
 
     function updateRenderContent(itemUpdate) {
-        setRenderContentInfo(prevRenderContentInfo => ({
-            ...prevRenderContentInfo,
+        setRenderContentInfo({
+            ...renderContentInfoRef.current,
             ...itemUpdate
-        }));
+        });
     }
 
     function setItem(identifier, item) {
@@ -1409,7 +1445,7 @@ CreatorApp = memo(CreatorApp);
 
 function tile_creator_main() {
     function gotProps(the_props) {
-        let CreatorAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp))))));
+        let CreatorAppPlus = withUndo(withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(CreatorApp)))))));
         let the_element = <CreatorAppPlus {...the_props}
                                           controlled={false}
                                           changeName={null}

@@ -26,7 +26,8 @@ import {TileContainer} from "./tile_container";
 import {tilesReducer} from "./tile_container_support"
 import {ExportsViewer} from "./export_viewer_react";
 import {ConsoleComponent} from "./console_component";
-import {consoleItemsReducer} from "./console_support";
+import {consoleItemsReducer, createConsoleUndoAction} from "./console_support";
+import {withUndo, makeUndoable, UndoContext} from "./undo";
 import {handleCallback, postPromise, postPromiseMain, postWithCallbackMain, postWithCallback} from "./communication_react";
 import {doFlash} from "./toaster"
 import {withStatus} from "./toaster";
@@ -83,9 +84,11 @@ function MainApp(props) {
     const updateExportsList = useRef(null);
     const main_outer_ref = useRef(null);
     const set_table_scroll = useRef(null);
+    const  {undoStackRef} = useContext(UndoContext);
 
     const [, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
-    const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
+    const [console_items, dispatchBase, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
+    const dispatch = makeUndoable(dispatchBase,console_items_ref, createConsoleUndoAction, undoStackRef);
     const [tile_list, tileDispatch, tile_list_ref] = useReducerAndRef(tilesReducer);
 
 
@@ -1285,7 +1288,7 @@ MainApp = memo(MainApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let MainAppPlus = withRegisterActivity(withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp)))))));
+        let MainAppPlus = withUndo(withRegisterActivity(withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(MainApp))))))));
         let the_element = <MainAppPlus {...the_props}
                                        controlled={false}
                                        changeName={null}

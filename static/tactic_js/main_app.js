@@ -22,6 +22,7 @@ var _tile_container_support = require("./tile_container_support");
 var _export_viewer_react = require("./export_viewer_react");
 var _console_component = require("./console_component");
 var _console_support = require("./console_support");
+var _undo = require("./undo");
 var _communication_react = require("./communication_react");
 var _toaster = require("./toaster");
 var _error_drawer = require("./error_drawer");
@@ -107,6 +108,8 @@ function MainApp(props) {
   var updateExportsList = (0, _react.useRef)(null);
   var main_outer_ref = (0, _react.useRef)(null);
   var set_table_scroll = (0, _react.useRef)(null);
+  var _useContext = (0, _react.useContext)(_undo.UndoContext),
+    undoStackRef = _useContext.undoStackRef;
   var _useStateAndRef = (0, _utilities_react.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     set_console_selected_items = _useStateAndRef2[1],
@@ -114,8 +117,9 @@ function MainApp(props) {
   var _useReducerAndRef = (0, _utilities_react.useReducerAndRef)(_console_support.consoleItemsReducer, []),
     _useReducerAndRef2 = _slicedToArray(_useReducerAndRef, 3),
     console_items = _useReducerAndRef2[0],
-    dispatch = _useReducerAndRef2[1],
+    dispatchBase = _useReducerAndRef2[1],
     console_items_ref = _useReducerAndRef2[2];
+  var dispatch = (0, _undo.makeUndoable)(dispatchBase, console_items_ref, _console_support.createConsoleUndoAction, undoStackRef);
   var _useReducerAndRef3 = (0, _utilities_react.useReducerAndRef)(_tile_container_support.tilesReducer),
     _useReducerAndRef4 = _slicedToArray(_useReducerAndRef3, 3),
     tile_list = _useReducerAndRef4[0],
@@ -1626,7 +1630,7 @@ function MainApp(props) {
 exports.MainApp = MainApp = /*#__PURE__*/(0, _react.memo)(MainApp);
 function main_main() {
   function gotProps(the_props) {
-    var MainAppPlus = (0, _utilities_react.withRegisterActivity)((0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp)))))));
+    var MainAppPlus = (0, _undo.withUndo)((0, _utilities_react.withRegisterActivity)((0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(MainApp))))))));
     var the_element = /*#__PURE__*/_react["default"].createElement(MainAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null

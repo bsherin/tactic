@@ -31,6 +31,7 @@ var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _memory_utilities = require("./memory_utilities");
+var _undo = require("./undo");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t10 in e) "default" !== _t10 && {}.hasOwnProperty.call(e, _t10) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t10)) && (i.get || i.set) ? o(f, _t10, i) : f[_t10] = e[_t10]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -167,6 +168,14 @@ function ConsoleComponent(props) {
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  var _useContext = (0, _react.useContext)(_undo.UndoContext),
+    handleUndo = _useContext.handleUndo,
+    handleRedo = _useContext.handleRedo,
+    undoStackRef = _useContext.undoStackRef,
+    redoStackRef = _useContext.redoStackRef,
+    stagedUndoEntryRef = _useContext.stagedUndoEntryRef,
+    commitUndoEntry = _useContext.commitUndoEntry,
+    scheduleCommit = _useContext.scheduleCommit;
   (0, _react.useEffect)(function () {
     if (props.console_items.current.length == 0) {
       _addCodeArea("", false);
@@ -254,6 +263,30 @@ function ConsoleComponent(props) {
       onKeyDown: function onKeyDown() {
         _clear_all_selected_items();
       }
+    }, {
+      combo: "Ctrl+Z",
+      global: false,
+      group: "Tile Creator",
+      label: "Undo",
+      onKeyDown: handleUndo
+    }, {
+      combo: "Cmd+Z",
+      global: false,
+      group: "Tile Creator",
+      label: "Undo",
+      onKeyDown: handleUndo
+    }, {
+      combo: "Ctrl+X",
+      global: false,
+      group: "Tile Creator",
+      label: "Redo",
+      onKeyDown: handleRedo
+    }, {
+      combo: "Cmd+X",
+      global: false,
+      group: "Tile Creator",
+      label: "Redo",
+      onKeyDown: handleRedo
     }];
   }, [_addBlankCode, _addBlankText, _runSelected, _clear_all_selected_items]);
   var _useHotkeys = (0, _core.useHotkeys)(hotkeys),
@@ -275,8 +308,7 @@ function ConsoleComponent(props) {
               while (1) switch (_context3.n) {
                 case 0:
                   unique_id = data.message.unique_id;
-                  _context3.n = 1;
-                  return _addConsoleEntry(data.message, data.force_open, false, null, function () {
+                  _addConsoleEntry(data.message, data.force_open, false, null, function () {
                     _insertLinkInItem(unique_id);
                   });
                 case 1:
@@ -318,7 +350,7 @@ function ConsoleComponent(props) {
       unique_id: widgetHomesRef.current[data["widgetId"]],
       widgetId: data["widgetId"],
       widgetData: data["widgetData"]
-    });
+    }, true);
   }
   function _updateMemoryUsage(data) {
     props.setMainStateValue("pseudoTileStatus", "loaded");
@@ -872,12 +904,13 @@ function ConsoleComponent(props) {
   }, [props.mState.show_exports_pane]);
   var _setConsoleItemValue = (0, _react.useCallback)(function (unique_id, field, new_value) {
     var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+    var skipUndo = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
     props.dispatch({
       type: "change_item_value",
       unique_id: unique_id,
       field: field,
       new_value: new_value
-    });
+    }, skipUndo);
     pushCallback(callback);
   }, []);
   function _multiple_console_item_updates(updates) {
@@ -885,7 +918,7 @@ function ConsoleComponent(props) {
     props.dispatch({
       type: "update_items",
       updates: updates
-    });
+    }, true);
     pushCallback(callback);
   }
   function _clear_all_selected_items() {
@@ -894,7 +927,7 @@ function ConsoleComponent(props) {
     pushCallback(function () {
       props.dispatch({
         type: "clear_all_selected"
-      });
+      }, true);
     });
     pushCallback(callback);
   }
@@ -1123,10 +1156,10 @@ function ConsoleComponent(props) {
                     if (!next_item.show_on_filtered) {
                       set_filter_console_items(false);
                       pushCallback(function () {
-                        _setConsoleItemValue(next_id, "set_focus", true);
+                        _setConsoleItemValue(next_id, "set_focus", true, null, true);
                       });
                     } else {
-                      _setConsoleItemValue(next_id, "set_focus", true);
+                      _setConsoleItemValue(next_id, "set_focus", true, null, true);
                     }
                     return _context9.a(2, {
                       v: void 0
@@ -1412,7 +1445,7 @@ function ConsoleComponent(props) {
     props.dispatch({
       type: "update_items",
       updates: updates
-    });
+    }, true);
   }
   function _stopConsoleSpinner(unique_id) {
     var execution_count = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -1428,7 +1461,7 @@ function ConsoleComponent(props) {
     props.dispatch({
       type: "update_items",
       updates: updates
-    });
+    }, true);
   }
   function _appendWidgetToConsoleItem(data) {
     var vdict = {
@@ -1441,7 +1474,7 @@ function ConsoleComponent(props) {
       unique_id: data.console_id,
       row: data.counter,
       new_value: vdict
-    });
+    }, true);
   }
   function _appendConsoleItemOutput(data) {
     var new_value;
@@ -1461,7 +1494,7 @@ function ConsoleComponent(props) {
       unique_id: data.console_id,
       row: data.counter,
       new_value: new_value
-    });
+    }, true);
   }
   function _setConsoleItemOutput(data) {
     var current = {};
@@ -1474,7 +1507,7 @@ function ConsoleComponent(props) {
       type: "change_code_output",
       unique_id: data.console_id,
       new_value: current
-    });
+    }, true);
   }
   function _glif_text(show_glif_text, txt) {
     if (show_glif_text) {
@@ -1568,7 +1601,7 @@ function ConsoleComponent(props) {
         if (entry.type == "code" || entry.type == "text") {
           if (_selectIfMatching(entry, "console_text", function () {
             if (entry.type == "text") {
-              _setConsoleItemValue(entry.unique_id, "show_markdown", false);
+              _setConsoleItemValue(entry.unique_id, "show_markdown", false, null, true);
             }
           })) {
             set_search_helper_text(null);
@@ -1592,7 +1625,7 @@ function ConsoleComponent(props) {
       if (entry.am_shrunk) {
         _setConsoleItemValue(entry.unique_id, "am_shrunk", false, function () {
           _selectConsoleItem(entry.unique_id, null, callback);
-        });
+        }, true);
       } else {
         _selectConsoleItem(entry.unique_id, null, callback);
       }
@@ -1612,7 +1645,7 @@ function ConsoleComponent(props) {
         if (entry.type == "code" || entry.type == "text") {
           if (_selectIfMatching(entry, "console_text", function () {
             if (entry.type == "text") {
-              _setConsoleItemValue(entry.unique_id, "show_markdown", false);
+              _setConsoleItemValue(entry.unique_id, "show_markdown", false, null, true);
             }
           })) {
             set_search_helper_text(null);
@@ -1652,6 +1685,20 @@ function ConsoleComponent(props) {
         click_handler: _insertResourceLink
       }],
       Edit: [{
+        name_text: "Undo",
+        icon_name: "undo",
+        click_handler: handleUndo,
+        key_bindings: ['Ctrl+Z', 'Cmd+Z']
+      }, {
+        name_text: "Redo",
+        icon_name: "redo",
+        click_handler: handleRedo,
+        key_bindings: ['Ctrl+X', 'Cmd+X']
+      }, {
+        name_text: "divider2",
+        icon_name: null,
+        click_handler: "divider"
+      }, {
         name_text: "Copy All",
         icon_name: "duplicate",
         click_handler: function click_handler() {
@@ -1832,7 +1879,7 @@ function ConsoleComponent(props) {
     })));
   }, []);
   function _showTextItemMarkdown(unique_id) {
-    _setConsoleItemValue(unique_id, "show_markdown", true);
+    _setConsoleItemValue(unique_id, "show_markdown", true, null, true);
   }
   function _hideNonDividers() {
     $(".in-section:not(.divider-log-panel)").css({
@@ -2086,7 +2133,7 @@ function SuperItem(props) {
 SuperItem = /*#__PURE__*/(0, _react.memo)(SuperItem);
 function DividerItem(props) {
   var _toggleShrink = (0, _react.useCallback)(function () {
-    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
   }, [props.am_shrunk]);
   var _deleteMe = (0, _react.useCallback)(function () {
     props.handleDelete(props.unique_id);
@@ -2282,7 +2329,7 @@ function LogItem(props) {
     // makeTablesSortable()
   });
   var _toggleShrink = (0, _react.useCallback)(function () {
-    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
   }, [props.am_shrunk]);
   var _deleteMe = (0, _react.useCallback)(function () {
     props.handleDelete(props.unique_id);
@@ -2486,7 +2533,7 @@ function BlobItem(props) {
     // makeTablesSortable()
   });
   var _toggleShrink = (0, _react.useCallback)(function () {
-    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
   }, [props.am_shrunk]);
   var _deleteMe = (0, _react.useCallback)(function () {
     props.handleDelete(props.unique_id);
@@ -2646,6 +2693,9 @@ function ConsoleCodeItem(props) {
   var am_selected_previous = (0, _react.useRef)(false);
   var setFocusFunc = (0, _react.useRef)(null);
   var simpleTableId = (0, _react.useRef)(null);
+  var _useContext2 = (0, _react.useContext)(_undo.UndoContext),
+    handleUndo = _useContext2.handleUndo,
+    handleRedo = _useContext2.handleRedo;
   (0, _react.useEffect)(function () {
     simpleTableId.current = (0, _utilities_react.guid)();
   }, [props.table]);
@@ -2656,7 +2706,7 @@ function ConsoleCodeItem(props) {
     am_selected_previous.current = props.am_selected;
     if (props.set_focus && setFocusFunc.current) {
       setFocusFunc.current();
-      props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe);
+      props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe, true);
     }
   });
   (0, _react.useLayoutEffect)(function () {
@@ -2717,16 +2767,19 @@ function ConsoleCodeItem(props) {
     }, null, null, props.local_id);
   }, []);
   function _stopMySpinner() {
-    props.setConsoleItemValue(props.unique_id, "show_spinner", false);
+    props.setConsoleItemValue(props.unique_id, "show_spinner", false, null, true);
   }
-  var _handleChange = (0, _react.useCallback)(function (new_code) {
+  var _handleChange = (0, _react.useCallback)(function (new_code, isExternal) {
+    if (isExternal) {
+      return;
+    }
     props.setConsoleItemValue(props.unique_id, "console_text", new_code);
   }, []);
   var _handleSummaryTextChange = (0, _react.useCallback)(function (value) {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
   });
   var _toggleShrink = (0, _react.useCallback)(function () {
-    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
   }, [props.am_shrunk]);
   var _deleteMe = (0, _react.useCallback)(function () {
     if (props.show_spinner) {
@@ -2757,6 +2810,30 @@ function ConsoleCodeItem(props) {
     }, {
       key: 'Ctrl-t',
       run: props.addNewTextItem
+    }, {
+      key: 'Ctrl-z',
+      run: function run() {
+        handleUndo();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-z',
+      run: function run() {
+        handleUndo();
+      },
+      preventDefault: true
+    }, {
+      key: 'Ctrl-x',
+      run: function run() {
+        handleRedo();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-x',
+      run: function run() {
+        handleRedo();
+      },
+      preventDefault: true
     }];
   }, []);
   var _getFirstLine = (0, _react.useCallback)(function () {
@@ -2987,6 +3064,7 @@ function ConsoleCodeItem(props) {
     handleFocus: _handleFocus,
     registerSetFocusFunc: registerSetFocusFunc,
     readOnly: false,
+    controlled: true,
     show_line_numbers: true,
     code_content: props.console_text,
     extraKeys: _extraKeys,
@@ -3084,6 +3162,9 @@ function ConsoleTextItem(props) {
   var setFocusFunc = (0, _react.useRef)(null);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
+  var _useContext3 = (0, _react.useContext)(_undo.UndoContext),
+    handleUndo = _useContext3.handleUndo,
+    handleRedo = _useContext3.handleRedo;
   (0, _react.useEffect)(function () {
     if (props.am_selected && !am_selected_previous.current && elRef && elRef.current) {
       scrollMeIntoView();
@@ -3094,7 +3175,7 @@ function ConsoleTextItem(props) {
         _hideMarkdown();
       } else if (setFocusFunc.current) {
         setFocusFunc.current();
-        props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe);
+        props.setConsoleItemValue(props.unique_id, "set_focus", false, _selectMe, null, true);
       }
     }
   });
@@ -3119,7 +3200,7 @@ function ConsoleTextItem(props) {
     return !props.console_text.trim().length;
   }
   function _showMarkdown() {
-    props.setConsoleItemValue(props.unique_id, "show_markdown", true);
+    props.setConsoleItemValue(props.unique_id, "show_markdown", true, null, true);
   }
   var _toggleMarkdown = (0, _react.useCallback)(function () {
     if (props["show_markdown"]) {
@@ -3129,16 +3210,19 @@ function ConsoleTextItem(props) {
     }
   }, [props["show_markdown"]]);
   var _hideMarkdown = (0, _react.useCallback)(function () {
-    props.setConsoleItemValue(props.unique_id, "show_markdown", false);
+    props.setConsoleItemValue(props.unique_id, "show_markdown", false, null, true);
   }, []);
-  var _handleChange = (0, _react.useCallback)(function (new_text) {
+  var _handleChange = (0, _react.useCallback)(function (new_text, isExternal) {
+    if (isExternal) {
+      return;
+    }
     props.setConsoleItemValue(props.unique_id, "console_text", new_text);
   }, []);
   function _handleSummaryTextChange(value) {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
   }
   var _toggleShrink = (0, _react.useCallback)(function () {
-    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk);
+    props.setConsoleItemValue(props.unique_id, "am_shrunk", !props.am_shrunk, null, true);
   }, [props.am_shrunk]);
   var _deleteMe = (0, _react.useCallback)(function () {
     props.handleDelete(props.unique_id);
@@ -3290,6 +3374,30 @@ function ConsoleTextItem(props) {
     }, {
       key: 'Ctrl-t',
       run: props.addNewTextItem
+    }, {
+      key: 'Ctrl-z',
+      run: function run() {
+        handleUndo();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-z',
+      run: function run() {
+        handleUndo();
+      },
+      preventDefault: true
+    }, {
+      key: 'Ctrl-x',
+      run: function run() {
+        handleRedo();
+      },
+      preventDefault: true
+    }, {
+      key: 'Cmd-x',
+      run: function run() {
+        handleRedo();
+      },
+      preventDefault: true
     }];
   }, []);
   var really_show_markdown = hasOnlyWhitespace() && props.links.length == 0 ? false : props["show_markdown"];
@@ -3382,6 +3490,7 @@ function ConsoleTextItem(props) {
   }, !really_show_markdown && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_reactCodemirror.ReactCodemirror6, {
     handleChange: _handleChange,
     readOnly: false,
+    controlled: true,
     handleFocus: _handleFocus,
     registerSetFocusFunc: registerSetFocusFunc,
     show_line_numbers: false,

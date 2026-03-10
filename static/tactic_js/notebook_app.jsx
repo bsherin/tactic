@@ -9,24 +9,23 @@ if (!window.in_context) {
 }
 
 import React from "react";
-import {Fragment, useEffect, useRef, memo, useContext, useReducer, useCallback} from "react";
+import {Fragment, useEffect, useRef, memo, useContext, useCallback} from "react";
 import { createRoot } from 'react-dom/client';
 
 import {TacticNavbar} from "./blueprint_navbar";
 import {TacticMenubar} from "./menu_utilities";
 import {ProjectMenu, ViewMenu} from "./main_menus_react";
 import {ConsoleComponent} from "./console_component";
-import {consoleItemsReducer} from "./console_support";
+import {consoleItemsReducer, createConsoleUndoAction} from "./console_support";
+import {withUndo, makeUndoable, UndoContext} from "./undo";
 import {doFlash, StatusContext} from "./toaster"
 import {withStatus} from "./toaster";
 import {renderSpinnerMessage, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 
 import {
-    postAjax,
     postPromise,
     handleCallback,
-    postPromiseMain,
     postWithCallbackMain,
     postWithCallback
 } from "./communication_react"
@@ -55,8 +54,11 @@ function NotebookApp(props) {
     const updateExportsList = useRef(null);
     const connection_status = useConnection(props.tsocket, initSocket);
     const [, set_console_selected_items, console_selected_items_ref] = useStateAndRef([]);
+    const  {undoStackRef} = useContext(UndoContext);
 
-    const [console_items, dispatch, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
+
+    const [console_items, dispatchBase, console_items_ref] = useReducerAndRef(consoleItemsReducer, []);
+    const dispatch = makeUndoable(dispatchBase,console_items_ref, createConsoleUndoAction, undoStackRef);
     const [mState, mDispatch, mStateRef] = useReducerAndRef(notebookReducer, {
         show_exports_pane: props.is_project && props.interface_state ? props.interface_state["show_exports_pane"] : true,
         console_width_fraction: props.is_project && props.interface_state && "console_width_fraction" in props.interface_state
@@ -79,7 +81,7 @@ function NotebookApp(props) {
         dispatch({
             type: "initialize",
             new_items: props.is_project && props.interface_state ? props.interface_state["console_items"] : []
-        })
+        }, true)
     });
 
     useEffect(() => {
@@ -89,7 +91,6 @@ function NotebookApp(props) {
             window.addEventListener("beforeunload", function (e) {
                 if (_dirty()) {
                     e.preventDefault();
-                    e.returnValue = ''
                 }
                 postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
                 props.tsocket.disconnect()
@@ -363,7 +364,7 @@ NotebookApp = memo(NotebookApp);
 
 function main_main() {
     function gotProps(the_props) {
-        let NotebookAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(NotebookApp))))));
+        let NotebookAppPlus = withUndo(withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(NotebookApp)))))));
         let the_element = <NotebookAppPlus {...the_props}
                                            controlled={false}
                                            changeName={null}
