@@ -17,6 +17,22 @@ const field_lookup = {
 function metadataReducer(draft, action) {
     if (field_lookup.hasOwnProperty(action.type)) {
         draft[field_lookup[action.type]] = action.value;
+    } else {
+        switch (action.type) {
+            case "append_to_notes":
+                draft.notes = draft.notes + action.value;
+                break;
+            case "set_couple":
+                draft.couple_save_attrs_and_exports = action.value;
+                break;
+            case "update_item":
+                for (let field in action.new_item) {
+                    draft[field] = action.new_item[field]
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -33,7 +49,8 @@ function createMetaDataUndo(action, stateRef, stagedUndoEntryRef) {
     }
     if (field == "notes") {
         if (stagedUndoEntryRef.current
-            && stagedUndoEntryRef.current.undoAction.type === "set_notes") {
+            && (stagedUndoEntryRef.current.undoAction.type === "set_notes" ||
+                stagedUndoEntryRef.current.undoAction.type === "append_to_notes")) {
             forceCommit = false
         }
         undoAction = {
@@ -41,7 +58,13 @@ function createMetaDataUndo(action, stateRef, stagedUndoEntryRef) {
             value: stateRef.current[field]
         }
         doDebounce = true;
-    } else {
+    } else if (field == "update_item") {
+        undoAction = {
+            type: "update_item",
+            new_item: stateRef.current
+        }
+    }
+    else {
         undoAction = {
             type: action.type,
             value: stateRef.current[field]
