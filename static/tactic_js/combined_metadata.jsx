@@ -153,7 +153,7 @@ function NotesField(props) {
         // console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
     }, [settingsContext.settings.theme]);
 
-    const [mdHeight, ] = useState(500);
+    const [mdHeight,] = useState(500);
     const [showMarkdown, setShowMarkdown] = useState(hasOnlyWhitespace() ? false : props.show_markdown_initial);
     const awaitingFocus = useRef(false);
     const cmObject = useRef(null);
@@ -179,11 +179,11 @@ function NotesField(props) {
             }
             setFocusFunc.current = null;
 
-         };
+        };
     }, []);
 
 
-    useEffect(()=>{
+    useEffect(() => {
         setShowMarkdown(!hasOnlyWhitespace());
     }, [props.res_name, props.res_type]);
 
@@ -221,13 +221,12 @@ function NotesField(props) {
     function _setCmObject(cmobject) {
         if (props.setCMObject) {
             props.setCMObject(cmobject);
-        }
-        else {
+        } else {
             cmObject.current = cmobject
         }
     }
 
-     const registerSetFocusFunc = useCallback((theFunc) => {
+    const registerSetFocusFunc = useCallback((theFunc) => {
         setFocusFunc.current = theFunc;
     }, []);
 
@@ -245,7 +244,7 @@ function NotesField(props) {
     let converted_dict = {__html: converted_markdown};
     return (
         <Fragment>
-            <div style={{ display: really_show_markdown ? "none" : "block" }}>
+            <div style={{display: really_show_markdown ? "none" : "block"}}>
                 <ReactCodemirror6
                     handleChange={props.handleChange}
                     className="notes-field"
@@ -350,12 +349,16 @@ function CombinedMetadata(props) {
         setCMObject: null,
         search_string: "",
         search_inside: false,
+        list_of_selected: null,
+        list_of_selected_types: null,
+        multi_select: false,
         ...props
     };
     const top_ref = useRef();
 
     const [, mDispatch, mStateRef] = useImmerReducerAndRef(metadataReducer, initial_state);
     const [isTile, setIsTile] = useState(props.res_type === "tile");
+    const [isAllTiles, setIsAllTiles] = useState(false);
 
     const pushCallback = useCallbackStack();
 
@@ -367,27 +370,42 @@ function CombinedMetadata(props) {
     });
 
     const latestPropsRef = useRef(props);
-        useEffect(() => {
-            latestPropsRef.current = props;
+    useEffect(() => {
+        latestPropsRef.current = props;
     }, [props]);
 
     useSocketListener(props.tsocket, "resource-updated", handleExternalUpdate);
 
     useEffect(() => {
-        setIsTile(props.res_type === "tile");
+        setIsAllTiles(getIsAllTiles());
+    }, [props.list_of_selected_types]);
 
+    useEffect(() => {
+        setIsTile(props.res_type === "tile");
     }, [props.res_type]);
 
     useEffect(() => {
         grabMetadata()
     }, [props.res_name, props.res_type]);
 
+    function getIsAllTiles() {
+        if (!latestPropsRef.current.multi_select) {
+            return false
+        }
+        for (let t of latestPropsRef.current.list_of_selected_types) {
+            if (t != "tile") {
+                return false;
+            }
+        }
+        return true
+    }
 
     function handleExternalUpdate(data) {
         if (data.res_type == props.res_type && data.res_name == props.res_name && data.mdata_uid != updatedIdRef.current) {
             grabMetadata()
         }
     }
+
     function grabMetadata() {
         if (props.useFixedData || props.res_name == null || props.res_type == null) return;
         if (!props.readOnly) {
@@ -409,7 +427,7 @@ function CombinedMetadata(props) {
             is_repository: props.is_repository
         })
             .then(data => {
-                let updater ={
+                let updater = {
                     "tags": data.tags,
                     "notes": data.notes,
                     "created": data["datestring"],
@@ -420,8 +438,7 @@ function CombinedMetadata(props) {
                 if (props.res_type == "tile") {
                     if (data["additional_mdata"].icon) {
                         updater["icon"] = data["additional_mdata"].icon
-                    }
-                    else {
+                    } else {
                         updater["icon"] = "application";
                     }
                     if (data["additional_mdata"].category) {
@@ -445,17 +462,66 @@ function CombinedMetadata(props) {
 
     async function postChanges(state_stuff) {
 
-        const result_dict = {
+        if (latestPropsRef.current.multi_select) {
+            let result_dict = {};
+            if (isAllTiles) {
+                result_dict["metadata"] = {}
+                let found_a_field = false
+                for (let field of ["tags", "icon", "category"]) {
+                    if (field in state_stuff) {
+                        found_a_field = true
+                        result_dict["metadata"][field] = state_stuff[field]
+                    }
+                }
+                if (!found_a_field) {
+                    return
+                }
+            } else {
+                if (!("tags" in state_stuff)) {
+                    return
+                }
+                result_dict = {
+                    "metadata": {
+                        "tags": state_stuff["tags"],
+                    }
+                };
+            }
+
+            async function processRes(res_name, index) {
+                result_dict["res_type"] = latestPropsRef.current.list_of_selected_types[index];
+
+                result_dict["res_name"] = res_name;
+                result_dict["mdata_uid"] = guid();
+                try {
+                    await postPromise("host", "save_metadata_task", result_dict);
+                    updatedIdRef.current = result_dict["mdata_uid"];
+                } catch (e) {
+                    console.log(`error saving metadata for ${res_name}`, e)
+                }
+            }
+
+            latestPropsRef.current.list_of_selected.forEach(processRes);
+            return
+        }
+
+        let result_dict = {
             "res_type": latestPropsRef.current.res_type,
             "res_name": latestPropsRef.current.res_name,
             "metadata": {
-                "tags": "tags" in state_stuff ? state_stuff["tags"] : mStateRef.current.tags,
-                "notes": "notes" in state_stuff ? state_stuff["notes"] : mStateRef.current.notes,
-                "icon": isTile && "icon" in state_stuff ? state_stuff["icon"] : mStateRef.current.icon,
-                "category": isTile && ("category" in state_stuff) ? state_stuff["category"] : mStateRef.current.category,
                 "mdata_uid": guid()
             }
         };
+        let found_a_field = false;
+        for (let field of ["tags", "notes", "icon", "category"]) {
+            if (field in state_stuff) {
+                found_a_field = true;
+                result_dict["metadata"][field] = state_stuff[field]
+            }
+        }
+        if (!found_a_field) {
+            return
+        }
+
         try {
             await postPromise("host", "save_metadata_task", result_dict);
             updatedIdRef.current = result_dict["mdata_uid"];
@@ -464,15 +530,14 @@ function CombinedMetadata(props) {
         }
     }
 
-    async function _handleMetadataChange(state_stuff, post_immediate=true, isExternal=false) {
+    async function _handleMetadataChange(state_stuff, post_immediate = true, isExternal = false) {
         mDispatch({type: "update_item", "new_item": state_stuff});
         if (isExternal) {
             return
         }
         if (post_immediate) {
             await postChanges(state_stuff)
-        }
-        else {
+        } else {
             doUpdate(state_stuff)
         }
     }
@@ -502,32 +567,33 @@ function CombinedMetadata(props) {
 
     let additional_items;
 
-    if (props.useFixedData) {
-        additional_items = [];
-        for (let field in props.fixedData) {
-            let md = props.fixedData[field];
-            additional_items.push(
-                <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
-                    <span className="bp6-ui-text metadata-field">{String(md)}</span>
-                </FormGroup>
-            )
-        }
-    }
-    else if (mStateRef.current.additionalMdata != null) {
-        additional_items = [];
-        for (let field in mStateRef.current.additionalMdata) {
-            let md = mStateRef.current.additionalMdata[field];
-            if (Array.isArray(md)) {
-                md = md.join(", ")
-            } else if (field == "collection_name") {
-                let sresult = /\.\w*$/.exec(md);
-                if (sresult != null) md = sresult[0].slice(1)
+    if (!props.multi_select) {
+        if (props.useFixedData) {
+            additional_items = [];
+            for (let field in props.fixedData) {
+                let md = props.fixedData[field];
+                additional_items.push(
+                    <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
+                        <span className="bp6-ui-text metadata-field">{String(md)}</span>
+                    </FormGroup>
+                )
             }
-            additional_items.push(
-                <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
-                    <span className="bp6-ui-text metadata-field">{String(md)}</span>
-                </FormGroup>
-            )
+        } else if (mStateRef.current.additionalMdata != null) {
+            additional_items = [];
+            for (let field in mStateRef.current.additionalMdata) {
+                let md = mStateRef.current.additionalMdata[field];
+                if (Array.isArray(md)) {
+                    md = md.join(", ")
+                } else if (field == "collection_name") {
+                    let sresult = /\.\w*$/.exec(md);
+                    if (sresult != null) md = sresult[0].slice(1)
+                }
+                additional_items.push(
+                    <FormGroup label={field + ": "} className="metadata-form_group" key={field} inline={true}>
+                        <span className="bp6-ui-text metadata-field">{String(md)}</span>
+                    </FormGroup>
+                )
+            }
         }
     }
     let ostyle = props.outer_style ? _.cloneDeep(props.outer_style) : {height: "100%"};
@@ -553,14 +619,14 @@ function CombinedMetadata(props) {
                     </FormGroup>
                 }
 
-                {isTile && !props.useFixedData && mStateRef.current.category != null &&
+                {(isTile || isAllTiles) && !props.useFixedData && mStateRef.current.category != null &&
                     <FormGroup label="Category" key={`${props.res_name}-${props.res_type}-cagegory`}>
                         <InputGroup onChange={_handleCategoryChange}
                                     disabled={props.readOnly}
                                     value={mStateRef.current.category}/>
                     </FormGroup>
                 }
-                {isTile &&
+                {(isTile || isAllTiles) &&
                     <FormGroup label="Icon">
                         <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
                                       icon_val={mStateRef.current.icon ? mStateRef.current.icon : "application"}
@@ -568,7 +634,7 @@ function CombinedMetadata(props) {
                                       handleSelectChange={_handleIconChange}/>
                     </FormGroup>
                 }
-                {!props.useFixedData && props.useNotes && mStateRef.current.notes != null &&
+                {!props.useFixedData && !props.multi_select && props.useNotes && mStateRef.current.notes != null &&
                     <FormGroup label="Notes">
                         <NotesField key="metadata-notes"
                                     mStateRef={mStateRef}
@@ -587,7 +653,7 @@ function CombinedMetadata(props) {
                         }
                     </FormGroup>
                 }
-                {props.search_inside && mStateRef.current.search_context &&
+                {props.search_inside && mStateRef.current.search_context && !props.multi_select &&
                     <FormGroup label="Search Context" readOnly={true}>
                         <TextArea value={mStateRef.current.search_context}
                                   fill={true}
@@ -595,17 +661,17 @@ function CombinedMetadata(props) {
                         />
                     </FormGroup>
                 }
-                {mStateRef.current.created != null &&
+                {mStateRef.current.created != null && !props.multi_select &&
                     <FormGroup label="Created: " className="metadata-form_group" inline={true}>
                         <span className="bp6-ui-text metadata-field">{mStateRef.current.created}</span>
                     </FormGroup>
                 }
-                {mStateRef.current.updated != null &&
+                {mStateRef.current.updated != null && !props.multi_select &&
                     <FormGroup label="Updated: " className="metadata-form_group" inline={true}>
                         <span className="bp6-ui-text metadata-field">{mStateRef.current.updated}</span>
                     </FormGroup>
                 }
-                {additional_items && additional_items.length > 0 &&
+                {additional_items && additional_items.length > 0 && !props.multi_select &&
                     additional_items
                 }
                 <div style={{height: 100}}/>

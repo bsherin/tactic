@@ -111,6 +111,7 @@ var initial_state = {
     selected_rows: [],
     multi_select: false,
     list_of_selected: [],
+    list_of_selected_types: [],
     selectedRegions: [_table.Regions.row(0)]
   },
   search_state: {
@@ -788,6 +789,7 @@ function LibraryPane(props) {
         selected_resource: row_dict,
         multi_select: false,
         list_of_selected: [row_dict.name],
+        list_of_selected_types: [row_dict.res_type],
         selected_rows: [row_dict]
       }
     });
@@ -836,7 +838,7 @@ function LibraryPane(props) {
   }
   function _handleRowSelection2() {
     _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(selected_rows) {
-      var sres, common_tags, other_rows, _iterator4, _step4, row_dict, new_common_tags, new_tag_list, _iterator5, _step5, tag, multi_select_list, new_selected_resource, _row_dict;
+      var sres, common_tags, other_rows, _iterator4, _step4, row_dict, new_common_tags, new_tag_list, _iterator5, _step5, tag, multi_select_list, multi_select_types, new_selected_resource, _row_dict;
       return _regenerator().w(function (_context14) {
         while (1) switch (_context14.n) {
           case 0:
@@ -885,6 +887,9 @@ function LibraryPane(props) {
               multi_select_list = selected_rows.map(function (row_dict) {
                 return row_dict.name;
               });
+              multi_select_types = selected_rows.map(function (row_dict) {
+                return row_dict.res_type;
+              });
               new_selected_resource = {
                 name: "__multiple__",
                 tags: common_tags.join(" "),
@@ -896,6 +901,7 @@ function LibraryPane(props) {
                   selected_resource: new_selected_resource,
                   multi_select: true,
                   list_of_selected: multi_select_list,
+                  list_of_selected_types: multi_select_types,
                   selected_rows: selected_rows
                 }
               });
@@ -907,6 +913,7 @@ function LibraryPane(props) {
                   selected_resource: _row_dict,
                   multi_select: false,
                   list_of_selected: [_row_dict.name],
+                  list_of_selected_types: [_row_dict.res_type],
                   selected_rows: selected_rows
                 }
               });
@@ -987,6 +994,7 @@ function LibraryPane(props) {
                 selected_resource: pStateRef.current.data_dict[new_index],
                 multi_select: false,
                 list_of_selected: [pStateRef.current.data_dict[new_index].name],
+                list_of_selected_types: [pStateRef.current.data_dict[new_index].res_type],
                 selected_rows: [pStateRef.current.data_dict[new_index]],
                 selectedRegions: [_table.Regions.row(new_index)]
               }
@@ -2169,6 +2177,9 @@ function LibraryPane(props) {
     tsocket: props.tsocket,
     res_name: res_name,
     res_type: res_type,
+    list_of_selected: pStateRef.current.select_state.list_of_selected,
+    list_of_selected_types: pStateRef.current.select_state.list_of_selected_types,
+    multi_select: pStateRef.current.select_state.multi_select,
     expandWidth: true,
     search_string: pStateRef.current.search_state.search_string,
     search_inside: pStateRef.current.search_state.search_inside,

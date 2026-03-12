@@ -63,6 +63,7 @@ function paneReducer(draft, action) {
             search_state_update = {
                 selected_resource: draft.data_dict[action.index],
                 list_of_selected: [draft.data_dict[action.index].name],
+                list_of_selected_types: [draft.data_dict[action.index].res_type],
                 selected_rows: [draft.data_dict[action.index]],
                 multi_select: false,
                 selectedRegions: [Regions.row(action.index)]
@@ -73,6 +74,7 @@ function paneReducer(draft, action) {
             const select_state_update = {
                 selected_resource: blank_resource,
                 list_of_selected: [],
+                list_of_selected_types: [],
                 selected_rows: [],
                 multi_select: false,
                 selectedRegions: [Regions.row(0)],
