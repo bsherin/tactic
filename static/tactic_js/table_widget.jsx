@@ -139,15 +139,15 @@ function TableWidget(props) {
     }, [props.widgetData.expandRows]);
 
     useEffect(() => {
+        if (props.widgetData.value.length < props.widgetData.maxRows) {
+            widgetSet({maxRows: props.widgetData.maxRows})
+        }
         if (_.isEqual(dataDictList, props.widgetData.value)) {
             return;
         }
         setDataDictList(props.widgetData.value);
         // if the new data has fewer rows than the current maxRows
         // need to force maxRows to update on the server side so it sends enough data
-        if (props.widgetData.value.length < props.widgetData.maxRows) {
-            widgetSet({maxRows: props.widgetData.maxRows, expandRows: false})
-        }
         resetRowHeights();
         if (!props.columnWidths) {
             computeColumnWidths();
