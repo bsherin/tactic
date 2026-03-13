@@ -139,6 +139,9 @@ function TableWidget(props) {
     }, [props.widgetData.expandRows]);
 
     useEffect(() => {
+        if (_.isEqual(dataDictList, props.widgetData.value)) {
+            return;
+        }
         setDataDictList(props.widgetData.value);
         // if the new data has fewer rows than the current maxRows
         // need to force maxRows to update on the server side so it sends enough data
