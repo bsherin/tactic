@@ -44,7 +44,9 @@ class Handler:
         log.debug("connected to RabbitMQ")
         if on_aws:
             self.sqs = boto3.client("sqs", region_name=AWS_REGION)
-            self.queue_url = self.sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
+            self.queue_url = "https://sqs.us-east-2.amazonaws.com/924818964184/tactic-user-storage-events"
+            # self.queue_url = self.sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
+
         else:
             self.sqs = boto3.client(
                 "sqs",
