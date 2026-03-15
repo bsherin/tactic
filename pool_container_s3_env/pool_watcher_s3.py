@@ -17,7 +17,7 @@ try:
     from aws_detection import on_aws
 
     S3_BUCKET = get_ssm_parameter("BUCKET")
-    # SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
+    SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
     queue_name = "tactic-user-storage-events"
     AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
 
@@ -44,9 +44,9 @@ class Handler:
         log.debug("connected to RabbitMQ")
         if on_aws:
             self.sqs = boto3.client("sqs", region_name=AWS_REGION)
-            self.queue_url = "https://sqs.us-east-2.amazonaws.com/924818964184/tactic-user-storage-events"
+            ## self.queue_url = "https://sqs.us-east-2.amazonaws.com/924818964184/tactic-user-storage-events"
             # self.queue_url = self.sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
-
+            self.queue_url = SQS_QUEUE_URL
         else:
             self.sqs = boto3.client(
                 "sqs",
