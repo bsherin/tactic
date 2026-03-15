@@ -18,7 +18,7 @@ try:
 
     S3_BUCKET = get_ssm_parameter("BUCKET")
     # SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
-    queue_name = "tactic-storage-events"
+    queue_name = "tactic-user-storage-events"
     AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
 
     RECENT = collections.deque(maxlen=5000)
