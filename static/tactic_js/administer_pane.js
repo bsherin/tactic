@@ -186,7 +186,8 @@ function AdminPane(props) {
             }
             query = {
               search_spec: search_spec,
-              row_number: row_index
+              row_number: row_index,
+              include_tiles: false
             };
             _context5.n = 2;
             return (0, _communication_react.postPromise)("host", get_task, query);
@@ -474,7 +475,13 @@ function AdminPane(props) {
     additional_metadata = null;
   }
   var right_pane;
-  if (props.res_type == "container") {
+  if (props.res_type.includes("container")) {
+    var noLog;
+    if (props.res_type == "tile_container") {
+      noLog = false;
+    } else {
+      noLog = !props.selected_resource.Id || props.selected_resource.Image.includes("tactic-log-streamer");
+    }
     right_pane = /*#__PURE__*/_react["default"].createElement("div", {
       className: "d-flex d-inline",
       ref: console_text_ref,
@@ -487,6 +494,7 @@ function AdminPane(props) {
     }, /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
       local_id: window.global_id,
       tsocket: props.tsocket,
+      noLog: noLog,
       container_id: props.selected_resource.Id,
       ref: null,
       outer_style: {

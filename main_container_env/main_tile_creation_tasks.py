@@ -241,7 +241,7 @@ class TileCreationTasksMixin:
             return
 
         if reload_dict is None:
-            data = {"old_tile_id": tile_id, "tile_save_dict": self.tile_save_dicts[tile_id], "sid": sid}
+            data = {"old_tile_id": tile_id, "tile_save_dict": save_dict, "sid": sid}
             self.mworker.post_task("main_service", "recreate_one_tile", data, recreated_tile)
             return
 

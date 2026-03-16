@@ -47,10 +47,12 @@ function _administer_home_main () {
     })
 }
 
-const res_types = ["container", "user"];
+const res_types = ["container", "tile_container", "service_container", "user"];
 
 const col_names = {
     container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
+    tile_container: ["Id", "parent", "project_name", "tile_name", "status", "uptime", "last_heartbeat", "memory_usage_mb"],
+    service_container: ["Id", "created", "healthStatus"],
     user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
 
@@ -158,6 +160,40 @@ function AdministerHomeApp(props) {
 
         />
     );
+    let tile_container_pane = (
+        <AdminPane {...props}
+                   res_type="tile_container"
+                   allow_search_inside={false}
+                   allow_search_metadata={false}
+                   MenubarClass={ContainerMenubar}
+                   updatePaneState={_updatePaneState}
+                   updatePaneStatePromise={_updatePaneStatePromise}
+                   {...pane_states_ref.current["tile_container"]}
+                   tsocket={tsocket}
+                   extraControls={null}
+                   columns={col_names.tile_container}
+                   id_field="Id"
+
+        />
+    );
+    let service_container_pane = null;
+    if (window.on_aws) {
+        service_container_pane = (
+            <AdminPane {...props}
+                   res_type="service_container"
+                   allow_search_inside={false}
+                   allow_search_metadata={false}
+                   MenubarClass={ContainerMenubar}
+                   updatePaneState={_updatePaneState}
+                   updatePaneStatePromise={_updatePaneStatePromise}
+                   {...pane_states_ref.current["service_container"]}
+                   tsocket={tsocket}
+                   extraControls={null}
+                   columns={col_names.service_container}
+                   id_field="_id"
+        />
+        )
+    }
     let user_pane = (
         <AdminPane {...props}
                    res_type="user"
@@ -206,6 +242,18 @@ function AdministerHomeApp(props) {
                                 <Icon icon="box" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
                             </Tooltip>
                         </Tab>
+                        <Tab id="tile-containers-pane" panel={tile_container_pane}>
+                            <Tooltip content="Tiles" position={Position.RIGHT}>
+                                <Icon icon="application" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
+                        {window.on_aws &&
+                            <Tab id="service-containers-pane" panel={service_container_pane}>
+                                <Tooltip content="Services" position={Position.RIGHT}>
+                                    <Icon icon="package" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                                </Tooltip>
+                            </Tab>
+                        }
                         <Tab id="users-pane" panel={user_pane}>
                             <Tooltip content="users" position={Position.RIGHT}>
                                 <Icon icon="user" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>

@@ -58,9 +58,11 @@ function _administer_home_main() {
     }, _callee);
   })));
 }
-var res_types = ["container", "user"];
+var res_types = ["container", "tile_container", "service_container", "user"];
 var col_names = {
   container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
+  tile_container: ["Id", "parent", "project_name", "tile_name", "status", "uptime", "last_heartbeat", "memory_usage_mb"],
+  service_container: ["Id", "created", "healthStatus"],
   user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
 function NamesToDict(acc, item) {
@@ -157,6 +159,35 @@ function AdministerHomeApp(props) {
     columns: col_names.container,
     id_field: "Id"
   }));
+  var tile_container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
+    res_type: "tile_container",
+    allow_search_inside: false,
+    allow_search_metadata: false,
+    MenubarClass: ContainerMenubar,
+    updatePaneState: _updatePaneState,
+    updatePaneStatePromise: _updatePaneStatePromise
+  }, pane_states_ref.current["tile_container"], {
+    tsocket: tsocket,
+    extraControls: null,
+    columns: col_names.tile_container,
+    id_field: "Id"
+  }));
+  var service_container_pane = null;
+  if (window.on_aws) {
+    service_container_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
+      res_type: "service_container",
+      allow_search_inside: false,
+      allow_search_metadata: false,
+      MenubarClass: ContainerMenubar,
+      updatePaneState: _updatePaneState,
+      updatePaneStatePromise: _updatePaneStatePromise
+    }, pane_states_ref.current["service_container"], {
+      tsocket: tsocket,
+      extraControls: null,
+      columns: col_names.service_container,
+      id_field: "_id"
+    }));
+  }
   var user_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
     res_type: "user",
     allow_search_inside: false,
@@ -216,6 +247,28 @@ function AdministerHomeApp(props) {
     position: _core.Position.RIGHT
   }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: "box",
+    size: 20,
+    tabIndex: -1,
+    color: getIconColor("collections-pane")
+  }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "tile-containers-pane",
+    panel: tile_container_pane
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+    content: "Tiles",
+    position: _core.Position.RIGHT
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: "application",
+    size: 20,
+    tabIndex: -1,
+    color: getIconColor("collections-pane")
+  }))), window.on_aws && /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "service-containers-pane",
+    panel: service_container_pane
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+    content: "Services",
+    position: _core.Position.RIGHT
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: "package",
     size: 20,
     tabIndex: -1,
     color: getIconColor("collections-pane")

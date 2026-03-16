@@ -77,8 +77,13 @@
       "type": "String"
     },
     {
-      "name": "DESIRED_IDLE_TILES",
-      "value": "3",
+      "name": "DESIRED_IDLE_DEFAULT",
+      "value": "10",
+      "type": "String"
+    },
+    {
+      "name": "LOG_LEVEL_DEFAULT",
+      "value": "ERROR",
       "type": "String"
     },
     {
@@ -129,6 +134,11 @@
     {
       "name": "ECS_POOL_WATCHER_SERVICE",
       "value": "tactic-pool-watcher-s3",
+      "type": "String"
+    },
+    {
+      "name": "POOL_WATCHER_ID_PREFIX",
+      "value": "pool_watcher",
       "type": "String"
     },
     {

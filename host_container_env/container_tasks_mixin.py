@@ -159,19 +159,116 @@ class ContainerTasksMixin:
                 up_time = "unknown"
             else:
                 up_time = self.get_uptime_string_from_dt(info["created_dt"])
+            last_heartbeat = info.get("last_heartbeat", None)
+            if last_heartbeat:
+                last_heartbeat_string = datetime.fromtimestamp(last_heartbeat).strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                last_heartbeat_string = "unknown"
             new_row = {"Id": tile_id,
-                       "Other_name": "",
-                       "Name": "",
-                       "Image": "bsherin/tactic-tile:x86",
-                       "Owner": info.get("username", ""),
-                       "Status": info.get("status"),
-                       "Uptime": up_time}
+                       "username": info.get("username", ""),
+                       "parent": info.get("parent", ""),
+                       "project_name": info.get("project_name", ""),
+                       "tile_name": info.get("tile_name", ""),
+                       "status": info.get("status", ""),
+                       "uptime": up_time,
+                       "last_heartbeat": last_heartbeat_string,
+                       "memory_usage_mb": info.get("memory_usage_mb", ""),
+                       }
             tile_chunks.append(new_row)
         return tile_chunks
 
     @task_worthy
+    def grab_service_container_list_chunk_task(self, data):
+        admin_user = self.get_user_from_data(data)
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+
+        def sort_regular_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        search_spec = data["search_spec"]
+        row_number = data["row_number"]
+        search_text = search_spec['search_string']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+
+        sort_field = search_spec["sort_field"]
+        filtered_res = []
+        match_keys = ["Id", "created", "healthStatus"]
+        registries = [self.main_registry, self.module_viewer_registry, self.pool_watcher_registry]
+        rows = []
+        for r in registries:
+            rows += r.get_ecs_task_info()
+        for row in rows:
+            for k in match_keys:
+                if reg.match(row[k], re.IGNORECASE):
+                    filtered_res.append(row)
+                    break
+        if search_spec["sort_direction"] == "ascending":
+            reverse = False
+        else:
+            reverse = True
+
+        sort_field = search_spec["sort_field"]
+        sort_key_func = sort_regular_key
+
+        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
+
+        chunk_start = int(row_number / LIBRARY_CHUNK_SIZE) * LIBRARY_CHUNK_SIZE
+        chunk_list = sorted_results[chunk_start: chunk_start + LIBRARY_CHUNK_SIZE]
+        chunk_dict = {}
+        for n, r in enumerate(chunk_list):
+            chunk_dict[n + chunk_start] = r
+        return {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)}
+
+    @task_worthy
+    def grab_tile_container_list_chunk_task(self, data):
+        admin_user = self.get_user_from_data(data)
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+
+        def sort_regular_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        search_spec = data["search_spec"]
+        row_number = data["row_number"]
+        search_text = search_spec['search_string']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+
+        sort_field = search_spec["sort_field"]
+        filtered_res = []
+        match_keys = ["Id", "username", "parent", "project_name", "tile_name", "status"]
+        for row in self.get_tile_container_chunk():
+            for k in match_keys:
+                if reg.match(row[k], re.IGNORECASE):
+                    filtered_res.append(row)
+                    break
+
+        if search_spec["sort_direction"] == "ascending":
+            reverse = False
+        else:
+            reverse = True
+
+        sort_field = search_spec["sort_field"]
+        sort_key_func = sort_regular_key
+
+        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
+
+        chunk_start = int(row_number / LIBRARY_CHUNK_SIZE) * LIBRARY_CHUNK_SIZE
+        chunk_list = sorted_results[chunk_start: chunk_start + LIBRARY_CHUNK_SIZE]
+        chunk_dict = {}
+        for n, r in enumerate(chunk_list):
+            chunk_dict[n + chunk_start] = r
+        return {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)}
+
+
+    @task_worthy
     def grab_container_list_chunk_task(self, data):
         admin_user = self.get_user_from_data(data)
+        include_tiles = data["include_tiles"] if "include_tiles" in data else False
         if not admin_user.username == "admin":
             return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
         def sort_regular_key(item):
@@ -195,16 +292,13 @@ class ContainerTasksMixin:
 
         for cont in all_containers:
             new_row = self.build_container_res_dict(cont)
+            if not include_tiles and "tactic-tile" in new_row["Image"] and not new_row["Id"] == "tile_test_container":
+                continue
             for k in match_keys:
                 if reg.match(new_row[k], re.IGNORECASE):
                     filtered_res.append(new_row)
                     break
-        if on_aws:
-            for row in self.get_tile_container_chunk():
-                for k in match_keys:
-                    if reg.match(row[k], re.IGNORECASE):
-                        filtered_res.append(row)
-                        break
+
 
         if search_spec["sort_direction"] == "ascending":
             reverse = False

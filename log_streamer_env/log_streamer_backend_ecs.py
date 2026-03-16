@@ -24,6 +24,12 @@ def id_from_arn(arn):
 def arn_from_id(tid):
     if tid.startswith("tile_"):
         tid = re.sub("tile_", "", tid)
+    elif tid.startswith("module_viewer_"):
+        tid = re.sub("module_viewer_", "", tid)
+    elif tid.startswith("main_service_"):
+        tid = re.sub("main_service_", "", tid)
+    elif tid.startswith("pool_watcher_"):
+        tid = re.sub("pool_watcher_", "", tid)
     return f"arn:aws:ecs:{region}:{account}:task/{cluster}/{tid}"
 
 

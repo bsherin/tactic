@@ -29,6 +29,7 @@ from tactic_app import CLIENT_ACTIVITY_INTERVAL_SECS
 def library():
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
+                               on_aws=on_aws,
                                is_remote="no",
                                database_type=database_type,
                                repository_type="",
@@ -39,6 +40,7 @@ def library():
                                module_source=js_source_dict["admin_home_react"])
     else:
         return render_template('library/library_home_react.html',
+                               on_aws=on_aws,
                                develop=str(_develop),
                                is_remote="no",
                                repository_type="",
@@ -73,6 +75,7 @@ def context():
 @login_required
 def repository():
     return render_template('library/library_home_react.html',
+                           on_aws=on_aws,
                            version_string=tstring,
                            is_remote=False,
                            repository_type=repository_type,

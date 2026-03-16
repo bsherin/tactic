@@ -44,8 +44,8 @@ try:
 
     log.debug("trying redis stuff")
     import redis_tools
-    from service_controls import set_to_redis_log_level
-    set_to_redis_log_level()
+    from service_controls import apply_log_level
+    apply_log_level("ERROR")
 except Exception:
     log.exception("*** fatal error starting host ***")
     log.critical("*** exiting host due to fatal error ***")

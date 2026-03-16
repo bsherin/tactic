@@ -113,6 +113,14 @@ class ServiceRegistry(RedisManager):
                     tasks.append(t)
         return tasks
 
+    def get_ecs_task_info(self):
+        tasks = self.list_running_service_tasks()
+        result_list = []
+        for t in tasks:
+            result_list.append({"Id": self.task_to_id(t), "created": str(t["createdAt"]),
+                                "healthStatus": str(t["healthStatus"])})
+        return result_list
+
     def set_container_dict(self, cont_id, container_info):
         self.set_hash_dict(cont_id, container_info)
 

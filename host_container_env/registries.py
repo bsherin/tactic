@@ -14,7 +14,7 @@ import json
 
 # I'm leaving some of the desired idle logic in for test, non-aws for the purposes of testing it.
 
-DESIRED_IDLE_DEFAULT = 6
+DESIRED_IDLE_DEFAULT = 10
 from redis_tools import redis_client as r
 
 AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
@@ -26,10 +26,13 @@ TILE_ID_PREFIX = get_ssm_parameter("TILE_ID_PREFIX", "tile_")
 MAIN_ID_PREFIX = get_ssm_parameter("MAIN_ID_PREFIX", "main_service_")
 MODULE_VIEWER_PREFIX = get_ssm_parameter("MODULE_VIEWER_PREFIX", "module_viewer_")
 
+POOL_WATCHER_SERVICE = get_ssm_parameter("ECS_POOL_WATCHER_SERVICE", "tactic-pool-watcher-s3")
+POOL_WATCHER_ID_PREFIX = get_ssm_parameter("POOL_WATCHER_ID_PREFIX", "pool_watcher_")
+
 TILE_HEARTBEAT_TIMEOUT_SECS = float(get_ssm_parameter("TILE_HEARTBEAT_TIMEOUT_SECS", "600"))
 
 if on_aws:
-    DESIRED_IDLE_DEFAULT = int(get_ssm_parameter("desired_idle", DESIRED_IDLE_DEFAULT))
+    DESIRED_IDLE_DEFAULT = int(get_ssm_parameter("DESIRED_IDLE_DEFAULT", DESIRED_IDLE_DEFAULT))
     ECS_CLUSTER = get_ssm_parameter("ECS_CLUSTER", "tactic-cluster")
     log.info("Using ECS tile pool", service=TILE_SERVICE, cluster=ECS_CLUSTER, region=AWS_REGION)
     ecs = boto3.client("ecs", region_name=AWS_REGION)
@@ -67,6 +70,11 @@ def publish_queue_metrics():
         ],
     )
 
+class PoolWatcherRegistry(ServiceRegistry):
+    id_prefix = POOL_WATCHER_ID_PREFIX
+    service_namne = POOL_WATCHER_SERVICE
+    extra_valid_ids = []
+
 class MainContainerRegistry(ServiceRegistry):
     id_prefix = MAIN_ID_PREFIX
     service_name = MAIN_SERVICE
@@ -103,6 +111,7 @@ class TileContainerRegistry(ServiceRegistry):
             self.delete_all()
             self.delete_request_queue()
         self.reconciled_tiles = False
+        self.set_desired_idle(DESIRED_IDLE_DEFAULT)
         self.pull_desired_idle()
         self.registry_heartbeat()
         self.remove_obsolete_queues()

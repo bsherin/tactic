@@ -33,7 +33,8 @@ from rabbit_manage import get_pika_connection_with_retries
 from rabbit_admin import delete_wait_queues
 from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
-from registries import TileContainerRegistry, MainContainerRegistry, ModuleViewerRegistry, publish_queue_metrics
+from registries import TileContainerRegistry, MainContainerRegistry, ModuleViewerRegistry, publish_queue_metrics, \
+    PoolWatcherRegistry
 from client_session import ClientSessionRegistry
 from tile_container_management_mixin import TileContainerManagementMixin
 from redis_tools import redis_client
@@ -111,8 +112,10 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         self.main_registry = MainContainerRegistry(self)
         self.module_viewer_registry = ModuleViewerRegistry(self)
         self.client_session_registry = ClientSessionRegistry(self)
+        self.pool_watcher_registry = PoolWatcherRegistry(self)
         self.main_ss = MainSessionStore()
         self.last_publish = -99
+        redis_client.set("control:log_level", "ERROR")
 
         if on_aws:
             self.tile_backend = ECSTileBackend(self.tile_registry, self)
@@ -176,7 +179,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if session_start_ms is not None:
             session_start_ms = int(session_start_ms)
         else:
-            log.error("session_start_ms not found for container", cont_id=cont_id)
+            log.warning("session_start_ms not found for container", cont_id=cont_id)
         data["session_start_ms"] = session_start_ms
         def started_stream(result_data):
             self.submit_response(task_packet, result_data)
@@ -191,7 +194,7 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if session_start_ms is not None:
             session_start_ms = int(session_start_ms)
         else:
-            log.error("session_start_ms not found for container", cont_id=cont_id)
+            log.warning("session_start_ms not found for container", cont_id=cont_id)
         data["session_start_ms"] = session_start_ms
         def got_log(result_data):
             self.submit_response(task_packet, result_data)

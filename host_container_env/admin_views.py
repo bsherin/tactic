@@ -9,6 +9,7 @@ from rabbit_manage import get_pika_connection_with_retries
 from service_controls import apply_log_level, CONTROL_EXCHANGE
 from tactic_logging import log
 from redis_tools import redis_client as r
+from aws_detection import on_aws
 
 tstring = utcnow().strftime("%Y-%H-%M-%S")
 
@@ -22,6 +23,7 @@ from js_source_management import js_source_dict, _develop, css_source
 def admin_interface():
     if current_user.get_id() == admin_user.get_id():
         return render_template("library/library_home_react.html",
+                               on_aws=on_aws,
                                database_type=database_type,
                                repository_type="",
                                develop=str(_develop),

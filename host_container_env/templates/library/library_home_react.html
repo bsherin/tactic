@@ -19,6 +19,7 @@
 {% block scripts %}
     <script type="module" src="{{url_for('static', filename=module_source, v=version_string)}}"></script>
     <script>
+        window.on_aws = "{{on_aws}}" == "True";
         window.is_remote = "{{is_remote}}" == "yes";
         window.user_id = "{{current_user.get_id()}}";
         window.repository_type = "{{repository_type}}";

@@ -10,6 +10,10 @@ import {useSocketListener} from "./tactic_socket";
 export {SearchableConsole, ResponsiveFlex}
 
 function SearchableConsole(props, inner_ref) {
+    props = {
+       noLog: false,
+        ...props
+    };
 
     const [search_string, set_search_string] = useState(null);
     const [search_helper_text, set_search_helper_text] = useState(null);
@@ -88,7 +92,10 @@ function SearchableConsole(props, inner_ref) {
     }
 
     async function _getLogAndStartStreaming() {
-        if (!props.container_id) return;
+        if (props.noLog) {
+            set_log_content("no log")
+            return
+        }
         await _stopLogStreaming();
         let res = await postPromise("host", "get_container_log",
             {cont_id: cont_id.current, max_lines: max_console_lines_ref.current,

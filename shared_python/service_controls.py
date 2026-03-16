@@ -12,6 +12,7 @@ def apply_log_level(level_str: str):
     log.debug("TEST debug")
     log.info("TEST info")
     log.warning("TEST warning")
+    log.error("TEST error")
 
 def process_control_message(msg: dict):
     if msg.get("type") == "set_log_level":

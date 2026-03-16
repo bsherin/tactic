@@ -94,7 +94,7 @@ function AdminPane(props) {
             if (spec_update) {
                 search_spec = Object.assign(search_spec, spec_update)
             }
-            let query = {search_spec: search_spec, row_number: row_index};
+            let query = {search_spec: search_spec, row_number: row_index, include_tiles: false};
             let data = await postPromise("host", get_task, query);
             let new_data_dict;
             if (flush) {
@@ -238,12 +238,20 @@ function AdminPane(props) {
     }
 
     let right_pane;
-    if (props.res_type == "container") {
+    if (props.res_type.includes("container")) {
+        let noLog;
+        if (props.res_type == "tile_container") {
+            noLog = false
+        }
+        else {
+            noLog = !props.selected_resource.Id || props.selected_resource.Image.includes("tactic-log-streamer")
+        }
         right_pane = (
             <div className="d-flex d-inline" ref={console_text_ref}
                  style={{height: "100%", overflow: "hidden", marginRight: 10, position: "relative"}}>
                 <SearchableConsole local_id={window.global_id}
                                    tsocket={props.tsocket}
+                                   noLog={noLog}
                                    container_id={props.selected_resource.Id}
                                    ref={null}
                                    outer_style={{
