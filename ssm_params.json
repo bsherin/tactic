@@ -138,7 +138,7 @@
     },
     {
       "name": "POOL_WATCHER_ID_PREFIX",
-      "value": "pool_watcher",
+      "value": "pool_watcher_",
       "type": "String"
     },
     {
