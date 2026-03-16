@@ -240,12 +240,13 @@ function AdminPane(props) {
     let right_pane;
     if (props.res_type.includes("container")) {
         let noLog;
-        if (props.res_type == "tile_container") {
+        if (props.res_type == "tile_container" || props.res_type == "service_container") {
             noLog = false
         }
         else {
             noLog = !props.selected_resource || !props.selected_resource.Id || !props.selected_resource.Image || props.selected_resource.Image.includes("tactic-log-streamer")
         }
+
         right_pane = (
             <div className="d-flex d-inline" ref={console_text_ref}
                  style={{height: "100%", overflow: "hidden", marginRight: 10, position: "relative"}}>

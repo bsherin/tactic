@@ -477,7 +477,7 @@ function AdminPane(props) {
   var right_pane;
   if (props.res_type.includes("container")) {
     var noLog;
-    if (props.res_type == "tile_container") {
+    if (props.res_type == "tile_container" || props.res_type == "service_container") {
       noLog = false;
     } else {
       noLog = !props.selected_resource || !props.selected_resource.Id || !props.selected_resource.Image || props.selected_resource.Image.includes("tactic-log-streamer");
