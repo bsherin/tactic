@@ -91,6 +91,7 @@ class ServiceRegistry(RedisManager):
 
     def list_running_service_tasks(self):
         arns = []
+        log.debug("list_running_service_tasks", the_service=self.service_name)
         try:
             paginator = ecs.get_paginator("list_tasks")
             for page in paginator.paginate(
@@ -101,7 +102,7 @@ class ServiceRegistry(RedisManager):
                 arns.extend(page.get("taskArns", []))
         except ParamValidationError as e:
             log.error("Parameter validation error calling list_tasks",
-                      service_name=self.service_name)
+                      the_service=self.service_name)
            # raise RuntimeError(f"Param validation error calling list_tasks: {e}") from e
 
         if not arns:
