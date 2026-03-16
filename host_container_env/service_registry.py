@@ -100,7 +100,9 @@ class ServiceRegistry(RedisManager):
             ):
                 arns.extend(page.get("taskArns", []))
         except ParamValidationError as e:
-            raise RuntimeError(f"Param validation error calling list_tasks: {e}") from e
+            log.error("Parameter validation error calling list_tasks",
+                      service_name=self.service_name)
+           # raise RuntimeError(f"Param validation error calling list_tasks: {e}") from e
 
         if not arns:
             return []

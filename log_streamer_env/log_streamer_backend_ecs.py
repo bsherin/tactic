@@ -117,10 +117,11 @@ def get_container_log_ecs(cont_id, max_lines=100, session_start_ms=None):
         kwargs = {
             "logGroupName": group,
             "logStreamName": log_stream,
-            "startTime": session_start_ms,
             "startFromHead": False,          # start at end
             "limit": min(10000, max_lines - len(events)),  # CloudWatch max is 10k
         }
+        if session_start_ms:
+            kwargs["startTime"] = session_start_ms
         if next_token:
             kwargs["nextToken"] = next_token
 
@@ -196,8 +197,9 @@ class ECSLogTailer:
 
                 # Pull log events
                 kwargs = dict(logGroupName=self.group, logStreamName=self.stream,
-                              startTime=self.session_start_ms,
                               startFromHead=True)
+                if self.session_start_ms:
+                    kwargs["startTime"] = self.session_start_ms
                 if next_token:
                     kwargs["nextToken"] = next_token
 
