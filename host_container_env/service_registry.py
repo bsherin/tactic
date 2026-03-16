@@ -103,6 +103,7 @@ class ServiceRegistry(RedisManager):
         except:
             log.exception("Parameter validation error calling list_tasks",
                       the_service=self.service_name)
+            return []
            # raise RuntimeError(f"Param validation error calling list_tasks: {e}") from e
 
         if not arns:

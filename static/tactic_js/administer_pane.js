@@ -480,7 +480,7 @@ function AdminPane(props) {
     if (props.res_type == "tile_container") {
       noLog = false;
     } else {
-      noLog = !props.selected_resource.Id || props.selected_resource.Image.includes("tactic-log-streamer");
+      noLog = !props.selected_resource || !props.selected_resource.Id || !props.selected_resource.Image || props.selected_resource.Image.includes("tactic-log-streamer");
     }
     right_pane = /*#__PURE__*/_react["default"].createElement("div", {
       className: "d-flex d-inline",

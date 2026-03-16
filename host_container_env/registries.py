@@ -72,7 +72,7 @@ def publish_queue_metrics():
 
 class PoolWatcherRegistry(ServiceRegistry):
     id_prefix = POOL_WATCHER_ID_PREFIX
-    service_namne = POOL_WATCHER_SERVICE
+    service_name = POOL_WATCHER_SERVICE
     extra_valid_ids = []
 
 class MainContainerRegistry(ServiceRegistry):

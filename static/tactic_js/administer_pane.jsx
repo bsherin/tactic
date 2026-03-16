@@ -244,7 +244,7 @@ function AdminPane(props) {
             noLog = false
         }
         else {
-            noLog = !props.selected_resource.Id || props.selected_resource.Image.includes("tactic-log-streamer")
+            noLog = !props.selected_resource || !props.selected_resource.Id || !props.selected_resource.Image || props.selected_resource.Image.includes("tactic-log-streamer")
         }
         right_pane = (
             <div className="d-flex d-inline" ref={console_text_ref}
