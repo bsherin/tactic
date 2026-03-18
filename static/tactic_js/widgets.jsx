@@ -93,6 +93,7 @@ function BoxWidget(props) {
                                           tileWidth={props.tileWidth}
                                           tileHeight={props.tileHeight}
                                           resizing={props.resizing}
+                                          widgetDict={props.widgetDict}
                                           widgetData={widgetData} tsocket={props.tsocket}/>;
         } else {
             let WidgetComponent = props.widgetDict["text"];
@@ -102,6 +103,7 @@ function BoxWidget(props) {
                                           console_id={null}
                                           dispatch={null}
                                           resizing={props.resizing}
+                                          widgetDict={props.widgetDict}
                                           widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`}/>;
         }
         return the_widget;
