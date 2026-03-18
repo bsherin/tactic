@@ -337,7 +337,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
     @task_worthy
     def register_client_interaction(self, data):
         global_id = data["global_id"]
-        self.client_session_registry.register_client_interaction(global_id)
+        username = data["username"]
+        self.client_session_registry.register_client_interaction(global_id, username)
 
     @task_worthy
     def set_user_theme(self, data):

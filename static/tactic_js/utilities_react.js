@@ -160,7 +160,8 @@ function useLocalRegisterActivity() {
     current_timer.current = setTimeout(function () {
       waiting.current = false;
       (0, _communication_react.postPromise)("host", "register_client_interaction", {
-        global_id: window.global_id
+        global_id: window.global_id,
+        username: window.username
       }).then(function () {});
     }, activity_interval_msecs);
   }, []);
@@ -179,7 +180,8 @@ function ActivityTracker() {
     registerActivity = _useRegisterActivity2[1];
   (0, _react.useEffect)(function () {
     (0, _communication_react.postPromise)("host", "register_client_interaction", {
-      global_id: window.global_id
+      global_id: window.global_id,
+      username: window.username
     }).then(function () {});
   }, []);
   (0, _react.useEffect)(function () {

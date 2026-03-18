@@ -13,23 +13,30 @@ class ClientSessionRegistry(RedisManager):
         super().__init__(redis_client)
         self.worker = worker
 
-    def initiate_session(self, global_id):
-        self.register_client_interaction(global_id)
-
     def set_session_info(self, global_id, hash_key, value):
         self.set_hash_entry(global_id, hash_key, value)
 
     def get_session_info(self, global_id, hash_key):
         return self.get_hash_entry(global_id, hash_key)
 
-    def register_client_interaction(self, global_id):
+    def register_client_interaction(self, global_id, username=""):
         self.set_session_info(global_id, "last_interaction", str(time.time()))
+        self.set_session_info(global_id, "username", username)
+
+    def get_last_interaction_as_str(self, global_id):
+        last = self.get_last_interaction(global_id)
+        if last:
+            return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last))
+        return ""
 
     def get_last_interaction(self, global_id):
         last_interaction_str = self.get_session_info(global_id, "last_interaction")
         if last_interaction_str:
             return float(last_interaction_str)
         return None
+
+    def get_user(self, global_id):
+        return self.get_session_info(global_id, "username")
 
     def get_open_sessions(self):
         return self.scan_keys_with_prefix("*", tail_only=True)
@@ -45,7 +52,7 @@ class ClientSessionRegistry(RedisManager):
         for global_id in global_ids:
             last_interaction = self.get_last_interaction(global_id)
             if not last_interaction:
-                self.register_client_interaction(global_id)
+                self.register_client_interaction(global_id, self.get_user(global_id))
                 continue
             if (now - last_interaction) > CLIENT_SESSION_TIMEOUT_SECS:
                 log.warning("ending client session due to timeout", global_id=global_id)

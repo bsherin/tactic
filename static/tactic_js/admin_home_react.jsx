@@ -14,7 +14,7 @@ import {Regions} from "@blueprintjs/table";
 import {TacticSocket, useListeners} from "./tactic_socket"
 import {doFlash} from "./toaster"
 import {TacticNavbar} from "./blueprint_navbar";
-import {handleCallback, postPromise} from "./communication_react"
+import {handleCallback, postPromise, postWithCallback} from "./communication_react"
 import {withStatus} from "./toaster";
 import {withDialogs} from "./modal_react";
 
@@ -47,12 +47,13 @@ function _administer_home_main () {
     })
 }
 
-const res_types = ["container", "tile_container", "service_container", "user"];
+const res_types = ["container", "tile_container", "service_container", "client_session", "user"];
 
 const col_names = {
     container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
     tile_container: ["Id", "parent", "project_name", "tile_name", "status", "uptime", "last_heartbeat", "memory_usage_mb"],
     service_container: ["Id", "created", "healthStatus"],
+    client_session: ["Id", "username", "last_interaction"],
     user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
 
@@ -106,6 +107,14 @@ function AdministerHomeApp(props) {
 
     useEffect(() => {
         statusFuncs.stopSpinner();
+    }, []);
+
+    useEffect(() => {  // for mount
+        window.addEventListener("beforeunload", function (e) {
+            e.preventDefault();
+            postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
+            tsocket.disconnect()
+        });
     }, []);
 
     function initSocket(theSocket) {
@@ -194,6 +203,21 @@ function AdministerHomeApp(props) {
         />
         )
     }
+    let client_session_pane = (
+        <AdminPane {...props}
+               res_type="client_session"
+               allow_search_inside={false}
+               allow_search_metadata={false}
+               MenubarClass={ContainerMenubar}
+               updatePaneState={_updatePaneState}
+               updatePaneStatePromise={_updatePaneStatePromise}
+               {...pane_states_ref.current["client_session"]}
+               tsocket={tsocket}
+               extraControls={null}
+               columns={col_names.client_session}
+               id_field="_id"
+        />
+    )
     let user_pane = (
         <AdminPane {...props}
                    res_type="user"
@@ -207,7 +231,6 @@ function AdministerHomeApp(props) {
                    extraControls={null}
                    columns={col_names.user}
                    id_field="_id"
-
         />
     );
     let outer_style = {
@@ -254,6 +277,11 @@ function AdministerHomeApp(props) {
                                 </Tooltip>
                             </Tab>
                         }
+                        <Tab id="clients-pane" panel={client_session_pane}>
+                            <Tooltip content="Client Sessions" position={Position.RIGHT}>
+                                <Icon icon="desktop" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>
+                            </Tooltip>
+                        </Tab>
                         <Tab id="users-pane" panel={user_pane}>
                             <Tooltip content="users" position={Position.RIGHT}>
                                 <Icon icon="user" size={20} tabIndex={-1} color={getIconColor("collections-pane")}/>

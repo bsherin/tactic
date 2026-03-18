@@ -130,6 +130,7 @@ function useLocalRegisterActivity() {
             waiting.current = false;
             postPromise("host", "register_client_interaction", {
                 global_id: window.global_id,
+                username: window.username,
             })
                 .then(()=>{})
         }, activity_interval_msecs);
@@ -152,6 +153,7 @@ function ActivityTracker() {
     useEffect(()=>{
         postPromise("host", "register_client_interaction", {
                 global_id: window.global_id,
+                username: window.username,
             })
             .then(()=>{})
     }, [])

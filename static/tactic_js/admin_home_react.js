@@ -58,11 +58,12 @@ function _administer_home_main() {
     }, _callee);
   })));
 }
-var res_types = ["container", "tile_container", "service_container", "user"];
+var res_types = ["container", "tile_container", "service_container", "client_session", "user"];
 var col_names = {
   container: ["Id", "Other_name", "Name", "Image", "Owner", "Status", "Uptime"],
   tile_container: ["Id", "parent", "project_name", "tile_name", "status", "uptime", "last_heartbeat", "memory_usage_mb"],
   service_container: ["Id", "created", "healthStatus"],
+  client_session: ["Id", "username", "last_interaction"],
   user: ["_id", "username", "full_name", "last_login", "email", "alt_id", "status"]
 };
 function NamesToDict(acc, item) {
@@ -112,6 +113,17 @@ function AdministerHomeApp(props) {
   (0, _tactic_socket.useListeners)(props.tsocket, initSocket);
   (0, _react.useEffect)(function () {
     statusFuncs.stopSpinner();
+  }, []);
+  (0, _react.useEffect)(function () {
+    // for mount
+    window.addEventListener("beforeunload", function (e) {
+      e.preventDefault();
+      (0, _communication_react.postWithCallback)("host", "end_client_session_task", {
+        global_id: window.global_id,
+        force_forward: true
+      });
+      tsocket.disconnect();
+    });
   }, []);
   function initSocket(theSocket) {
     theSocket.attachListener("window-open", function (data) {
@@ -188,6 +200,19 @@ function AdministerHomeApp(props) {
       id_field: "_id"
     }));
   }
+  var client_session_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
+    res_type: "client_session",
+    allow_search_inside: false,
+    allow_search_metadata: false,
+    MenubarClass: ContainerMenubar,
+    updatePaneState: _updatePaneState,
+    updatePaneStatePromise: _updatePaneStatePromise
+  }, pane_states_ref.current["client_session"], {
+    tsocket: tsocket,
+    extraControls: null,
+    columns: col_names.client_session,
+    id_field: "_id"
+  }));
   var user_pane = /*#__PURE__*/_react["default"].createElement(_administer_pane.AdminPane, _extends({}, props, {
     res_type: "user",
     allow_search_inside: false,
@@ -269,6 +294,17 @@ function AdministerHomeApp(props) {
     position: _core.Position.RIGHT
   }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: "package",
+    size: 20,
+    tabIndex: -1,
+    color: getIconColor("collections-pane")
+  }))), /*#__PURE__*/_react["default"].createElement(_core.Tab, {
+    id: "clients-pane",
+    panel: client_session_pane
+  }, /*#__PURE__*/_react["default"].createElement(_core.Tooltip, {
+    content: "Client Sessions",
+    position: _core.Position.RIGHT
+  }, /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+    icon: "desktop",
     size: 20,
     tabIndex: -1,
     color: getIconColor("collections-pane")

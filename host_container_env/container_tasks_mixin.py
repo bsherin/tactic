@@ -178,6 +178,55 @@ class ContainerTasksMixin:
         return tile_chunks
 
     @task_worthy
+    def grab_client_session_list_chunk_task(self, data):
+        admin_user = self.get_user_from_data(data)
+        if not admin_user.username == "admin":
+            return {"success": False, "message": "not authorized", "alert_type": "alert-warning"}
+
+        def sort_regular_key(item):
+            if sort_field not in item:
+                return ""
+            return item[sort_field]
+
+        search_spec = data["search_spec"]
+        row_number = data["row_number"]
+        search_text = search_spec['search_string']
+        reg = re.compile(".*" + search_text + ".*", re.IGNORECASE)
+
+        sort_field = search_spec["sort_field"]
+
+        match_keys = ["Id", "last_interaction"]
+        global_ids = self.client_session_registry.get_open_sessions()
+        rows = []
+        for global_id in global_ids:
+            rows.append({"Id": global_id,
+                         "username": self.client_session_registry.get_user(global_id),
+                         "last_interaction": self.client_session_registry.get_last_interaction_as_str(global_id)})
+        filtered_res = []
+        for row in rows:
+            for k in match_keys:
+                if reg.match(row[k], re.IGNORECASE):
+                    filtered_res.append(row)
+                    break
+        if search_spec["sort_direction"] == "ascending":
+            reverse = False
+        else:
+            reverse = True
+
+        sort_field = search_spec["sort_field"]
+        sort_key_func = sort_regular_key
+
+        sorted_results = sorted(filtered_res, key=sort_key_func, reverse=reverse)
+
+        chunk_start = int(row_number / LIBRARY_CHUNK_SIZE) * LIBRARY_CHUNK_SIZE
+        chunk_list = sorted_results[chunk_start: chunk_start + LIBRARY_CHUNK_SIZE]
+        chunk_dict = {}
+        for n, r in enumerate(chunk_list):
+            chunk_dict[n + chunk_start] = r
+        return {"success": True, "chunk_dict": chunk_dict, "num_rows": len(sorted_results)}
+
+
+    @task_worthy
     def grab_service_container_list_chunk_task(self, data):
         admin_user = self.get_user_from_data(data)
         if not admin_user.username == "admin":
