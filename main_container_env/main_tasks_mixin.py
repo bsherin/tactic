@@ -809,7 +809,7 @@ class LoadSaveTasksMixin:
                             "message": "Notebook Successfully Exported"}
 
         except Exception as ex:
-            log.excpetion("error in export_to_jupyter_notebook")
+            log.exception("error in export_to_jupyter_notebook")
             error_string = self.handle_exception(sid, ex, "<pre>Error exporting to jupyter notebook</pre>",
                                                  print_to_console=False)
             _return_data = {"success": False, "message": error_string}

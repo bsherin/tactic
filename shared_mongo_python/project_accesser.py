@@ -224,7 +224,7 @@ class ProjectAccess(object):
         else:
             mdata = self.update_metadata(mdata)
         mdata["type"] = doc_type
-        if not doc_type == "notebook":
+        if not doc_type in ["notebook", "jupyter"]:
             mdata["collection_name"] = collection_name
             mdata["loaded_tiles"] = project_dict["used_tile_types"]
             mdata["type"] = doc_type

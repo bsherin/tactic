@@ -493,5 +493,5 @@ def post_task_noqworker(source_id, dest_id, task_type, task_data=None):
                               body=json.dumps(new_packet))
         connection.close()
     except:
-        log.excpetion("got an exception in post_task_noqworker trying to publish")
+        log.exception("got an exception in post_task_noqworker trying to publish")
     return
