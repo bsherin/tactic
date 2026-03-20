@@ -204,26 +204,50 @@ class BotoS3:
 
     def upload_info(self, dest_path, content_type):
         bucket, key = _split_s3_url(dest_path)
-        conditions = [
-            {"bucket": bucket},
-            {"key": key},
-            ["content-length-range", 1, MAX_S3_UPLOAD_MB * 1024 * 1024],
-        ]
-        fields = {"key": key}
 
         resp = self.s3.generate_presigned_post(
             Bucket=bucket,
             Key=key,
-            Fields=fields,
-            Conditions=conditions,
-            ExpiresIn=15 * 60  # 15 minutes,
+            Conditions=[
+                ["content-length-range", 1, MAX_S3_UPLOAD_MB * 1024 * 1024],
+            ],
+            ExpiresIn=15 * 60,
         )
-        if not on_aws:
+
+        if on_aws:
+            region = self.s3.meta.region_name or "us-east-2"
+            resp["url"] = f"https://{bucket}.s3.{region}.amazonaws.com/"
+        else:
             resp["url"] = resp["url"].replace(
                 "http://host.docker.internal:4566",
-                "http://0.0.0.0:4566"
+                "http://localhost:4566"
             )
+
         return resp
+
+    # def upload_info(self, dest_path, content_type):
+    #     bucket, key = _split_s3_url(dest_path)
+    #     conditions = [
+    #         {"bucket": bucket},
+    #         {"key": key},
+    #         ["content-length-range", 1, MAX_S3_UPLOAD_MB * 1024 * 1024],
+    #     ]
+    #     fields = {"key": key}
+    #
+    #     resp = self.s3.generate_presigned_post(
+    #         Bucket=bucket,
+    #         Key=key,
+    #         Fields=fields,
+    #         Conditions=conditions,
+    #         ExpiresIn=15 * 60  # 15 minutes,
+    #     )
+    #     if not on_aws:
+    #         resp["url"] = resp["url"].replace(
+    #             "http://host.docker.internal:4566",
+    #             "http://0.0.0.0:4566"
+    #         )
+    #     return resp
+
     def download(self, url: str):
         bucket, key = _split_s3_url(url)
         obj = self.s3.get_object(Bucket=bucket, Key=key)
