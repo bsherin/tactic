@@ -4,6 +4,7 @@ import copy
 import sys
 import nltk
 import pandas as _pd
+import base64
 
 PPI = 100
 
@@ -245,8 +246,8 @@ class Box(Widget):
 
 class MatplotlibWidget(Widget):
     widget_kind = "matplotlib"
-    extra_fields = ["style", "use_svg"]
-    defaults = {"style": None, "use_svg": True}
+    extra_fields = ["style", "use_svg", "dpi"]
+    defaults = {"style": None, "use_svg": False, "dpi": 96}
 
     _FigureCanvasAgg = None
 
@@ -260,8 +261,10 @@ class MatplotlibWidget(Widget):
         from matplotlib_utilities import Figure
         from matplotlib.backends.backend_agg import FigureCanvasAgg
         super().initialize(wdata)
-
-        self.fig = Figure(**wdata)
+        alt_wdata = copy.copy(wdata)
+        if "use_svg" in alt_wdata:
+            del alt_wdata["use_svg"]
+        self.fig = Figure(**alt_wdata)
         if "figsize" not in wdata:
             self.size_to_tile()
         self.canvas = self._get_canvas_class()(self.fig)  # it was necessary to add this in Python 3
@@ -275,13 +278,11 @@ class MatplotlibWidget(Widget):
             the_html = img_file.read()
         else:
             img_file = io.BytesIO()
-            self.fig.savefig(img_file, facecolor=self.fig.get_facecolor())
+            self.fig.savefig(img_file, format="png", dpi=self.dpi, facecolor=self.fig.get_facecolor())
             img_file.seek(0)
-            figname = str(uuid.uuid4())
-            Tile.img_dict[figname] = img_file.getvalue()
-            fig_url = self.base_figure_url + figname
-            image_string = "<img class='output-plot' src='{}' lt='Image Placeholder'>"
-            the_html = image_string.format(fig_url)
+
+            b64 = base64.b64encode(img_file.read()).decode("ascii")
+            the_html = f'<img src="data:image/png;base64,{b64}">'
         self.value = the_html
         return
 
