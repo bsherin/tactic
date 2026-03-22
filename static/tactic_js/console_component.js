@@ -2817,13 +2817,13 @@ function ConsoleCodeItem(props) {
       },
       preventDefault: true
     }, {
-      key: 'Ctrl-x',
+      key: 'Ctrl-y',
       run: function run() {
         handleRedo();
       },
       preventDefault: true
     }, {
-      key: 'Cmd-x',
+      key: 'Cmd-y',
       run: function run() {
         handleRedo();
       },
@@ -3381,13 +3381,13 @@ function ConsoleTextItem(props) {
       },
       preventDefault: true
     }, {
-      key: 'Ctrl-x',
+      key: 'Ctrl-y',
       run: function run() {
         handleRedo();
       },
       preventDefault: true
     }, {
-      key: 'Cmd-x',
+      key: 'Cmd-y',
       run: function run() {
         handleRedo();
       },

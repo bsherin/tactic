@@ -413,12 +413,12 @@ function CreatorApp(props) {
                 }, preventDefault: true
             },
             {
-                key: 'Ctrl-x', run: () => {
+                key: 'Ctrl-y', run: () => {
                     handleRedo();
                 }, preventDefault: true
             },
             {
-                key: 'Cmd-x', run: () => {
+                key: 'Cmd-y', run: () => {
                     handleRedo();
                 }, preventDefault: true
             }
