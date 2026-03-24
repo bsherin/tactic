@@ -1136,7 +1136,7 @@ function CreatorApp(props) {
                 mode: "python",
                 firstLineNumber: 1,
             },
-            start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch
+            start_expanded: false, showSignature: true, sub_items: umListRef.current, dispatch: umDispatch
         },
         {
             title: "handler methods",
@@ -1151,6 +1151,7 @@ function CreatorApp(props) {
                 firstLineNumber: 1,
             },
             icon: pane_type_icons["handler_method"],
+            showSignature: true,
             sub_items: hmListRef.current,
             start_expanded: false,
             createFromList: true,

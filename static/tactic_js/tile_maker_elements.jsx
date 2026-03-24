@@ -255,8 +255,10 @@ function PaneElement(props) {
         <AnimatedItem visible={props.visible} identifier={props.identifier}>
             <Card ref={top_ref} key={props.identifier} elevation={0}
                   className={`maker-pane ${props.className}`}
-                  style={{height: current_height, position: "relative", display: "flex",
-                      flexDirection: "column"}}>
+                  style={{
+                      height: current_height, position: "relative", display: "flex",
+                      flexDirection: "column"
+                  }}>
                 <Button variant="minimal" size="small" icon="cross"
                         className='maker-pane-button maker-pane-left-button'
                         onClick={() => {
@@ -271,7 +273,7 @@ function PaneElement(props) {
                     <Icon icon={props.icon} size={20} intent="primary"
                           className='maker-pane-button maker-pane-right-button'/>
                 }
-                    {props.children}
+                {props.children}
                 <DragHandle position_dict={draghandle_position_dict}
                             iconSize={20}
                             useThinBar={true}
@@ -399,52 +401,52 @@ function MetadataModule(props) {
     return (
         <div className="creator-metadata-outer" style={outer_style}>
             <SimplePaneTitle title="Metadata" icon="properties"/>
-                <ErrorBoundary custom_message="Error in NativeTags">
-                    <FormGroup label="Tags">
-                        <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
-                                    tags={split_tags}
-                                    all_tags={props.mdata.allTags}
-                                    readOnly={props.readOnly}
-                                    handleChange={handleTagsChange}
-                                    res_type="tile"/>
-                    </FormGroup>
-                </ErrorBoundary>
-                <ErrorBoundary custom_message="Error in Category">
-                    <FormGroup label="Category" key="Category">
-                        <InputGroup onChange={handleCategoryChange}
-                                    value={props.metadataRef.current.category}/>
-                    </FormGroup>
-                </ErrorBoundary>
-                <ErrorBoundary custom_message="Error in Icon">
-                    <FormGroup label="Icon">
-                        <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
-                                      icon_val={props.metadataRef.current.icon}
-                                      readOnly={props.readOnly}
-                                      handleSelectChange={handleIconChange}/>
-                    </FormGroup>
-                </ErrorBoundary>
-                <ErrorBoundary custom_message="Error in Notes">
-                    <FormGroup label="Notes">
-                        <NotesField key={`${props.res_name}-${props.res_type}-notes`}
-                                    mStateRef={props.metadataRef}
-                                    res_name={props.res_name}
-                                    res_type={props.res_type}
-                                    readOnly={props.readOnly}
-                                    setCMObject={props.registerCmObject}
-                                    handleChange={handleNotesChange}
-                                    show_markdown_initial={true}
-                                    handleBlur={null}
-                        />
-                        <MetadataNotesButtons/>
-                    </FormGroup>
-                </ErrorBoundary>
-                <ErrorBoundary custom_message="Error in bottom stuff">
-                    <Switch label="Couple save_attrs and exports"
-                            className="ml-2 mb-0 mt-1"
-                            size="medium"
-                            checked={props.metadataRef.current.couple_save_attrs_and_exports}
-                            onChange={handleCoupleChange}/>
-                </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in NativeTags">
+                <FormGroup label="Tags">
+                    <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
+                                tags={split_tags}
+                                all_tags={props.mdata.allTags}
+                                readOnly={props.readOnly}
+                                handleChange={handleTagsChange}
+                                res_type="tile"/>
+                </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in Category">
+                <FormGroup label="Category" key="Category">
+                    <InputGroup onChange={handleCategoryChange}
+                                value={props.metadataRef.current.category}/>
+                </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in Icon">
+                <FormGroup label="Icon">
+                    <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
+                                  icon_val={props.metadataRef.current.icon}
+                                  readOnly={props.readOnly}
+                                  handleSelectChange={handleIconChange}/>
+                </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in Notes">
+                <FormGroup label="Notes">
+                    <NotesField key={`${props.res_name}-${props.res_type}-notes`}
+                                mStateRef={props.metadataRef}
+                                res_name={props.res_name}
+                                res_type={props.res_type}
+                                readOnly={props.readOnly}
+                                setCMObject={props.registerCmObject}
+                                handleChange={handleNotesChange}
+                                show_markdown_initial={true}
+                                handleBlur={null}
+                    />
+                    <MetadataNotesButtons/>
+                </FormGroup>
+            </ErrorBoundary>
+            <ErrorBoundary custom_message="Error in bottom stuff">
+                <Switch label="Couple save_attrs and exports"
+                        className="ml-2 mb-0 mt-1"
+                        size="medium"
+                        checked={props.metadataRef.current.couple_save_attrs_and_exports}
+                        onChange={handleCoupleChange}/>
+            </ErrorBoundary>
         </div>
     )
 }
@@ -700,12 +702,11 @@ function SignatureHeader(props) {
                 {from: funcNameStart, to: funcNameEnd},
                 {from: editableStart, to: closeParenIndex}
             ];
-        }
-        else if (props.mode == "javascript") {
+        } else if (props.mode == "javascript") {
             const match = lineText.match(/^function\s+(\w+)\s*/);
             if (!match) return [];
 
-            const [, funcName, ] = match;
+            const [, funcName,] = match;
 
             // Find function name range
             const shortLineText = lineText.slice(9);
@@ -714,8 +715,7 @@ function SignatureHeader(props) {
             return [
                 {from: funcNameStart, to: funcNameEnd},
             ]
-        }
-        else {
+        } else {
             return []
         }
 
@@ -756,8 +756,7 @@ function SignatureHeader(props) {
             lastArgStringRef.current = argsStr;
             props.handleNameChange(funcName);
             props.handleArgChange(argsStr);
-        }
-        else {
+        } else {
 
             let match = new_signature.match(/^function\s+(\w+)\s*/);
             let funcName;
@@ -827,11 +826,12 @@ function DividerElement(props) {
     return (
         <div style={{
             display: "flex", flexDirection: "row", paddingTop: 25, paddingBottom: 15,
-            position: "relative", width: "100%"}}>
+            position: "relative", width: "100%"
+        }}>
             <EntityTitle title={props.text} icon={props.icon} heading={H4}/>
             <Divider style={{flex: "1 1 0", marginLeft: 10, marginRight: 10, borderRight: "0px"}}/>
         </div>
-        )
+    )
 }
 
 function CmElement(props) {
@@ -891,11 +891,12 @@ function CmElement(props) {
     function setCmObject(cmObject) {
         if (props.updateItem) {
             props.updateItem({cmObject: cmObject}, true);
-        }
-        else {
-            props.cmDispatch({type: "update_item",
+        } else {
+            props.cmDispatch({
+                type: "update_item",
                 new_item: {cmObject: cmObject},
-                identifier: props.identifier}, true);
+                identifier: props.identifier
+            }, true);
         }
 
         if (doScroll) {
@@ -975,14 +976,15 @@ function MakerNavigator(props) {
     function _update_search_state(new_state) {
         setSearchString(new_state.search_string)
     }
+
     return (
         <ErrorBoundary custom_message="There was an error in the Maker Navigator">
             <SearchForm allow_search_inside={false}
                         placeholder="Filter items..."
-                            allow_search_metadata={false}
-                            update_search_state={_update_search_state}
-                            search_string={searchStringRef.current}
-                />
+                        allow_search_metadata={false}
+                        update_search_state={_update_search_state}
+                        search_string={searchStringRef.current}
+            />
             <div style={{overflow: "auto", height: "100%"}} className="maker-navigator">
                 {sections.map((section,) => {
                     let createFromlist = section.createFromList ? section.createFromList : false;
@@ -1003,16 +1005,17 @@ function MakerNavigator(props) {
                     if (section.editable) {
                         return (
                             <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
-                                            sub_items={section.sub_items} icon={section.icon}
-                                            pushCallback={props.pushCallback} startExpaneded={section.start_expanded}
-                                            createFromList={createFromlist}
-                                            searchStringRef={searchStringRef}
-                                            choiceDict={choiceDict}
+                                                sub_items={section.sub_items} icon={section.icon}
+                                                showSignature={section.showSignature}
+                                                pushCallback={props.pushCallback}
+                                                startExpaneded={section.start_expanded}
+                                                createFromList={createFromlist}
+                                                searchStringRef={searchStringRef}
+                                                choiceDict={choiceDict}
                                                 item_base={section.item_base}
-                                            icon_dict={section.icon_dict} icon_field={section.icon_field}/>
+                                                icon_dict={section.icon_dict} icon_field={section.icon_field}/>
                         )
-                    }
-                    else {
+                    } else {
                         return (
                             <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                         sub_items={section.sub_items} icon={section.icon}
@@ -1063,15 +1066,15 @@ function NavSection(props) {
                 {props.sub_items
                     .filter(filterItem)
                     .map((item,) => {
-                    let icon = props.icon_dict ?
-                        <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
-                    let isDivider = props.icon_dict && item[props.icon_field] === "divider";
-                    return (
-                        <NavItem key={item.identifier} isDivider={isDivider} identifier={item.identifier}
-                                 title={item.name} icon={icon}
-                                 item_list={item.item_list}/>
-                    )
-                })
+                        let icon = props.icon_dict ?
+                            <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
+                        let isDivider = props.icon_dict && item[props.icon_field] === "divider";
+                        return (
+                            <NavItem key={item.identifier} isDivider={isDivider} identifier={item.identifier}
+                                     title={item.name} icon={icon}
+                                     item_list={item.item_list}/>
+                        )
+                    })
                 }
             </Collapse>
         </div>
@@ -1146,13 +1149,15 @@ function HandlerCreator(props) {
     }
 
     return (
-        <InputGroup
-            size="small"
-            leftElement={<BpSelectAdvanced options={fullChoiceList}
-                                           value={selectedChoice}
-                                           onChange={setSelectedChoice}/>}
-            rightElement={<Button icon="plus" size="small" variant="minimal" onClick={createItemFromChoiceDict}/>}
-        />
+        <div style={{marginLeft: 25, marginRight: 25, marginBottom: 10}}>
+            <InputGroup
+                size="small"
+                leftElement={<BpSelectAdvanced options={fullChoiceList}
+                                               value={selectedChoice}
+                                               onChange={setSelectedChoice}/>}
+                rightElement={<Button icon="plus" size="small" variant="minimal" onClick={createItemFromChoiceDict}/>}
+            />
+        </div>
     )
 }
 
@@ -1163,7 +1168,7 @@ function NavDivider(props) {
     };
     return (
         <Divider key={name} style={{
-            width:'90%',
+            width: '90%',
             marginTop: 10,
             marginBottom: 10
         }}/>
@@ -1184,6 +1189,7 @@ function SortableNavSection(props) {
         setSelectedChoice: null,
         startExpanded: false,
         searchStringRef: null,
+        showSignature: false,
         pushCallback: () => {
         },
         dispatch: () => {
@@ -1293,9 +1299,12 @@ function SortableNavSection(props) {
                                     return (
                                         <SortableNavItem key={item.identifier} identifier={item.identifier}
                                                          title={item.name}
+                                                         showSignature={props.showSignature}
+                                                         argString={item.argString}
                                                          activeId={activeId}
                                                          isDivider={isDivider}
-                                                         icon={icon} item_list={item.item_list} dispatch={props.dispatch}/>
+                                                         icon={icon} item_list={item.item_list}
+                                                         dispatch={props.dispatch}/>
                                     )
                                 })}
                             <SortableNavItem
@@ -1320,6 +1329,8 @@ function SortableNavItem(props) {
         isSpacer: false,
         isDivider: false,
         dispatch: null,
+        showSignature: false,
+        argString: null,
         is_empty_section: false,
         ...props
     };
@@ -1338,11 +1349,9 @@ function SortableNavItem(props) {
     if (props.isSpacer) {
         style.height = props.is_empty_section ? NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION : NAV_ITEM_SPACER_HEIGHT;
         style.transition = 'none'
-    }
-    else if (props.activeId) {
+    } else if (props.activeId) {
         style.transition = 'none'
-    }
-    else {
+    } else {
         style.transition = transition
     }
 
@@ -1387,6 +1396,8 @@ function NavItem(props) {
         item_list: [],
         identifier: "",
         isDivider: false,
+        showSignature: false,
+        argString: null,
         ...props
     };
     const mpContext = useContext(MakerPaneContext);
@@ -1406,6 +1417,13 @@ function NavItem(props) {
     }
 
     const className = `maker-nav-item ${props.isDivider ? 'nav-divider' : ''} `;
+    let buttonText;
+    if (props.showSignature) {
+        buttonText = <span style={{fontFamily: "monospace", fontSize: 12}}><span style={{fontWeight: 600}}>{props.title}</span>({props.argString})</span>
+    }
+    else {
+        buttonText = <span style={{fontFamily: "monospace"}}>{props.title}</span>
+    }
 
     return (
         <ControlGroup>
@@ -1414,11 +1432,13 @@ function NavItem(props) {
                     intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
                     size="medium"
                     variant="minimal"
+                    ellipsizeText={true}
+                    showSignature={props.showSignature}
+                    argString={props.argString}
+                    text={buttonText}
                     onClick={() => {
                         mpContext.toggleVisibleTab(props.identifier)
-                    }}>
-                {props.title}
-            </Button>
+                }}/>
         </ControlGroup>
     );
 }
