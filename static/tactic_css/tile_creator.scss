@@ -72,6 +72,7 @@ $option-divider-color: #ec9a3c;
 
         .sortable-nav-section {
             margin-top: 5px;
+            overflow: hidden;
         }
 
         .nav-section {
@@ -94,7 +95,7 @@ $option-divider-color: #ec9a3c;
 
         .maker-nav-item {
             margin-left: $nav-item-indent;
-            padding-right: 2px;
+            padding: 0;
             font-size: $nav-item-font-size;
 
             .spacer-nav-item {
@@ -105,6 +106,19 @@ $option-divider-color: #ec9a3c;
             &.nav-divider{
                 font-weight: bold;
                 color: $option-divider-color;
+            }
+
+            .cm-editor {
+                background-color: transparent !important;
+                border: none !important;
+                padding: 0;
+                .cm-content {
+                  padding-left: 0;
+                }
+
+                .cm-line {
+                    font-size: $nav-item-font-size !important;
+                }
             }
         }
     }

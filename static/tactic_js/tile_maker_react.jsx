@@ -1095,6 +1095,9 @@ function CreatorApp(props) {
             icon_dict: option_icons,
             icon_field: "type",
             start_expanded: false,
+            showDefault: true,
+            showAsCode: true,
+            mode: "python",
             item_base: {
                 name: "new_item",
                 tags: "",
@@ -1108,6 +1111,9 @@ function CreatorApp(props) {
         {
             title: "exports", kind: "section", visible: true, editable: true, icon: pane_type_icons["export"],
             start_expanded: false,
+            showAsCode: true,
+            showSelf: true,
+            mode: "python",
             item_base: {
                 name: "new_item",
                 tags: "",
@@ -1129,6 +1135,8 @@ function CreatorApp(props) {
         {
             title: "user methods", visible: true, editable: true, icon: pane_type_icons["user_method"],
             mode: "python",
+            showAsCode: true,
+            showSignature: true,
             item_base: {
                 name: "new_item",
                 argString: "",
@@ -1136,13 +1144,14 @@ function CreatorApp(props) {
                 mode: "python",
                 firstLineNumber: 1,
             },
-            start_expanded: false, showSignature: true, sub_items: umListRef.current, dispatch: umDispatch
+            start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch
         },
         {
             title: "handler methods",
             visible: true,
             editable: true,
             mode: "python",
+            showAsCode: true,
             item_base: {
                 name: "new_item",
                 argString: "",
@@ -1165,6 +1174,7 @@ function CreatorApp(props) {
             icon: pane_type_icons["javascript"],
             start_expanded: false,
             mode: "javascript",
+            showAsCode: true,
             item_base: {
                 name: "new_item",
                 argString: "",

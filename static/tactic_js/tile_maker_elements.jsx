@@ -1006,7 +1006,11 @@ function MakerNavigator(props) {
                         return (
                             <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                                 sub_items={section.sub_items} icon={section.icon}
+                                                showAsCode={section.showAsCode}
                                                 showSignature={section.showSignature}
+                                                showDefault={section.showDefault}
+                                                mode={section.mode}
+                                                showSelf={section.showSelf}
                                                 pushCallback={props.pushCallback}
                                                 startExpaneded={section.start_expanded}
                                                 createFromList={createFromlist}
@@ -1189,7 +1193,11 @@ function SortableNavSection(props) {
         setSelectedChoice: null,
         startExpanded: false,
         searchStringRef: null,
+        showAsCode: false,
         showSignature: false,
+        showDefault: false,
+        showSelf: false,
+        mode: "python",
         pushCallback: () => {
         },
         dispatch: () => {
@@ -1299,7 +1307,12 @@ function SortableNavSection(props) {
                                     return (
                                         <SortableNavItem key={item.identifier} identifier={item.identifier}
                                                          title={item.name}
+                                                         showAsCode={props.showAsCode}
                                                          showSignature={props.showSignature}
+                                                         showDefault={props.showDefault}
+                                                         showSelf={props.showSelf}
+                                                         mode={props.mode}
+                                                         default={item.default}
                                                          argString={item.argString}
                                                          activeId={activeId}
                                                          isDivider={isDivider}
@@ -1332,6 +1345,9 @@ function SortableNavItem(props) {
         showSignature: false,
         argString: null,
         is_empty_section: false,
+        showDefault: false,
+        showSelf: false,
+        default: null,
         ...props
     };
     const {
@@ -1396,7 +1412,12 @@ function NavItem(props) {
         item_list: [],
         identifier: "",
         isDivider: false,
+        showAsCode: false,
         showSignature: false,
+        showDefault: false,
+        showSelf: false,
+        mode: "python",
+        default: null,
         argString: null,
         ...props
     };
@@ -1417,11 +1438,83 @@ function NavItem(props) {
     }
 
     const className = `maker-nav-item ${props.isDivider ? 'nav-divider' : ''} `;
-    let buttonText;
-    if (props.showSignature) {
-        buttonText = <span style={{fontFamily: "monospace", fontSize: 12}}><span style={{fontWeight: 600}}>{props.title}</span>({props.argString})</span>
+    let buttonText = null;
+    if (props.showAsCode) {
+        if (props.showSignature) {
+            // buttonText = <span style={{fontFamily: "monospace", fontSize: 12}}><span style={{fontWeight: 600}}>{props.title}</span>({props.argString})</span>
+            let code = `def ${props.title}(${props.argString}):`;
+            buttonText = (
+                <ReactCodemirror6 readOnly={true}
+                                  mode={props.mode}
+                                  show_line_numbers={false}
+                                  no_height={true}
+                                  controlled={true}
+                                  setCMObject={null}
+                                  getEditableRanges={null}
+                                  restrict_edits_to_range={false}
+                                  className="creator-code-header"
+                                  no_width={true}
+                                  parentService="module_viewer"
+                                  handleChange={null}
+                                  hideLeadingChars={4}
+                                  code_content={code}/>
+            )
+        } else if (props.showDefault) {
+            let code = `${props.title} = ${props.default}`;
+            buttonText = (
+                <ReactCodemirror6 readOnly={true}
+                                  mode={props.mode}
+                                  show_line_numbers={false}
+                                  no_height={true}
+                                  controlled={true}
+                                  setCMObject={null}
+                                  getEditableRanges={null}
+                                  restrict_edits_to_range={false}
+                                  className="creator-code-header"
+                                  no_width={true}
+                                  parentService="module_viewer"
+                                  handleChange={null}
+                                  code_content={code}/>
+            )
+        } else if (props.showSelf) {
+            let code = `self.${props.title}`;
+            buttonText = (
+                <ReactCodemirror6 readOnly={true}
+                                  mode={props.mode}
+                                  show_line_numbers={false}
+                                  no_height={true}
+                                  controlled={true}
+                                  setCMObject={null}
+                                  getEditableRanges={null}
+                                  restrict_edits_to_range={false}
+                                  className="creator-code-header"
+                                  no_width={true}
+                                  parentService="module_viewer"
+                                  handleChange={null}
+                                  code_content={code}/>
+            )
+
+        } else if (props.mode == "javascript") {
+            let code = `function ${props.title}()`;
+            buttonText = (
+                <ReactCodemirror6 readOnly={true}
+                                  mode={props.mode}
+                                  show_line_numbers={false}
+                                  no_height={true}
+                                  controlled={true}
+                                  setCMObject={null}
+                                  getEditableRanges={null}
+                                  restrict_edits_to_range={false}
+                                  className="creator-code-header"
+                                  no_width={true}
+                                  parentService="module_viewer"
+                                  handleChange={null}
+                                  hideLeadingChars={9}
+                                  code_content={code}/>
+            )
+        }
     }
-    else {
+    if (buttonText == null) {
         buttonText = <span style={{fontFamily: "monospace"}}>{props.title}</span>
     }
 
@@ -1438,7 +1531,7 @@ function NavItem(props) {
                     text={buttonText}
                     onClick={() => {
                         mpContext.toggleVisibleTab(props.identifier)
-                }}/>
+                    }}/>
         </ControlGroup>
     );
 }

@@ -225,6 +225,30 @@ function highlightEditableRanges(ranges) {
     });
 }
 
+function hideDefPlugin(nchars) {
+    return ViewPlugin.fromClass(class {
+        constructor(view) {
+            this.decorations = this.build(view);
+        }
+
+        update(update) {
+            if (update.docChanged || update.viewportChanged) {
+                this.decorations = this.build(update.view);
+            }
+        }
+
+        build(view) {
+            const text = view.state.doc.toString();
+
+            return Decoration.set([
+                Decoration.replace({}).range(0, nchars)
+            ]);
+        }
+    }, {
+        decorations: v => v.decorations
+    });
+}
+
 import {Annotation} from "@codemirror/state";
 
 const ExternalUpdate = Annotation.define();
@@ -260,6 +284,7 @@ function ReactCodemirror6(props) {
         restrict_edits_to_range: false,
         getEditableRanges: null,
         parentService: null,
+        hideLeadingChars: null,
         ...props
     };
 
@@ -456,6 +481,12 @@ function ReactCodemirror6(props) {
             extensions = extensions.concat([
                     lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
                     foldGutter()
+                ]
+            );
+        }
+        if (props.hideLeadingChars != null) {
+            extensions = extensions.concat([
+                    hideDefPlugin(props.hideLeadingChars),
                 ]
             );
         }
