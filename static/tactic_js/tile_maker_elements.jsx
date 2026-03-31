@@ -1439,7 +1439,7 @@ function NavItem(props) {
 
     const className = `maker-nav-item ${props.isDivider ? 'nav-divider' : ''} `;
     let buttonText = null;
-    if (props.showAsCode) {
+    if (props.showAsCode && !props.isDivider) {
         if (props.showSignature) {
             // buttonText = <span style={{fontFamily: "monospace", fontSize: 12}}><span style={{fontWeight: 600}}>{props.title}</span>({props.argString})</span>
             let code = `def ${props.title}(${props.argString}):`;

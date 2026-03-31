@@ -1095,7 +1095,8 @@ function CreatorApp(props) {
             icon_dict: option_icons,
             icon_field: "type",
             start_expanded: false,
-            showDefault: true,
+            showDefault: false,
+            showSelf: true,
             showAsCode: true,
             mode: "python",
             item_base: {
