@@ -139,7 +139,8 @@ function TableWidget(props) {
     }, [props.widgetData.expandRows]);
 
     useEffect(() => {
-        if (props.widgetData.value.length < props.widgetData.maxRows) {
+        let availableRows = props.widgetData["availableRows"];
+        if ((props.widgetData.value.length < availableRows) && (props.widgetData.value.length < props.widgetData.maxRows)) {
             widgetSet({maxRows: props.widgetData.maxRows})
         }
         if (_.isEqual(dataDictList, props.widgetData.value)) {
