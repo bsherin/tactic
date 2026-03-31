@@ -285,6 +285,7 @@ function ReactCodemirror6(props) {
         getEditableRanges: null,
         parentService: null,
         hideLeadingChars: null,
+        isLite: false,
         ...props
     };
 
@@ -334,21 +335,25 @@ function ReactCodemirror6(props) {
             if (update.selectionSet && !update.docChanged) {
                 const hasSelection = update.state.selection.ranges.some(r => !r.empty);
 
-                // Cursor move unpauses after Escape (but selection still suppresses)
-                if (!hasSelection) {
-                    aiPausedRef.current = false;
-                }
+
 
                 // Cancel any active stream so we don't show ghost text for an old location.
                 activeStreamChangeCounterRef.current = null;
                 activeStreamCursorPosRef.current = null;
                 activeStreamCursorCounterRef.current = null;
 
-                setAIText(null);
-                if (editorView.current) {
-                    try {
-                        setGhostText(editorView.current, "");
-                    } catch (e) {
+
+                if (!props.isLite) {
+                    // Cursor move unpauses after Escape (but selection still suppresses)
+                    if (!hasSelection) {
+                        aiPausedRef.current = false;
+                    }
+                    setAIText(null);
+                    if (editorView.current) {
+                        try {
+                            setGhostText(editorView.current, "");
+                        } catch (e) {
+                        }
                     }
                 }
             }
@@ -377,23 +382,25 @@ function ReactCodemirror6(props) {
 
                 const hasSelection = update.state.selection.ranges.some(r => !r.empty);
 
-                if (
-                    window.has_openapi_key &&
-                    props.parentService &&
-                    (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
-                    props.local_id &&
-                    !aiPausedRef.current &&
-                    !hasSelection
-                ) {
-                    setAIText(null);
-                    if (editorView.current) setGhostText(editorView.current, "");
-                    doAIUpdate(newDoc);
-                } else {
-                    setAIText(null);
-                    if (editorView.current) {
-                        try {
-                            setGhostText(editorView.current, "");
-                        } catch (e) {
+                if (!props.isLite) {
+                    if (
+                        window.has_openapi_key &&
+                        props.parentService &&
+                        (settingsContext.settingsRef.current["use_ai_code_suggestions"] == "yes") &&
+                        props.local_id &&
+                        !aiPausedRef.current &&
+                        !hasSelection
+                    ) {
+                        setAIText(null);
+                        if (editorView.current) setGhostText(editorView.current, "");
+                        doAIUpdate(newDoc);
+                    } else {
+                        setAIText(null);
+                        if (editorView.current) {
+                            try {
+                                setGhostText(editorView.current, "");
+                            } catch (e) {
+                            }
                         }
                     }
                 }
@@ -413,52 +420,61 @@ function ReactCodemirror6(props) {
             }
         });
 
-        const escapeGhostKeymap = [
-            {
-                key: "Escape",
-                run: (view) => {
-                    aiPausedRef.current = true;
+        let escapeGhostKeymap
+        if (!props.isLite) {
+            escapeGhostKeymap = [
+                {
+                    key: "Escape",
+                    run: (view) => {
+                        aiPausedRef.current = true;
 
-                    // Cancel any in-flight stream
-                    activeStreamChangeCounterRef.current = null;
-                    activeStreamCursorPosRef.current = null;
-                    activeStreamCursorCounterRef.current = null;
+                        // Cancel any in-flight stream
+                        activeStreamChangeCounterRef.current = null;
+                        activeStreamCursorPosRef.current = null;
+                        activeStreamCursorCounterRef.current = null;
 
-                    setAIText(null);
-                    try {
-                        closeCompletion(view);
-                    } catch (e) {
-                    }
-                    try {
-                        setGhostText(view, "");
-                    } catch (e) {
-                    }
+                        setAIText(null);
+                        try {
+                            closeCompletion(view);
+                        } catch (e) {
+                        }
+                        try {
+                            setGhostText(view, "");
+                        } catch (e) {
+                        }
 
-                    return true;
-                },
-                preventDefault: true
-            }
-        ];
-        let extensions = [
-            updateListener,
-            completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
-            keymap.of([
-                ...escapeGhostKeymap,
-                ...customCompletionKeymap,
+                        return true;
+                    },
+                    preventDefault: true
+                }
+            ];
+        }
+
+        let keymaps = [
                 ...props.extraKeys,
                 ...closeBracketsKeymap,
                 ...historyKeymap,
-                ...foldKeymap,
                 ...triggerAutocompleteKeymap,
                 ...strippedDefaultKeymap,
-                ...tabAcceptKeymap,
                 enterInsertsNewlineOnly
-            ]),
+        ];
+        if (!props.isLite) {
+            keymaps = [
+                ...keymaps,
+                ...escapeGhostKeymap,
+                ...customCompletionKeymap,
+                ...foldKeymap,
+                ...triggerAutocompleteKeymap,
+                ...tabAcceptKeymap,
+            ]
+        }
+        let extensions = [
+            updateListener,
+            keymap.of(keymaps),
             mode_dict[props.mode](),
             themeCompartment.current.of([]),
             history(),
             highlightSpecialChars(),
-            history(),
             drawSelection(),
             dropCursor(),
             EditorState.allowMultipleSelections.of(true),
@@ -474,9 +490,17 @@ function ReactCodemirror6(props) {
                 EditorState.readOnly.of(props.readOnly),
                 EditorView.editable.of(!props.readOnly)
             ]),
-            ghostTextField,
-            ghostTextPlugin,
+
         ];
+
+        if (!props.isLite) {
+            extensions = extensions.concat([
+                completionCompartment.current.of(autocompletion({...autocompletionArgRef.current})),
+                ghostTextField,
+                ghostTextPlugin,
+            ])
+        }
+
         if (props.show_line_numbers) {
             extensions = extensions.concat([
                     lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
@@ -514,45 +538,48 @@ function ReactCodemirror6(props) {
         }
     }, []);
 
-    const handleAutocompleteDelta = useCallback((data) => {
-        if (!editorView.current.hasFocus) return;
-        if (data.cmUniqueId !== cmUniqueId.current) {
-            return
-        }
-        if (data.room !== props.local_id) return;
-        if (data.change_counter !== activeStreamChangeCounterRef.current) {
-            console.log("change_counter not equal to activeStreamChangeCounterRef, ignoring");
-            return;
-        }
-        if (aiPausedRef.current) return;
-
-        const view = editorView.current;
-        const hasSelection = view.state.selection.ranges.some(r => !r.empty);
-        if (hasSelection) return;
-
-        if (activeStreamCursorPosRef.current != null) {
-            const curPos = view.state.selection.main.head;
-            if (curPos !== activeStreamCursorPosRef.current) {
-                console.log("cursor position not equal to activeStreamCursorPosRef, ignoring");
+    let handleAutocompleteDelta;
+    if (!props.isLite) {
+        handleAutocompleteDelta = useCallback((data) => {
+            if (!editorView.current.hasFocus) return;
+            if (data.cmUniqueId !== cmUniqueId.current) {
                 return
             }
-          }
-        if (activeStreamCursorCounterRef.current != null && data.cursor_counter != null) {
-            if (data.cursor_counter !== activeStreamCursorCounterRef.current) {
-                console.log("cursor counter not equal to activeStreamCursorCounterRef, ignoring");
-                return
+            if (data.room !== props.local_id) return;
+            if (data.change_counter !== activeStreamChangeCounterRef.current) {
+                console.log("change_counter not equal to activeStreamChangeCounterRef, ignoring");
+                return;
             }
-          }
+            if (aiPausedRef.current) return;
 
-        const nextText = (aiTextRef.current ?? "") + data.text;
-        aiTextRef.current = nextText;   // <-- add this line
-        setAIText(nextText);
-        if (editorView.current) {
-            closeCompletion(editorView.current);
-            const trimmed = computeGhostSuffix(nextText, editorView.current);
-            setGhostText(editorView.current, trimmed);
-        }
-    })
+            const view = editorView.current;
+            const hasSelection = view.state.selection.ranges.some(r => !r.empty);
+            if (hasSelection) return;
+
+            if (activeStreamCursorPosRef.current != null) {
+                const curPos = view.state.selection.main.head;
+                if (curPos !== activeStreamCursorPosRef.current) {
+                    console.log("cursor position not equal to activeStreamCursorPosRef, ignoring");
+                    return
+                }
+            }
+            if (activeStreamCursorCounterRef.current != null && data.cursor_counter != null) {
+                if (data.cursor_counter !== activeStreamCursorCounterRef.current) {
+                    console.log("cursor counter not equal to activeStreamCursorCounterRef, ignoring");
+                    return
+                }
+            }
+
+            const nextText = (aiTextRef.current ?? "") + data.text;
+            aiTextRef.current = nextText;   // <-- add this line
+            setAIText(nextText);
+            if (editorView.current) {
+                closeCompletion(editorView.current);
+                const trimmed = computeGhostSuffix(nextText, editorView.current);
+                setGhostText(editorView.current, trimmed);
+            }
+        })
+    }
 
     useSocketListener(props.tsocket, "AutocompleteDelta", handleAutocompleteDelta);
 
@@ -561,7 +588,7 @@ function ReactCodemirror6(props) {
             const view = editorView.current;
 
             for (let comp of [themeCompartment, completionCompartment, lineNumberCompartment, readOnlyCompartment, restrictCompartment]) {
-                if (comp.current) {
+                if (comp && comp.current) {
                     view?.dispatch({
                         effects: comp.current.reconfigure([])
                     });
@@ -631,31 +658,33 @@ function ReactCodemirror6(props) {
     };
 
     useEffect(() => {
-        let sources;
-        if (props.mode === "python") {
-            sources = [
-                selfCompletionSource(props.extraSelfCompletions),
-                topLevelExtraCompletions,
-                dotAccessCompletions,
-                generalCompletionSource(),]
-        } else {
-            sources = [
-                generalCompletionSource(),]
-        }
-        autocompletionArgRef.current =
-            {
-                optionClass: (completion) => {
-                    return completion.type === "suggestion" ? "cm-completion-ai" : null
-                },
-                override: sources,
-                closeOnBlur: true,
-                defaultKeymap: false,
-                activateOnTyping: false
-            };
-        if (editorView.current) {
-            editorView.current.dispatch({
-                effects: completionCompartment.current.reconfigure(autocompletion({...autocompletionArgRef.current}))
-            });
+        if (!props.isLite) {
+            let sources;
+            if (props.mode === "python") {
+                sources = [
+                    selfCompletionSource(props.extraSelfCompletions),
+                    topLevelExtraCompletions,
+                    dotAccessCompletions,
+                    generalCompletionSource(),]
+            } else {
+                sources = [
+                    generalCompletionSource(),]
+            }
+            autocompletionArgRef.current =
+                {
+                    optionClass: (completion) => {
+                        return completion.type === "suggestion" ? "cm-completion-ai" : null
+                    },
+                    override: sources,
+                    closeOnBlur: true,
+                    defaultKeymap: false,
+                    activateOnTyping: false
+                };
+            if (editorView.current) {
+                editorView.current.dispatch({
+                    effects: completionCompartment.current.reconfigure(autocompletion({...autocompletionArgRef.current}))
+                });
+            }
         }
     }, [props.extraSelfCompletions, settingsContext.settingsRef.current["use_ai_code_suggestions"]]);
 
@@ -703,41 +732,43 @@ function ReactCodemirror6(props) {
     }
 
     useEffect(() => {
-        try {
-            if (!editorView.current) return;
-            const prev_matches = matches.current;
-            let searchTerm = props.search_term;
-            if (!searchTerm) {
-                searchTerm = ""
-            }
-
-            const reg = _searchMatcher(searchTerm, true);
-            if (!reg) {
-                matches.current = 0
-            } else {
-                matches.current = countOccurrences(reg, props.code_content);
-            }
-            if (props.setSearchMatches && matches.current != prev_matches) {
-                props.setSearchMatches(matches.current)
-            }
-            if (!reg || searchTerm === "") {
-                editorView.current.dispatch({
-                    effects: setHighlights.of(Decoration.none)
-                });
-            } else {
-                const current_search_number = props.current_search_number ? props.current_search_number : 0;
-                let line_info = _lineNumberFromSearchNumber(reg, current_search_number);
-                if (line_info) {
-                    _scrollToAndSelectLine(line_info.line);
+        if (!props.isLite) {
+            try {
+                if (!editorView.current) return;
+                const prev_matches = matches.current;
+                let searchTerm = props.search_term;
+                if (!searchTerm) {
+                    searchTerm = ""
                 }
-                const deco = createHighlightDeco(editorView.current, reg,
-                    props.current_search_number);
-                editorView.current.dispatch({
-                    effects: setHighlights.of(deco)
-                });
+
+                const reg = _searchMatcher(searchTerm, true);
+                if (!reg) {
+                    matches.current = 0
+                } else {
+                    matches.current = countOccurrences(reg, props.code_content);
+                }
+                if (props.setSearchMatches && matches.current != prev_matches) {
+                    props.setSearchMatches(matches.current)
+                }
+                if (!reg || searchTerm === "") {
+                    editorView.current.dispatch({
+                        effects: setHighlights.of(Decoration.none)
+                    });
+                } else {
+                    const current_search_number = props.current_search_number ? props.current_search_number : 0;
+                    let line_info = _lineNumberFromSearchNumber(reg, current_search_number);
+                    if (line_info) {
+                        _scrollToAndSelectLine(line_info.line);
+                    }
+                    const deco = createHighlightDeco(editorView.current, reg,
+                        props.current_search_number);
+                    editorView.current.dispatch({
+                        effects: setHighlights.of(deco)
+                    });
+                }
+            } catch (e) {
+                console.log("Error in _doHighlight", e);
             }
-        } catch (e) {
-            console.log("Error in _doHighlight", e);
         }
     }, [props.search_term, props.current_search_number, props.regex_search]);
 

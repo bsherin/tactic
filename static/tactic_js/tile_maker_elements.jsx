@@ -1445,6 +1445,7 @@ function NavItem(props) {
             let code = `def ${props.title}(${props.argString}):`;
             buttonText = (
                 <ReactCodemirror6 readOnly={true}
+                                  isLite={true}
                                   mode={props.mode}
                                   show_line_numbers={false}
                                   no_height={true}
@@ -1463,6 +1464,7 @@ function NavItem(props) {
             let code = `${props.title} = ${props.default}`;
             buttonText = (
                 <ReactCodemirror6 readOnly={true}
+                                  isLite={true}
                                   mode={props.mode}
                                   show_line_numbers={false}
                                   no_height={true}
@@ -1480,6 +1482,7 @@ function NavItem(props) {
             let code = `self.${props.title}`;
             buttonText = (
                 <ReactCodemirror6 readOnly={true}
+                                  isLite={true}
                                   mode={props.mode}
                                   show_line_numbers={false}
                                   no_height={true}
@@ -1498,6 +1501,7 @@ function NavItem(props) {
             let code = `function ${props.title}()`;
             buttonText = (
                 <ReactCodemirror6 readOnly={true}
+                                  isLite={true}
                                   mode={props.mode}
                                   show_line_numbers={false}
                                   no_height={true}
