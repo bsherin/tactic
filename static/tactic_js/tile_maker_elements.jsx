@@ -1527,7 +1527,7 @@ function NavItem(props) {
 
     let fullButton = (
         <span>
-            <Icon icon="dot" size={10} style={{ opacity: dot_opacity}} />
+            <Icon icon="record" size={10} style={{ opacity: dot_opacity, verticalAlign: "middle"}} />
             {buttonText}
         </span>
     )
