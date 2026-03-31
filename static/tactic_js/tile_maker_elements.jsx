@@ -1522,17 +1522,26 @@ function NavItem(props) {
         buttonText = <span style={{fontFamily: "monospace"}}>{props.title}</span>
     }
 
+
+    let dot_opacity = mpContext.visibleTabList.includes(props.identifier) ? 1 : 0
+
+    let fullButton = (
+        <span>
+            <Icon icon="dot" size={10} style={{ opacity: dot_opacity}} />
+            {buttonText}
+        </span>
+    )
+
     return (
         <ControlGroup>
             <Button className={className}
                     icon={props.icon}
-                    intent={mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none"}
                     size="medium"
                     variant="minimal"
                     ellipsizeText={true}
                     showSignature={props.showSignature}
                     argString={props.argString}
-                    text={buttonText}
+                    text={fullButton}
                     onClick={() => {
                         mpContext.toggleVisibleTab(props.identifier)
                     }}/>

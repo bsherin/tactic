@@ -120,6 +120,9 @@ $option-divider-color: #ec9a3c;
                     font-size: $nav-item-font-size !important;
                 }
             }
+            .code-container {
+                display: inline-flex;
+            }
         }
     }
 
