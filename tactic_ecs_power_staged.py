@@ -7,6 +7,12 @@ from typing import List, Dict, Any
 REGION = os.getenv("AWS_REGION", "us-east-2")
 CLUSTER = os.getenv("ECS_CLUSTER_NAME", "tactic-cluster")
 
+# Infrastructure services that other services depend on
+SERVICES_FOUNDATION = [
+    "tactic-rabbitmq",
+    "tactic-redis",
+]
+
 # Services that can be safely stopped by setting desiredCount=0 and Min/Max=0.
 SERVICES_SIMPLE = [
     "tactic-main-service",
@@ -22,6 +28,14 @@ SERVICES_NEED_FORCE = [
     "tactic-tile-pool",
 ]
 
+# Everything except the foundation services
+SERVICES_AFTER_FOUNDATION = [
+    "tactic-main-service",
+    "tactic-module-viewer",
+    "tactic-pool-watcher-s3",
+    "tactic-tile-pool",
+]
+
 # Baseline capacities for start
 BASELINE_CAPACITY = {
     "tactic-main-service":       {"min": 1, "max": 2,  "desired": 1},
@@ -33,9 +47,13 @@ BASELINE_CAPACITY = {
 }
 
 # --- Behavior knobs (tune as you like) ---
-DRAIN_GRACE_SECONDS = int(os.getenv("DRAIN_GRACE_SECONDS", "60"))  # wait for normal drain before force-stop
+DRAIN_GRACE_SECONDS = int(os.getenv("DRAIN_GRACE_SECONDS", "60"))
 STOP_WAIT_TIMEOUT_S = int(os.getenv("STOP_WAIT_TIMEOUT_S", "600"))
 STOP_POLL_S = int(os.getenv("STOP_POLL_S", "5"))
+
+# Start/wait knobs
+START_WAIT_DELAY_S = int(os.getenv("START_WAIT_DELAY_S", "10"))
+START_WAIT_MAX_ATTEMPTS = int(os.getenv("START_WAIT_MAX_ATTEMPTS", "60"))
 
 ecs = boto3.client("ecs", region_name=REGION)
 autoscaling = boto3.client("application-autoscaling", region_name=REGION)
@@ -123,14 +141,13 @@ def _wait_for_tasks_stopped(task_arns: List[str], timeout_s: int = STOP_WAIT_TIM
                 resp = ecs.describe_tasks(cluster=CLUSTER, tasks=chunk)
                 tasks = resp.get("tasks", [])
                 seen = {t["taskArn"] for t in tasks}
-                missing = set(chunk) - seen
 
                 for t in tasks:
                     if t.get("lastStatus") != "STOPPED":
                         new_remaining.add(t["taskArn"])
 
-                # missing are no longer describable; assume stopped
-                _ = missing
+                # missing tasks are assumed stopped
+                _missing = set(chunk) - seen
             except Exception:
                 new_remaining.update(chunk)
 
@@ -206,8 +223,56 @@ def stop_ad_hoc_family_tasks(family: str, wait: bool = True) -> None:
         _wait_for_tasks_stopped(ad_hoc)
 
 
+def _set_service_on(service_name: str) -> None:
+    caps = BASELINE_CAPACITY[service_name]
+
+    print(f"[START] {service_name}: scalable target min={caps['min']} max={caps['max']}")
+    autoscaling.register_scalable_target(
+        ServiceNamespace="ecs",
+        ResourceId=_resource_id(service_name),
+        ScalableDimension="ecs:service:DesiredCount",
+        MinCapacity=caps["min"],
+        MaxCapacity=caps["max"],
+    )
+
+    print(f"[START] {service_name}: desiredCount={caps['desired']}")
+    ecs.update_service(
+        cluster=CLUSTER,
+        service=service_name,
+        desiredCount=caps["desired"],
+        forceNewDeployment=True,
+    )
+
+
+def _wait_for_service_stable(service_name: str) -> None:
+    """
+    Wait until ECS says the service is stable.
+    This is better if your task definition includes container health checks.
+    """
+    print(f"[WAIT] {service_name}: waiting for ECS service stability")
+    waiter = ecs.get_waiter("services_stable")
+    waiter.wait(
+        cluster=CLUSTER,
+        services=[service_name],
+        WaiterConfig={
+            "Delay": START_WAIT_DELAY_S,
+            "MaxAttempts": START_WAIT_MAX_ATTEMPTS,
+        },
+    )
+    print(f"[WAIT] {service_name}: service is stable")
+
+
+def _start_services(services: List[str], wait: bool = False) -> None:
+    for svc in services:
+        _set_service_on(svc)
+
+    if wait:
+        for svc in services:
+            _wait_for_service_stable(svc)
+
+
 def stop_services(wait: bool = True) -> None:
-    # 1) Simple services: scale-to-zero only (no force stop)
+    # 1) Simple services: scale-to-zero only
     for svc in SERVICES_SIMPLE:
         _set_service_off(svc)
 
@@ -220,20 +285,17 @@ def stop_services(wait: bool = True) -> None:
 
 
 def start_services() -> None:
-    all_services = SERVICES_SIMPLE + SERVICES_NEED_FORCE
-    for svc in all_services:
-        caps = BASELINE_CAPACITY[svc]
-        print(f"[START] {svc}: scalable target min={caps['min']} max={caps['max']}")
-        autoscaling.register_scalable_target(
-            ServiceNamespace="ecs",
-            ResourceId=_resource_id(svc),
-            ScalableDimension="ecs:service:DesiredCount",
-            MinCapacity=caps["min"],
-            MaxCapacity=caps["max"],
-        )
+    # Stage 1: bring up RabbitMQ + Redis and wait for them
+    print("[START] Stage 1: foundation services")
+    _start_services(SERVICES_FOUNDATION, wait=False)
 
-        print(f"[START] {svc}: desiredCount={caps['desired']}")
-        ecs.update_service(cluster=CLUSTER, service=svc, desiredCount=caps["desired"], forceNewDeployment=True)
+    # Optional small buffer even after ECS stability
+    print("[START] Stage 1 complete; pausing briefly before dependent services")
+    time.sleep(30)
+
+    # Stage 2: bring up everything else
+    print("[START] Stage 2: dependent services")
+    _start_services(SERVICES_AFTER_FOUNDATION, wait=False)
 
 
 def lambda_handler(event, _context):

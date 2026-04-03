@@ -140,6 +140,10 @@ function TableWidget(props) {
 
     useEffect(() => {
         let availableRows = props.widgetData["availableRows"];
+        if (availableRows > 25 && props.widgetData.maxRows < 25) {
+            widgetSet({maxRows: 25})
+            return
+        }
         if ((props.widgetData.value.length < availableRows) && (props.widgetData.value.length < props.widgetData.maxRows)) {
             widgetSet({maxRows: props.widgetData.maxRows})
         }
@@ -153,7 +157,7 @@ function TableWidget(props) {
         if (!props.columnWidths) {
             computeColumnWidths();
         }
-    }, [props.widgetData.value]);
+    }, [props.widgetData.value, props.widgetData.maxRows]);
 
     useEffect(() => {
         setFooterChoices(getFooterChoices());
