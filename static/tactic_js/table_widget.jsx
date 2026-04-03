@@ -140,8 +140,10 @@ function TableWidget(props) {
 
     useEffect(() => {
         let availableRows = props.widgetData["availableRows"];
-        if (availableRows > 25 && props.widgetData.maxRows < 25) {
-            widgetSet({maxRows: 25})
+        if (props.widgetData.maxRows < 25 && availableRows > props.widgetData.maxRows) {
+            // set a variable named newMax to the lesser of availableRows and 25
+            const newMax = Math.min(availableRows, 25);
+            widgetSet({maxRows: newMax});
             return
         }
         if ((props.widgetData.value.length < availableRows) && (props.widgetData.value.length < props.widgetData.maxRows)) {
