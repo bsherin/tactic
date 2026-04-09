@@ -642,7 +642,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         if data is None:
             data = {}
         full_data = {**data, **kwargs}
-        print(f"creating widget with full_data: {full_data}")
         return self.create_widget_full(kind, full_data, "tile", self._tworker.my_id)
 
     @_task_worthy
