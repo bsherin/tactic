@@ -70,6 +70,9 @@ function GlyphButton(props) {
 }
 exports.GlyphButton = GlyphButton = /*#__PURE__*/(0, _react.memo)(GlyphButton);
 function LabeledTextArea(props) {
+  props = _objectSpread({
+    className: ""
+  }, props);
   return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
     label: props.label,
     style: {
@@ -78,10 +81,8 @@ function LabeledTextArea(props) {
     helperText: props.helperText
   }, /*#__PURE__*/_react["default"].createElement(_core.TextArea, {
     onChange: props.onChange,
-    style: {
-      resize: "none"
-    },
     autoResize: true,
+    className: props.className,
     value: props.the_value
   }));
 }
@@ -90,7 +91,8 @@ function LabeledFormField(props) {
   props = _objectSpread({
     show: true,
     helperText: null,
-    isBool: false
+    isBool: false,
+    className: ""
   }, props);
   var fvalue = props.the_value == null ? "" : props.the_value;
   return /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {
@@ -106,6 +108,7 @@ function LabeledFormField(props) {
     innerLabelChecked: "True"
   }) : /*#__PURE__*/_react["default"].createElement(_core.InputGroup, {
     onChange: props.onChange,
+    inputClassName: props.className,
     value: fvalue
   }));
 }

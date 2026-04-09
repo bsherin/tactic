@@ -38,6 +38,7 @@ class TileParser(object):
         self.exports = self.get_exports()
         self.type = self.extract_type()
         self.options = self.get_options_dict()
+        self.widgets = self.get_widgets_dict()
         self.extra_methods = self.get_extra_methods()
 
     def get_globals(self):
@@ -48,7 +49,7 @@ class TileParser(object):
     def get_extra_methods(self):
         extra_methods = OrderedDict()
         for k, entry in self.methods.items():
-            if k not in ["__init__", "render_content", "options"]:
+            if k not in ["__init__", "render_content", "options", "widget_specs"]:
                 extra_methods[k] = entry
         return extra_methods
 
@@ -83,6 +84,15 @@ class TileParser(object):
         tdict = {}
         exec(opt_code, tdict)
         return tdict["options"](None)
+
+    def get_widgets_dict(self):
+        if not "widget_specs" in self.methods:
+            return []
+        widget_code = self.methods["widget_specs"]["method_code"]
+        widget_code = remove_indents(widget_code, 1)
+        tdict = {}
+        exec(widget_code, tdict)
+        return tdict["widget_specs"](None)
 
     def get_class_node(self):
         res = ast.parse(self.module_code)

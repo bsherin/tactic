@@ -39,7 +39,7 @@ def to_react_style(style):
 
 # noinspection PyProtectedMember
 class Widget(object):
-    extra_fields = ["style"]
+    extra_fields = ["style", "to_render"]
     function_fields = ["on_change", "on_click"]
     defaults = {}
 
@@ -48,6 +48,7 @@ class Widget(object):
         self.runner_type = runner_type
         self.runner_id = runner_id
         self.widget_data = {}
+        self.to_render = None
         self.base_render = {"is_widget": True, "widgetKind": self.widget_kind, "widgetId": self.widgetId}
         self.initialize(wdata)
         return
@@ -70,7 +71,7 @@ class Widget(object):
 
         for ffield in self.function_fields:
             func = wdata.get(ffield, None)
-            if func is not None:
+            if func is not None and type(func).__name__ == "method":
                 setattr(self, ffield, func.__name__)
                 setattr(self, f"{ffield}_is_method", is_class_method(func))
             else:
@@ -123,8 +124,7 @@ class Widget(object):
                     getattr(sys.modules["tile_env"], self.on_click)(value)
 
     def get(self, _data):
-        self.widget_data_dict()
-        return
+        return self.widget_data_dict()
 
     def widget_data_dict(self):
         res = {"value": self.value}
@@ -163,13 +163,13 @@ def is_class_method(func):
 
 class ButtonWidget(Widget):
     widget_kind = "button"
-    extra_fields = ["text", "fill", "icon", "variant", "style"]
+    extra_fields = ["text", "fill", "icon", "variant", "style", "to_render"]
     defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None}
 
 
 class InputWidget(Widget):
     widget_kind = "input"
-    extra_fields = ["fill", "label", "inline", "style"]
+    extra_fields = ["fill", "label", "inline", "style", "to_render"]
     defaults = {"fill": False, "label": "", "inline": False, "style": None}
 
     def initialize(self, wdata):
@@ -179,7 +179,7 @@ class InputWidget(Widget):
 
 class SliderWidget(Widget):
     widget_kind = "slider"
-    extra_fields = ["min", "max", "stepSize", "labelStepSize", "style"]
+    extra_fields = ["min", "max", "stepSize", "labelStepSize", "style", "to_render"]
     defaults = {"min": 0, "max": 10, "stepSize": 1, "labelStepSize": 1, "style": None}
 
     def initialize(self, wdata):
@@ -189,7 +189,7 @@ class SliderWidget(Widget):
 
 class ProgressBarWidget(Widget):
     widget_kind = "progressBar"
-    extra_fields = ["stripes", "intent", "style"]
+    extra_fields = ["stripes", "intent", "style", "to_render"]
     defaults = {"stripes": False, "intent": None, "style": None}
 
     def initialize(self, wdata):
@@ -199,7 +199,7 @@ class ProgressBarWidget(Widget):
 
 class SwitchWidget(Widget):
     widget_kind = "switch"
-    extra_fields = ["label", "style"]
+    extra_fields = ["label", "style", "to_render"]
     defaults = {"label": "switch", "style": None}
 
     def initialize(self, wdata):
@@ -211,7 +211,7 @@ class SwitchWidget(Widget):
 
 class SelectWidget(Widget):
     widget_kind = "select"
-    extra_fields = ["label", "style", "options"]
+    extra_fields = ["label", "style", "options", "to_render"]
     defaults = {"label": "select", "style": None, "options": []}
 
     def initialize(self, wdata):
@@ -221,32 +221,32 @@ class SelectWidget(Widget):
 
 class TextWidget(Widget):
     widget_kind = "text"
-    extra_fields = ["ellipsize", "style"]
+    extra_fields = ["ellipsize", "style", "to_render"]
     defaults = {"ellipsize": True, "style": None}
 
 class JavascriptWidget(Widget):
     widget_kind = "javascript"
-    extra_fields = ["style", "code"]
+    extra_fields = ["style", "code", "to_render"]
     defaults = {"style": None}
 
 class RawHtmlWidget(Widget):
     widget_kind = "rawHtml"
-    extra_fields = ["style"]
+    extra_fields = ["style", "to_render"]
     defaults = {"style": None}
 
 class IframeWidget(Widget):
     widget_kind = "iframe"
-    extra_fields = ["style"]
+    extra_fields = ["style", "to_render"]
     defaults = {"style": None}
 
 class Box(Widget):
     widget_kind = "box"
-    extra_fields = ["style", "widgets"]
+    extra_fields = ["style", "widgets", "direction", "to_render"]
     defaults = {"style": None}
 
 class MatplotlibWidget(Widget):
     widget_kind = "matplotlib"
-    extra_fields = ["style", "use_svg", "dpi"]
+    extra_fields = ["style", "use_svg", "dpi", "to_render"]
     defaults = {"style": None, "use_svg": False, "dpi": 96}
 
     _FigureCanvasAgg = None
@@ -264,6 +264,8 @@ class MatplotlibWidget(Widget):
         alt_wdata = copy.copy(wdata)
         if "use_svg" in alt_wdata:
             del alt_wdata["use_svg"]
+        if "to_render" in alt_wdata:
+            del alt_wdata["to_render"]
         self.fig = Figure(**alt_wdata)
         if "figsize" not in wdata:
             self.size_to_tile()
@@ -287,7 +289,8 @@ class MatplotlibWidget(Widget):
         return
 
     def size_to_tile(self):
-        self.fig.set_size_inches(Tile.width / PPI, Tile.height / PPI)
+        if Tile is not None:
+            self.fig.set_size_inches(Tile.width / PPI, Tile.height / PPI)
         return
 
     def widget_data_dict(self):
@@ -302,7 +305,7 @@ INITIAL_TABLE_ROWS = 25
 
 class TableWidget(Widget):
     widget_kind = "table"
-    extra_fields = ["style", "className", "maxColumnWidth", "maxRows", "expandRows"]
+    extra_fields = ["style", "className", "maxColumnWidth", "maxRows", "expandRows", "to_render"]
     defaults = {
         "maxColumnWidth": None,
         "maxRows": INITIAL_TABLE_ROWS,

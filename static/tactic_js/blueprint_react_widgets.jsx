@@ -70,10 +70,14 @@ function GlyphButton(props) {
 GlyphButton = memo(GlyphButton);
 
 function LabeledTextArea(props) {
+    props = {
+        className: "",
+        ...props
+    }
     return (
         <FormGroup label={props.label} style={{marginRight: 5}} helperText={props.helperText}>
-            <TextArea onChange={props.onChange} style={{resize: "none"}} autoResize={true}
-                      value={props.the_value}/>
+            <TextArea onChange={props.onChange} autoResize={true}
+                      className={props.className} value={props.the_value}/>
         </FormGroup>
     )
 }
@@ -85,6 +89,7 @@ function LabeledFormField(props) {
         show: true,
         helperText: null,
         isBool: false,
+        className: "",
         ...props
     };
     let fvalue = props.the_value == null ? "" : props.the_value;
@@ -93,7 +98,7 @@ function LabeledFormField(props) {
             {props.isBool ?
                 <Switch onChange={props.onChange} checked={props.the_value}
                         innerLabel="False" innerLabelChecked="True"/> :
-                <InputGroup onChange={props.onChange} value={fvalue}/>
+                <InputGroup onChange={props.onChange} inputClassName={props.className} value={fvalue}/>
             }
         </FormGroup>
     )

@@ -156,12 +156,64 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._widgets = {}
         self.in_pseudo_tile = False
         self.pool = None
+        self.widgets = {}
+        self.create_widgets_from_specs()
         return
 
     # <editor-fold desc="_task_worthy methods (events)">
 
     def init_pool(self):
         self.pool = PoolFS(self.username)
+
+    @property
+    def widget_specs(self):
+        return []
+
+    def get_attr(self, attr_name):
+        if not hasattr(self, attr_name):
+            return None
+        return getattr(self, attr_name)
+
+    def convert_style(self, style_string):
+        try:
+            converted_style = eval(style_string)
+            if type(converted_style) == dict:
+                return converted_style
+            return None
+        except Exception:
+            return None
+
+    def create_widgets_from_specs(self):
+        specs = self.widget_specs
+        for spec in specs:
+            edited_spec = copy.copy(spec)
+            del edited_spec["name"]
+            del edited_spec["kind"]
+            if "on_click" in edited_spec:
+                meth = self.get_attr(edited_spec["on_click"])
+                edited_spec["on_click"] = meth
+            if "on_change" in edited_spec:
+                meth = self.get_attr(edited_spec["on_change"])
+                edited_spec["on_change"] = meth
+            if "style" in edited_spec:
+                converted_style = self.convert_style(edited_spec["style"])
+                if converted_style is None:
+                    del edited_spec["style"]
+                else:
+                    edited_spec["style"] = converted_style
+            if "widgets" in edited_spec:
+                new_widgets = []
+                for widget in edited_spec["widgets"]:
+                    the_w = self.get_attr(widget)
+                    if the_w is not None:
+                        new_widgets.append(the_w.render())
+                edited_spec["widgets"] = new_widgets
+            new_widget = self.widget(spec["kind"], **edited_spec)
+            self.widgets[spec["name"]] = new_widget
+            setattr(self, spec["name"], new_widget)
+
+    def render_all_widgets(self):
+        return [w.render() for w in self.widgets.values() if w.to_render]
 
     @_task_worthy
     def os_command_exec(self, data):
@@ -590,6 +642,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         if data is None:
             data = {}
         full_data = {**data, **kwargs}
+        print(f"creating widget with full_data: {full_data}")
         return self.create_widget_full(kind, full_data, "tile", self._tworker.my_id)
 
     @_task_worthy

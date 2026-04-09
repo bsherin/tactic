@@ -29,6 +29,18 @@ class {{class_name}}(TileBase):
         {"name": "{{option.name|e}}", "type": "{{option.type|e}}"{% if option.display_text %}, "display_text": "{{option.display_text|safe}}"{% endif %}{% if option.pool_select_type %}, "pool_select_type": "{{option.pool_select_type|safe}}"{% endif %}{% if option.special_list %}, "special_list": {{option.special_list|safe}}{% endif %}{% if option.tags %}, "tags":"{{option.tags|safe}}"{% endif %}}{% if not loop.last %},{% endif %}
         {% endfor -%}
     ]
+    @property
+    def widget_specs(self):
+        return [
+        {% for widget in widgets -%}
+        {
+            {% for key, value in widget.items() -%}
+            "{{ key|e }}": {{ value|pyrepr }}{% if not loop.last %}, {% endif %}
+            {% endfor -%}
+        }{% if not loop.last %}, {% endif %}
+        {% endfor -%}
+        ]
+
     {% for um in user_methods -%}
     def {{um.name}}(self{{ um.arg_string|safe }}):
 {{um.method_body|safe}}

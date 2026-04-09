@@ -68,7 +68,7 @@ function BoxWidget(props) {
         tile_id: null,
         dispatch: null,
         row: 0,
-        widgetData: {widgets: [], style: {display: "flex", flexDirection: "column"}},
+        widgetData: {widgets: [], direction: "horizontal", style: {display: "flex", flexDirection: "column"}},
         widgetDict: {},
         tileWidth: null,
         tileHeight: null,
@@ -77,6 +77,19 @@ function BoxWidget(props) {
         ...props
     };
     const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
+
+    let full_style = props.widgetData.style ? props.widgetData.style : {};
+
+    if ("direction" in props.widgetData) {
+        if (props.widgetData.direction == "vertical") {
+            full_style["display"] = "flex";
+            full_style["flexDirection"] = "column"
+
+        }
+        else {
+            full_style["display"] = "inline-flex"
+        }
+    }
 
     let outputWidgets = props.widgetData.widgets.map((outputDict, idx) => {
         let widgetKind = outputDict["widgetKind"];
@@ -108,7 +121,7 @@ function BoxWidget(props) {
         }
         return the_widget;
     });
-    return (<div style={props.widgetData?.style} key={props.widgetId}>
+    return (<div className="box-widget" style={full_style} key={props.widgetId}>
         {outputWidgets}
     </div>)
 }
@@ -394,7 +407,7 @@ function InputWidget(props) {
 
     return (
         <FormGroup key={props.widgetId}
-                   inline={false}
+                   inline={props.widgetData.inline}
                    style={props.widgetData.style}
                    label={props.widgetData.label}>
             <InputGroup type="text"

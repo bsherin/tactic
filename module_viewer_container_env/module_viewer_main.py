@@ -157,6 +157,8 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
             opt_dict["default"] = str(opt_dict["default"])
             if "special_list" in opt_dict:
                 opt_dict["special_list"] = str(opt_dict["special_list"])
+        widgets = data_dict["widgets"]
+
         if len(globals_code) > 0 and globals_code[-1] == "\n":
             globals_code = globals_code[:-1]
         with app.test_request_context():
@@ -167,6 +169,7 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                                         couple_save_attrs_and_exports=couple_save_attrs_and_exports,
                                         additional_save_attrs=additional_save_attrs,
                                         options=data_dict["options"],
+                                        widgets=widgets,
                                         jscript_functions=javascript_functions_list_of_dicts,
                                         globals_code=globals_code,
                                         user_methods=user_methods_list_of_dicts,
@@ -289,7 +292,7 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                                       "firstLineNumber": func["body_start"],
                                       "lastLineNumber": func["last_line"]
                                       } for func in used_handler_methods_list]
-        parsed_data = {"option_dict": tp.options, "export_list": tp.exports,
+        parsed_data = {"option_dict": tp.options, "export_list": tp.exports, "widget_list": tp.widgets,
                        "additional_save_attrs": tp.additional_save_attrs,
                        "render_content_info": render_content_info,
                        "javascript_functions_list": javascript_functions_list,
@@ -311,10 +314,16 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
         self.retrieve_handler_methods()
         return
 
+from markupsafe import Markup
+
+
+def pyrepr(value):
+    return Markup(repr(value))
 
 if __name__ == "__main__":
     try:
         app = Flask(__name__)
+        app.jinja_env.filters["pyrepr"] = pyrepr
         from service_controls import set_to_redis_log_level
         set_to_redis_log_level()
         log.debug("entering module_viewer_main")

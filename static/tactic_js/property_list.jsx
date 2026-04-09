@@ -50,6 +50,16 @@ function propertyListReducer(state, action) {
                 }
             });
             return {...state, items: new_items};
+        case "set_item":
+            const item_id = action.identifier;
+            new_items = prop_list.map(t => {
+                if (t.identifier == item_id) {
+                    return action.new_item;
+                } else {
+                    return t;
+                }
+            });
+            return {...state, items: new_items};
         case "move_item_over":
             const active_id = action["active_identifier"];
             const over_id = action["over_identifier"];
@@ -156,6 +166,16 @@ function createPropertyListUndoAction(action, stateRef, stagedUndoEntryRef) {
                     }
                     doDebounce = true;
                     break;
+                }
+            }
+            break;
+
+        case "set_item":
+            const prevItem = listBefore.find(t => t.identifier === action.identifier);
+            if (prevItem) {
+                undoAction = {
+                    type: "set_item",
+                    new_item: prevItem
                 }
             }
             break;

@@ -40,9 +40,10 @@ import {NativeTags, IconSelector, NotesField} from "./combined_metadata";
 import {postPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
 import {SearchForm} from "./library_widgets";
+import {widgetInfo, widgetDefaults} from "./widget_info";
 
 export {
-    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, DividerElement, pane_type_icons,
+    CmElement, PaneElement, MakerNavigator, OptionModuleForm, WidgetModuleForm, ExportModuleForm, DividerElement, pane_type_icons,
     MetadataModule, option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT
 }
 
@@ -54,6 +55,7 @@ const NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION = 20;
 
 const pane_type_icons = {
     "option": "select",
+    "widget": "widget",
     "export": "export",
     "metadata": "properties",
     "save": "floppy-disk",
@@ -647,6 +649,119 @@ function OptionModuleForm(props) {
 
 OptionModuleForm = memo(OptionModuleForm);
 
+
+function WidgetModuleForm(props) {
+    props = {
+        widgetItem: null,
+        dispatch: () => {
+        },
+        ...props
+    };
+
+    function handleFieldChange(field, event) {
+        if (field == "kind") {
+            handleKindChange(event);
+            return
+        }
+        let fieldKind = widgetInfo[props.widgetItem.kind][field].type;
+        let the_value;
+        switch (fieldKind) {
+            case "boolean":
+                the_value = event.target.checked;
+                break;
+            case "number":
+                the_value = event.target.value;
+                if (the_value.length == 0 || the_value.endsWith("."))
+                    break;
+                the_value = Number(event.target.value);
+                if (Number.isNaN(the_value)) {
+                    the_value = event.target.value
+                }
+                break;
+            case "list":
+                the_value = textRowsToArray(event.target.value);
+                break;
+            default:
+                the_value = event.target.value
+        }
+        let new_item = {}
+        new_item[field] = the_value
+        props.dispatch({type: "update_item", new_item: new_item, identifier: props.widgetItem.identifier})
+    }
+
+    function handleKindChange(event) {
+        let new_kind = event.currentTarget.value;
+        let new_entry = {...widgetDefaults[new_kind]};
+        new_entry.name = props.widgetItem.name;
+        new_entry.pane_height = props.widgetItem.pane_height;
+        new_entry.identifier = props.widgetItem.identifier;
+        props.dispatch({type: "set_item", new_item: new_entry, identifier: props.widgetItem.identifier});
+    }
+
+    const fieldList = Object.keys(widgetDefaults[props.widgetItem.kind]);
+
+    return (
+        <div>
+            <SimplePaneTitle icon={pane_type_icons["widget"]} title={props.widgetItem.name}/>
+            <div>
+                <form className="maker-form-container">
+                    <div style={{display: "flex", flexDirection: "column"}}>
+                        <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                            {fieldList.map((field) =>{
+                                switch (widgetInfo[props.widgetItem.kind][field].type) {
+                                    case "boolean":
+                                        return (
+                                            <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              isBool={true}
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                    case "text_box":
+                                        return (
+                                            <LabeledTextArea label={field} the_value={props.widgetItem[field]} onChange={(event)=>{
+                                                    handleFieldChange(field, event)}}/>
+                                        )
+                                    case "code_box":
+                                        return (
+                                            <LabeledTextArea label={field} the_value={props.widgetItem[field]} className="code-font" onChange={(event)=>{
+                                                    handleFieldChange(field, event)}}/>
+                                        )
+                                    case "list":
+                                        return (
+                                            <LabeledTextArea label={field} the_value={arrayToTextRows(props.widgetItem[field])} className="code-font"
+                                                             onChange={(event)=>{
+                                                    handleFieldChange(field, event)}}/>
+                                        )
+                                    case "select":
+                                        return (
+                                           <LabeledSelectList label="Type" the_value={props.widgetItem[field]}
+                                                              option_list={widgetInfo[props.widgetItem.kind][field].options}
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                    case "method":
+                                      return (
+                                            <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              isBool={false} className="code-font"
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                    default:
+                                          return (
+                                            <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              isBool={false}
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                }
+                            })}
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    )
+}
+
+WidgetModuleForm = memo(WidgetModuleForm);
+
 function SignatureHeader(props) {
     props = {
         name: "",
@@ -761,7 +876,7 @@ function SignatureHeader(props) {
             let match = new_signature.match(/^function\s+(\w+)\s*/);
             let funcName;
             if (!match) {
-                match = new_signature.match(/^function\s+\s*\(/);
+                // match = new_signature.match(/^function\s+\s*\(/);
                 funcName = "func";
             } else {
                 [, funcName] = match;

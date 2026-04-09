@@ -43,9 +43,10 @@ import {useStateAndRefWithUndo, withUndo, UndoContext} from "./undo";
 import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {
-    CmElement, PaneElement, MakerNavigator, OptionModuleForm, ExportModuleForm, MetadataModule, DividerElement,
-    option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons,
+    CmElement, PaneElement, MakerNavigator, OptionModuleForm, WidgetModuleForm, ExportModuleForm, MetadataModule, DividerElement,
+    option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons
 } from "./tile_maker_elements";
+import {widgetIcons} from "./widget_info"
 import {useMetadata} from "./metadata_reducer";
 import {TileMakerSearchForm} from "./tile_maker_search_form";
 
@@ -78,6 +79,7 @@ function CreatorApp(props) {
 
 
     const [, optionDispatch, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
+    const [, widgetDispatch, widget_list_ref] = usePropertyList(props.widget_list, INITIAL_FORM_PANE_HEIGHT, {});
     const [, exportDispatch, export_list_ref] = usePropertyList(props.export_list,  INITIAL_FORM_PANE_HEIGHT, {tags: ""});
     const [, saveDispatch, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
     const [, umDispatch, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
@@ -630,6 +632,11 @@ function CreatorApp(props) {
         mdata["interface_state"] = {
             "visibleMethodList": visibleMethods,
         };
+        let widgetsToSave = removeNotSavedThings(widget_list_ref)
+        for (let w of widgetsToSave) {
+            delete w["pane_height"];
+            delete w["identifier"];
+        }
         return {
             "module_name": _cProp("resource_name"),
             "mdata": mdata,
@@ -638,6 +645,7 @@ function CreatorApp(props) {
             "render_content_info": removeNotSavedThingsFromItem(renderContentInfoRef.current),
             "additional_save_attrs": removeNotSavedThings(save_list_ref),
             "options": removeNotSavedThings(option_list_ref),
+            "widgets": widgetsToSave,
             "user_methods": removeNotSavedThings(umListRef),
             "used_handler_methods": removeNotSavedThings(hmListRef),
             "javascript_functions": removeNotSavedThings(jsListRef),
@@ -1026,6 +1034,16 @@ function CreatorApp(props) {
         }
     }
 
+    let widgetElemDict = {};
+    for (let w of widget_list_ref.current) {
+        widgetElemDict[w["identifier"]] = () => {
+            return (
+                <WidgetModuleForm widgetItem={w}
+                                  dispatch={widgetDispatch}/>
+            )
+        }
+    }
+
     let exportElemDict = {};
     for (let exp of export_list_ref.current) {
         exportElemDict[exp["identifier"]] = () => {
@@ -1108,6 +1126,29 @@ function CreatorApp(props) {
             },
             sub_items: option_list_ref.current,
             dispatch: optionDispatch
+        },
+        {
+            title: "widgets",
+            kind: "section",
+            visible: true,
+            editable: true,
+            icon: pane_type_icons["widget"],
+            icon_dict: widgetIcons,
+            icon_field: "kind",
+            start_expanded: false,
+            showDefault: false,
+            showSelf: true,
+            showAsCode: true,
+            mode: "python",
+            item_base: {
+                name: "new_text_widget",
+                kind: "text",
+                value: "",
+                ellipsize: false,
+                style: "{}",
+            },
+            sub_items: widget_list_ref.current,
+            dispatch: widgetDispatch
         },
         {
             title: "exports", kind: "section", visible: true, editable: true, icon: pane_type_icons["export"],
@@ -1264,6 +1305,26 @@ function CreatorApp(props) {
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
                 {optionElemDict[key]?.()}
+            </PaneElement>
+        )
+    }
+    for (let key of Object.keys(widgetElemDict)) {
+        if (visibleTabListRef.current.includes(key)) {
+            right_pane_list.push(
+                <DividerElement text="Widgets" key="widgets-divider" icon={pane_type_icons["widget"]}/>
+            );
+            break;
+        }
+    }
+
+    for (let key of Object.keys(widgetElemDict)) {
+        const item = getListItemFromidentifier(key, widget_list_ref.current);
+        right_pane_list.push(
+            <PaneElement identifier={key} key={key} pane_height={item.pane_height}
+                         pane_scroll_ref={pane_scroll_ref}
+                         className="form-pane" visible={visibleTabListRef.current.includes(key)}
+                         allowDelete={true} dispatch={widgetDispatch} pushCallback={pushCallback}>
+                {widgetElemDict[key]?.()}
             </PaneElement>
         )
     }

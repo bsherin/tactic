@@ -116,6 +116,7 @@ async function creator_props(data, registerDirtyMethod, finalCallback) {
             used_handler_methods_list: parsed_data.used_handler_methods_list,
             mdata: mdata,
             option_list: correctOptionListTypes(parsed_data.option_dict),
+            widget_list: parsed_data.widget_list ? parsed_data.widget_list : [],
             export_list: parsed_data.export_list,
             additional_save_attrs: parsed_data.additional_save_attrs,
             all_handler_methods: all_handler_methods,

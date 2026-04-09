@@ -187,7 +187,12 @@ $option-divider-color: #ec9a3c;
         }
 
         .maker-form-container {
-            padding-top: 20px
+            padding-top: 20px;
+
+            .code-font {
+                font-family: monospace;
+                font-size: 12px;
+            }
         }
 
         &.form-pane {
