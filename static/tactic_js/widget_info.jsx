@@ -127,6 +127,13 @@ let widgetInfo = {
         direction: selectField("horizontal", ["horizontal", "vertical"]),
         style: styleField()
     },
+    select: {
+        value: stringField(),
+        label: stringField("select"),
+        on_change: methodField(),
+        options: listField(),
+        style: styleField()
+    },
     matplotlib: {
         use_svg: boolField(),
         dpi: numberField(96),
