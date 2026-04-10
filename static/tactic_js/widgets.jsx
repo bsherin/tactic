@@ -78,7 +78,7 @@ function BoxWidget(props) {
     };
     const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
-    let full_style = props.widgetData.style ? props.widgetData.style : {};
+    let full_style = props.widgetData.style ? {...props.widgetData.style} : {};
 
     if ("direction" in props.widgetData) {
         if (props.widgetData.direction == "vertical") {
