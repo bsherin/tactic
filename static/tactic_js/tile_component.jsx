@@ -86,7 +86,6 @@ function TileComponent(props) {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
 
     useEffect(() => {
-        _broadcastTileSize(props.tile_width, props.tile_height);
         executeEmbeddedScripts();
         listen_for_clicks();
     }, []);
@@ -103,8 +102,14 @@ function TileComponent(props) {
         }
     });
 
+    useEffect(()=>{
+        if (props.loading_status == "loaded") {
+            _broadcastTileSize();
+        }
+    }, [props.loading_status])
+
     useEffect(() => {
-        _broadcastTileSize(props.tile_width, props.tile_height)
+        _broadcastTileSize();
     }, [props.tile_width, props.tile_height]);
 
 

@@ -105,7 +105,6 @@ function TileComponent(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
   (0, _react.useEffect)(function () {
-    _broadcastTileSize(props.tile_width, props.tile_height);
     executeEmbeddedScripts();
     listen_for_clicks();
   }, []);
@@ -121,7 +120,12 @@ function TileComponent(props) {
     }
   });
   (0, _react.useEffect)(function () {
-    _broadcastTileSize(props.tile_width, props.tile_height);
+    if (props.loading_status == "loaded") {
+      _broadcastTileSize();
+    }
+  }, [props.loading_status]);
+  (0, _react.useEffect)(function () {
+    _broadcastTileSize();
   }, [props.tile_width, props.tile_height]);
 
   // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)

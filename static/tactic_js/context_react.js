@@ -1179,6 +1179,7 @@ function ContextApp(props) {
     closeTab: _closeTab,
     refreshTab: _refreshTab,
     dispatch: tabPanelListDispatch,
+    pushCallback: pushCallback,
     tabPanelList: tabPanelList
   });
   var right_main_panes = /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, all_panels);

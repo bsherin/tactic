@@ -296,11 +296,16 @@ function SelectWidget(props) {
 
     const [, widgetSet,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
-    const {style, label, ...rest} = props.widgetData;
+    const {style, label, options, ...rest} = props.widgetData;
 
     function onChange(e) {
         const newWidgetData = {...props.widgetData, value: e.currentTarget.value};
         widgetSet(newWidgetData);
+    }
+
+    let realOptions = options;
+    if (!Array.isArray(options)) {
+        realOptions = []
     }
 
     return (
@@ -309,6 +314,7 @@ function SelectWidget(props) {
                    style={props.widgetData?.style}
                    label={props.widgetData.label}>
             <HTMLSelect {...rest}
+                        options={realOptions}
                         onChange={onChange}/>
         </FormGroup>
     )

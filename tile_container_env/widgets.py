@@ -13,6 +13,7 @@ in_pseudo_tile = False
 
 from other_api_mixin import nltk_available
 from document_object import TacticDocument
+from tactic_logging import log
 
 if nltk_available:
     html_table_classes = [_pd.DataFrame, nltk.FreqDist, dict, _pd.Series, list, TacticDocument]
@@ -289,8 +290,11 @@ class MatplotlibWidget(Widget):
         return
 
     def size_to_tile(self):
-        if Tile is not None:
-            self.fig.set_size_inches(Tile.width / PPI, Tile.height / PPI)
+        try:
+            if Tile is not None and not type(Tile.width) == str:
+                self.fig.set_size_inches(float(Tile.width) / PPI, float(Tile.height) / PPI)
+        except Exception:
+            log.exception("error sizing to tile")
         return
 
     def widget_data_dict(self):

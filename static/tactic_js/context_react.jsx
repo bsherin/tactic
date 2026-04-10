@@ -807,6 +807,7 @@ function ContextApp(props) {
             closeTab={_closeTab}
             refreshTab={_refreshTab}
             dispatch={tabPanelListDispatch}
+            pushCallback={pushCallback}
             tabPanelList={tabPanelList}
         />
     );
