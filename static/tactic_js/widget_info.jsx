@@ -94,7 +94,7 @@ let widgetInfo = {
     },
     html: {
         value: codeTextBoxField(),
-        style: stringField(),
+        style: styleField()
     },
     iframe: {
         value: codeTextBoxField(),
@@ -148,7 +148,7 @@ let widgetInfo = {
 
 function baseWidgetFields(kind) {
     return {
-        name: stringField("new_item"),
+        name: codeStringField("new_item"),
         kind: selectField(kind, Object.keys(widgetInfo)),
         to_render: boolField(true)
     }

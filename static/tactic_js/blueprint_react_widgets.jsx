@@ -1,5 +1,5 @@
 import React from "react";
-import {memo, useCallback, useMemo} from "react";
+import {memo, useCallback, useMemo, useEffect, useRef, useState} from "react";
 
 import {
     Tooltip, Button, FormGroup, InputGroup, HTMLSelect, Switch, TextArea
@@ -37,16 +37,16 @@ function GlyphButton(props) {
         ...props
     };
 
-    const _handleClick = useCallback((e)=>{
+    const _handleClick = useCallback((e) => {
         props.handleClick(e);
         e.stopPropagation()
     }, [props.handleClick]);
 
-    const pDef = useCallback((e)=>{
+    const pDef = useCallback((e) => {
         e.preventDefault()
     }, []);
 
-    let style = useMemo(()=>{
+    let style = useMemo(() => {
         return props.style == null ? {paddingLeft: 2, paddingRight: 2} : props.style;
     }, [props.style]);
 
@@ -84,6 +84,50 @@ function LabeledTextArea(props) {
 
 LabeledTextArea = memo(LabeledTextArea);
 
+const MIN_AUTO_FIELD_WIDTH = 150
+
+function AutoResizeInput(props) {
+    props = {
+        value: "",
+        inputClassName: "",
+        onChange: null,
+        ...props
+    }
+    const spanRef = useRef(null);
+    const [width, setWidth] = useState(MIN_AUTO_FIELD_WIDTH);
+
+    useEffect(() => {
+        if (spanRef.current) {
+            setWidth(Math.max(MIN_AUTO_FIELD_WIDTH, spanRef.current.offsetWidth + 30));
+        }
+    }, [props.value]);
+
+    return (
+        <div style={{display: "inline-block"}}>
+              <span
+                  ref={spanRef}
+                  style={{
+                      position: "absolute",
+                      visibility: "hidden",
+                      whiteSpace: "pre",
+                      font: "inherit",
+                  }}
+                  className={props.inputClassName}
+              >
+                {props.value || " "}
+              </span>
+
+            <InputGroup
+                value={props.value}
+                inputClassName={props.inputClassName}
+                onChange={props.onChange}
+                style={{width: `${width}px`}}
+            />
+        </div>
+    );
+}
+
+
 function LabeledFormField(props) {
     props = {
         show: true,
@@ -92,13 +136,14 @@ function LabeledFormField(props) {
         className: "",
         ...props
     };
+
     let fvalue = props.the_value == null ? "" : props.the_value;
     return (
         <FormGroup label={props.label} style={{marginRight: 5}} helperText={props.helperText}>
             {props.isBool ?
                 <Switch onChange={props.onChange} checked={props.the_value}
                         innerLabel="False" innerLabelChecked="True"/> :
-                <InputGroup onChange={props.onChange} inputClassName={props.className} value={fvalue}/>
+                <AutoResizeInput onChange={props.onChange} inputClassName={props.className} value={fvalue}/>
             }
         </FormGroup>
     )
@@ -124,6 +169,7 @@ function SelectList(props) {
         minimal: false,
         ...props
     };
+
     function handleChange(event) {
         props.onChange(event.target.value)
     }

@@ -609,7 +609,7 @@ function OptionModuleForm(props) {
                     <div style={{display: "flex", flexDirection: "column"}}>
                         <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
                             <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
-                                              helperText={props.optionItem["name_warning_text"]}
+                                              className="code-font" helperText={props.optionItem["name_warning_text"]}
                             />
                             <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
                                                the_value={props.optionItem.type}/>
@@ -625,12 +625,14 @@ function OptionModuleForm(props) {
                             }
                             {["custom_list", "multi_select"].includes(props.optionItem.type) &&
                                 <LabeledTextArea label="Special List"
+                                                 className="code-font"
                                                  onChange={handleSpecialListChange}
                                                  the_value={arrayToTextRows(props.optionItem.hasOwnProperty("special_list") ?
                                                      props.optionItem.special_list : [])}
                                 />}
                             {taggable_types.includes(props.optionItem.type) &&
                                 <LabeledFormField label="Tag" onChange={handleTagChange}
+                                                  className="code-font"
                                                   the_value={props.optionItem.tags}/>
                             }
                             {props.optionItem.type == "pool_select" &&
@@ -738,6 +740,12 @@ function WidgetModuleForm(props) {
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     case "method":
+                                      return (
+                                            <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              isBool={false} className="code-font"
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                    case "code_string":
                                       return (
                                             <LabeledFormField label={field} the_value={props.widgetItem[field]}
                                                               isBool={false} className="code-font"
