@@ -1,6 +1,7 @@
-import React, {useContext, useEffect, useRef, useMemo, useState} from "react";
+import React, {useContext, useEffect, useRef, useMemo, useState, Fragment} from "react";
 
-import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup, ProgressBar} from "@blueprintjs/core";
+import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup, Collapse,
+    ProgressBar, Divider} from "@blueprintjs/core";
 
 import {postPromise, postWithCallback} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -22,7 +23,9 @@ const widgetDict = {
     select: SelectWidget,
     input: InputWidget,
     iframe: IframeWidget,
-    matplotlib: MatplotlibWidget
+    matplotlib: MatplotlibWidget,
+    divider: DividerWidget,
+    collapse: CollapseWidget
 };
 
 
@@ -58,6 +61,76 @@ function useWidget(widgetId, local_id, console_id, tile_id) {
     }
 
     return [widgetGet, widgetSet, widgetAction];
+}
+
+function CollapseWidget(props) {
+    props = {
+        widgetId: props.widgetId,
+        local_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: {widgets: [], startOpen: true, label:"collapse", intent: "primary", className: null},
+        widgetDict: {},
+        tileWidth: null,
+        tileHeight: null,
+        resizing: false,
+        tsocket: null,
+        ...props
+    };
+    const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
+    const [isOpen, setIsOpen] = useState(props.widgetData.start_open);
+
+    function _handleClick() {
+        setIsOpen(!isOpen);
+    }
+
+    let outputWidgets = props.widgetData.widgets.map((outputDict, idx) => {
+        let widgetKind = outputDict["widgetKind"];
+        let widgetId = outputDict["widgetId"];
+        let widgetData = outputDict["widgetData"];
+        let the_widget;
+        if (widgetKind in props.widgetDict) {
+            let WidgetComponent = props.widgetDict[widgetKind];
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
+                                          console_id={null}
+                                          tile_id={props.tile_id}
+                                          row={idx}
+                                          dispatch={null}
+                                          tileWidth={props.tileWidth}
+                                          tileHeight={props.tileHeight}
+                                          resizing={props.resizing}
+                                          widgetDict={props.widgetDict}
+                                          widgetData={widgetData} tsocket={props.tsocket}/>;
+        } else {
+            let WidgetComponent = props.widgetDict["text"];
+            the_widget = <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
+                                          row={idx}
+                                          tile_id={props.tile_id}
+                                          console_id={null}
+                                          dispatch={null}
+                                          resizing={props.resizing}
+                                          widgetDict={props.widgetDict}
+                                          widgetData={`Widget kind not found ${widgetId}, ${widgetKind} ${widgetData}`}/>;
+        }
+        return the_widget;
+    });
+    let but_bottom_margin = isOpen ? 10 : 20;
+    return (
+        <Fragment>
+            <Button onClick={_handleClick}
+                        text={props.widgetData.label}
+                        size="medium"
+                        variant="minimal"
+                        intent="primary"
+                        style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
+                />
+            <Collapse isOpen={isOpen} className={props.widgetData?.className} key={props.widgetId}>
+                {outputWidgets}
+            </Collapse>
+        </Fragment>
+    )
 }
 
 function BoxWidget(props) {
@@ -142,6 +215,26 @@ function RawHtmlWidget(props) {
     let output_dict = {__html: props.widgetData.value};
     return (<div className="raw-html-widget" style={props.widgetData?.style}
                  key={props.widgetId} dangerouslySetInnerHTML={output_dict}/>)
+}
+
+function DividerWidget(props) {
+    props = {
+        widgetId: props.widgetId,
+        local_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: {compact: false, className: null},
+        ...props
+    };
+    const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
+
+    return (
+        <div style={props.widgetData?.style}>
+            <Divider {...props.widgetData}/>
+        </div>
+    )
 }
 
 function MatplotlibWidget(props) {

@@ -184,33 +184,39 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             return None
 
     def create_widgets_from_specs(self):
-        specs = self.widget_specs
-        for spec in specs:
-            edited_spec = copy.copy(spec)
-            del edited_spec["name"]
-            del edited_spec["kind"]
-            if "on_click" in edited_spec:
-                meth = self.get_attr(edited_spec["on_click"])
-                edited_spec["on_click"] = meth
-            if "on_change" in edited_spec:
-                meth = self.get_attr(edited_spec["on_change"])
-                edited_spec["on_change"] = meth
-            if "style" in edited_spec:
-                converted_style = self.convert_style(edited_spec["style"])
-                if converted_style is None:
-                    del edited_spec["style"]
-                else:
-                    edited_spec["style"] = converted_style
-            if "widgets" in edited_spec:
-                new_widgets = []
-                for widget in edited_spec["widgets"]:
-                    the_w = self.get_attr(widget)
-                    if the_w is not None:
-                        new_widgets.append(the_w.render())
-                edited_spec["widgets"] = new_widgets
-            new_widget = self.widget(spec["kind"], **edited_spec)
-            self.widgets[spec["name"]] = new_widget
-            setattr(self, spec["name"], new_widget)
+        try:
+            specs = self.widget_specs
+            for spec in specs:
+                edited_spec = copy.copy(spec)
+                del edited_spec["name"]
+                del edited_spec["kind"]
+                if "on_click" in edited_spec:
+                    meth = self.get_attr(edited_spec["on_click"])
+                    edited_spec["on_click"] = meth
+                if "on_change" in edited_spec:
+                    meth = self.get_attr(edited_spec["on_change"])
+                    edited_spec["on_change"] = meth
+                if "style" in edited_spec:
+                    converted_style = self.convert_style(edited_spec["style"])
+                    if converted_style is None:
+                        del edited_spec["style"]
+                    else:
+                        edited_spec["style"] = converted_style
+                if "widgets" in edited_spec:
+                    edited_spec["widgets"] = []
+                new_widget = self.widget(spec["kind"], **edited_spec)
+                self.widgets[spec["name"]] = new_widget
+                setattr(self, spec["name"], new_widget)
+            for spec in specs:
+                if "widgets" in spec:
+                    widget_renders = []
+                    for widget in spec["widgets"]:
+                        the_w = self.get_attr(widget)
+                        if the_w is not None:
+                            widget_renders.append(the_w.render())
+                    self.widgets[spec["name"]].widgets = widget_renders
+        except:
+            log.exception("Error creating widgets from specs")
 
     def render_all_widgets(self):
         return [w.render() for w in self.widgets.values() if w.to_render]

@@ -1145,6 +1145,7 @@ function CreatorApp(props) {
                 kind: "text",
                 value: "",
                 ellipsize: false,
+                to_render: true,
                 style: "{}",
             },
             sub_items: widget_list_ref.current,

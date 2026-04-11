@@ -16,8 +16,10 @@ const widgetIcons = {
     select: "menu-open",
     input: "text-highlight",
     box: "selection-box",
+    collapse: "collapse-all",
     matplotlib: "scatter-plot",
     javascript: "code-block",
+    divider: "minus"
 };
 
 
@@ -66,15 +68,46 @@ function styleField(the_val="") {
     return codeTextBoxField(the_val)
 }
 
-
 let widgetInfo = {
     text: {
         value: stringField(),
         ellipsize: boolField(),
         style: styleField()
     },
+    html: {
+        value: codeTextBoxField(),
+        style: styleField()
+    },
+    input: {
+        value: stringField(),
+        label: stringField("input"),
+        on_change: methodField(),
+        fill: boolField(),
+        inline: boolField(),
+        style: styleField()
+    },
     table : {
         value: objectField(),
+        style: styleField()
+    },
+    matplotlib: {
+        use_svg: boolField(),
+        dpi: numberField(96),
+        style: styleField()
+    },
+    button: {
+        value: objectField(),
+        text: stringField("button"),
+        icon: stringField(null),
+        fill: boolField(),
+        on_click: methodField(),
+        style: styleField()
+    },
+    select: {
+        value: stringField(),
+        label: stringField("select"),
+        on_change: methodField(),
+        options: listField(),
         style: styleField()
     },
     slider: {
@@ -92,21 +125,9 @@ let widgetInfo = {
         intent: selectField("primary", ["primary", "success", "warning", "danger"]),
         style: styleField()
     },
-    html: {
-        value: codeTextBoxField(),
-        style: styleField()
-    },
-    iframe: {
-        value: codeTextBoxField(),
-        style: styleField()
-    },
-    button: {
-        value: objectField(),
-        text: stringField("button"),
-        icon: stringField(null),
-        fill: boolField(),
-        on_click: methodField(),
-        style: styleField()
+    divider: {
+        compact: boolField(),
+        className: codeStringField()
     },
     switch: {
         value: boolField(),
@@ -114,36 +135,26 @@ let widgetInfo = {
         on_change: methodField(),
         style: styleField()
     },
-    input: {
-        value: stringField(),
-        label: stringField("input"),
-        on_change: methodField(),
-        fill: boolField(),
-        inline: boolField(),
-        style: styleField()
-    },
     box: {
         widgets: listField(),
         direction: selectField("horizontal", ["horizontal", "vertical"]),
         style: styleField()
     },
-    select: {
-        value: stringField(),
-        label: stringField("select"),
-        on_change: methodField(),
-        options: listField(),
-        style: styleField()
+    collapse: {
+        widgets: listField(),
+        label: stringField("collapse"),
+        startOpen: boolField(true),
+        intent: selectField("primary", ["primary", "success", "warning", "danger"]),
+        className: codeStringField("")
     },
-    matplotlib: {
-        use_svg: boolField(),
-        dpi: numberField(96),
+    iframe: {
+        value: codeTextBoxField(),
         style: styleField()
     },
     javascript: {
         value: codeTextBoxField(),
         code: codeTextBoxField()
     }
-
 }
 
 function baseWidgetFields(kind) {

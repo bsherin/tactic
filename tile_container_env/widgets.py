@@ -6,6 +6,8 @@ import nltk
 import pandas as _pd
 import base64
 
+from botocore.docs.bcdoc import style
+
 PPI = 100
 
 Tile = None
@@ -165,13 +167,13 @@ def is_class_method(func):
 class ButtonWidget(Widget):
     widget_kind = "button"
     extra_fields = ["text", "fill", "icon", "variant", "style", "to_render"]
-    defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None}
+    defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None, "to_render": True}
 
 
 class InputWidget(Widget):
     widget_kind = "input"
     extra_fields = ["fill", "label", "inline", "style", "to_render"]
-    defaults = {"fill": False, "label": "", "inline": False, "style": None}
+    defaults = {"fill": False, "label": "", "inline": False, "style": None, "to_render": True}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -181,7 +183,7 @@ class InputWidget(Widget):
 class SliderWidget(Widget):
     widget_kind = "slider"
     extra_fields = ["min", "max", "stepSize", "labelStepSize", "style", "to_render"]
-    defaults = {"min": 0, "max": 10, "stepSize": 1, "labelStepSize": 1, "style": None}
+    defaults = {"min": 0, "max": 10, "stepSize": 1, "labelStepSize": 1, "style": None, "to_render": True}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -191,7 +193,7 @@ class SliderWidget(Widget):
 class ProgressBarWidget(Widget):
     widget_kind = "progressBar"
     extra_fields = ["stripes", "intent", "style", "to_render"]
-    defaults = {"stripes": False, "intent": None, "style": None}
+    defaults = {"stripes": False, "intent": None, "style": None, "to_render": True}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -201,7 +203,7 @@ class ProgressBarWidget(Widget):
 class SwitchWidget(Widget):
     widget_kind = "switch"
     extra_fields = ["label", "style", "to_render"]
-    defaults = {"label": "switch", "style": None}
+    defaults = {"label": "switch", "style": None, "to_render": True}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -213,7 +215,7 @@ class SwitchWidget(Widget):
 class SelectWidget(Widget):
     widget_kind = "select"
     extra_fields = ["label", "style", "options", "to_render"]
-    defaults = {"label": "select", "style": None, "options": []}
+    defaults = {"label": "select", "style": None, "options": [], "to_render": True}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -223,17 +225,22 @@ class SelectWidget(Widget):
 class TextWidget(Widget):
     widget_kind = "text"
     extra_fields = ["ellipsize", "style", "to_render"]
-    defaults = {"ellipsize": True, "style": None}
+    defaults = {"ellipsize": True, "style": None, "to_render": True}
+
+class DividerWidget(Widget):
+    widget_kind = "divider"
+    extra_fields = ["compact", "style", "to_render"]
+    defaults = {"compact": False, "style": None, "to_render": True}
 
 class JavascriptWidget(Widget):
     widget_kind = "javascript"
     extra_fields = ["style", "code", "to_render"]
-    defaults = {"style": None}
+    defaults = {"style": None, "code": "", "to_render": True}
 
 class RawHtmlWidget(Widget):
     widget_kind = "rawHtml"
     extra_fields = ["style", "to_render"]
-    defaults = {"style": None}
+    defaults = {"style": None, "to_render": True}
 
 class IframeWidget(Widget):
     widget_kind = "iframe"
@@ -243,12 +250,18 @@ class IframeWidget(Widget):
 class Box(Widget):
     widget_kind = "box"
     extra_fields = ["style", "widgets", "direction", "to_render"]
-    defaults = {"style": None}
+    defaults = {"style": None, "widgets": [], "direction": "horizontal", "to_render": True}
+
+class CollapseWidget(Widget):
+    widget_kind = "collapse"
+    extra_fields = ["widgets", "label", "startOpen", "intent", "className", "to_render"]
+    defaults = {"widgets": [], "label": "collapse", "startOpen": True,
+                "intent": "primary", "className": None, "to_render": True}
 
 class MatplotlibWidget(Widget):
     widget_kind = "matplotlib"
     extra_fields = ["style", "use_svg", "dpi", "to_render"]
-    defaults = {"style": None, "use_svg": False, "dpi": 96}
+    defaults = {"style": None, "use_svg": False, "dpi": 96, "to_render": True}
 
     _FigureCanvasAgg = None
 
@@ -316,6 +329,7 @@ class TableWidget(Widget):
         "expandRows": False,
         "className": "",
         "style": {},
+        "to_render": True
     }
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -395,5 +409,6 @@ kind_dict = {
     "input": InputWidget,
     "matplotlib": MatplotlibWidget,
     "box": Box,
-
+    "collapse": CollapseWidget,
+    "divider": DividerWidget,
 }
