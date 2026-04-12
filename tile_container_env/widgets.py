@@ -22,17 +22,21 @@ if nltk_available:
 else:
     html_table_classes = [_pd.DataFrame, dict, _pd.Series, list, TacticDocument]
 
+
 def is_html_table_class(obj):
     return any(isinstance(obj, cls) for cls in html_table_classes)
 
+
 def is_widget_render(x):
     return type(x) == dict and "is_widget" in x and x["is_widget"] is True
+
 
 def to_camel_case(s: str) -> str:
     if s == "float":
         return "cssFloat"
     parts = s.split("-")
     return parts[0] + "".join(word.capitalize() for word in parts[1:])
+
 
 def to_react_style(style):
     if type(style) == dict:
@@ -50,6 +54,7 @@ class Widget(object):
         self.widgetId = "a" + str(uuid.uuid4())
         self.runner_type = runner_type
         self.runner_id = runner_id
+        self.parent = None
         self.widget_data = {}
         self.to_render = None
         self.base_render = {"is_widget": True, "widgetKind": self.widget_kind, "widgetId": self.widgetId}
@@ -160,9 +165,50 @@ class Widget(object):
         Tile.emit_console_message("consoleCodeWidget", new_data)
         return
 
+
+class ContainerWidget(Widget):
+    def widget_data_dict(self):
+        res = {"value": self.value}
+        for attr in self.extra_fields:
+            if attr == "widgets":
+                widget_object_list = getattr(self, attr, None)
+                if widget_object_list is not None:
+                    widget_renders = [w.render() for w in widget_object_list]
+                else:
+                    widget_renders = []
+                res[attr] = widget_renders
+            else:
+                res[attr] = getattr(self, attr, None)
+        return res
+
+    def set(self, widget_data):
+        if "widgets" in widget_data:
+            widget_object_list = widget_data["widgets"]
+            if widget_object_list is not None:
+                for w in widget_object_list:
+                    w.parent = self
+            super().set(widget_data)
+            if self.parent is not None:
+                self.parent.update_from_child()
+        else:
+            super().set(widget_data)
+
+    def update_from_child(self):
+        rdict = self.base_render.copy()
+        rdict["widgetData"] = self.widget_data_dict()
+        if self.runner_type == "console":
+            rdict["console_id"] = self.runner_id
+            Tile.emit_console_message("consoleWidgetUpdate", rdict)
+        elif self.runner_type == "export_viewer":
+            Tile.emit_export_viewer_message("exportViewerWidgetUpdate", rdict)
+        else:
+            rdict["tile_id"] = self.runner_id
+            Tile._tworker.emit_tile_message("tileWidgetUpdate", rdict)
+
 def is_class_method(func):
     qn = getattr(func, '__qualname__', '')
     return '.' in qn
+
 
 class ButtonWidget(Widget):
     widget_kind = "button"
@@ -180,6 +226,7 @@ class InputWidget(Widget):
         if "on_change" not in wdata:
             self.on_change = None
 
+
 class SliderWidget(Widget):
     widget_kind = "slider"
     extra_fields = ["min", "max", "stepSize", "labelStepSize", "style", "to_render"]
@@ -190,6 +237,7 @@ class SliderWidget(Widget):
         if "on_change" not in wdata:
             self.on_change = None
 
+
 class ProgressBarWidget(Widget):
     widget_kind = "progressBar"
     extra_fields = ["stripes", "intent", "style", "to_render"]
@@ -199,6 +247,7 @@ class ProgressBarWidget(Widget):
         super().initialize(wdata)
         if "on_change" not in wdata:
             self.on_change = None
+
 
 class SwitchWidget(Widget):
     widget_kind = "switch"
@@ -212,6 +261,7 @@ class SwitchWidget(Widget):
         if "on_change" not in wdata:
             self.on_change = None
 
+
 class SelectWidget(Widget):
     widget_kind = "select"
     extra_fields = ["label", "style", "options", "to_render"]
@@ -222,41 +272,49 @@ class SelectWidget(Widget):
         if "on_change" not in wdata:
             self.on_change = None
 
+
 class TextWidget(Widget):
     widget_kind = "text"
     extra_fields = ["ellipsize", "style", "to_render"]
     defaults = {"ellipsize": True, "style": None, "to_render": True}
+
 
 class DividerWidget(Widget):
     widget_kind = "divider"
     extra_fields = ["compact", "style", "to_render"]
     defaults = {"compact": False, "style": None, "to_render": True}
 
+
 class JavascriptWidget(Widget):
     widget_kind = "javascript"
     extra_fields = ["style", "code", "to_render"]
     defaults = {"style": None, "code": "", "to_render": True}
+
 
 class RawHtmlWidget(Widget):
     widget_kind = "rawHtml"
     extra_fields = ["style", "to_render"]
     defaults = {"style": None, "to_render": True}
 
+
 class IframeWidget(Widget):
     widget_kind = "iframe"
     extra_fields = ["style", "to_render"]
     defaults = {"style": None}
 
-class Box(Widget):
+
+class Box(ContainerWidget):
     widget_kind = "box"
     extra_fields = ["style", "widgets", "direction", "to_render"]
     defaults = {"style": None, "widgets": [], "direction": "horizontal", "to_render": True}
 
-class CollapseWidget(Widget):
+
+class CollapseWidget(ContainerWidget):
     widget_kind = "collapse"
     extra_fields = ["widgets", "label", "startOpen", "intent", "className", "to_render"]
     defaults = {"widgets": [], "label": "collapse", "startOpen": True,
                 "intent": "primary", "className": None, "to_render": True}
+
 
 class MatplotlibWidget(Widget):
     widget_kind = "matplotlib"
@@ -317,8 +375,10 @@ class MatplotlibWidget(Widget):
             "style": self.style,
         }
 
+
 MAX_TABLE_SIZE = 1000
 INITIAL_TABLE_ROWS = 25
+
 
 class TableWidget(Widget):
     widget_kind = "table"
@@ -331,6 +391,7 @@ class TableWidget(Widget):
         "style": {},
         "to_render": True
     }
+
     def initialize(self, wdata):
         super().initialize(wdata)
         if self._value is None:

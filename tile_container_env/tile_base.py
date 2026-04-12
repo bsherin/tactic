@@ -209,12 +209,12 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 setattr(self, spec["name"], new_widget)
             for spec in specs:
                 if "widgets" in spec:
-                    widget_renders = []
+                    widget_objects = []
                     for widget in spec["widgets"]:
                         the_w = self.get_attr(widget)
                         if the_w is not None:
-                            widget_renders.append(the_w.render())
-                    self.widgets[spec["name"]].widgets = widget_renders
+                            widget_objects.append(the_w)
+                    self.widgets[spec["name"]].widgets = widget_objects
         except:
             log.exception("Error creating widgets from specs")
 
