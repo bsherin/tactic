@@ -11,8 +11,6 @@ import {DialogContext} from "./modal_react";
 
 export {ResourceViewerApp, copyToLibrary, sendToRepository}
 
-const PADDING = 20;
-
 async function copyToLibrary(res_type, resource_name, dialogFuncs, statusFuncs, errorDrawerFuncs) {
     try {
         let data = await postPromise("host", "get_resource_names_task", {res_type});
@@ -64,11 +62,6 @@ async function sendToRepository(res_type, resource_name, dialogFuncs, statusFunc
         }
     }
 }
-
-const metadata_outer_style = {
-  marginTop: 0, marginLeft: 0, overflow: "auto", padding: 25,
-  marginRight: 0, height: "100%",
-};
 
 function ResourceViewerApp(props) {
     props = {
@@ -164,13 +157,17 @@ function ResourceViewerApp(props) {
                  style={{
                      display: "flex",
                      flexGrow: 1,
+                     minHeight: 0,
+                     minWidth: 0,
                      width: "100%",
                      position: "relative",
+                     overflow: "hidden",
                      marginTop: 0}}>
                 <HorizontalPanes left_pane={left_pane}
                                  show_handle={true}
                                  right_pane={right_pane}
                                  initial_width_fraction={.65}
+                                 handleResizeEnd={null}
                                  am_outer={true}
                 />
             </div>

@@ -703,7 +703,7 @@ function WidgetModuleForm(props) {
     const fieldList = Object.keys(widgetDefaults[props.widgetItem.kind]);
 
     return (
-        <div>
+        <div key={props.widgetItem.identifier}>
             <SimplePaneTitle icon={pane_type_icons["widget"]} title={props.widgetItem.name}/>
             <div>
                 <form className="maker-form-container">
@@ -714,46 +714,56 @@ function WidgetModuleForm(props) {
                                     case "boolean":
                                         return (
                                             <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              key={field}
                                                               isBool={true}
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     case "text_box":
                                         return (
-                                            <LabeledTextArea label={field} the_value={props.widgetItem[field]} onChange={(event)=>{
-                                                    handleFieldChange(field, event)}}/>
+                                            <LabeledTextArea label={field} the_value={props.widgetItem[field]}
+                                                             key={field}
+                                                             onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     case "code_box":
                                         return (
-                                            <LabeledTextArea label={field} the_value={props.widgetItem[field]} className="code-font" onChange={(event)=>{
+                                            <LabeledTextArea label={field} the_value={props.widgetItem[field]}
+                                                             key={field}
+                                                             className="code-font" onChange={(event)=>{
                                                     handleFieldChange(field, event)}}/>
                                         )
                                     case "list":
                                         return (
-                                            <LabeledTextArea label={field} the_value={arrayToTextRows(props.widgetItem[field])} className="code-font"
+                                            <LabeledTextArea label={field} the_value={arrayToTextRows(props.widgetItem[field])}
+                                                             key={field}
+                                                             className="code-font"
                                                              onChange={(event)=>{
                                                     handleFieldChange(field, event)}}/>
                                         )
                                     case "select":
                                         return (
                                            <LabeledSelectList label="Type" the_value={props.widgetItem[field]}
+                                                              key={field}
                                                               option_list={widgetInfo[props.widgetItem.kind][field].options}
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     case "method":
                                       return (
                                             <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              key={field}
                                                               isBool={false} className="code-font"
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     case "code_string":
                                       return (
                                             <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              key={field}
                                                               isBool={false} className="code-font"
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     default:
                                           return (
                                             <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              key={field}
                                                               isBool={false}
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
@@ -1090,6 +1100,8 @@ function MakerNavigator(props) {
         sections: [],
         icon_dict: null,
         icon_field: null,
+        registerCmObject: () => {
+        },
         pushCallback: () => {
         },
         ...props
@@ -1128,6 +1140,7 @@ function MakerNavigator(props) {
                     if (section.editable) {
                         return (
                             <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
+                                                registerCmObject={props.registerCmObject}
                                                 sub_items={section.sub_items} icon={section.icon}
                                                 showAsCode={section.showAsCode}
                                                 showSignature={section.showSignature}
@@ -1323,6 +1336,8 @@ function SortableNavSection(props) {
         mode: "python",
         pushCallback: () => {
         },
+        registerCmObject: () => {
+        },
         dispatch: () => {
         },
         ...props
@@ -1430,6 +1445,7 @@ function SortableNavSection(props) {
                                     return (
                                         <SortableNavItem key={item.identifier} identifier={item.identifier}
                                                          title={item.name}
+                                                         registerCmObject={props.registerCmObject}
                                                          showAsCode={props.showAsCode}
                                                          showSignature={props.showSignature}
                                                          showDefault={props.showDefault}
@@ -1471,6 +1487,8 @@ function SortableNavItem(props) {
         showDefault: false,
         showSelf: false,
         default: null,
+        registerCmObject: ()=>{
+        },
         ...props
     };
     const {
@@ -1542,6 +1560,7 @@ function NavItem(props) {
         mode: "python",
         default: null,
         argString: null,
+        registerCmObject: ()=>{},
         ...props
     };
     const mpContext = useContext(MakerPaneContext);
@@ -1570,10 +1589,10 @@ function NavItem(props) {
                 <ReactCodemirror6 readOnly={true}
                                   isLite={true}
                                   mode={props.mode}
+                                  setCMObject={props.registerCmObject}
                                   show_line_numbers={false}
                                   no_height={true}
                                   controlled={true}
-                                  setCMObject={null}
                                   getEditableRanges={null}
                                   restrict_edits_to_range={false}
                                   className="creator-code-header"
@@ -1589,10 +1608,10 @@ function NavItem(props) {
                 <ReactCodemirror6 readOnly={true}
                                   isLite={true}
                                   mode={props.mode}
+                                  setCMObject={props.registerCmObject}
                                   show_line_numbers={false}
                                   no_height={true}
                                   controlled={true}
-                                  setCMObject={null}
                                   getEditableRanges={null}
                                   restrict_edits_to_range={false}
                                   className="creator-code-header"
@@ -1610,7 +1629,7 @@ function NavItem(props) {
                                   show_line_numbers={false}
                                   no_height={true}
                                   controlled={true}
-                                  setCMObject={null}
+                                  setCMObject={props.registerCmObject}
                                   getEditableRanges={null}
                                   restrict_edits_to_range={false}
                                   className="creator-code-header"
@@ -1629,7 +1648,7 @@ function NavItem(props) {
                                   show_line_numbers={false}
                                   no_height={true}
                                   controlled={true}
-                                  setCMObject={null}
+                                  setCMObject={props.registerCmObject}
                                   getEditableRanges={null}
                                   restrict_edits_to_range={false}
                                   className="creator-code-header"
@@ -1662,8 +1681,6 @@ function NavItem(props) {
                     size="medium"
                     variant="minimal"
                     ellipsizeText={true}
-                    showSignature={props.showSignature}
-                    argString={props.argString}
                     text={fullButton}
                     onClick={() => {
                         mpContext.toggleVisibleTab(props.identifier)

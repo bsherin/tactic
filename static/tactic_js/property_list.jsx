@@ -17,7 +17,6 @@ function propertyListReducer(state, action) {
     const prop_list = state.items;
     const defaults = state.default_values || {};
     let new_items;
-    console.log(`propertyListReducer received action: ${action.type}`);
     switch (action.type) {
         case "initialize":
             const initDefaults = action["default_values"] || defaults;

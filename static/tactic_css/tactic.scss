@@ -16,6 +16,11 @@ $project-outer-padding: 10px;
 $separator-padding: 7px;
 $separator-padding-half: 3.5px;
 
+.draggable-pane-separator{
+    width: 1px;
+    transition: width 0.2s;
+}
+
 .horizontal-left-pane {
     padding-right: $separator-padding-half
 }

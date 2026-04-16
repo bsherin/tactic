@@ -22,7 +22,7 @@ import {SettingsContext, withSettings} from "./settings"
 import {withAssistant} from "./assistant";
 import {DialogContext, withDialogs} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {ICON_BAR_WIDTH} from "./sizing_tools";
+import {ICON_BAR_WIDTH, STATUS_BAR_HEIGHT} from "./sizing_tools";
 
 export {code_viewer_props, CodeViewerApp}
 
@@ -352,7 +352,7 @@ function CodeViewerApp(props) {
     let my_props = {...props};
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
-        height: "100%",
+        height: `calc(100% - ${STATUS_BAR_HEIGHT}px)`,
         display: 'flex',
         flexDirection: 'column',
         paddingLeft: 0,

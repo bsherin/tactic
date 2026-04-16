@@ -1233,6 +1233,7 @@ function CreatorApp(props) {
     let left_pane = (
         <Fragment>
             <MakerNavigator handleTabSelect={_handleTabSelect}
+                            registerCmObject={registerCmObject}
                             pushCallback={pushCallback}
                             is_mpl={my_props.is_mpl}
                             is_d3={my_props.is_d3}

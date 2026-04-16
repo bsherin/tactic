@@ -25,7 +25,6 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-var PADDING = 20;
 function copyToLibrary(_x, _x2, _x3, _x4, _x5) {
   return _copyToLibrary.apply(this, arguments);
 }
@@ -129,14 +128,6 @@ function _sendToRepository() {
   }));
   return _sendToRepository.apply(this, arguments);
 }
-var metadata_outer_style = {
-  marginTop: 0,
-  marginLeft: 0,
-  overflow: "auto",
-  padding: 25,
-  marginRight: 0,
-  height: "100%"
-};
 function ResourceViewerApp(props) {
   props = _objectSpread({
     search_string: "",
@@ -225,8 +216,11 @@ function ResourceViewerApp(props) {
     style: {
       display: "flex",
       flexGrow: 1,
+      minHeight: 0,
+      minWidth: 0,
       width: "100%",
       position: "relative",
+      overflow: "hidden",
       marginTop: 0
     }
   }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
@@ -234,6 +228,7 @@ function ResourceViewerApp(props) {
     show_handle: true,
     right_pane: right_pane,
     initial_width_fraction: .65,
+    handleResizeEnd: null,
     am_outer: true
   })));
 }

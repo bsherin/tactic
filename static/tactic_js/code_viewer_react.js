@@ -458,7 +458,7 @@ function CodeViewerApp(props) {
   var my_props = _objectSpread({}, props);
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
-    height: "100%",
+    height: "calc(100% - ".concat(_sizing_tools.STATUS_BAR_HEIGHT, "px)"),
     display: 'flex',
     flexDirection: 'column',
     paddingLeft: 0,

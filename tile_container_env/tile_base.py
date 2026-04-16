@@ -170,7 +170,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         return []
 
     def get_attr(self, attr_name):
-        if not hasattr(self, attr_name):
+        if attr_name is None or not hasattr(self, attr_name):
             return None
         return getattr(self, attr_name)
 

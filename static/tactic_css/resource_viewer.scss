@@ -10,3 +10,10 @@ $standard-padding: 25px;
         padding-top: $standard-padding;
     }
 }
+
+.resource-viewer-holder {
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+    height: 100%
+}

@@ -280,7 +280,14 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 // SECTION: Light theme classes
 // ==============================================
 
+
 .light-theme {
+
+    #library-home-root {
+            .bp6-table-quadrant {
+                background-color: blueprint_variables.$white
+            }
+    }
 
     &.pane-holder{
         background-color: $light-backdrop;
@@ -291,6 +298,10 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         bottom: 0;
         background-color: $light-icon-bar-background;
         border-left: $light-icon-bar-border;
+    }
+
+    .draggable-pane-separator {
+        background-color: #8f99a84a;
     }
 
     &.bp6-navbar {
@@ -521,6 +532,10 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         bottom: 0;
         background-color: $dark-icon-bar-background;
         border-left: $dark-icon-bar-border;
+    }
+
+    .draggable-pane-separator {
+        background-color: rgb(255 255 255 / 0.15);
     }
 
     #library-home-root {

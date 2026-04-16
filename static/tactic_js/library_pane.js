@@ -2232,6 +2232,9 @@ function LibraryPane(props) {
       display: "flex",
       flexGrow: 1,
       width: "100%",
+      overflow: "hidden",
+      minHeight: 0,
+      minWidth: 0,
       position: "relative"
     },
     tabIndex: "0",

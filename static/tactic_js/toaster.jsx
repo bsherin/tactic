@@ -2,13 +2,12 @@
 
 import React from "react";
 import { createRoot } from 'react-dom/client';
-import {useState, useEffect, useRef, memo, useContext, createContext, useCallback} from "react";
+import {useState, useRef, memo, useContext, useEffect, createContext, useCallback} from "react";
 import {useSocketListener} from "./tactic_socket";
 
 import {OverlayToaster, Position, Spinner} from "@blueprintjs/core";
 import {GlyphButton} from "./blueprint_react_widgets";
 
-import {useCallbackStack} from "./utilities_react";
 import {SettingsContext} from "./settings"
 
 const StatusContext = createContext(null);
@@ -90,10 +89,10 @@ function doFlash(data) {
     })
 }
 
-function messageOrError(data, success_message, failure_tiltle, statusFuncs, errorDrawerFuncs) {
+function messageOrError(data, success_message, failure_title, statusFuncs, errorDrawerFuncs) {
     if (!data.success) {
         errorDrawerFuncs.addErrorDrawerEntry({
-            title: failur_title,
+            title: failure_title,
             content: "message" in data ? data.message : ""
         });
     }
@@ -111,7 +110,21 @@ function withStatus(WrappedComponent) {
         const [spinner_size, ] = useState(props.spinner_size ? props.spinner_size : 25);
         const [leftEdge, setLeftEdge] = useState(0);
 
-        const pushCallback = useCallbackStack();
+        const timeoutIdsRef = useRef([]);
+
+        useEffect(() => {
+            return () => {
+                timeoutIdsRef.current.forEach(clearTimeout);
+                timeoutIdsRef.current = [];
+            };
+        }, []);
+
+        const scheduleClearStatus = useCallback((seconds) => {
+            const id = setTimeout(() => {
+                set_status_message(null);
+            }, seconds * 1000);
+            timeoutIdsRef.current.push(id);
+        }, []);
 
 
         const _stopSpinner = useCallback((data) => {
@@ -132,33 +145,23 @@ function withStatus(WrappedComponent) {
         }, []);
 
 
-        const _statusMessage = useCallback((message, timeout = null) => {
+        const _statusMessage = useCallback((message, timeout = 7) => {
             set_status_message(message);
-            if (!timeout) {
-                timeout = 7
+            if (timeout != null) {
+                scheduleClearStatus(timeout);
             }
-            pushCallback(() => {
-                if (timeout) {
-                    setTimeout(_clearStatusMessage, timeout * 1000);
-                }
-            });
-        }, []);
+        }, [scheduleClearStatus]);
 
-        const _statusMessageFromData  = useCallback((data) => {
+        const _statusMessageFromData = useCallback((data) => {
             set_status_message(data.status_message);
-            pushCallback(() => {
-                if (data.hasOwnProperty("timeout") && data.timeout != null) {
-                    setTimeout(_clearStatusMessage, data.timeout * 1000);
-                }
-            });
-
-        }, []);
+            if (data.timeout != null) {
+                scheduleClearStatus(data.timeout);
+            }
+        }, [scheduleClearStatus]);
 
         useSocketListener(props.tsocket, 'stop-spinner', _stopSpinner);
         useSocketListener(props.tsocket, 'show-status-msg', _statusMessageFromData);
         useSocketListener(props.tsocket, 'clear-status-msg', _clearStatusMessage);
-
-
 
 
         const _setStatus  = useCallback((sstate, callback = null) => {
@@ -167,9 +170,6 @@ function withStatus(WrappedComponent) {
             }
             if ("status_message" in sstate) {
                 set_status_message(sstate["status_message"])
-            }
-            if (callback) {
-                pushCallback(callback)
             }
         }, []);
 
@@ -203,7 +203,7 @@ function withStatus(WrappedComponent) {
             </div>
         )
     }
-    return memo(newFunc)
+    return newFunc
 }
 
 function Status(props) {
@@ -234,14 +234,16 @@ function Status(props) {
                                  size="small"
                                  style={{paddingTop: 5}}
                                  icon="cross"/>}
-                {props.status_message &&
-                    <div className="d-flex flex-column justify-content-around" style={{marginLeft: 8}}>
-                        <div id="status-msg-area" className="bp6-ui-text"
-                             style={{fontSize: 10, paddingTop: 5}}>
-                            {props.status_message}
-                        </div>
+                <div className="d-flex flex-column justify-content-around"
+                     style={{
+                         marginLeft: 8,
+                         display: props.status_message ? "flex" : "none"
+                     }}>
+                    <div className="bp6-ui-text"
+                         style={{fontSize: 10, paddingTop: 5}}>
+                        {props.status_message}
                     </div>
-                }
+                </div>
             </div>
         </div>
     )

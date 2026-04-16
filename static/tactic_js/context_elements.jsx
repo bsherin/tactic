@@ -158,7 +158,7 @@ function SortableContextNavigatorItem(props) {
         selectedItem: null,
         closeTab: () => {
         },
-        refresTab: () => {
+        refreshTab: () => {
         },
         handleTabSelect: () => {
         },

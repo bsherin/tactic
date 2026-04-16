@@ -157,6 +157,10 @@ class TacticSocket {
 
 
     disconnect() {
+        if (this.recInterval) {
+            clearInterval(this.recInterval);
+            this.recInterval = null;
+        }
         this.stopListening();
         this.socket.disconnect();
     }
@@ -203,6 +207,7 @@ class TacticSocket {
         if (this.socket.connected) {
             this.notify(true);
             clearInterval(this.recInterval);
+            this.recInterval = null;
             this.counter += 1;
             this.join_rooms(true, null);
             this.restoreListeners();

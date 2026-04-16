@@ -73,14 +73,15 @@ function LibraryTablePane(props) {
     return (
         <Fragment>
             <div className="d-flex flex-row resource-viewer-left-pane-holder top-padded"
-                 style={{height: "100%", width: "100%", position: "relative"}}>
+                 style={{height: "100%", width: "100%", overflow: "hidden", minWidth:0, minHeight: 0, position: "relative"}}>
                 <div className="d-flex"
                      style={{
                          flex: "1 1 0",
                          minWidth: 0,
                          justifyContent: "flex-start",
                          height: "100%",
-                         position: "relative"
+                         position: "relative",
+                         overflow: "auto"
                      }}>
                     <TagButtonList tag_list={props.pStateRef.current.tag_list}
                                    tagRoot={props.pStateRef.current.search_state.tagRoot}

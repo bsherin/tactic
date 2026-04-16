@@ -17,7 +17,7 @@ import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {withStatus, StatusContext} from "./toaster";
 import {withAssistant} from "./assistant";
 
-import {ICON_BAR_WIDTH} from "./sizing_tools";
+import {ICON_BAR_WIDTH, STATUS_BAR_HEIGHT} from "./sizing_tools";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
@@ -444,8 +444,7 @@ function ModuleViewerApp(props) {
     }
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
-        height: "100%",
-        flexGrow: 1,
+        height: `calc(100% - ${STATUS_BAR_HEIGHT}px)`,
         display: 'flex',
         flexDirection: 'column',
         paddingLeft: 0,

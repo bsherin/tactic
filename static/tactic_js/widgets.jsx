@@ -232,7 +232,7 @@ function DividerWidget(props) {
 
     return (
         <div style={props.widgetData?.style}>
-            <Divider {...props.widgetData}/>
+            <Divider compact={props.widgetData.compact} key={props.widgetId}/>
         </div>
     )
 }
@@ -300,8 +300,13 @@ function ButtonWidget(props) {
 
     return (
         <div>
-            <Button {...props.widgetData}
-                    onClick={onClick}/>
+            <Button
+                text={props.widgetData.text}
+                fill={props.widgetData.fill}
+                icon={props.widgetData.icon}
+                variant={props.widgetData.variant}
+                style={props.widgetData.style}
+                onClick={onClick}/>
         </div>
     )
 }
@@ -323,7 +328,7 @@ function ProgressBarWidget(props) {
         ...props
     };
 
-    const {style, ...rest} = props.widgetData;
+    const {style, to_render, ...rest} = props.widgetData;
 
     return (
         <div style={props.widgetData?.style} key={props.widgetId}>
@@ -354,7 +359,7 @@ function SliderWidget(props) {
 
     const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
-    const {style, ...rest} = props.widgetData;
+    const {style, to_render, ...rest} = props.widgetData;
 
     function onChange(newValue) {
         const newWidgetData = {...props.widgetData, value: newValue};
@@ -389,7 +394,7 @@ function SelectWidget(props) {
 
     const [, widgetSet,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
-    const {style, label, options, ...rest} = props.widgetData;
+    const {style, label, options, to_render, ...rest} = props.widgetData;
 
     function onChange(e) {
         const newWidgetData = {...props.widgetData, value: e.currentTarget.value};
@@ -440,7 +445,8 @@ function SwitchWidget(props) {
 
     return (
         <Switch key={props.widgetId}
-                {...props.widgetData}
+                label={props.widgetData.label}
+                style={props.widgetData.style}
                 checked={props.widgetData.value}
                 onChange={onChange}/>
     )
@@ -467,7 +473,7 @@ function TextWidget(props) {
     const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
     return (
-        <Text {...props.widgetData} key={props.widgetId}>
+        <Text ellipsize={props.widgetData.ellipsize} style={props.widgetData.style} key={props.widgetId}>
             {props.widgetData.value}
         </Text>
     )
@@ -496,7 +502,7 @@ function InputWidget(props) {
     const [localValue, setLocalValue] = useState(props.widgetData.value);
     const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
     const [, doUpdate] = useDebounce(widgetSet);
-    const {style, label, inline, value, ...rest} = props.widgetData;
+    const {style, label, inline, value, to_render, ...rest} = props.widgetData;
 
     function onChange(val) {
         setLocalValue(val);

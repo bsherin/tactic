@@ -629,8 +629,7 @@ function ModuleViewerApp(props) {
   }
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools.ICON_BAR_WIDTH, "px)"),
-    height: "100%",
-    flexGrow: 1,
+    height: "calc(100% - ".concat(_sizing_tools.STATUS_BAR_HEIGHT, "px)"),
     display: 'flex',
     flexDirection: 'column',
     paddingLeft: 0,

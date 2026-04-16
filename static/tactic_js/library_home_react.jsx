@@ -21,7 +21,7 @@ import {guid, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {AllMenubar} from "./library_menubars"
 import {SettingsContext, withSettings} from "./settings";
-import {ICON_BAR_WIDTH} from "./sizing_tools";
+import {ICON_BAR_WIDTH, STATUS_BAR_HEIGHT} from "./sizing_tools";
 import {DialogContext, withDialogs} from "./modal_react";
 import {StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
@@ -94,8 +94,8 @@ function LibraryHomeApp(props) {
     );
 
    let outer_style = {
-       width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
-        flexGrow: 1,
+        width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+        height: `calc(100% - ${STATUS_BAR_HEIGHT}px)`,
         display: 'flex',
         flexDirection: 'column',
         paddingLeft: 0,

@@ -13,7 +13,6 @@ var _client = require("react-dom/client");
 var _tactic_socket = require("./tactic_socket");
 var _core = require("@blueprintjs/core");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
-var _utilities_react = require("./utilities_react");
 var _settings = require("./settings");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -99,10 +98,10 @@ function doFlash(data) {
     }
   });
 }
-function messageOrError(data, success_message, failure_tiltle, statusFuncs, errorDrawerFuncs) {
+function messageOrError(data, success_message, failure_title, statusFuncs, errorDrawerFuncs) {
   if (!data.success) {
     errorDrawerFuncs.addErrorDrawerEntry({
-      title: failur_title,
+      title: failure_title,
       content: "message" in data ? data.message : ""
     });
   } else {
@@ -128,7 +127,19 @@ function withStatus(WrappedComponent) {
       _useState8 = _slicedToArray(_useState7, 2),
       leftEdge = _useState8[0],
       setLeftEdge = _useState8[1];
-    var pushCallback = (0, _utilities_react.useCallbackStack)();
+    var timeoutIdsRef = (0, _react.useRef)([]);
+    (0, _react.useEffect)(function () {
+      return function () {
+        timeoutIdsRef.current.forEach(clearTimeout);
+        timeoutIdsRef.current = [];
+      };
+    }, []);
+    var scheduleClearStatus = (0, _react.useCallback)(function (seconds) {
+      var id = setTimeout(function () {
+        set_status_message(null);
+      }, seconds * 1000);
+      timeoutIdsRef.current.push(id);
+    }, []);
     var _stopSpinner = (0, _react.useCallback)(function (data) {
       set_show_spinner(false);
     }, []);
@@ -143,25 +154,18 @@ function withStatus(WrappedComponent) {
       set_status_message(null);
     }, []);
     var _statusMessage = (0, _react.useCallback)(function (message) {
-      var timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var timeout = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 7;
       set_status_message(message);
-      if (!timeout) {
-        timeout = 7;
+      if (timeout != null) {
+        scheduleClearStatus(timeout);
       }
-      pushCallback(function () {
-        if (timeout) {
-          setTimeout(_clearStatusMessage, timeout * 1000);
-        }
-      });
-    }, []);
+    }, [scheduleClearStatus]);
     var _statusMessageFromData = (0, _react.useCallback)(function (data) {
       set_status_message(data.status_message);
-      pushCallback(function () {
-        if (data.hasOwnProperty("timeout") && data.timeout != null) {
-          setTimeout(_clearStatusMessage, data.timeout * 1000);
-        }
-      });
-    }, []);
+      if (data.timeout != null) {
+        scheduleClearStatus(data.timeout);
+      }
+    }, [scheduleClearStatus]);
     (0, _tactic_socket.useSocketListener)(props.tsocket, 'stop-spinner', _stopSpinner);
     (0, _tactic_socket.useSocketListener)(props.tsocket, 'show-status-msg', _statusMessageFromData);
     (0, _tactic_socket.useSocketListener)(props.tsocket, 'clear-status-msg', _clearStatusMessage);
@@ -172,9 +176,6 @@ function withStatus(WrappedComponent) {
       }
       if ("status_message" in sstate) {
         set_status_message(sstate["status_message"]);
-      }
-      if (callback) {
-        pushCallback(callback);
       }
     }, []);
     var statusFuncsRef = (0, _react.useRef)({
@@ -215,7 +216,7 @@ function withStatus(WrappedComponent) {
       }
     }));
   }
-  return /*#__PURE__*/(0, _react.memo)(newFunc);
+  return newFunc;
 }
 function Status(props) {
   props = _objectSpread({
@@ -254,13 +255,13 @@ function Status(props) {
       paddingTop: 5
     },
     icon: "cross"
-  }), props.status_message && /*#__PURE__*/_react["default"].createElement("div", {
+  }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-column justify-content-around",
     style: {
-      marginLeft: 8
+      marginLeft: 8,
+      display: props.status_message ? "flex" : "none"
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
-    id: "status-msg-area",
     className: "bp6-ui-text",
     style: {
       fontSize: 10,

@@ -56,10 +56,23 @@ import {ContextPaneElement, ContextNavigator} from "./context_elements";
 
 import {withDialogs, DialogContext} from "./modal_react";
 
-const spinner_panel = (
-    <div style={{height: "100%", position: "absolute", top: "50%", left: "50%"}} key="spinner">
-        <Spinner size={100}/>
-    </div>);
+function SpinnerPanel(props) {
+    props = {
+        entryId: "spinner",
+        ...props
+    }
+    return (
+        <div id={`${props.entryId}-holder`}
+             style={{
+                 position: "relative",
+                 height: props.isSelected ? "100%" : 0,
+                 top: "50%",
+                 left: "50%"
+        }} key="spinner">
+            <Spinner size={100}/>
+        </div>
+    );
+}
 
 const propDict = {
     "module-viewer": module_viewer_props,
@@ -678,6 +691,9 @@ function ContextApp(props) {
                 <div id="library-home-root"
                     style={{display: "flex", flexDirection: "column",
                         position: "relative",
+                        overflow: "hidden",
+                        minWidth: 0,
+                        minHeight: 0,
                         height: "100%",
                         width: "100%"}}>
                     <LibraryHomeApp tsocket={tsocket}
@@ -740,7 +756,13 @@ function ContextApp(props) {
             continue
         }
         if (entry.panel === "spinner") {
-            wrapped_panel = spinner_panel
+            wrapped_panel = (
+                <SpinnerPanel
+                    key={entry.identifier ? entry.identifier : "spinner"}
+                    entryId={entry.identifier ? entry.identifier : "spinner"}
+                    isSelected={selectedTabIdRef.current == entry.identifier}
+                />
+            );
         } else {
             let TheClass = classDict[entry.kind];
             let the_panel = (
@@ -852,6 +874,9 @@ function ContextApp(props) {
     return (
         <div style={{display: "flex", flexDirection: "column",
             position: "relative",
+            overflow: "hidden",
+            minWidth: 0,
+            minHeight: 0,
             height: "100%",
             width: "100%"}}>
             <TacticNavbar is_authenticated={window.is_authenticated}
