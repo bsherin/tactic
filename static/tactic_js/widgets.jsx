@@ -8,6 +8,8 @@ import {ErrorDrawerContext} from "./error_drawer";
 import {TableWidget} from "./table_widget";
 import {useDebounce} from "./utilities_react";
 import {PoolAddressSelector} from "./pool_tree";
+import {MultiSelect} from "@blueprintjs/select";
+import {renderSuggestion} from "./selector_advanced";
 
 export {useWidget, widgetDict}
 
@@ -22,6 +24,7 @@ const widgetDict = {
     button: ButtonWidget,
     switch: SwitchWidget,
     select: SelectWidget,
+    multi_select: MultiSelectWidget,
     input: InputWidget,
     iframe: IframeWidget,
     matplotlib: MatplotlibWidget,
@@ -419,6 +422,94 @@ function SelectWidget(props) {
         </FormGroup>
     )
 }
+
+
+function MultiSelectWidget(props) {
+    props = {
+        widgetId: null,
+        local_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: selectDataDefault,
+        ...props
+    };
+
+    const [, widgetSet,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
+
+    const {style, label, options, to_render, ...rest} = props.widgetData;
+
+    function onChange(new_tag_list) {
+        const newWidgetData = {...props.widgetData, value: new_tag_list};
+        widgetSet(newWidgetData);
+    }
+
+    function renderItemWithIcon(item, {modifiers, handleClick}) {
+        if (props.widgetData.value && Array.isArray(props.widgetData.value) && props.widgetData.value.includes(item)) {
+            return renderSuggestion({text: item, icon: "tick"}, {modifiers, handleClick})
+        }
+        return renderSuggestion({text: item, icon: "blank"}, {modifiers, handleClick})
+    }
+
+    function filterItem(query, item) {
+        if (!query || query.trim() === "") {
+            return true;
+        }
+        let re = new RegExp(`^${query}`);
+        return re.test(item)
+    }
+
+    function renderTag(item) {
+        return item
+    }
+
+    function _handleAddition(tag) {
+        const current = props.widgetData.value ?? [];
+
+        if (current.includes(tag)) {
+            onChange(current.filter(x => x !== tag));
+            return;
+        }
+
+        onChange([...current, tag]);
+    }
+
+    function _handleDelete(tag) {
+      const current = props.widgetData.value ?? [];
+      onChange(current.filter(x => x !== tag));
+    }
+
+    let realOptions = options;
+    if (!Array.isArray(options)) {
+        realOptions = []
+    }
+
+    let realValue = props.widgetData.value;
+    if (!Array.isArray(props.widgetData.value)) {
+        realValue = []
+    }
+
+    return (
+        <FormGroup key={props.widgetId}
+                   inline={false}
+                   style={props.widgetData?.style}
+                   label={props.widgetData.label}>
+            <MultiSelect
+                activeItem={null}
+                resetOnSelect={true}
+                clear={true}
+                itemRenderer={renderItemWithIcon}
+                selectedItems={realValue}
+                items={realOptions}
+                itemPredicate={filterItem}
+                tagRenderer={renderTag}
+                tagInputProps={{onRemove: _handleDelete}}
+                onItemSelect={_handleAddition}/>
+        </FormGroup>
+    )
+}
+
 
 function PoolSelectWidget(props) {
     props = {

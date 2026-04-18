@@ -14,6 +14,7 @@ const widgetIcons = {
     button: "widget-button",
     switch: "switch",
     select: "menu-open",
+    multi_select: "menu-open",
     pool_select: "folder-open",
     input: "text-highlight",
     box: "selection-box",
@@ -110,6 +111,13 @@ let widgetInfo = {
     },
     select: {
         value: stringField(),
+        label: stringField("select"),
+        on_change: methodField(),
+        options: listField(),
+        style: styleField()
+    },
+    multi_select: {
+        value: listField(),
         label: stringField("select"),
         on_change: methodField(),
         options: listField(),
