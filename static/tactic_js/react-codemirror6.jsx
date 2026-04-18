@@ -547,7 +547,6 @@ function ReactCodemirror6(props) {
             }
             if (data.room !== props.local_id) return;
             if (data.change_counter !== activeStreamChangeCounterRef.current) {
-                console.log("change_counter not equal to activeStreamChangeCounterRef, ignoring");
                 return;
             }
             if (aiPausedRef.current) return;
@@ -559,13 +558,11 @@ function ReactCodemirror6(props) {
             if (activeStreamCursorPosRef.current != null) {
                 const curPos = view.state.selection.main.head;
                 if (curPos !== activeStreamCursorPosRef.current) {
-                    console.log("cursor position not equal to activeStreamCursorPosRef, ignoring");
                     return
                 }
             }
             if (activeStreamCursorCounterRef.current != null && data.cursor_counter != null) {
                 if (data.cursor_counter !== activeStreamCursorCounterRef.current) {
-                    console.log("cursor counter not equal to activeStreamCursorCounterRef, ignoring");
                     return
                 }
             }

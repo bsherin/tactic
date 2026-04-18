@@ -1122,7 +1122,8 @@ function CreatorApp(props) {
                 tags: "",
                 default: null,
                 pool_select_type: null,
-                special_list: []
+                special_list: [],
+                value: "text"
             },
             sub_items: option_list_ref.current,
             dispatch: optionDispatch

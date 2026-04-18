@@ -14,6 +14,7 @@ const widgetIcons = {
     button: "widget-button",
     switch: "switch",
     select: "menu-open",
+    pool_select: "folder-open",
     input: "text-highlight",
     box: "selection-box",
     collapse: "collapse-all",
@@ -54,6 +55,10 @@ function numberField(the_val=0) {
 
 function selectField(the_val="", the_list=[]) {
     return  {type: "select", default: the_val, options: the_list};
+}
+
+function selectAdvancedField(the_val="", the_list=[]) {
+    return  {type: "select_advanced", default: the_val, options: the_list};
 }
 
 function listField(the_val="") {
@@ -110,6 +115,13 @@ let widgetInfo = {
         options: listField(),
         style: styleField()
     },
+    pool_select: {
+        value: stringField(),
+        label: stringField("pool select"),
+        on_change: methodField(),
+        select_type: selectField("both", ["both", "file", "folder"]),
+        style: styleField()
+    },
     slider: {
         value: numberField(),
         on_change: methodField(),
@@ -160,7 +172,7 @@ let widgetInfo = {
 function baseWidgetFields(kind) {
     return {
         name: codeStringField("new_item"),
-        kind: selectField(kind, Object.keys(widgetInfo)),
+        kind: selectAdvancedField(kind, Object.keys(widgetInfo)),
         to_render: boolField(true)
     }
 }

@@ -4,9 +4,12 @@ import {memo, useCallback, useMemo, useEffect, useRef, useState} from "react";
 import {
     Tooltip, Button, FormGroup, InputGroup, HTMLSelect, Switch, TextArea
 } from "@blueprintjs/core";
+import {BpSelect} from "./selector_advanced";
+import {PoolAddressSelector} from "./pool_tree";
 
 export {
-    LabeledSelectList, LabeledFormField, LabeledTextArea, SelectList, GlyphButton, withTooltip
+    LabeledSelectList, LabeledSelectAdvancedList, LabeledFormField, LabeledTextArea, SelectList, GlyphButton, withTooltip,
+    LabeledPoolSelect
 }
 
 function withTooltip(WrappedComponent) {
@@ -160,6 +163,16 @@ function LabeledSelectList(props) {
 }
 
 LabeledSelectList = memo(LabeledSelectList);
+
+function LabeledSelectAdvancedList(props) {
+    return (
+        <FormGroup label={props.label} style={{marginRight: 5}}>
+            <BpSelect options={props.option_list} onChange={props.onChange} value={props.the_value}/>
+        </FormGroup>
+    )
+}
+
+LabeledSelectAdvancedList = memo(LabeledSelectAdvancedList);
 
 function SelectList(props) {
     props = {

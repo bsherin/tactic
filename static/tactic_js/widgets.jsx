@@ -7,6 +7,7 @@ import {postPromise, postWithCallback} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {TableWidget} from "./table_widget";
 import {useDebounce} from "./utilities_react";
+import {PoolAddressSelector} from "./pool_tree";
 
 export {useWidget, widgetDict}
 
@@ -25,7 +26,8 @@ const widgetDict = {
     iframe: IframeWidget,
     matplotlib: MatplotlibWidget,
     divider: DividerWidget,
-    collapse: CollapseWidget
+    collapse: CollapseWidget,
+    pool_select: PoolSelectWidget,
 };
 
 
@@ -418,6 +420,40 @@ function SelectWidget(props) {
     )
 }
 
+function PoolSelectWidget(props) {
+    props = {
+        widgetId: null,
+        local_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: selectDataDefault,
+        ...props
+    }
+
+    const [, widgetSet,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
+
+    const {style, label, options, to_render, ...rest} = props.widgetData;
+
+    function onChange(new_value) {
+        const newWidgetData = {...props.widgetData, value: new_value};
+        widgetSet(newWidgetData);
+    }
+
+    return (
+        <FormGroup key={props.widgetId}
+               inline={false}
+               style={props.widgetData?.style}
+               label={props.widgetData.label}>
+            <PoolAddressSelector value={props.widgetData.value}
+                                 tsocket={null}
+                                 select_type={props.widgetData.select_type}
+                                 setValue={onChange}
+            />
+        </FormGroup>
+    )
+}
 
 const switchDataDefault = {
     value: false,

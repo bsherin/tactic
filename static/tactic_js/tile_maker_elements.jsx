@@ -35,7 +35,7 @@ import {BpSelectAdvanced} from "./selector_advanced";
 import {ReactCodemirror6} from "./react-codemirror6";
 import {guid, isInt, useStateAndRef} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
-import {LabeledFormField, LabeledSelectList, LabeledTextArea} from "./blueprint_react_widgets";
+import {LabeledFormField, LabeledSelectList, LabeledTextArea, LabeledSelectAdvancedList} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./combined_metadata";
 import {postPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
@@ -188,12 +188,6 @@ function PaneElement(props) {
     const [resizing, set_resizing] = useState(false);
     const [, set_dwidth] = useState(0);
     const [dheight, set_dheight] = useState(0);
-
-    useEffect(() => {
-        return (() => {
-            console.log("unmounting a pane")
-        })
-    }, []);
 
     useEffect(() => {
         if (props.pane_scroll_ref.current == props.identifier) {
@@ -583,8 +577,7 @@ function OptionModuleForm(props) {
         });
     }
 
-    function handleTypeChange(event) {
-        let new_type = event.currentTarget.value;
+    function handleTypeChange(new_type) {
         let updater = {"type": new_type};
         if (!["custom_list", "multi_select"].includes(new_type)) {
             updater["special_list"] = []
@@ -611,7 +604,7 @@ function OptionModuleForm(props) {
                             <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
                                               className="code-font" helperText={props.optionItem["name_warning_text"]}
                             />
-                            <LabeledSelectList label="Type" option_list={option_types} onChange={handleTypeChange}
+                            <LabeledSelectAdvancedList label="Type" option_list={option_types} onChange={handleTypeChange}
                                                the_value={props.optionItem.type}/>
                             <LabeledFormField label="Display Text" onChange={handleDisplayTextChange}
                                               the_value={props.optionItem.display_text}
@@ -691,8 +684,7 @@ function WidgetModuleForm(props) {
         props.dispatch({type: "update_item", new_item: new_item, identifier: props.widgetItem.identifier})
     }
 
-    function handleKindChange(event) {
-        let new_kind = event.currentTarget.value;
+    function handleKindChange(new_kind) {
         let new_entry = {...widgetDefaults[new_kind]};
         new_entry.name = props.widgetItem.name;
         new_entry.pane_height = props.widgetItem.pane_height;
@@ -742,6 +734,13 @@ function WidgetModuleForm(props) {
                                     case "select":
                                         return (
                                            <LabeledSelectList label="Type" the_value={props.widgetItem[field]}
+                                                              key={field}
+                                                              option_list={widgetInfo[props.widgetItem.kind][field].options}
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                    case "select_advanced":
+                                        return (
+                                           <LabeledSelectAdvancedList label="Type" the_value={props.widgetItem[field]}
                                                               key={field}
                                                               option_list={widgetInfo[props.widgetItem.kind][field].options}
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>

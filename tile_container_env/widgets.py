@@ -272,6 +272,15 @@ class SelectWidget(Widget):
         if "on_change" not in wdata:
             self.on_change = None
 
+class PoolSelectWidget(Widget):
+    widget_kind = "pool_select"
+    extra_fields = ["label", "style", "select_type", "to_render"]
+    defaults = {"label": "pool select", "style": None, "select_type": "both", "to_render": True}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if "on_change" not in wdata:
+            self.on_change = None
 
 class TextWidget(Widget):
     widget_kind = "text"
@@ -467,6 +476,7 @@ kind_dict = {
     "button": ButtonWidget,
     "switch": SwitchWidget,
     "select": SelectWidget,
+    "pool_select": PoolSelectWidget,
     "input": InputWidget,
     "matplotlib": MatplotlibWidget,
     "box": Box,
