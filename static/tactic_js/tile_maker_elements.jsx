@@ -1440,7 +1440,7 @@ function SortableNavSection(props) {
                                     }
                                     let icon = props.icon_dict ?
                                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
-                                    let isDivider = props.icon_dict && item[props.icon_field] === "divider";
+                                    let isDivider = (props.icon_dict && item[props.icon_field] === "divider") || item.name.includes("divider");
                                     return (
                                         <SortableNavItem key={item.identifier} identifier={item.identifier}
                                                          title={item.name}
