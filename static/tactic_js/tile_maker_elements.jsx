@@ -1397,6 +1397,9 @@ function SortableNavSection(props) {
         );
     }, []);
 
+    let inSubSection = false;
+    let currentSubSectionParent = null;
+    let currentlyExpanded = false;
     return (
         <ContextMenu content={contextMenu}>
             <div className="sortable-nav-section">
@@ -1441,6 +1444,15 @@ function SortableNavSection(props) {
                                     let icon = props.icon_dict ?
                                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
                                     let isDivider = (props.icon_dict && item[props.icon_field] === "divider") || item.name.includes("divider");
+                                    if (isDivider) {
+                                        inSubSection = true;
+                                        currentlyExpanded = mpContext.expandedSubList.includes(item.identifier)
+                                    }
+                                    else {
+                                        if (inSubSection && !currentlyExpanded) {
+                                            return null
+                                        }
+                                    }
                                     return (
                                         <SortableNavItem key={item.identifier} identifier={item.identifier}
                                                          title={item.name}
@@ -1454,7 +1466,10 @@ function SortableNavSection(props) {
                                                          argString={item.argString}
                                                          activeId={activeId}
                                                          isDivider={isDivider}
-                                                         icon={icon} item_list={item.item_list}
+                                                         inSubSection={inSubSection}
+                                                         expanded={item.expanded ? item.expanded : false}
+                                                         icon={icon}
+                                                         item_list={item.item_list}
                                                          dispatch={props.dispatch}/>
                                     )
                                 })}
@@ -1498,9 +1513,14 @@ function SortableNavItem(props) {
         transition,
     } = useSortable({id: props.identifier});
 
-    const style = {
+    const mpContext = useContext(MakerPaneContext);
+
+    let style = {
         transform: CSS.Transform.toString(transform),
     };
+    if (props.inSubSection && !props.isDivider) {
+        style.marginLeft = "10px"
+    }
 
     if (props.isSpacer) {
         style.height = props.is_empty_section ? NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION : NAV_ITEM_SPACER_HEIGHT;
@@ -1516,7 +1536,13 @@ function SortableNavItem(props) {
         props.dispatch({type: "delete_item", identifier: props.identifier})
     }
 
+    function _toggleDividerVisibility() {
+        mpContext.toggleVisibleTab(props.identifier)
+
+    }
+
     const delete_icon = <Icon icon="delete" size={12}/>;
+    const edit_icon = <Icon icon="edit" size={12}/>;
 
     const contextMenu = useMemo(() => {
         return (
@@ -1537,6 +1563,10 @@ function SortableNavItem(props) {
                     {props.isSpacer ? null :
                         <Button icon={delete_icon} size="small" variant="minimal" className="show-on-hover"
                                 tabIndex={-1} onClick={_deleteMe}/>
+                    }
+                    {!props.isDivider ? null :
+                         <Button icon={edit_icon} size="small" variant="minimal" className="show-on-hover"
+                                tabIndex={-1} onClick={_toggleDividerVisibility}/>
                     }
                 </ButtonGroup>
             </div>
@@ -1664,7 +1694,7 @@ function NavItem(props) {
     }
 
 
-    let dot_opacity = mpContext.visibleTabList.includes(props.identifier) ? 1 : 0
+    let dot_opacity = mpContext.visibleTabList.includes(props.identifier) && !props.isDivider ? 1 : 0
 
     let fullButton = (
         <span>
@@ -1682,7 +1712,13 @@ function NavItem(props) {
                     ellipsizeText={true}
                     text={fullButton}
                     onClick={() => {
-                        mpContext.toggleVisibleTab(props.identifier)
+                        if (props.isDivider) {
+                            mpContext.toggleExpandedSub(props.identifier)
+                        }
+                        else {
+                            mpContext.toggleVisibleTab(props.identifier)
+                        }
+
                     }}/>
         </ControlGroup>
     );

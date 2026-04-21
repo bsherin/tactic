@@ -74,6 +74,7 @@ function CreatorApp(props) {
 
 
     const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
+    const [, setExpandedSubList, expandedSubListRef] = useStateAndRef([]);
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
         props.interface_state.visibleMethodList : ["render_content"]);
 
@@ -216,6 +217,7 @@ function CreatorApp(props) {
 
             errorDrawerFuncs.setGoToLineNumber(null);
             visibleTabListRef.current = null;
+            expandedSubListRef.current = null;
             methodsToOpenRef.current = null;
             if (props.controlled) {
                 props.registerDirtyMethod(null);
@@ -858,6 +860,16 @@ function CreatorApp(props) {
         setVisibleTabList(new_tab_list)
     }
 
+    function _handleSubSectionSelect(newTabIdentifier) {
+        let new_tab_list = [...expandedSubListRef.current];
+        if (!new_tab_list.includes(newTabIdentifier)) {
+            new_tab_list.push(newTabIdentifier);
+        } else {
+            new_tab_list = new_tab_list.filter(tab => tab !== newTabIdentifier);
+        }
+        setExpandedSubList(new_tab_list)
+    }
+
     function showTab(newTabIdentifier, callback=null) {
         if (!visibleTabListRef.current.includes(newTabIdentifier)) {
             let new_tab_list = [...visibleTabListRef.current];
@@ -1497,7 +1509,10 @@ function CreatorApp(props) {
                 <MakerPaneContext.Provider value={{
                     visibleTabList: visibleTabListRef.current,
                     setVisibleTabList: setVisibleTabList,
+                    expandedSubList: expandedSubListRef.current,
+                    setExpandedSubList: setExpandedSubList,
                     toggleVisibleTab: _handleTabSelect,
+                    toggleExpandedSub: _handleSubSectionSelect,
                     pushCallback: pushCallback
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
