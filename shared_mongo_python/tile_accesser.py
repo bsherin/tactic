@@ -68,6 +68,8 @@ class TileAccess(object):
             mdata["icon"] = self.get_tile_icon_from_mdata(mdata)
             if "category" not in mdata:
                 mdata["category"] = "nocat"
+            if "couple_save_attrs_and_exports" not in mdata:
+                mdata["couple_save_attrs_and_exports"] = True
         return mdata
 
     # This used to use loaded_tile_management to get the

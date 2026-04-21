@@ -22,9 +22,6 @@ function metadataReducer(draft, action) {
             case "append_to_notes":
                 draft.notes = draft.notes + action.value;
                 break;
-            case "set_couple":
-                draft.couple_save_attrs_and_exports = action.value;
-                break;
             case "update_item":
                 for (let field in action.new_item) {
                     draft[field] = action.new_item[field]
@@ -77,7 +74,10 @@ function useMetadata(initial, doUndo = true) {
     if (!initial.hasOwnProperty("pane_height")) {
         initial.pane_height = "unset";
     }
-    if (!initial.hasOwnProperty("couple_save_attrs_and_exports")) {
+    if (initial["additional_mdata"].hasOwnProperty("couple_save_attrs_and_exports")) {
+        initial.couple_save_attrs_and_exports = initial["additional_mdata"].couple_save_attrs_and_exports;
+    }
+    else {
         initial.couple_save_attrs_and_exports = true;
     }
     if (initial["additional_mdata"].icon) {
