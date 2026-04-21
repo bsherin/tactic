@@ -591,7 +591,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             if not hasattr(self, attr):
                 result[attr] = None
                 continue
-            if is_lite and attr in export_names:
+            if is_lite and (attr in export_names or attr == "_widgets"):
                 continue
             log.debug(f"getting value for attribute", attr=attr)
             attr_val = getattr(self, attr)
