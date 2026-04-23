@@ -363,7 +363,7 @@ function CombinedMetadata(props) {
   var updatedIdRef = (0, _react.useRef)(null);
   var _useDebounce = (0, _utilities_react.useDebounce)(function (state_stuff) {
       postChanges(state_stuff).then(function () {});
-    }),
+    }, 8000),
     _useDebounce2 = _slicedToArray(_useDebounce, 2),
     doUpdate = _useDebounce2[1];
   var latestPropsRef = (0, _react.useRef)(props);

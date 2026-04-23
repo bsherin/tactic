@@ -367,7 +367,7 @@ function CombinedMetadata(props) {
         postChanges(state_stuff)
             .then(() => {
             });
-    });
+    }, 8000);
 
     const latestPropsRef = useRef(props);
     useEffect(() => {
