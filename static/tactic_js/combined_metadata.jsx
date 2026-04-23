@@ -363,8 +363,8 @@ function CombinedMetadata(props) {
     const pushCallback = useCallbackStack();
 
     const updatedIdRef = useRef(null);
-    const [, doUpdate] = useDebounce((state_stuff) => {
-        postChanges(state_stuff)
+    const [, doUpdate, forceUpdate] = useDebounce((state_stuff, latestProps=null) => {
+        postChanges(state_stuff, latestProps)
             .then(() => {
             });
     }, 8000);
@@ -460,9 +460,13 @@ function CombinedMetadata(props) {
             })
     }
 
-    async function postChanges(state_stuff) {
+    async function postChanges(state_stuff, latestProps=null) {
+        console.log("in postChanges")
+        if (latestProps == null) {
+            latestProps = latestPropsRef.current;
+        }
 
-        if (latestPropsRef.current.multi_select) {
+        if (latestProps.multi_select) {
             let result_dict = {};
             if (isAllTiles) {
                 result_dict["metadata"] = {}
@@ -488,7 +492,7 @@ function CombinedMetadata(props) {
             }
 
             async function processRes(res_name, index) {
-                result_dict["res_type"] = latestPropsRef.current.list_of_selected_types[index];
+                result_dict["res_type"] = latestProps.list_of_selected_types[index];
 
                 result_dict["res_name"] = res_name;
                 result_dict["mdata_uid"] = guid();
@@ -500,13 +504,13 @@ function CombinedMetadata(props) {
                 }
             }
 
-            latestPropsRef.current.list_of_selected.forEach(processRes);
+            latestProps.list_of_selected.forEach(processRes);
             return
         }
 
         let result_dict = {
-            "res_type": latestPropsRef.current.res_type,
-            "res_name": latestPropsRef.current.res_name,
+            "res_type": latestProps.res_type,
+            "res_name": latestProps.res_name,
             "metadata": {
                 "mdata_uid": guid()
             }
@@ -538,7 +542,7 @@ function CombinedMetadata(props) {
         if (post_immediate) {
             await postChanges(state_stuff)
         } else {
-            doUpdate(state_stuff)
+            doUpdate(state_stuff, latestPropsRef.current);
         }
     }
 
@@ -563,6 +567,11 @@ function CombinedMetadata(props) {
 
     async function _handleIconChange(icon) {
         await _handleMetadataChange({"icon": icon})
+    }
+
+    function handleNotesBlur() {
+        console.log("got handleNotesBlur")
+        forceUpdate();
     }
 
     let additional_items;
@@ -601,6 +610,8 @@ function CombinedMetadata(props) {
     ostyle["overflow"] = "auto";
     let split_tags = !mStateRef.current.tags || mStateRef.current.tags == "" ? [] : mStateRef.current.tags.split(" ");
     const MetadataNotesButtons = props.notes_buttons;
+
+
     return (
         <ErrorBoundary>
             <Card ref={top_ref}
@@ -646,7 +657,7 @@ function CombinedMetadata(props) {
                                     show_markdown_initial={true}
                                     setCMObject={props.setCMObject}
                                     tsocket={props.tsocket}
-                                    handleBlur={props.handleNotesBlur}
+                                    handleBlur={handleNotesBlur}
                         />
                         {props.notes_buttons &&
                             <MetadataNotesButtons appendToNotes={appendToNotes}/>

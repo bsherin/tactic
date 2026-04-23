@@ -362,10 +362,12 @@ function CombinedMetadata(props) {
   var pushCallback = (0, _utilities_react.useCallbackStack)();
   var updatedIdRef = (0, _react.useRef)(null);
   var _useDebounce = (0, _utilities_react.useDebounce)(function (state_stuff) {
-      postChanges(state_stuff).then(function () {});
+      var latestProps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      postChanges(state_stuff, latestProps).then(function () {});
     }, 8000),
-    _useDebounce2 = _slicedToArray(_useDebounce, 2),
-    doUpdate = _useDebounce2[1];
+    _useDebounce2 = _slicedToArray(_useDebounce, 3),
+    doUpdate = _useDebounce2[1],
+    forceUpdate = _useDebounce2[2];
   var latestPropsRef = (0, _react.useRef)(props);
   (0, _react.useEffect)(function () {
     latestPropsRef.current = props;
@@ -466,11 +468,29 @@ function CombinedMetadata(props) {
   }
   function _postChanges() {
     _postChanges = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(state_stuff) {
-      var processRes, _result_dict, _found_a_field, _i2, _arr, _field2, result_dict, found_a_field, _i3, _arr2, _field3, _t2;
+      var latestProps,
+        processRes,
+        _result_dict,
+        _found_a_field,
+        _i2,
+        _arr,
+        _field2,
+        result_dict,
+        found_a_field,
+        _i3,
+        _arr2,
+        _field3,
+        _args2 = arguments,
+        _t2;
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.n) {
           case 0:
-            if (!latestPropsRef.current.multi_select) {
+            latestProps = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : null;
+            console.log("in postChanges");
+            if (latestProps == null) {
+              latestProps = latestPropsRef.current;
+            }
+            if (!latestProps.multi_select) {
               _context2.n = 5;
               break;
             }
@@ -480,7 +500,7 @@ function CombinedMetadata(props) {
                 return _regenerator().w(function (_context) {
                   while (1) switch (_context.n) {
                     case 0:
-                      _result_dict["res_type"] = latestPropsRef.current.list_of_selected_types[index];
+                      _result_dict["res_type"] = latestProps.list_of_selected_types[index];
                       _result_dict["res_name"] = res_name;
                       _result_dict["mdata_uid"] = (0, _utilities_react.guid)();
                       _context.p = 1;
@@ -538,12 +558,12 @@ function CombinedMetadata(props) {
               }
             };
           case 4:
-            latestPropsRef.current.list_of_selected.forEach(processRes);
+            latestProps.list_of_selected.forEach(processRes);
             return _context2.a(2);
           case 5:
             result_dict = {
-              "res_type": latestPropsRef.current.res_type,
-              "res_name": latestPropsRef.current.res_name,
+              "res_type": latestProps.res_type,
+              "res_name": latestProps.res_name,
               "metadata": {
                 "mdata_uid": (0, _utilities_react.guid)()
               }
@@ -613,7 +633,7 @@ function CombinedMetadata(props) {
             _context3.n = 4;
             break;
           case 3:
-            doUpdate(state_stuff);
+            doUpdate(state_stuff, latestPropsRef.current);
           case 4:
             return _context3.a(2);
         }
@@ -729,6 +749,10 @@ function CombinedMetadata(props) {
     }));
     return _handleIconChange2.apply(this, arguments);
   }
+  function handleNotesBlur() {
+    console.log("got handleNotesBlur");
+    forceUpdate();
+  }
   var additional_items;
   if (!props.multi_select) {
     if (props.useFixedData) {
@@ -819,7 +843,7 @@ function CombinedMetadata(props) {
     show_markdown_initial: true,
     setCMObject: props.setCMObject,
     tsocket: props.tsocket,
-    handleBlur: props.handleNotesBlur
+    handleBlur: handleNotesBlur
   }), props.notes_buttons && /*#__PURE__*/_react["default"].createElement(MetadataNotesButtons, {
     appendToNotes: appendToNotes
   })), props.search_inside && mStateRef.current.search_context && !props.multi_select && /*#__PURE__*/_react["default"].createElement(_core.FormGroup, {

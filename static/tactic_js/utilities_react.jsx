@@ -243,15 +243,22 @@ function useImmerReducerAndRef(reducer, initial) {
 
 function useDebounce(callback, delay = 500) {
     const current_timer = useRef(null);
+    const current_args = useRef(null);
     const waiting = useRef(false);
+    function forceAction() {
+        clearTimeout(current_timer.current);
+        waiting.current = false;
+        callback(...current_args.current);
+    }
     return [waiting, (...args) => {
         clearTimeout(current_timer.current);
         waiting.current = true;
+        current_args.current = args;
         current_timer.current = setTimeout(() => {
             waiting.current = false;
             callback(...args);
         }, delay);
-    }]
+    }, forceAction]
 }
 
 const useDidMount = (func, deps) => {
