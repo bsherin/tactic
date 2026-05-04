@@ -4,6 +4,7 @@ $standard-padding: 25px;
 
 $navigator-top-padding: 15px;
 $nav-item-indent: 25px;
+$mono-nav-section-font-size: 13px;
 $nav-section-font-size: 15px;
 $nav-item-font-size: 13px;
 $small-pane-buttom-offset: 10px;
@@ -85,6 +86,11 @@ $option-divider-color: #ec9a3c;
 
         .direct-nav-section-button {
             font-size: $nav-section-font-size;
+        }
+
+        .direct-nav-section-button-mono {
+            font-family: monospace;
+            font-size: $mono-nav-section-font-size;
         }
 
         .nav-section-button {

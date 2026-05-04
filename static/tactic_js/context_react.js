@@ -74,7 +74,7 @@ function SpinnerPanel(props) {
       position: "relative",
       height: props.isSelected ? "100%" : 0,
       top: "50%",
-      left: "50%"
+      left: 0
     },
     key: "spinner"
   }, /*#__PURE__*/_react["default"].createElement(_core.Spinner, {

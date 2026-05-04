@@ -1087,17 +1087,19 @@ function CreatorApp(props) {
             },
             start_expanded: false,
             identifier: "metadata",
+            className: "direct-nav-section-button",
             name: "Metadata",
             icon: pane_type_icons["metadata"],
             start_open: true,
         },
+        {kind: "divider", name: "Required Divider", visible: true},
         {
             kind: "direct",
             visible: true,
             editable: false,
             dispatch: () => {
             },
-
+            className: "direct-nav-section-button-mono",
             start_expanded: false,
             identifier: "globals",
             name: "globals",
@@ -1111,6 +1113,7 @@ function CreatorApp(props) {
             dispatch: () => {
             },
             identifier: "render_content",
+            className: "direct-nav-section-button-mono",
             name: "render_content",
             mode: "python",
             icon: pane_type_icons["render_content"],

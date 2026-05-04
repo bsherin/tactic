@@ -1132,6 +1132,7 @@ function MakerNavigator(props) {
                         return (
                             <DirectNavSection key={section.name} title={section.name}
                                               item_list={null}
+                                              className={section.className}
                                               identifier={section.identifier}
                                               icon={section.icon}/>
                         )
@@ -1227,10 +1228,11 @@ function DirectNavSection(props) {
         identifier: "",
         isDivider: false,
         directSet: null,
+        className: "direct-nav-section-button",
         ...props
     };
     const mpContext = useContext(MakerPaneContext);
-    const className = "direct-nav-section-button";
+    const className = props.className;
 
     return (
         <ControlGroup>
