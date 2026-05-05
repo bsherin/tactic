@@ -259,7 +259,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self.width = data["width"]
         self.height = data["height"]
         self._tworker.send_updated_reload_dict()
-        if self.configured:
+        if self.configured and not data["initialize"]:
             self.handle_size_change()
         return None
 
@@ -668,28 +668,18 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
 
     @_task_worthy
     def widget_set(self, data):
-        try:
-            widget_id = data["widgetId"]
-            widget = self._widgets[widget_id]
-            widget.set(data["widgetData"])
-            return {"success": True}
-        except Exception as ex:
-            log.warning("Error in widget_set")
-            return {"success": True}
+        widget_id = data["widgetId"]
+        widget = self._widgets[widget_id]
+        widget.set(data["widgetData"])
+        return {"success": True}
 
     @_task_worthy
     def widget_action(self, data):
-        try:
-            widget_id = data["widgetId"]
-            widget = self._widgets[widget_id]
-            val = data["value"] if "value" in data else None
-            widget.action(val)
-            return {"success": True}
-        except Exception as ex:
-            log.exception("Error in widget_action")
-            self._handle_exception(ex, "error in widget_action")
-            return {"success": False, "error": str(ex)}
-
+        widget_id = data["widgetId"]
+        widget = self._widgets[widget_id]
+        val = data["value"] if "value" in data else None
+        widget.action(val)
+        return {"success": True}
     def post_event(self, event_name, task_data=None):
         self._tworker.post_task(self._tworker.my_id, event_name, task_data)
         return

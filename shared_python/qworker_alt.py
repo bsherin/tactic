@@ -453,10 +453,15 @@ class QWorker(ExceptionMixin):
                         handler = self.handler_instances[task_worthy_methods[task_type]]
                         response_data = getattr(handler, task_type)(task_packet.get("task_data"))
                     except Exception as ex:
-                        log.exception("error handling event", task_type=task_type, my_id=self.my_id)
-                        special_string = "Error handling task of type {} for my_id {}".format(task_type,
-                                                                                              self.my_id)
-                        response_data = self.get_traceback_exception_dict(ex, special_string)
+                        if hasattr(self.tile_instance, "_handle_exception"):
+                            self.tile_instance._handle_exception(ex, "Error handling task of type {} for my_id {}".format(task_type,
+                                                                                                     self.my_id))
+                            return
+                        else:
+                            log.exception("error handling event", task_type=task_type, my_id=self.my_id)
+                            special_string = "Error handling task of type {} for my_id {}".format(task_type,
+                                                                                                  self.my_id)
+                            response_data = self.get_traceback_exception_dict(ex, special_string)
 
                 if task_packet["callback_id"] is not None:
                     try:

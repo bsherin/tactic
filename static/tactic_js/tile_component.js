@@ -121,7 +121,7 @@ function TileComponent(props) {
   });
   (0, _react.useEffect)(function () {
     if (props.loading_status == "loaded") {
-      _broadcastTileSize();
+      _broadcastTileSize(true);
     }
   }, [props.loading_status]);
   (0, _react.useEffect)(function () {
@@ -131,9 +131,11 @@ function TileComponent(props) {
   // Broadcasting the tile size is necessary because some tiles (notably matplotlib tiles)
   // need to know the size of the display area.
   function _broadcastTileSize() {
+    var initialize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     (0, _communication_react.postWithCallback)(props.tile_id, "TileSizeChange", {
       width: tdaWidth(),
-      height: tdaHeight()
+      height: tdaHeight(),
+      initialize: initialize
     }, null, null, props.local_id);
   }
   function _resizeTileArea(dx, dy) {
