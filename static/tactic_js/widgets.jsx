@@ -1,7 +1,9 @@
 import React, {useContext, useEffect, useRef, useMemo, useState, Fragment} from "react";
 
-import {Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup, Collapse,
-    ProgressBar, Divider} from "@blueprintjs/core";
+import {
+    Slider, Text, Button, Switch, HTMLSelect, FormGroup, InputGroup, Collapse,
+    ProgressBar, Divider, Card, Elevation
+} from "@blueprintjs/core";
 
 import {postPromise, postWithCallback} from "./communication_react";
 import {ErrorDrawerContext} from "./error_drawer";
@@ -85,7 +87,7 @@ function CollapseWidget(props) {
         ...props
     };
     const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
-    const [isOpen, setIsOpen] = useState(props.widgetData.start_open);
+    const [isOpen, setIsOpen] = useState(props.widgetData.startOpen);
 
     function _handleClick() {
         setIsOpen(!isOpen);
@@ -127,12 +129,17 @@ function CollapseWidget(props) {
             <Button onClick={_handleClick}
                         text={props.widgetData.label}
                         size="medium"
-                        variant="minimal"
+                        variant="outlined"
                         intent="primary"
                         style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
                 />
             <Collapse isOpen={isOpen} className={props.widgetData?.className} key={props.widgetId}>
-                {outputWidgets}
+                <Card interactive={false}
+                      elevation={Elevation.TWO}
+                      style={{boxShadow: "none", marginBottom: 10, borderRadius: 10}}
+                >
+                   {outputWidgets}
+                </Card>
             </Collapse>
         </Fragment>
     )
