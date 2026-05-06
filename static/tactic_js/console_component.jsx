@@ -2376,6 +2376,7 @@ function ConsoleCodeItem(props) {
                         <WidgetComponent key={widgetId} widgetId={widgetId} local_id={props.local_id}
                                          console_id={props.unique_id}
                                          row={idx}
+                                         widgetDict={widgetDict}
                                          dispatch={props.dispatch}
                                          widgetData={widgetData} tsocket={props.tsocket}/>
                     </ErrorBoundary>

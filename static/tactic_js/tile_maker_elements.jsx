@@ -733,14 +733,14 @@ function WidgetModuleForm(props) {
                                         )
                                     case "select":
                                         return (
-                                           <LabeledSelectList label="Type" the_value={props.widgetItem[field]}
+                                           <LabeledSelectList label={field} the_value={props.widgetItem[field]}
                                                               key={field}
                                                               option_list={widgetInfo[props.widgetItem.kind][field].options}
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     case "select_advanced":
                                         return (
-                                           <LabeledSelectAdvancedList label="Type" the_value={props.widgetItem[field]}
+                                           <LabeledSelectAdvancedList label={field} the_value={props.widgetItem[field]}
                                                               key={field}
                                                               option_list={widgetInfo[props.widgetItem.kind][field].options}
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>

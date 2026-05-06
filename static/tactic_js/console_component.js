@@ -2954,6 +2954,7 @@ function ConsoleCodeItem(props) {
           local_id: props.local_id,
           console_id: props.unique_id,
           row: idx,
+          widgetDict: _widgets.widgetDict,
           dispatch: props.dispatch,
           widgetData: widgetData,
           tsocket: props.tsocket
