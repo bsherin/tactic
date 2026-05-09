@@ -51,12 +51,15 @@ class Widget(object):
     defaults = {}
 
     def __init__(self, wdata, runner_type="tile", runner_id=None):
-        self.widgetId = "a" + str(uuid.uuid4())
+        if "name" in wdata:
+            self.widgetId = wdata["name"]
+        else:
+            self.widgetId = "a" + str(uuid.uuid4())
         self.runner_type = runner_type
         self.runner_id = runner_id
         self.parent = None
         self.widget_data = {}
-        self.to_render = None
+        self.to_render = False
         self.base_render = {"is_widget": True, "widgetKind": self.widget_kind, "widgetId": self.widgetId}
         self.initialize(wdata)
         return
@@ -87,6 +90,19 @@ class Widget(object):
                 setattr(self, f"{ffield}_is_method", False)
 
         return
+
+    def compile_save_dict(self):
+        result = {
+            "value": self._value,
+        }
+        return result
+
+    def recreate_from_save(self, save_dict):
+        for attr, attr_val in save_dict.items():
+            if attr == "value":
+                self._value = attr_val
+            else:
+                setattr(self, attr, attr_val)
 
     def preprocess_widget_data(self, widget_data):
         return widget_data
@@ -213,13 +229,13 @@ def is_class_method(func):
 class ButtonWidget(Widget):
     widget_kind = "button"
     extra_fields = ["text", "fill", "icon", "variant", "style", "to_render"]
-    defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None, "to_render": True}
+    defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None, "to_render": False}
 
 
 class InputWidget(Widget):
     widget_kind = "input"
     extra_fields = ["fill", "label", "inline", "style", "to_render"]
-    defaults = {"fill": False, "label": "", "inline": False, "style": None, "to_render": True}
+    defaults = {"fill": False, "label": "", "inline": False, "style": None, "to_render": False}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -230,7 +246,7 @@ class InputWidget(Widget):
 class SliderWidget(Widget):
     widget_kind = "slider"
     extra_fields = ["min", "max", "stepSize", "labelStepSize", "style", "to_render"]
-    defaults = {"min": 0, "max": 10, "stepSize": 1, "labelStepSize": 1, "style": None, "to_render": True}
+    defaults = {"min": 0, "max": 10, "stepSize": 1, "labelStepSize": 1, "style": None, "to_render": False}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -241,7 +257,7 @@ class SliderWidget(Widget):
 class ProgressBarWidget(Widget):
     widget_kind = "progressBar"
     extra_fields = ["stripes", "intent", "style", "to_render"]
-    defaults = {"stripes": False, "intent": None, "style": None, "to_render": True}
+    defaults = {"stripes": False, "intent": None, "style": None, "to_render": False}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -252,7 +268,7 @@ class ProgressBarWidget(Widget):
 class SwitchWidget(Widget):
     widget_kind = "switch"
     extra_fields = ["label", "style", "to_render"]
-    defaults = {"label": "switch", "style": None, "to_render": True}
+    defaults = {"label": "switch", "style": None, "to_render": False}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -265,7 +281,7 @@ class SwitchWidget(Widget):
 class SelectWidget(Widget):
     widget_kind = "select"
     extra_fields = ["label", "style", "options", "to_render"]
-    defaults = {"label": "select", "style": None, "options": [], "to_render": True}
+    defaults = {"label": "select", "style": None, "options": [], "to_render": False}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -275,7 +291,7 @@ class SelectWidget(Widget):
 class MultiSelectWidget(Widget):
     widget_kind = "multi_select"
     extra_fields = ["label", "style", "options", "to_render"]
-    defaults = {"label": "select", "style": None, "options": [], "to_render": True}
+    defaults = {"label": "select", "style": None, "options": [], "to_render": False}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -285,7 +301,7 @@ class MultiSelectWidget(Widget):
 class PoolSelectWidget(Widget):
     widget_kind = "pool_select"
     extra_fields = ["label", "style", "select_type", "to_render"]
-    defaults = {"label": "pool select", "style": None, "select_type": "both", "to_render": True}
+    defaults = {"label": "pool select", "style": None, "select_type": "both", "to_render": False}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -295,25 +311,25 @@ class PoolSelectWidget(Widget):
 class TextWidget(Widget):
     widget_kind = "text"
     extra_fields = ["ellipsize", "style", "to_render"]
-    defaults = {"ellipsize": True, "style": None, "to_render": True}
+    defaults = {"ellipsize": True, "style": None, "to_render": False}
 
 
 class DividerWidget(Widget):
     widget_kind = "divider"
     extra_fields = ["compact", "style", "to_render"]
-    defaults = {"compact": False, "style": None, "to_render": True}
+    defaults = {"compact": False, "style": None, "to_render": False}
 
 
 class JavascriptWidget(Widget):
     widget_kind = "javascript"
     extra_fields = ["style", "code", "to_render"]
-    defaults = {"style": None, "code": "", "to_render": True}
+    defaults = {"style": None, "code": "", "to_render": False}
 
 
 class RawHtmlWidget(Widget):
     widget_kind = "rawHtml"
     extra_fields = ["style", "to_render"]
-    defaults = {"style": None, "to_render": True}
+    defaults = {"style": None, "to_render": False}
 
 
 class IframeWidget(Widget):
@@ -325,20 +341,20 @@ class IframeWidget(Widget):
 class Box(ContainerWidget):
     widget_kind = "box"
     extra_fields = ["style", "widgets", "direction", "to_render"]
-    defaults = {"style": None, "widgets": [], "direction": "horizontal", "to_render": True}
+    defaults = {"style": None, "widgets": [], "direction": "horizontal", "to_render": False}
 
 
 class CollapseWidget(ContainerWidget):
     widget_kind = "collapse"
     extra_fields = ["widgets", "label", "startOpen", "intent", "className", "to_render"]
     defaults = {"widgets": [], "label": "collapse", "startOpen": True,
-                "intent": "primary", "className": None, "to_render": True}
+                "intent": "primary", "className": None, "to_render": False}
 
 
 class MatplotlibWidget(Widget):
     widget_kind = "matplotlib"
     extra_fields = ["style", "use_svg", "dpi", "to_render"]
-    defaults = {"style": None, "use_svg": False, "dpi": 96, "to_render": True}
+    defaults = {"style": None, "use_svg": False, "dpi": 96, "to_render": False}
 
     _FigureCanvasAgg = None
 
@@ -357,6 +373,8 @@ class MatplotlibWidget(Widget):
             del alt_wdata["use_svg"]
         if "to_render" in alt_wdata:
             del alt_wdata["to_render"]
+        if "name" in alt_wdata:
+            del alt_wdata["name"]
         self.fig = Figure(**alt_wdata)
         if "figsize" not in wdata:
             self.size_to_tile()
@@ -408,7 +426,7 @@ class TableWidget(Widget):
         "expandRows": False,
         "className": "",
         "style": {},
-        "to_render": True
+        "to_render": False
     }
 
     def initialize(self, wdata):
@@ -417,6 +435,12 @@ class TableWidget(Widget):
             self._value = []
         else:
             self._value = self.convert_data_to_dlist(self._value, max_rows=MAX_TABLE_SIZE)
+
+    def compile_save_dict(self):
+        result = {
+            "value":[]
+        }
+        return result
 
     def widget_data_dict(self):
         return {

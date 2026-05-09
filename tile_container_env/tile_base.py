@@ -156,7 +156,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
         self._widgets = {}
         self.in_pseudo_tile = False
         self.pool = None
-        self.widgets = {}
         self.create_widgets_from_specs()
         return
 
@@ -188,7 +187,7 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             specs = self.widget_specs
             for spec in specs:
                 edited_spec = copy.copy(spec)
-                del edited_spec["name"]
+                # del edited_spec["name"]
                 del edited_spec["kind"]
                 if "on_click" in edited_spec:
                     meth = self.get_attr(edited_spec["on_click"])
@@ -205,7 +204,6 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 if "widgets" in edited_spec:
                     edited_spec["widgets"] = []
                 new_widget = self.widget(spec["kind"], **edited_spec)
-                self.widgets[spec["name"]] = new_widget
                 setattr(self, spec["name"], new_widget)
             for spec in specs:
                 if "widgets" in spec:
@@ -214,12 +212,12 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                         the_w = self.get_attr(widget)
                         if the_w is not None:
                             widget_objects.append(the_w)
-                    self.widgets[spec["name"]].widgets = widget_objects
+                    self._widgets[spec["name"]].widgets = widget_objects
         except:
             log.exception("Error creating widgets from specs")
 
     def render_all_widgets(self):
-        return [w.render() for w in self.widgets.values() if w.to_render]
+        return [w.render() for w in self._widgets.values() if w.to_render]
 
     @_task_worthy
     def os_command_exec(self, data):
@@ -621,6 +619,9 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 except TypeError:
                     log.exception("Error serializing attribute " + attr)
                     continue
+
+        result["widget_saves"] = self.get_widget_saves()
+
         data = {"tile_type": self.tile_type, "user_id": self.user_id}
         result["tile_id"] = self._tworker.my_id
 
@@ -638,6 +639,13 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     # </editor-fold>
 
     # <editor-fold desc="Tile Internal Machinery">
+
+    def get_widget_saves(self):
+        widget_saves = {}
+        for wname, w in self._widgets.items():
+            if hasattr(w, "compile_save_dict"):
+                widget_saves[wname] = w.compile_save_dict()
+        return widget_saves
 
     def create_widget_full(self, kind, data, runner_type="tile", runner_id=None):
         new_widget = kind_dict[kind](data, runner_type, runner_id)
@@ -836,6 +844,11 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
             save_dict["binary_attrs"] = []
         for (attr, attr_val) in save_dict.items():
             log.debug("processing attribute in recreate_from_save", attr=attr)
+            if attr == "widget_saves":
+                for wname, wsave in attr_val.items():
+                    if wname in self._widgets:
+                        self._widgets[wname].recreate_from_save(wsave)
+                continue
             if type(attr_val) == dict and hasattr(attr_val, "recreate_from_save"):
                 cls = getattr(sys.modules[__name__], attr_val["my_class_for_recreate"])
                 setattr(self, attr, cls.recreate_from_save(attr_val))

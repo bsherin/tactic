@@ -381,6 +381,7 @@ class TileWorker(QWorker):
         reload_attrs.update(current_options)
         reload_attrs["old_option_names"] = list(current_options.keys())
         reload_attrs["original_option_names"] = [opt["name"] for opt in self.tile_instance.options]
+        reload_attrs["widget_saves"] = self.tile_instance.get_widget_saves()
         return reload_attrs
 
     def send_updated_reload_dict(self):
@@ -409,6 +410,11 @@ class TileWorker(QWorker):
         form_data = self.tile_instance._create_form_data(reload_dict["form_info"])["form_data"]
         self.tile_instance.init_pool()
         document_object.Collection.__fully_initialize__()
+
+        if "widget_saves" in reload_dict:
+            for wname, wsave in reload_dict["widget_saves"].items():
+                if wname in self.tile_instance._widgets:
+                    self.tile_instance._widgets[wname].recreate_from_save(wsave)
 
         if not self.tile_instance.exports:
             self.tile_instance.exports = []
