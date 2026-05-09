@@ -77,7 +77,8 @@ class MainSessionStore(SessionStoreS3):
     large_params = ["collection_info\..*\.current_data_rows",
                     "collection_info\..*\.data_rows",
                     "collection_info\..*\.data_text",
-                    "tile_info\..*\.tile_save_dict",]
+                    "tile_info\..*\.tile_save_dict",
+                    "tile_info\..*\.tile_reload_dict"]
 
     tile_reload_attrs = ["tile_name", "tile_type", "base_figure_url", "doc_type",
                      "width", "height", "configured"]
