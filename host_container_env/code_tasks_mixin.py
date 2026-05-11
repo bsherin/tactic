@@ -47,7 +47,7 @@ class CodeTasksMixin:
     @task_worthy
     def get_code_names_task(self, data):
         the_user = self.get_user_from_data(data)
-        return {"code_names": the_user.code_names}
+        return {"code_names": the_user.code_names()}
 
     @task_worthy
     def create_duplicate_code_task(self, data):
