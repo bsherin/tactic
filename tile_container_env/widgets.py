@@ -136,7 +136,8 @@ class Widget(object):
                         getattr(sys.modules["pseudo_tile_base"], self.on_change)(self._value)
                     else:
                         getattr(sys.modules["tile_env"], self.on_change)(self._value)
-        Tile._tworker.send_updated_reload_dict()
+        if not self.runner_type in ["console", "export_viewer"]:
+            Tile._tworker.send_updated_reload_dict()
 
     def action(self, value=None):
         if self.on_click is not None:
