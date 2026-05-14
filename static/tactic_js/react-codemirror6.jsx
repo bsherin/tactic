@@ -502,11 +502,19 @@ function ReactCodemirror6(props) {
         }
 
         if (props.show_line_numbers) {
-            extensions = extensions.concat([
+            if (settingsContext.settingsRef.current.show_line_numbers == "yes") {
+                extensions = extensions.concat([
                     lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
+                ]);
+            }
+            else {
+                extensions = extensions.concat([
+                    lineNumberCompartment.current.of([]),
+                ]);
+            }
+            extensions = extensions.concat([
                     foldGutter()
-                ]
-            );
+                ]);
         }
         if (props.hideLeadingChars != null) {
             extensions = extensions.concat([
@@ -634,6 +642,11 @@ function ReactCodemirror6(props) {
         }
     }, [props.readOnly]);
 
+    const switchShowLineNumbers = () => {
+
+    };
+
+
     const switchTheme = (themeName) => {
         if (!(themeList.includes(themeName))) {
             themeName = "one_dark";
@@ -716,12 +729,17 @@ function ReactCodemirror6(props) {
     }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
 
     useEffect(() => {
-        if (editorView.current && props.show_line_numbers) {
+        if (editorView.current && props.show_line_numbers && settingsContext.settingsRef.current.show_line_numbers == "yes") {
             editorView.current.dispatch({
                 effects: lineNumberCompartment.current.reconfigure(customLineNumbers(props.first_line_number))
             })
         }
-    }, [props.first_line_number]);
+        else {
+            editorView.current.dispatch({
+                effects: lineNumberCompartment.current.reconfigure([])
+            })
+        }
+    }, [settingsContext.settings.show_line_numbers, props.first_line_number]);
 
     function _current_codemirror_theme() {
         return isDark() ? settingsContext.settingsRef.current.preferred_dark_theme :
