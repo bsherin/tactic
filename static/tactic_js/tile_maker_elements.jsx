@@ -1,6 +1,6 @@
 // noinspection JSValidateTypes
 
-import React, {memo, useContext, useEffect, useMemo, useRef, useState} from "react";
+import React, {memo, useContext, useEffect, useMemo, useRef, useState, Fragment} from "react";
 import {
     Button,
     Collapse,
@@ -1383,6 +1383,50 @@ function SortableNavSection(props) {
         const new_entry = {...props.item_base, identifier: uid};
         props.dispatch({type: "add_at_end", new_item: new_entry});
         setIsOpen(true);
+        let lastSubSectionId = findLastSubSection();
+        if (lastSubSectionId != -1) {
+            mpContext.toggleExpandedSub(lastSubSectionId, true)
+        }
+        mpContext.pushCallback(() => {
+            mpContext.toggleVisibleTab(uid);
+        });
+    }
+
+    function findLastSubSection() {
+        let sub_index = props.sub_items.findLastIndex(item => {
+            return (props.icon_dict && item[props.icon_field] === "divider") || item.name.includes("divider")
+        });
+        if (sub_index == -1) {
+            return -1;
+        }
+        return props.sub_items[sub_index].identifier;
+    }
+
+    function findNextSectionIndex(sectionIdentifier) {
+        let current_index = props.sub_items.findIndex(item => item.identifier === sectionIdentifier);
+        // get the part of props.sub_items after current_index
+        let rest_items = props.sub_items.slice(current_index + 1);
+        let sub_index = rest_items.findIndex(item => {
+            return (props.icon_dict && item[props.icon_field] === "divider") || item.name.includes("divider")
+        });
+        if (sub_index == -1) {
+            return -1;
+        }
+        return sub_index + current_index;
+    }
+
+    function createItemInSubSection(sectionIdentifier) {
+        const uid = guid();
+        const new_entry = {...props.item_base, identifier: uid};
+        const nextSectionIndex = findNextSectionIndex(sectionIdentifier)
+        if (nextSectionIndex === -1) {
+            props.dispatch({type: "add_at_end", new_item: new_entry});
+        }
+        else {
+            props.dispatch({type: "add_at_index", new_item: new_entry, insert_index: nextSectionIndex + 1});
+        }
+        setIsOpen(true);
+        mpContext.toggleExpandedSub(sectionIdentifier, true)
         mpContext.pushCallback(() => {
             mpContext.toggleVisibleTab(uid);
         });
@@ -1468,6 +1512,7 @@ function SortableNavSection(props) {
                                                          argString={item.argString}
                                                          activeId={activeId}
                                                          isDivider={isDivider}
+                                                         createItemInSubSection={createItemInSubSection}
                                                          inSubSection={inSubSection}
                                                          expanded={item.expanded ? item.expanded : false}
                                                          icon={icon}
@@ -1545,6 +1590,7 @@ function SortableNavItem(props) {
 
     const delete_icon = <Icon icon="delete" size={12}/>;
     const edit_icon = <Icon icon="edit" size={12}/>;
+    const plus_icon = <Icon icon="plus" size={12}/>;
 
     const contextMenu = useMemo(() => {
         return (
@@ -1566,9 +1612,16 @@ function SortableNavItem(props) {
                         <Button icon={delete_icon} size="small" variant="minimal" className="show-on-hover"
                                 tabIndex={-1} onClick={_deleteMe}/>
                     }
-                    {!props.isDivider ? null :
-                         <Button icon={edit_icon} size="small" variant="minimal" className="show-on-hover"
-                                tabIndex={-1} onClick={_toggleDividerVisibility}/>
+                    {!props.isDivider ? null : (
+                        <Fragment>
+                             <Button icon={edit_icon} size="small" variant="minimal" className="show-on-hover"
+                                    tabIndex={-1} onClick={_toggleDividerVisibility}/>
+                            <Button icon={plus_icon} size="small" variant="minimal" className="show-on-hover"
+                                    tabIndex={-1} onClick={() => {
+                                        props.createItemInSubSection(props.identifier);
+                                    }}/>
+                        </Fragment>
+                        )
                     }
                 </ButtonGroup>
             </div>

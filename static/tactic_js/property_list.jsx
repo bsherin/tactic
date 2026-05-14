@@ -75,7 +75,9 @@ function propertyListReducer(state, action) {
         case "add_at_index":
             new_items = [...prop_list];
             let new_item_at_index = {...defaults, ...action.new_item};
-            new_item_at_index.identifier = guid();
+            if (!new_item_at_index.hasOwnProperty("identifier")) {
+                new_item_at_index.identifier = guid();
+            }
             new_items.splice(action.insert_index, 0, new_item_at_index);
             return {...state, items: new_items};
         case "add_at_end":

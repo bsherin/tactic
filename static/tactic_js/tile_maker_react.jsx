@@ -860,11 +860,11 @@ function CreatorApp(props) {
         setVisibleTabList(new_tab_list)
     }
 
-    function _handleSubSectionSelect(newTabIdentifier) {
+    function _handleSubSectionSelect(newTabIdentifier, forceVisible=false) {
         let new_tab_list = [...expandedSubListRef.current];
         if (!new_tab_list.includes(newTabIdentifier)) {
             new_tab_list.push(newTabIdentifier);
-        } else {
+        } else if (!forceVisible) {
             new_tab_list = new_tab_list.filter(tab => tab !== newTabIdentifier);
         }
         setExpandedSubList(new_tab_list)
