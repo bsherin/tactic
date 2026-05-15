@@ -145,6 +145,7 @@ function MainTableCardHeader(props) {
     const outer_style = {
         display: "flex",
         height: 50,
+        minHeight: 0, minWidth: 0,
         width: "100%",
         paddingLeft: 10,
         paddingRight: 10,
@@ -226,10 +227,11 @@ function MainTableCard(props) {
                   position: "relative",
                   height: "100%",
                   width: "100%",
+                  minHeight: 0, minWidth: 0,
               }}>
             {props.card_header}
             <div className="table-wrapper"
-                 style={{flex: "1 1 0", minWidth: 0, display: "flex", position: "relative"}}>
+                 style={{flex: "1 1 0", display: "flex", minHeight: 0, minWidth: 0, position: "relative"}}>
                 {props.card_body}
             </div>
         </Card>

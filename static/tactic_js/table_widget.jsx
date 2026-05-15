@@ -81,7 +81,7 @@ function compute_initial_column_widths(table_selector, header_list, data_list, m
 }
 
 const base_outer_style = {
-    height: "100%", position: "relative",
+    height: "100%", position: "relative", minHeight: 0, minWidth: 0,
     overflow: "auto", display: "flex", flexDirection: "column"
 };
 

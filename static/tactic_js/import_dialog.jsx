@@ -334,8 +334,7 @@ function FileImportDialog(props) {
             <div className="dz-preview dz-file-preview">
                 <div style={name_style} data-dz-name="true"></div>
                 <div style={{
-                    display: "flex", width: half_width, flexDirection:
-                        "row", justifyContent: "space-bewteen"
+                    display: "flex", width: half_width, flexDirection: "row", justifyContent: "space-bewteen"
                 }}>
                     <div className="dz-progress" style={progress_style}>
                         <div className="dz-upload" data-dz-uploadprogress="true"></div>

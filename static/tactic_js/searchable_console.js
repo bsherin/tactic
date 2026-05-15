@@ -390,11 +390,14 @@ function SearchableConsole(props, inner_ref) {
     fontFamily: "monospace",
     flex: "1 1 0",
     minHeight: 0,
+    minWidth: 0,
     overflow: "auto"
   };
   var outer_style = _objectSpread({
     width: "100%",
     height: "100%",
+    minHeight: 0,
+    minWidth: 0,
     overflow: "hidden",
     display: "flex",
     flexDirection: "column"

@@ -192,15 +192,26 @@ function PaneElement(props) {
     useEffect(() => {
         if (props.pane_scroll_ref.current == props.identifier) {
             requestAnimationFrame(() => {
-                const el = top_ref.current;
-                if (el != null) {
-                    el.scrollIntoView({behavior: 'smooth', block: 'center'});
-                    props.pane_scroll_ref.current = null;
+                const target = top_ref.current;
+                const scroller = props.paneListRef.current;
+                if (!target || !scroller) {
+                    return;
                 }
-
-            });
-        }
-    }, [props.pane_scroll_ref.current, top_ref.current]);
+                const targetRect = target.getBoundingClientRect();
+                const scrollerRect = scroller.getBoundingClientRect();
+                const targetCenter =
+                    targetRect.top - scrollerRect.top +
+                    scroller.scrollTop +
+                    targetRect.height / 2;
+                const newScrollTop =
+                    targetCenter - scroller.clientHeight / 2;
+                scroller.scrollTo({
+                    top: newScrollTop,
+                    behavior: "smooth",
+                });
+                props.pane_scroll_ref.current = null;
+            })
+    }}, [props.pane_scroll_ref.current, top_ref.current]);
 
     function _startResize() {
         set_resizing(true);
@@ -599,8 +610,8 @@ function OptionModuleForm(props) {
             <SimplePaneTitle icon={pane_type_icons["option"]} title={props.optionItem.name}/>
             <div>
                 <form className="maker-form-container">
-                    <div style={{display: "flex", flexDirection: "column"}}>
-                        <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row"}}>
+                    <div style={{display: "flex", flexDirection: "column", minHeight: 0, minWidth: 0}}>
+                        <div style={{display: "flex", flexWrap: "wrap", flexDirection: "row", minHeight: 0, minWidth: 0,}}>
                             <LabeledFormField label="Name" onChange={handleNameChange} the_value={props.optionItem.name}
                                               className="code-font" helperText={props.optionItem["name_warning_text"]}
                             />
@@ -961,7 +972,7 @@ function DividerElement(props) {
             position: "relative", width: "100%"
         }}>
             <EntityTitle title={props.text} icon={props.icon} heading={H4}/>
-            <Divider style={{flex: "1 1 0", marginLeft: 10, marginRight: 10, borderRight: "0px"}}/>
+            <Divider style={{flex: "1 1 0", marginLeft: 10, minHeight: 0, minWidth: 0, marginRight: 10, borderRight: "0px"}}/>
         </div>
     )
 }
@@ -1045,6 +1056,7 @@ function CmElement(props) {
     let outer_style = {
         width: "100%",
         flex: "1 1 0",
+        minHeight: 0, minWidth: 0,
         overflow: "auto",
         paddingLeft: 0,
         position: "relative",

@@ -805,6 +805,8 @@ function ContextApp(props) {
                              style={{display: "flex", flexDirection: "column",
                                 position: "relative",
                                 height: selectedTabIdRef.current == entry.identifier ? "100%" : 0,
+                                 minWidth: 0,
+                                 minHeight: 0,
                                 width: "100%"}}
                                 className={panelRootDict[entry.kind]}>
                             {the_panel}
@@ -868,7 +870,8 @@ function ContextApp(props) {
         display: 'flex',
         flexDirection: 'row',
         paddingLeft: 0,
-        position: "relative"
+        position: "relative",
+        minHeight: 0, minWidth: 0,
     };
 
     return (

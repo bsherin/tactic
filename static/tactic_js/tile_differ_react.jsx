@@ -29,6 +29,7 @@ async function tile_differ_main() {
         root.render(
             <div style={{
                 display: "flex", flexDirection: "column",
+                minHeight: 0, minWidth: 0,
                 position: "relative",
                 height: "100%",
                 width: "100%"

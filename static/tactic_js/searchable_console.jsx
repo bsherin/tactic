@@ -228,11 +228,11 @@ function SearchableConsole(props, inner_ref) {
         fontSize: 12,
         fontFamily: "monospace",
         flex: "1 1 0",
-        minHeight: 0,
+        minHeight: 0, minWidth: 0,
         overflow: "auto"
     };
     const outer_style = {
-        width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column",
+        width: "100%", height: "100%", minHeight: 0, minWidth: 0, overflow: "hidden", display: "flex", flexDirection: "column",
         ...props.outer_style
     };
     const leftContent = (

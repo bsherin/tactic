@@ -198,6 +198,8 @@ function MainTableCardHeader(props) {
   var outer_style = {
     display: "flex",
     height: 50,
+    minHeight: 0,
+    minWidth: 0,
     width: "100%",
     paddingLeft: 10,
     paddingRight: 10,
@@ -276,14 +278,17 @@ function MainTableCard(props) {
       flexDirection: "column",
       position: "relative",
       height: "100%",
-      width: "100%"
+      width: "100%",
+      minHeight: 0,
+      minWidth: 0
     }
   }, props.card_header, /*#__PURE__*/_react["default"].createElement("div", {
     className: "table-wrapper",
     style: {
       flex: "1 1 0",
-      minWidth: 0,
       display: "flex",
+      minHeight: 0,
+      minWidth: 0,
       position: "relative"
     }
   }, props.card_body));

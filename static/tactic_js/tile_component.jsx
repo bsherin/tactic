@@ -498,6 +498,7 @@ function TileComponent(props) {
             width: props.tile_width + dwidth,
             height: tile_height + dheight,
             display: "flex",
+            minHeight: 0, minWidth: 0,
             flexDirection: "column",
             position: "relative"
         };
@@ -570,9 +571,9 @@ function TileComponent(props) {
                         <div ref={body_ref}
                              style={{
                                  width: "100%",
-                                 minHeight: 0,
                                  flex: "1 1 0",
                                  display: "flex",
+                                 minHeight: 0, minWidth: 0,
                                  flexDirection: "column",
                                  padding: TILE_DISPLAY_AREA_MARGIN,
                                  overflow: "auto",

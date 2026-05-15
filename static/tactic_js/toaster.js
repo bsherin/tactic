@@ -188,9 +188,12 @@ function withStatus(WrappedComponent) {
       setLeftEdge: setLeftEdge
     }, []);
     return /*#__PURE__*/_react["default"].createElement("div", {
+      className: "status-holder",
       style: {
         display: "flex",
         flexDirection: "column",
+        minHeight: 0,
+        minWidth: 0,
         position: "relative",
         width: "100%",
         height: "100%"
@@ -203,7 +206,8 @@ function withStatus(WrappedComponent) {
         flexDirection: "column",
         position: "relative",
         flex: "1 1 0",
-        minHeight: 0
+        minHeight: 0,
+        minWidth: 0
       }
     }, /*#__PURE__*/_react["default"].createElement(WrappedComponent, props))), /*#__PURE__*/_react["default"].createElement(Status, {
       show_spinner: show_spinner,

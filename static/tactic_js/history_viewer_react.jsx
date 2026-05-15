@@ -35,6 +35,7 @@ async function history_viewer_main ()  {
         root.render(
             <div style={{display: "flex", flexDirection: "column",
                 position: "relative",
+                minHeight: 0, minWidth: 0,
                 height: "100%",
                 width: "100%"}}>
                 {the_element}

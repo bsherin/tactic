@@ -174,6 +174,8 @@ function ExportButtonList(props) {
     style: {
       flexDirection: "column",
       display: "flex",
+      minHeight: 0,
+      minWidth: 0,
       verticalAlign: "top",
       height: "100%",
       position: "relative"
@@ -475,7 +477,9 @@ function ExportsViewer(props) {
     className: "d-flex flex-column justify-content-around",
     style: {
       flex: "1 1 0",
-      position: "relative"
+      position: "relative",
+      minHeight: 0,
+      minWidth: 0
     }
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "exports-heading d-flex flex-row justify-content-start"
@@ -536,9 +540,10 @@ function ExportsViewer(props) {
   }))), !props.console_is_shrunk && /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       flex: "1 1 0",
-      minHeight: 0,
       display: "flex",
       flexDirection: "column",
+      minHeight: 0,
+      minWidth: 0,
       width: "100%",
       position: "relative",
       overflow: "auto"
@@ -548,6 +553,7 @@ function ExportsViewer(props) {
     style: {
       flex: "1 1 0",
       minHeight: 0,
+      minWidth: 0,
       width: "100%",
       position: "relative",
       overflow: "auto"

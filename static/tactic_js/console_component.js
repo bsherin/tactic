@@ -3092,6 +3092,8 @@ function ConsoleCodeItem(props) {
     style: {
       paddingBottom: 10,
       display: "flex",
+      minHeight: 0,
+      minWidth: 0,
       flexDirection: "column",
       position: "relative"
     }

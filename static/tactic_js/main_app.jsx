@@ -1185,6 +1185,7 @@ function MainApp(props) {
         height: "100%",
         flex: "1 1 0",
         minHeight: 0,
+        minWidth: 0,
         overflow: "auto",
         display: 'flex',
         flexDirection: 'column',
@@ -1239,6 +1240,7 @@ function MainApp(props) {
                                  style={{
                                      flex: "1 1 0",
                                      minHeight: 0,
+                                     minWidth: 0,
                                      overflow: "auto",
                                      display: "flex",
                                      flexDirection: "column"
@@ -1246,6 +1248,7 @@ function MainApp(props) {
                             >
                                 <div style={{
                                     flex: "1 1 0",
+                                    minHeight: 0,
                                     minWidth: 0,
                                     overflow: "auto"
                                 }}>
@@ -1298,6 +1301,7 @@ function main_main() {
         root.render(
             <div style={{
                 display: "flex", flexDirection: "column",
+                minHeight: 0, minWidth: 0,
                 position: "relative",
                 height: "100%",
                 width: "100%"

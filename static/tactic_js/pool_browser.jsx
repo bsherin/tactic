@@ -713,6 +713,7 @@ function PoolBrowser(props) {
                 flex: "1 1 0",
                 display: "flex",
                 minHeight: 0,
+                minWidth: 0,
                 position: "relative"
             }}>
                 <HorizontalPanes

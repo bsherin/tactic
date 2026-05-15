@@ -128,6 +128,7 @@ function ExportButtonList(props) {
     return (
         <div ref={top_ref}
              style={{flexDirection: "column", display: "flex",
+                 minHeight: 0, minWidth: 0,
                  verticalAlign: "top", height: "100%", position: "relative"}}
              className="exports-button-list contingent-scroll">
             {create_groups()}
@@ -355,7 +356,7 @@ function ExportsViewer(props) {
          <Card elevation={props.console_is_shrunk ? 0 : 2}
                className={"exports-panel mr-3 " + exports_class} style={outer_style}>
              <div className="d-flex flex-column justify-content-around"
-                  style={{flex: "1 1 0", position: "relative"}}>
+                  style={{flex: "1 1 0", position: "relative", minHeight: 0, minWidth: 0}}>
                  <div className="exports-heading d-flex flex-row justify-content-start">
                      {!show_spinner &&
                         <GlyphButton handleClick={_eval}
@@ -406,12 +407,12 @@ function ExportsViewer(props) {
 
                  </div>
                  {!props.console_is_shrunk &&
-                     <div style={{flex: "1 1 0", minHeight: 0,
-                              display: "flex", flexDirection: "column",
+                     <div style={{flex: "1 1 0",
+                              display: "flex", flexDirection: "column", minHeight: 0, minWidth: 0,
                               width: "100%", position: "relative", overflow: "auto"}}
                      >
                          <div className="d-flex flex-row"
-                              style={{flex: "1 1 0", minHeight: 0, width: "100%", position: "relative", overflow: "auto"}}>
+                              style={{flex: "1 1 0", minHeight: 0, minWidth: 0, width: "100%", position: "relative", overflow: "auto"}}>
                              <ExportButtonList pipe_dict={pipe_dict}
                                                value={selected_export_ref.current}
                                                handleChange={_handleExportListChange}

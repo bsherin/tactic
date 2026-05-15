@@ -69,6 +69,7 @@ function CreatorApp(props) {
     const last_save = useRef({});
     const rline_number = useRef(props.initial_line_number);
     const pane_scroll_ref = useRef(null);
+    const paneListRef = useRef(null);
 
     const  {handleUndo, handleRedo, undoStackRef, redoStackRef} = useContext(UndoContext);
 
@@ -1272,6 +1273,7 @@ function CreatorApp(props) {
     right_pane_list.push(
         <PaneElement identifier="metadata" key="metadata" dispatch={metadataDispatch} pushCallback={pushCallback}
                      visible={visibleTabListRef.current.includes("metadata")}
+                     paneListRef={paneListRef}
                      pane_scroll_ref={pane_scroll_ref}
                      pane_height={metadataRef.current.pane_height}>
             {mdata_panel}
@@ -1287,6 +1289,7 @@ function CreatorApp(props) {
                      icon={pane_type_icons["globals"]}
                      updateItem={updateGlobals}
                      visible={visibleTabListRef.current.includes("globals")}
+                      paneListRef={paneListRef}
                      identifier="globals" pushCallback={pushCallback}>
             {codeElemDict["globals"]?.()}
         </PaneElement>
@@ -1300,6 +1303,7 @@ function CreatorApp(props) {
                      pane_scroll_ref={pane_scroll_ref}
                      icon={pane_type_icons["render_content"]}
                      updateItem={updateRenderContent}
+                      paneListRef={paneListRef}
                      visible={visibleTabListRef.current.includes("render_content")}
                      identifier={"render_content"} pushCallback={pushCallback}>
             {codeElemDict["render_content"]?.()}
@@ -1320,6 +1324,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement identifier={key} key={key} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
+                          paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
                 {optionElemDict[key]?.()}
@@ -1340,6 +1345,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement identifier={key} key={key} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
+                          paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={widgetDispatch} pushCallback={pushCallback}>
                 {widgetElemDict[key]?.()}
@@ -1360,6 +1366,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
+                          paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={exportDispatch} pushCallback={pushCallback}>
                 {exportElemDict[key]?.()}
@@ -1381,6 +1388,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={key} identifier={key} el={item} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
+                          paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={saveDispatch} pushCallback={pushCallback}>
                 {saveElemDict[key]?.()}
@@ -1401,6 +1409,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}
+                          paneListRef={paneListRef}
                          visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} allowDelete={true} dispatch={umDispatch}
                          pushCallback={pushCallback}>
@@ -1421,6 +1430,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}
+                          paneListRef={paneListRef}
                          allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
@@ -1439,6 +1449,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} dispatch={jsDispatch} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}
+                          paneListRef={paneListRef}
                          allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
@@ -1447,7 +1458,7 @@ function CreatorApp(props) {
     }
 
     let right_pane = (
-        <div style={{width: "100%", height: "100%", display: "flex", flexDirection: "column"}}
+        <div style={{width: "100%", height: "100%", display: "flex", minHeight: 0, minWidth: 0, flexDirection: "column"}}
              className="creator-right-pane">
             <TileMakerSearchForm
                 regex={false}
@@ -1461,7 +1472,7 @@ function CreatorApp(props) {
                 searchState={searchStateRef.current}
                 search_ref={search_ref}
             />
-            <div style={{overflow: "auto", flex: "1 1 0", minWidth: 0, paddingBottom: 250}}
+            <div ref={paneListRef} style={{overflow: "auto", flex: "1 1 0", minHeight: 0, minWidth: 0,paddingBottom: 250}}
                  className="creator-pane-list">
                 {right_pane_list}
             </div>
@@ -1473,6 +1484,8 @@ function CreatorApp(props) {
         height: "100%",
         flexGrow: 1,
         display: 'flex',
+        minHeight: 0,
+        minWidth: 0,
         flexDirection: 'column',
         position: "relative"
     };
@@ -1550,6 +1563,8 @@ function tile_creator_main() {
             <div style={{
                 display: "flex", flexDirection: "column",
                 position: "relative",
+                minHeight: 0,
+                minWidgh: 0,
                 height: "100%",
                 width: "100%"
             }}>

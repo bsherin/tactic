@@ -1367,6 +1367,7 @@ function PoolBrowser(props) {
       flex: "1 1 0",
       display: "flex",
       minHeight: 0,
+      minWidth: 0,
       position: "relative"
     }
   }, /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {

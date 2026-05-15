@@ -112,6 +112,8 @@ function _repository_home_main() {
         display: "flex",
         flexDirection: "column",
         position: "relative",
+        minHeight: 0,
+        minWidth: 0,
         height: "100%",
         width: "100%"
       }

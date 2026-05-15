@@ -2498,7 +2498,8 @@ function ConsoleCodeItem(props) {
                                 }
                             </div>
                             {outputWidgets && (outputWidgets.length > 0) &&
-                                <div style={{paddingBottom: 10, display: "flex", flexDirection: "column", position: "relative"}}>
+                                <div style={{paddingBottom: 10, display: "flex", minHeight: 0, minWidth: 0,
+                                    flexDirection: "column", position: "relative"}}>
                                     {outputWidgets}
                                 </div>
                             }

@@ -57,6 +57,7 @@ function ContextPaneElement(props) {
             height: am_selected() ? "100%" : 0,
             position: "relative",
             display: "flex",
+            minHeight: 0, minWidth: 0,
             flexDirection: "column",
         }}>
             {props.children}
@@ -239,7 +240,7 @@ function ContextNavigatorItem(props) {
     }
     if (props.isSpacer) {
         return (
-            <div style={{flex: "1 1 0", minWidth: 0}}>
+            <div style={{flex: "1 1 0", minWidth: 0, minHeight: 0}}>
                 <Button icon={null}
                         intent="none"
                         size="medium"
@@ -252,7 +253,7 @@ function ContextNavigatorItem(props) {
     }
     return (
         <div
-            style={{flex: "1 1 0", minWidth: 0}}>
+            style={{flex: "1 1 0", minWidth: 0, minHeight: 0}}>
             <Button
                 icon={props.icon}
                 fill={true}

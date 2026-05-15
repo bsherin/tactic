@@ -174,6 +174,8 @@ function ResourceViewerApp(props) {
       height: "100%",
       width: "100%",
       position: "relative",
+      minHeight: 0,
+      minWidth: 0,
       overflow: "auto",
       display: "flex",
       flexDirection: "column"
@@ -183,6 +185,8 @@ function ResourceViewerApp(props) {
       height: "100%",
       width: "100%",
       position: "relative",
+      minHeight: 0,
+      minWidth: 0,
       overflow: "auto",
       display: "flex",
       flexDirection: "column"

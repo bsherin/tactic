@@ -64,6 +64,8 @@ function MergeViewerApp(props) {
   }
   var left_div_style = {
     display: "flex",
+    minHeight: 0,
+    minWidth: 0,
     width: "100%",
     height: "100%",
     flexDirection: "column",
@@ -106,6 +108,7 @@ function MergeViewerApp(props) {
       display: "flex",
       flex: "1 1 0",
       minHeight: 0,
+      minWidth: 0,
       width: "100%",
       position: "relative"
     },

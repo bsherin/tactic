@@ -48,6 +48,8 @@ function _tile_differ_main() {
               style: {
                 display: "flex",
                 flexDirection: "column",
+                minHeight: 0,
+                minWidth: 0,
                 position: "relative",
                 height: "100%",
                 width: "100%"

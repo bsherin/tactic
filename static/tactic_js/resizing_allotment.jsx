@@ -32,7 +32,7 @@ export function HorizontalPanes({
         width: "100%",
         height: "100%",
         minHeight: 0,
-        minWidgth: 0,
+        minWidth: 0,
         overflow: "hidden",
         display: hide_me ? "none" : "flex",
         flexDirection: "column",

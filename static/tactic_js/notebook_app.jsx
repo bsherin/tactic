@@ -300,6 +300,7 @@ function NotebookApp(props) {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
         height: "100%",
         flex: "1 1 0",
+        minHeight: 0, minWidth: 0,
         overflow: "auto",
         display: 'flex',
         flexDirection: 'column',
@@ -373,6 +374,7 @@ function main_main() {
         const root = createRoot(domContainer);
         root.render(
             <div style={{display: "flex", flexDirection: "column",
+                minHeight: 0, minWidth: 0,
                 position: "relative",
                 height: "100%",
                 width: "100%"}}>

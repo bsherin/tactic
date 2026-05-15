@@ -116,10 +116,12 @@ function ResourceViewerApp(props) {
                 style={{
                     height: "100%", width: "100%",
                     position: "relative",
+                    minHeight: 0, minWidth: 0,
                     overflow: "auto", display: "flex", flexDirection: "column"}}>
                 <div style={{
                     height: "100%", width: "100%",
                     position: "relative",
+                    minHeight: 0, minWidth: 0,
                     overflow: "auto", display: "flex", flexDirection: "column"}}>
                 {props.children}
                 </div>

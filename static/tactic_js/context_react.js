@@ -1166,6 +1166,8 @@ function ContextApp(props) {
             flexDirection: "column",
             position: "relative",
             height: selectedTabIdRef.current == entry.identifier ? "100%" : 0,
+            minWidth: 0,
+            minHeight: 0,
             width: "100%"
           },
           className: panelRootDict[entry.kind]
@@ -1221,7 +1223,9 @@ function ContextApp(props) {
     display: 'flex',
     flexDirection: 'row',
     paddingLeft: 0,
-    position: "relative"
+    position: "relative",
+    minHeight: 0,
+    minWidth: 0
   };
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: {

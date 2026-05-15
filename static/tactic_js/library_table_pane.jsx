@@ -77,7 +77,7 @@ function LibraryTablePane(props) {
                 <div className="d-flex"
                      style={{
                          flex: "1 1 0",
-                         minWidth: 0,
+                         minHeight: 0, minWidth: 0,
                          justifyContent: "flex-start",
                          height: "100%",
                          position: "relative",
@@ -96,6 +96,7 @@ function LibraryTablePane(props) {
                      style={{
                          flex: "5 5 0",
                          minWidth: 0,
+                         minHeight: 0,
                          overflowY: "auto",
                          display: "flex",
                          flexDirection: "column"
