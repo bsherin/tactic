@@ -7,6 +7,15 @@ from typing import List, Dict, Any
 REGION = os.getenv("AWS_REGION", "us-east-2")
 CLUSTER = os.getenv("ECS_CLUSTER_NAME", "tactic-cluster")
 
+TILE_POOL_SERVICE = "tactic-tile-pool"
+
+TILE_TASK_DEFS = {
+    "standard": os.getenv("TACTIC_TILE_TASKDEF_STANDARD", "tactic-tile:10"),
+    "large": os.getenv("TACTIC_TILE_TASKDEF_LARGE", "tactic-tile:11"),
+}
+
+DEFAULT_TILE_SIZE = os.getenv("TACTIC_TILE_SIZE", "standard")
+
 # Infrastructure services that other services depend on
 SERVICES_FOUNDATION = [
     "tactic-rabbitmq",
@@ -57,6 +66,15 @@ START_WAIT_MAX_ATTEMPTS = int(os.getenv("START_WAIT_MAX_ATTEMPTS", "60"))
 
 ecs = boto3.client("ecs", region_name=REGION)
 autoscaling = boto3.client("application-autoscaling", region_name=REGION)
+
+def _get_tile_task_definition(tile_size: str) -> str:
+    tile_size = tile_size.lower()
+    if tile_size not in TILE_TASK_DEFS:
+        raise ValueError(
+            f"Unknown tile_size={tile_size!r}. "
+            f"Expected one of: {', '.join(TILE_TASK_DEFS.keys())}"
+        )
+    return TILE_TASK_DEFS[tile_size]
 
 
 def _resource_id(service_name: str) -> str:
@@ -223,8 +241,16 @@ def stop_ad_hoc_family_tasks(family: str, wait: bool = True) -> None:
         _wait_for_tasks_stopped(ad_hoc)
 
 
-def _set_service_on(service_name: str) -> None:
+def _set_service_on(
+    service_name: str,
+    tile_size: str = DEFAULT_TILE_SIZE,
+    tile_desired_count: int | None = None,
+) -> None:
     caps = BASELINE_CAPACITY[service_name]
+
+    desired = caps["desired"]
+    if service_name == TILE_POOL_SERVICE and tile_desired_count is not None:
+        desired = tile_desired_count
 
     print(f"[START] {service_name}: scalable target min={caps['min']} max={caps['max']}")
     autoscaling.register_scalable_target(
@@ -235,13 +261,20 @@ def _set_service_on(service_name: str) -> None:
         MaxCapacity=caps["max"],
     )
 
-    print(f"[START] {service_name}: desiredCount={caps['desired']}")
-    ecs.update_service(
-        cluster=CLUSTER,
-        service=service_name,
-        desiredCount=caps["desired"],
-        forceNewDeployment=True,
-    )
+    update_kwargs = {
+        "cluster": CLUSTER,
+        "service": service_name,
+        "desiredCount": desired,
+        "forceNewDeployment": True,
+    }
+
+    if service_name == TILE_POOL_SERVICE:
+        task_def = _get_tile_task_definition(tile_size)
+        update_kwargs["taskDefinition"] = task_def
+        print(f"[START] {service_name}: taskDefinition={task_def} ({tile_size})")
+
+    print(f"[START] {service_name}: desiredCount={desired}")
+    ecs.update_service(**update_kwargs)
 
 
 def _wait_for_service_stable(service_name: str) -> None:
@@ -262,9 +295,18 @@ def _wait_for_service_stable(service_name: str) -> None:
     print(f"[WAIT] {service_name}: service is stable")
 
 
-def _start_services(services: List[str], wait: bool = False) -> None:
+def _start_services(
+    services: List[str],
+    wait: bool = False,
+    tile_size: str = DEFAULT_TILE_SIZE,
+    tile_desired_count: int | None = None,
+) -> None:
     for svc in services:
-        _set_service_on(svc)
+        _set_service_on(
+            svc,
+            tile_size=tile_size,
+            tile_desired_count=tile_desired_count,
+        )
 
     if wait:
         for svc in services:
@@ -284,38 +326,119 @@ def stop_services(wait: bool = True) -> None:
     stop_ad_hoc_family_tasks("tactic-tile", wait=wait)
 
 
-def start_services() -> None:
-    # Stage 1: bring up RabbitMQ + Redis and wait for them
+def start_services(
+    tile_size: str = DEFAULT_TILE_SIZE,
+    tile_desired_count: int | None = None,
+) -> None:
     print("[START] Stage 1: foundation services")
-    _start_services(SERVICES_FOUNDATION, wait=False)
+    _start_services(
+        SERVICES_FOUNDATION,
+        wait=False,
+        tile_size=tile_size,
+        tile_desired_count=tile_desired_count,
+    )
 
-    # Optional small buffer even after ECS stability
     print("[START] Stage 1 complete; pausing briefly before dependent services")
     time.sleep(30)
 
-    # Stage 2: bring up everything else
-    print("[START] Stage 2: dependent services")
-    _start_services(SERVICES_AFTER_FOUNDATION, wait=False)
+    print(f"[START] Stage 2: dependent services; tile_size={tile_size}")
+    if tile_desired_count is not None:
+        print(f"[START] Tile desired count override: {tile_desired_count}")
+
+    _start_services(
+        SERVICES_AFTER_FOUNDATION,
+        wait=False,
+        tile_size=tile_size,
+        tile_desired_count=tile_desired_count,
+    )
+
+def switch_tile_size(tile_size: str, tile_desired_count: int | None = None) -> None:
+    task_def = _get_tile_task_definition(tile_size)
+
+    update_kwargs = {
+        "cluster": CLUSTER,
+        "service": TILE_POOL_SERVICE,
+        "taskDefinition": task_def,
+        "forceNewDeployment": True,
+    }
+
+    if tile_desired_count is not None:
+        update_kwargs["desiredCount"] = tile_desired_count
+
+    print(f"[SWITCH] {TILE_POOL_SERVICE}: taskDefinition={task_def} ({tile_size})")
+    if tile_desired_count is not None:
+        print(f"[SWITCH] {TILE_POOL_SERVICE}: desiredCount={tile_desired_count}")
+
+    ecs.update_service(**update_kwargs)
 
 
 def lambda_handler(event, _context):
     action = (event.get("action") or "").lower()
-    print(f"Received action={action}")
+    tile_size = (event.get("tile_size") or DEFAULT_TILE_SIZE).lower()
+
+    tile_desired_count = event.get("tile_desired_count")
+    if tile_desired_count is not None:
+        tile_desired_count = int(tile_desired_count)
+
+    print(
+        f"Received action={action}, "
+        f"tile_size={tile_size}, "
+        f"tile_desired_count={tile_desired_count}"
+    )
+
     if action == "stop":
         stop_services(wait=True)
     elif action == "start":
-        start_services()
+        start_services(
+            tile_size=tile_size,
+            tile_desired_count=tile_desired_count,
+        )
+    elif action == "switch_tile_size":
+        switch_tile_size(tile_size)
     else:
         raise ValueError(f"Unknown action: {action}")
-    return {"status": "ok", "action": action}
+
+    return {
+        "status": "ok",
+        "action": action,
+        "tile_size": tile_size,
+        "tile_desired_count": tile_desired_count,
+    }
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or sys.argv[1] not in ("start", "stop"):
-        print("Usage: python tactic_ecs_power.py [start|stop]")
-        sys.exit(1)
+    import argparse
 
-    if sys.argv[1] == "stop":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "action",
+        choices=["start", "stop", "switch-tile-size"],
+    )
+    parser.add_argument(
+        "--tile-size",
+        choices=sorted(TILE_TASK_DEFS.keys()),
+        default=DEFAULT_TILE_SIZE,
+        help="Tile pool size class to use when starting or switching.",
+    )
+
+    parser.add_argument(
+        "--tile-desired-count",
+        type=int,
+        default=None,
+        help="Optional desired count for tactic-tile-pool when starting.",
+    )
+
+    args = parser.parse_args()
+
+    if args.action == "stop":
         stop_services(wait=True)
-    else:
-        start_services()
+    elif args.action == "start":
+        start_services(
+            tile_size=args.tile_size,
+            tile_desired_count=args.tile_desired_count,
+        )
+    elif args.action == "switch-tile-size":
+        switch_tile_size(
+            args.tile_size,
+            tile_desired_count=args.tile_desired_count,
+        )

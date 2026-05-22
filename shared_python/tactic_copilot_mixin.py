@@ -271,7 +271,7 @@ class CopilotMixin:
             )
 
 
-        model_name = "gpt-5.1"  # or "gpt-4.1" / "gpt-4o" / "gpt-4o-mini"
+        model_name = "gpt-5.4"  # or "gpt-4.1" / "gpt-4o" / "gpt-4o-mini"
 
         try:
             stream_worker = StreamWorker(
