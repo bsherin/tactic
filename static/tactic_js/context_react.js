@@ -32,6 +32,7 @@ var _code_viewer_react = require("./code_viewer_react");
 var _list_viewer_react = require("./list_viewer_react");
 var _text_viewer_react = require("./text_viewer_react");
 var _error_drawer = require("./error_drawer");
+var _pool_drawer = require("./pool_drawer");
 var _resizing_allotment = require("./resizing_allotment");
 var _property_list = require("./property_list");
 var _assistant = require("./assistant");
@@ -121,7 +122,7 @@ if (window.has_pool) {
   });
 }
 function _context_main() {
-  var ContextAppPlus = (0, _utilities_react.withRegisterActivity)((0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _assistant.withAssistant)(ContextApp)))))));
+  var ContextAppPlus = (0, _utilities_react.withRegisterActivity)((0, _pool_tree.withPool)((0, _settings.withSettings)((0, _modal_react.withDialogs)((0, _error_drawer.withErrorDrawer)((0, _toaster.withStatus)((0, _pool_drawer.withPoolDrawer)((0, _assistant.withAssistant)(ContextApp))))))));
   var domContainer = document.querySelector('#context-root');
   var root = (0, _client.createRoot)(domContainer);
   root.render(/*#__PURE__*/_react["default"].createElement(ContextAppPlus, {

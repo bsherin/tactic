@@ -12,6 +12,7 @@ import {ErrorDrawerContext} from "./error_drawer";
 
 export {PoolTree, PoolAddressSelector, getBasename, splitFilePath, getFileParentPath, withPool, PoolContext}
 import {useSocketListener} from "./tactic_socket";
+import {PoolBreadcrumbs} from "./pool_browser";
 
 const PoolContext = createContext({
     workingPath: null,
@@ -406,7 +407,7 @@ function PoolTree(props) {
             handleNodeExpand(node).then(() => {
             });
         }
-    },[props.currentRootPath])
+    },[props.currentRootPath, nodes_ref.current.length])
 
     useEffect(() => {
         if (props.value && nodes_ref.current.length > 0) {
@@ -431,8 +432,10 @@ function PoolTree(props) {
                 doFlash("Error getting pool Tree");
                 return
             }
-            data["dtree"][0].isExpanded = true;
-            props.setRoot({fullpath: data["dtree"][0].fullpath});
+            if (!props.currentRootPath) {
+                data["dtree"][0].isExpanded = true;
+                props.setRoot({fullpath: data["dtree"][0].fullpath});
+            }
             dispatch({
                 type: "REPLACE_ALL",
                 new_nodes: data["dtree"],
@@ -754,6 +757,10 @@ function PoolTree(props) {
         setSearchString(new_state.search_string)
     }
 
+    let cname = "pool-search-form";
+    if (props.showSecondaryLabel) {
+        cname += " pool-search-form-responsive"
+    }
     return (
         <Fragment>
             <ContextMenuPopover onClose={() => {
@@ -764,8 +771,8 @@ function PoolTree(props) {
                                 isOpen={showContextMenu}
                                 isDarkTheme={settingsContext.isDark()}
                                 targetOffset={contextMenuTarget}/>
-            <div style={{
-                paddingLeft: 10, paddingTop: 10,
+            <div className={cname} style={{
+                paddingLeft: 10, paddingTop: 0,
                 display: "flex", flexDirection: "row", justifyContent: "space-between"
             }}>
                 <SearchForm allow_search_inside={false}
@@ -773,7 +780,7 @@ function PoolTree(props) {
                             update_search_state={_update_search_state}
                             search_string={searchStringRef.current}
                 />
-                <div style={{display: "flex", marginLeft: 15}}>
+                <div className="pool-button-holder">
                     <HTMLSelect options={["name", "size", "updated"]}
                                 className="tree-sort-select"
                                 onChange={(event) => {
@@ -797,7 +804,6 @@ function PoolTree(props) {
                         sortField={sortBy}
                         sortDirection={sortDirection}
                         showSecondaryLabel={props.showSecondaryLabel}
-                        className="pool-select-tree"
                         handleDrop={props.handleDrop}
                         onNodeContextMenu={props.renderContextMenu ? displayContextMenu : null}
                         onNodeClick={handleNodeClick}
@@ -833,13 +839,15 @@ function PoolAddressSelector(props) {
     const [, setMaxPopoverHeight, maxPopoverHeightRef] = useStateAndRef(.4 * window.innerHeight);
     const [, setCurrentRootPath, currentRootPathRef] = useStateAndRef("");
 
-    function setRoot(node = null) {
-        setCurrentRootPath(node.fullpath)
-    }
+    const clickTimerRef = useRef(null);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
         window.addEventListener("resize", resizePopover);
         setRefAcquired(false);
+        if (!props.value || props.value.includes(settingsContext.settings.workingDirectory)){
+            setCurrentRootPath(settingsContext.settings.workingDirectory);
+        }
         return (() => {
             window.removeEventListener("resize", resizePopover)
         })
@@ -849,6 +857,14 @@ function PoolAddressSelector(props) {
         resizePopover();
     }, [refAcquired]);
 
+    useEffect(() => {
+        return () => {
+            if (clickTimerRef.current != null) {
+                clearTimeout(clickTimerRef.current);
+            }
+        };
+    }, []);
+
     function resizePopover() {
         if (pop_ref.current) {
             let max_height = window.innerHeight - pop_ref.current.offsetTop - 25;
@@ -857,9 +873,24 @@ function PoolAddressSelector(props) {
     }
 
     function handleNodeClick(node) {
-        props.setValue(node.fullpath);
-        setIsOpen(false);
-        return true
+        if (clickTimerRef.current != null) {
+            clearTimeout(clickTimerRef.current);
+            clickTimerRef.current = null;
+        }
+        clickTimerRef.current = setTimeout(() => {
+            clickTimerRef.current = null;
+            props.setValue(node.fullpath);
+            setIsOpen(false);
+            return true
+        }, 250);
+    }
+
+    function setRoot(node = null) {
+        if (clickTimerRef.current != null) {
+            clearTimeout(clickTimerRef.current);
+            clickTimerRef.current = null;
+        }
+        setCurrentRootPath(node.fullpath)
     }
 
     function onInteract(next_state, e) {
@@ -875,20 +906,26 @@ function PoolAddressSelector(props) {
         button_text = getBasename(props.value)
     }
     let tree_element = (
-        <div style={{maxHeight: maxPopoverHeightRef.current, overflowY: "scroll"}}>
-            <PoolTree value={props.value}
-                      showHidden={false}
-                      currentRootPath={currentRootPathRef.current}
-                      setRoot={setRoot}
-                      sortField="name"
-                      sortDirection="ascending"
-                      tsocket={props.tsocket}
-                      select_type={props.select_type}
-                      user_id={window.user_id}
-                      renderContextMenu={null}
-                      showSecondaryLabel={false}
-                      handleDrop={null}
-                      handleNodeClick={handleNodeClick}/>
+        <div style={{paddingTop: 10}}>
+            <PoolBreadcrumbs
+                crumbSize="small"
+                path={currentRootPathRef.current}
+                setRoot={setRoot}/>
+            <div style={{maxHeight: maxPopoverHeightRef.current, overflowY: "scroll"}}>
+                <PoolTree value={props.value}
+                          showHidden={false}
+                          currentRootPath={currentRootPathRef.current}
+                          setRoot={setRoot}
+                          sortField="name"
+                          sortDirection="ascending"
+                          tsocket={props.tsocket}
+                          select_type={props.select_type}
+                          user_id={window.user_id}
+                          renderContextMenu={null}
+                          showSecondaryLabel={false}
+                          handleDrop={null}
+                          handleNodeClick={handleNodeClick}/>
+            </div>
         </div>
     );
 
@@ -1040,8 +1077,11 @@ function CustomTree(props) {
                 return tnode
             }
         });
-
-        return <ul className={`bp6-tree-node-list ${props.className}`}>{nodeItems}</ul>;
+        let cname = "pool-select-tree";
+        if (props.showSecondaryLabel) {
+            cname += " pool-select-tree-responsive"
+        }
+        return <ul className={`bp6-tree-node-list ${cname}`}>{nodeItems}</ul>;
     }
 
     function getNodeFromPath(fullpath, nodes) {

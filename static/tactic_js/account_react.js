@@ -38,11 +38,14 @@ function _account_main() {
   if (window._show_message) (0, _toaster.doFlash)(window._message);
   var domContainer = document.querySelector('#root');
   var root = (0, _client.createRoot)(domContainer);
-  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "code_viewer", window.global_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+  var tsocket = new _tactic_socket.TacticSocket("main", 5000, "account_interface", window.global_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
     var AccountAppPlus, the_element;
     return _regenerator().w(function (_context) {
       while (1) switch (_context.n) {
         case 0:
+          tsocket.attachListener('handle-callback', function (task_packet) {
+            (0, _communication_react.handleCallback)(task_packet, window.global_id);
+          });
           AccountAppPlus = (0, _utilities_react.withRegisterActivity)((0, _settings.withSettings)(AccountApp));
           the_element = /*#__PURE__*/_react["default"].createElement(AccountAppPlus, {
             controlled: false,
@@ -218,6 +221,16 @@ function AccountApp(props) {
             onBlur: _submitUpdatedField,
             onFieldChange: _onFieldChange
           });
+        } else if (fdict.type == "pool_select") {
+          new_item = /*#__PURE__*/_react["default"].createElement(_account_fields.AccountAddressSelectField, {
+            name: fdict.name,
+            key: fdict.name,
+            tsocket: props.tsocket,
+            value: fdict.val,
+            display_text: fdict.display_text,
+            helper_text: fdict.helper_text,
+            onFieldChange: _onFieldChange
+          });
         } else {
           new_item = /*#__PURE__*/_react["default"].createElement(_account_fields.AccountSelectField, {
             name: fdict.name,
@@ -249,7 +262,6 @@ function AccountApp(props) {
   } else {
     outer_class = outer_class + " light-theme";
   }
-  var self = this;
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_blueprint_navbar.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,

@@ -4,7 +4,9 @@ import {memo} from "react";
 
 import { FormGroup, InputGroup, HTMLSelect } from "@blueprintjs/core";
 
-export {AccountTextField, AccountSelectField}
+import {PoolAddressSelector} from "./pool_tree";
+
+export {AccountTextField, AccountSelectField, AccountAddressSelectField}
 
 function AccountTextField(props){
     return (
@@ -29,9 +31,13 @@ function AccountTextField(props){
 AccountTextField = memo(AccountTextField);
 
 function AccountSelectField(props) {
+    props = {
+        inline: false,
+        ...props
+    };
     return (
         <FormGroup key={props.name}
-                   inline={false}
+                   inline={props.inline}
                    style={{padding: 5}}
                    label={props.display_text}
                    helperText={props.helper_text}>
@@ -43,3 +49,24 @@ function AccountSelectField(props) {
 }
 
 AccountSelectField = memo(AccountSelectField);
+
+function AccountAddressSelectField(props) {
+    props = {
+        tsocket: null,
+        ...props
+    }
+    return (
+        <FormGroup key={props.name}
+                   inline={false}
+                   style={{padding: 5}}
+                   label={props.display_text}
+                   helperText={props.helper_text}>
+            <PoolAddressSelector value={props.value}
+                                 tsocket={props.tsocket}
+                                 select_type="folder"
+                                 setValue={(newVal)=>{props.onFieldChange(props.name, newVal, true)}}/>
+        </FormGroup>
+    )
+}
+
+AccountAddressSelectField = memo(AccountAddressSelectField);

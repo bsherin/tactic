@@ -4,22 +4,20 @@ import React from "react";
 
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
-import {Menu, MenuItem, MenuDivider, Breadcrumb, Breadcrumbs, Switch} from "@blueprintjs/core";
+import {Breadcrumb, Breadcrumbs, Switch, Icon, Button} from "@blueprintjs/core";
 
 import {useStateAndRef} from "./utilities_react";
-import {LibraryMenubar} from "./library_menubars"
-import {CombinedMetadata, icon_dict} from "./combined_metadata";
-import {PoolTree, getBasename, splitFilePath, getFileParentPath, PoolContext} from "./pool_tree";
+
+import {CombinedMetadata} from "./combined_metadata";
+import {getBasename, PoolContext} from "./pool_tree";
+import {PoolTreeWithContextMenu, PoolMenubar} from "./pool_context_menu";
 import {HorizontalPanes} from "./resizing_allotment";
-import {getBlobPromise, postPromise} from "./communication_react";
-import {ErrorDrawerContext} from "./error_drawer";
+import {postPromise} from "./communication_react";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
-import {doFlash} from "./toaster";
-import {copyToClipboard, getFileExtension} from "./utilities_react";
 
-import {DialogContext} from "./modal_react";
+import {SettingsContext} from "./settings";
 
-export {PoolBrowser}
+export {PoolBrowser, PoolBreadcrumbs}
 
 function PoolBrowser(props) {
     const [, set_selected_resource, selected_resource_ref] = useStateAndRef({
@@ -40,13 +38,16 @@ function PoolBrowser(props) {
     const [have_activated, set_have_activated] = useState(false);
     const [showHidden, setShowHidden] = useState(false);
 
-    const dialogFuncs = useContext(DialogContext);
-    const errorDrawerFuncs = useContext(ErrorDrawerContext);
+    const settingsContext = useContext(SettingsContext);
 
     const treeRefreshFunc = useRef(null);
     // Important note: The first mounting of the pool tree must happen after the pool pane
     // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
     // get the callback for the post.
+
+    useEffect(() => {
+        setCurrentRootPath(settingsContext.settings.workingDirectory);
+    }, [settingsContext.settings.workingDirectory])
 
     useEffect(() => {
         if (props.am_selected && !have_activated) {
@@ -71,449 +72,6 @@ function PoolBrowser(props) {
         }
     }, [value]);
 
-    async function sendNewCell(path, main_id, read_as_dataframe) {
-        const ext = getFileExtension(path);
-        let code;
-        if (read_as_dataframe) {
-            if (ext === "csv") {
-                code = `import pandas as pd\ndf = pd.read_csv("${path}")`
-            } else if (ext === "parquet") {
-                code = `import pandas as pd\ndf = pd.read_parquet("${path}")`
-            } else {
-                code = `import pandas as pd\ndf = pd.read_pickle("${path}")`
-            }
-        } else {
-            if (ext == "pkl") {
-                code = `import pickle\nwith open("${path}", "rb") as f:\n    data = pickle.load(f)`
-            } else {
-                code = `with open("${path}") as f:\n    txt = f.read()`
-            }
-        }
-
-        await postPromise("host",
-            "print_code_area_to_console",
-            {"console_text": code, "user_id": window.user_id, "local_id": main_id},
-            window.global_id);
-    }
-
-    async function openInNotebook(node = null) {
-        if (!valueRef.current && !node) return;
-        try {
-            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            if (node.isDirectory) return;
-            let openResources = props.getOpenResources();
-            let open_projects = [];
-            let open_projects_dict = {};
-            let requireNewNotebook;
-            if (openResources.length === 0) {
-                requireNewNotebook = true;
-            } else {
-                requireNewNotebook = false;
-                for (let entry of openResources) {
-                    if (entry.res_type === "project" || entry.res_type === "collection") {
-                        open_projects.push(entry.resource_name);
-                        open_projects_dict[entry.resource_name] = entry
-                    }
-                }
-            }
-            let [selectedResource, checkResults] = await dialogFuncs.showModalPromise("SelectDialog", {
-                title: "Open resources in notebook",
-                checkboxes: [
-                    {
-                        "checkname": "create_new_notebook",
-                        "checktext": "Create new notebook",
-                        "checked": requireNewNotebook,
-                        "disabled": requireNewNotebook
-                    },
-                    {"checkname": "read_as_dataframe", "checktext": "Read as dataframe", "checked": false},
-                ],
-                select_label: "Project",
-                cancel_text: "Cancel",
-                submit_text: "Open",
-                option_list: open_projects,
-                handleClose: dialogFuncs.hideModal,
-            });
-            if (checkResults["create_new_notebook"]) {
-                props.handleCreateViewer("new-notebook", null, async (main_id) => await sendNewCell(path, main_id, checkResults["read_as_dataframe"]))
-            } else {
-                props.setSelectedTabId(open_projects_dict[selectedResource].id);
-                await sendNewCell(path, open_projects_dict[selectedResource].local_id, checkResults["read_as_dataframe"])
-            }
-
-        } catch (e) {
-            errorDrawerFuncs.addFromError(`Error opening in notebook`, e)
-        }
-    }
-
-    async function viewTextFile(node = null) {
-        if (!valueRef.current && !node) return;
-        try {
-            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            if (node.isDirectory) return;
-            props.handleCreateViewer("text", null, null, null, path)
-        } catch (e) {
-            errorDrawerFuncs.addFromError(`Error viewing text file`, e)
-        }
-    }
-
-    function _copy_func(node = null) {
-        if (!valueRef.current && !node) return;
-        const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-        copyToClipboard(path);
-    }
-
-    async function _rename_func(node = null) {
-        if (!valueRef.current && !node) return;
-        try {
-            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                title: "Rename Pool Resource",
-                field_title: "New Name",
-                default_value: getBasename(path),
-                existing_names: [],
-                checkboxes: [],
-                handleClose: dialogFuncs.hideModal,
-            });
-            const the_data = {new_name: new_name, old_path: path};
-            await postPromise("host", "rename_pool_resource_task", the_data);
-        } catch (e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error renaming`, e)
-            }
-        }
-    }
-
-    async function _add_directory(node = null) {
-        if (!valueRef.current && !node) return;
-
-        try {
-            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            let initial_address;
-            if (sNode.isDirectory) {
-                initial_address = sNode.fullpath
-            } else {
-                initial_address = getFileParentPath(sNode.fullpath)
-            }
-            let full_path = await dialogFuncs.showModalPromise("SelectAddressDialog", {
-                title: "Add a Pool Directory",
-                selectType: "folder",
-                initial_address: initial_address,
-                initial_name: "New Directory",
-                showName: true,
-                handleClose: dialogFuncs.hideModal,
-            });
-            const the_data = {full_path: full_path};
-            await postPromise("host", "create_pool_directory_task", the_data);
-        } catch (e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error adding directory`, e)
-            }
-        }
-    }
-
-    async function _duplicate_file(node = null) {
-        if (!valueRef.current && !node) return;
-
-        try {
-            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (sNode.isDirectory) {
-                doFlash("You can't duplicate a directory");
-                return
-            }
-            const src = sNode.fullpath;
-            const [initial_address, initial_name] = splitFilePath(sNode.fullpath);
-            let dst = await dialogFuncs.showModalPromise("SelectAddressDialog", {
-                title: "Duplicate a file",
-                selectType: "folder",
-                initial_address: initial_address,
-                initial_name: initial_name,
-                showName: true,
-                handleClose: dialogFuncs.hideModal,
-            });
-            const the_data = {dst, src};
-            await postPromise("host", "duplicate_pool_file_task", the_data);
-        } catch (e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error duplicating file`, e)
-            }
-        }
-    }
-
-    async function _compress_file(node = null) {
-        if (!valueRef.current && !node) return;
-        try {
-            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            await postPromise("host", "compress_pool_resource", {
-                full_path: sNode.fullpath,
-                force_forward: true,
-                user_id: window.user_id
-            });
-        } catch (e) {
-            errorDrawerFuncs.addFromError(`Error compressing file or folder`, e)
-        }
-    }
-
-    async function _decompress_archive(node = null) {
-        if (!valueRef.current && !node) return;
-        try {
-            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            await postPromise("host", "decompress_archive", {
-                full_path: sNode.fullpath,
-                force_forward: true,
-                user_id: window.user_id
-            });
-        } catch (e) {
-            errorDrawerFuncs.addFromError(`Error decompressing archive`, e)
-        }
-    }
-
-
-    async function _downloadFile(node = null) {
-        if (!valueRef.current && !node) return;
-
-        try {
-            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (sNode.isDirectory) {
-                doFlash("You can't download a directory");
-                return
-            }
-            const src = sNode.fullpath;
-
-            let new_name = await dialogFuncs.showModalPromise("ModalDialog", {
-                title: "Download File",
-                field_title: "New File Name",
-                default_value: getBasename(src),
-                existing_names: [],
-                checkboxes: [],
-                handleClose: dialogFuncs.hideModal,
-            });
-            const the_data = {src};
-            let [data, , xhr] = await getBlobPromise("download_pool_file", the_data);
-            if (xhr.status === 200) {
-                // Create a download link and trigger the download
-                let blob = data
-                let url = window.URL.createObjectURL(blob);
-                let a = document.createElement('a');
-                a.href = url;
-                a.download = new_name; // Set the desired file name
-                // noinspection XHTMLIncompatabilitiesJS
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            }
-        } catch (e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error downloading from pool`, e)
-            }
-        }
-    }
-
-    async function MoveResource(src, dst) {
-        if (src == dst) return;
-        try {
-            const the_data = {dst: dst, src: src};
-            await postPromise("host", "move_pool_resource_task", the_data);
-        } catch (e) {
-            errorDrawerFuncs.addFromError("Error moving resource", e)
-        }
-    }
-
-    async function _move_resource(node = null) {
-        if (!valueRef.current && !node) return;
-        try {
-            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            const src = sNode.fullpath;
-            let initial_address;
-            if (sNode.isDirectory) {
-                initial_address = sNode.fullpath
-            } else {
-                initial_address = getFileParentPath(sNode.fullpath)
-            }
-            let dst = await dialogFuncs.showModalPromise("SelectAddressDialog", {
-                title: `Select a destination for ${getBasename(src)}`,
-                selectType: "folder",
-                initial_address: initial_address,
-                initial_name: "",
-                showName: false,
-                handleClose: dialogFuncs.hideModal,
-            });
-            await MoveResource(src, dst)
-        } catch (e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error moving resource`, e)
-            }
-        }
-    }
-
-    async function _delete_func(node = null) {
-        if (!valueRef.current && !node) return;
-        try {
-            const path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-
-            const basename = getBasename(path);
-            let confirm_text;
-            if (sNode.isDirectory && sNode.childNodes.length > 0) {
-                confirm_text = `Are you sure that you want to delete the non-empty directory ${basename}?`;
-            } else {
-                confirm_text = `Are you sure that you want to delete ${basename}?`;
-            }
-
-            await dialogFuncs.showModalPromise("ConfirmDialog", {
-                title: "Delete resource",
-                text_body: confirm_text,
-                cancel_text: "do nothing",
-                submit_text: "delete",
-                handleClose: dialogFuncs.hideModal,
-            });
-            await postPromise("host", "delete_pool_resource_task", {full_path: path, is_directory: sNode.isDirectory})
-        } catch (e) {
-            if (e != "canceled") {
-                errorDrawerFuncs.addFromError(`Error deleting`, e)
-            }
-        }
-    }
-
-    async function _add_to_pool(myDropZone, setCurrentUrl, current_value) {
-        if (!window.use_s3) {
-            let new_url = `import_pool/${window.global_id}`;
-            myDropZone.options.url = new_url;
-            setCurrentUrl(new_url);
-            myDropZone.processQueue();
-        } else {
-            for (let file of myDropZone.getQueuedFiles()) {
-                myDropZone.emit("processing", file);
-                let resp = await postPromise("host", "get_s3_upload_info_task", {
-                    filename: file.name,
-                    content_type: file.type || "application/octet-stream",
-                    dest_path: current_value
-                });
-
-                if (!resp.success) {
-                    myDropZone.emit("error", file, resp.message);
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "Failed to get presign",
-                        content: resp.message
-                    });
-                    return;
-                }
-
-                const {url, fields, key, bucket, content_type} = resp.upload_info;
-
-                const fd = new FormData();
-                Object.entries(fields).forEach(([k, v]) => fd.append(k, v));
-                fd.append("file", file);
-
-                try {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open("POST", url, true);
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            const pct = (e.loaded / e.total) * 100;
-                            myDropZone.emit("uploadprogress", file, pct, e.loaded);
-                        } else {
-                            myDropZone.emit("uploadprogress", file, 50, 0);
-                        }
-                    };
-                    xhr.onload = async () => {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            // S3 presigned POST usually returns 204 or 201
-                            myDropZone.emit("success", file, xhr.responseText);
-                            myDropZone.emit("complete", file);
-                        } else {
-                            const msg = xhr.responseText || `Status ${xhr.status}`;
-                            myDropZone.emit("error", file, msg);
-                            errorDrawerFuncs.addErrorDrawerEntry({
-                                title: "S3 upload failed",
-                                content: msg
-                            });
-                        }
-                    };
-
-                    xhr.onerror = () => {
-                        myDropZone.emit("error", file, "Network error");
-                        const msg = xhr.responseText || `Status ${xhr.status}`;
-                        myDropZone.emit("error", file, msg);
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: "S3 upload failed",
-                            content: "Network error"
-                        });
-                    };
-
-                    xhr.send(fd);
-                } catch (e) {
-                    myDropZone.emit("error", file, e.message);
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "S3 upload failed",
-                        content: e.message
-                    });
-                }
-            }
-        }
-    }
-
-    function _showPoolImport(node = null) {
-        let initial_directory;
-        const sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-        if (sNode && sNode.isDirectory) {
-            initial_directory = sNode.fullpath
-        } else {
-            initial_directory = currentRootPathRef.current
-        }
-        dialogFuncs.showModal("FileImportDialog", {
-            res_type: "pool",
-            allowed_file_types: null,
-            checkboxes: [],
-            process_handler: _add_to_pool,
-            chunking: true,
-            chunkSize: 1024 * 1000 * 25,
-            forceChunking: true,
-            tsocket: props.tsocket,
-            combine: false,
-            show_csv_options: false,
-            after_upload: null,
-            show_address_selector: true,
-            allowFolderSelection: true,
-            initial_address: initial_directory,
-            handleClose: dialogFuncs.hideModal,
-            handleCancel: null,
-            use_s3: window.use_s3,
-        });
-    }
-
-    async function handleDrop(e, dst) {
-        const files = e.dataTransfer.files;
-
-        if (files.length != 0) {
-            dialogFuncs.showModal("FileImportDialog", {
-                res_type: "pool",
-                allowed_file_types: null,
-                checkboxes: [],
-                chunking: true,
-                chunkSize: 1024 * 1000 * 25,
-                forceChunking: true,
-                process_handler: _add_to_pool,
-                tsocket: props.tsocket,
-                combine: false,
-                show_csv_options: false,
-                after_upload: null,
-                show_address_selector: true,
-                allowFolderSelection: true,
-                initial_address: dst,
-                handleClose: dialogFuncs.hideModal,
-                handleCancel: null,
-                initialFiles: files,
-                use_s3: window.use_s3,
-            });
-        } else {
-            let src = e.dataTransfer.getData("fullpath");
-            if (src) {
-                await MoveResource(src, dst)
-            }
-        }
-
-    }
-
     function handleNodeClick(node) {
         setValue(node.fullpath);
         setSelectedNode(node);
@@ -529,100 +87,6 @@ function PoolBrowser(props) {
 
     function setRootToBase() {
         setCurrentRootPath("/mydisk")
-    }
-
-    function renderContextMenu(props) {
-        return (
-            <Menu>
-                {props.node.isDirectory &&
-                    <MenuItem icon="folder-shared-open"
-                              onClick={async () => {
-                                  await setRoot(props.node)
-                              }}
-                              text="Go To Folder"/>
-                }
-                <MenuItem icon="home"
-                          onClick={async () => {
-                              await setRootToBase(props.node)
-                          }}
-                          text="Go Home"/>
-                <MenuDivider/>
-                <MenuItem icon="clipboard"
-                          onClick={async () => {
-                              await _copy_func(props.node)
-                          }}
-                          text="Copy Path"/>
-                {!props.node.isDirectory &&
-                    <Fragment>
-                        <MenuItem icon="eye-open"
-                                  onClick={async () => {
-                                      await viewTextFile(props.node)
-                                  }}
-                                  text="View as Text"/>
-                        <MenuItem icon="code"
-                                  onClick={async () => {
-                                      await openInNotebook(props.node)
-                                  }}
-                                  text="Open in Notebook"/>
-
-                    </Fragment>
-                }
-                <MenuDivider/>
-                <MenuItem icon="edit"
-                          onClick={async () => {
-                              await _rename_func(props.node)
-                          }}
-                          text="Rename Resource"/>
-                <MenuItem icon="inheritance"
-                          onClick={async () => {
-                              await _move_resource(props.node)
-                          }}
-                          text="Move Resource"/>
-                <MenuItem icon="duplicate"
-                          onClick={async () => {
-                              await _duplicate_file(props.node)
-                          }}
-                          text="Duplicate File"/>
-                <MenuItem icon="folder-close"
-                          onClick={async () => {
-                              await _add_directory(props.node)
-                          }}
-                          text="Create Directory"/>
-                <MenuItem icon="trash"
-                          onClick={async () => {
-                              await _delete_func(props.node)
-                          }}
-                          intent="danger"
-                          text="Delete Resource"/>
-
-                <MenuDivider/>
-                {window.on_aws &&
-                    <Fragment>
-                        <MenuItem icon="archive"
-                                  onClick={async () => {
-                                      await _compress_file(props.node)
-                                  }}
-                                  text="Compress Resource"/>
-                        <MenuItem icon="unarchive"
-                                  onClick={async () => {
-                                      await _decompress_archive(props.node)
-                                  }}
-                                  text="Decompress archive"/>
-                        <MenuDivider/>
-                    </Fragment>
-                }
-                <MenuItem icon="cloud-upload"
-                          onClick={async () => {
-                              await _showPoolImport(props.node)
-                          }}
-                          text="Show Import Dialog"/>
-                <MenuItem icon="download"
-                          onClick={async () => {
-                              await _downloadFile(props.node)
-                          }}
-                          text="Download from Pool"/>
-            </Menu>
-        );
     }
 
     function registerTreeRefreshFunc(func) {
@@ -654,22 +118,24 @@ function PoolBrowser(props) {
                         workingPath: null, setWorkingPath: () => {
                         }
                     }}>
-                        <div className="d-flex flex-row" style={{justifyContent: "space-between"}}>
+                        <div className="d-flex flex-row" style={{justifyContent: "space-between", marginBottom: 10}}>
                             <PoolBreadcrumbs path={currentRootPathRef.current} setRoot={setRoot}/>
                             <PoolHiddenSwitch showHidden={showHidden} setShowHidden={setShowHidden}/>
                         </div>
-                        <PoolTree value={valueRef.current}
-                                  currentRootPath={currentRootPathRef.current}
-                                  showHidden={showHidden}
-                                  setRoot={setRoot}
-                                  renderContextMenu={renderContextMenu}
-                                  select_type="both"
-                                  registerTreeRefreshFunc={registerTreeRefreshFunc}
-                                  user_id={window.user_id}
-                                  tsocket={props.tsocket}
-                                  handleDrop={handleDrop}
-                                  showSecondaryLabel={true}
-                                  handleNodeClick={handleNodeClick}/>
+                        <PoolTreeWithContextMenu value={valueRef.current}
+                                                 setRoot={setRoot}
+                                                 currentRootPath={currentRootPathRef.current}
+                                                 selectedNode={selectedNodeRef.current}
+                                                 showHidden={showHidden}
+                                                 handleCreateViewer={props.handleCreateViewer}
+                                                 getOpenResources={props.getOpenResources}
+                                                 allow_import_and_download={true}
+                                                 select_type="both"
+                                                 registerTreeRefreshFunc={registerTreeRefreshFunc}
+                                                 user_id={window.user_id}
+                                                 tsocket={props.tsocket}
+                                                 showSecondaryLabel={true}
+                                                 handleNodeClick={handleNodeClick}/>
                     </PoolContext.Provider>
                 }
             </div>
@@ -687,25 +153,17 @@ function PoolBrowser(props) {
     return (
         <div style={outer_style}>
             <PoolMenubar selected_resource={selected_resource_ref.current}
+                         value={valueRef.current}
+                         selectedNode={selectedNodeRef.current}
                          connection_status={null}
-                         copy_func={_copy_func}
-                         rename_func={_rename_func}
-                         delete_func={_delete_func}
-                         view_func={viewTextFile}
-                         open_in_notebook_func={openInNotebook}
-                         add_directory={_add_directory}
-                         duplicate_file={_duplicate_file}
-                         compress_file={_compress_file}
-                         decompress_archive={_decompress_archive}
-                         move_resource={_move_resource}
-                         download_file={_downloadFile}
-                         refreshFunc={treeRefreshFunc.current}
-                         showPoolImport={_showPoolImport}
                          multi_select={multi_select_ref.current}
                          list_of_selected={list_of_selected_ref.current}
                          sendContextMenuItems={setContextMenuItems}
                          setRootToBase={setRootToBase}
                          setRoot={setRoot}
+                         getOpenResources={props.getOpenResources}
+                         refreshFunc={treeRefreshFunc.current}
+                         handleCreateViewer={props.handleCreateViewer}
                          {...props.errorDrawerFuncs}
                          controlled={props.controlled}
                          tsocket={props.tsocket}/>
@@ -732,8 +190,16 @@ function PoolBrowser(props) {
 PoolBrowser = memo(PoolBrowser);
 
 function PoolBreadcrumb(props) {
+    props = {
+        crumbSize: "large",
+        ...props
+    };
+
+    let iconSize = props.crumbSize == "small" ? 12 : 16;
+    let theIcon = <Icon icon={props.icon} size={iconSize}/>;
+    let crumClassName = props.crumbSize == "small" ? "small-pool-breadcrumb" : "pool-breadcrumb";
     return (
-        <Breadcrumb className="pool-breadcrumb" key={props.path} icon={props.icon} onClick={props.onClick}>
+        <Breadcrumb className={crumClassName} key={props.path} icon={theIcon} onClick={props.onClick}>
             {props.name}
         </Breadcrumb>
     )
@@ -757,6 +223,10 @@ function PoolHiddenSwitch(props) {
 const s3_prefix = "s3://tactic-user-storage/users";
 
 function PoolBreadcrumbs(props) {
+    props = {
+        crumbSize: "large",
+        ...props
+    }
 
     function clickFunc(path) {
         return () => {
@@ -765,6 +235,9 @@ function PoolBreadcrumbs(props) {
     }
 
     function pathToCrumbs(path) {
+        if (path === undefined || path === null) {
+            return [];
+        }
         let prefix = "";
         if (path.startsWith(s3_prefix)) {
             path = path.slice(s3_prefix.length);
@@ -787,84 +260,33 @@ function PoolBreadcrumbs(props) {
         return crumbs
     }
 
-    function renderBreadcrumb(props) {
+    function renderBreadcrumb(lprops) {
         return (
-            <PoolBreadcrumb {...props}/>
+            <PoolBreadcrumb {...lprops}
+                            crumbSize={props.crumbSize}/>
         )
     }
 
+    function setWorkingDirectory() {
+        postPromise("host", "update_settings", {"workingDirectory": props.path}).then(() => {
+        })
+    }
+
     const crumbs = pathToCrumbs(props.path);
+    let theClass = "pool-breadcrumbs"
+    if (props.crumbSize == "small") {
+        theClass = "pool-breadcrumbs-small"
+    }
     return (
-        <Breadcrumbs className="pool-breadcrumbs" breadcrumbRenderer={renderBreadcrumb} items={crumbs}/>
+        <div style={{display: "flex", flexDirection: "row", justifyContent: "flex-start"}}>
+            <Breadcrumbs className={theClass}
+                         breadcrumbRenderer={renderBreadcrumb} items={crumbs}/>
+            <Button variant="minimal"
+                    text="Set Default"
+                    textClassName="pool-breadcrumbs-button-text bp6-breadcrumb"
+                    onClick={setWorkingDirectory}
+                    size="small"/>
+        </div>
     )
 }
 
-function PoolMenubar(props) {
-
-    const [, setSelectedType, selectedTypeRef] = useStateAndRef(props.selected_resource.res_type);
-
-    useEffect(() => {
-        setSelectedType(props.selected_resource.res_type)
-    }, [props.selected_resource]);
-
-    function context_menu_items() {
-        return [];
-    }
-
-    function menu_specs() {
-        let mspec = {
-            Navigate: [
-                {name_text: "Go Home", icon_name: "home", click_handler: props.setRootToBase},
-                {
-                    name_text: "Go to Folder", icon_name: "folder-shared-open",
-                    click_handler: () => {
-                        props.setRoot()
-                    }, res_type: "poolDir"
-                },
-            ],
-            Inspect: [
-                {name_text: "Copy Path", icon_name: "clipboard", click_handler: props.copy_func},
-                {name_text: "View As Text File", icon_name: "eye-open", click_handler: props.view_func},
-                {name_text: "Open in Notebook", icon_name: "code", click_handler: props.open_in_notebook_func}
-            ],
-            Edit: [
-                {name_text: "Rename Resource", icon_name: "edit", click_handler: props.rename_func},
-                {name_text: "Move Resource", icon_name: "inheritance", click_handler: props.move_resource},
-                {name_text: "Duplicate File", icon_name: "duplicate", click_handler: props.duplicate_file},
-                {name_text: "Create Directory", icon_name: "folder-close", click_handler: props.add_directory},
-                {name_text: "Delete Resource", icon_name: "trash", click_handler: props.delete_func},
-            ],
-            Transfer: [
-                {name_text: "Show Import Dialog", icon_name: "cloud-upload", click_handler: props.showPoolImport},
-                {name_text: "Download File", icon_name: "download", click_handler: props.download_file}
-            ]
-        };
-        if (!window.on_aws) {
-            mspec["Archive"] = [
-                {name_text: "Compress Resource", icon_name: "archive", click_handler: props.compress_file},
-                {name_text: "Decompress Archive", icon_name: "unarchive", click_handler: props.decompress_archive},
-            ]
-        }
-        return mspec
-    }
-
-    return <LibraryMenubar sendContextMenuItems={props.sendContextMenuItems}
-                           connection_status={props.connection_status}
-                           context_menu_items={context_menu_items()}
-                           selected_rows={props.selected_rows}
-                           selectedTypeRef={selectedTypeRef}
-                           selected_resource={props.selected_resource}
-                           resource_icon={icon_dict["pool"]}
-                           menu_specs={menu_specs()}
-                           multi_select={props.multi_select}
-                           controlled={props.controlled}
-                           am_selected={props.am_selected}
-                           tsocket={props.tsocket}
-                           showRefresh={true}
-                           refreshTab={props.refreshFunc}
-                           closeTab={null}
-                           resource_name=""
-    />
-}
-
-PoolMenubar = memo(PoolMenubar);

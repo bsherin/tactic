@@ -336,6 +336,7 @@ function NotebookApp(props) {
                                showMetadataDrawerButton={true}
                                showAssistantDrawerButton={true}
                                showSettingsDrawerButton={true}
+                               showPoolDrawerButton={true}
                 />
                     <HorizontalPanes left_pane={console_pane}
                                      right_pane={exports_pane}

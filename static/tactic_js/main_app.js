@@ -1582,6 +1582,7 @@ function MainApp(props) {
     showMetadataDrawerButton: true,
     showAssistantDrawerButton: true,
     showSettingsDrawerButton: true,
+    showPoolDrawerButton: true,
     extraButtons: extra_menubar_buttons
   }), /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, mState.console_is_zoomed && /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,

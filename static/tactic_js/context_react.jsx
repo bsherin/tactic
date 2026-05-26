@@ -42,6 +42,7 @@ import {code_viewer_props, CodeViewerApp} from "./code_viewer_react";
 import {list_viewer_props, ListViewerApp} from "./list_viewer_react";
 import {text_viewer_props, TextViewerApp} from "./text_viewer_react";
 import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
+import {withPoolDrawer} from "./pool_drawer";
 import {HorizontalPanes} from "./resizing_allotment";
 import {usePropertyListNoUndo} from "./property_list";
 import {withAssistant} from "./assistant";
@@ -121,7 +122,7 @@ if (window.has_pool) {
 }
 
 function _context_main() {
-    const ContextAppPlus = withRegisterActivity(withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withAssistant(ContextApp)))))));
+    const ContextAppPlus = withRegisterActivity(withPool(withSettings(withDialogs(withErrorDrawer(withStatus(withPoolDrawer(withAssistant(ContextApp))))))));
     const domContainer = document.querySelector('#context-root');
     const root = createRoot(domContainer);
     root.render(

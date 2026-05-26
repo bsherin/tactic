@@ -100,6 +100,7 @@ function MergeViewerApp(props) {
                            showMetadataDrawerButton={false}
                            showAssistantDrawerButton={true}
                            showSettingsDrawerButton={true}
+                           showPoolDrawerButton={true}
                            showRefresh={false}
                            showClose={false}
                            refreshTab={null}

@@ -153,6 +153,7 @@ function ResourceViewerApp(props) {
                            showAssistantDrawerButton={true}
                            showErrorDrawerButton={true}
                            showSettingsDrawerButton={true}
+                           showPoolDrawerButton={true}
             />
             <div ref={top_ref}
                  className="resource-viewer-hp-holder"

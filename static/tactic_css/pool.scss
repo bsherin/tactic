@@ -4,11 +4,54 @@ $pool-tree-label-font-size: 12px;
 $pool-tree-icon-size: 14px;
 $pool-sort-font-size: 12px;
 
+$pool-width-hide-secondary-below: 425px;
+
+.pool-select-tree-responsive {
+    container-name: pool-select-tree-responsive;
+     container-type: inline-size;
+}
+
+@container pool-select-tree-responsive (max-width: #{$pool-width-hide-secondary-below}) {
+  .bp6-tree-node-secondary-label {
+    display: none;
+  }
+}
+
+.pool-search-form-responsive {
+    container-name: pool-search-form-responsive;
+     container-type: inline-size;
+}
+
+@container pool-search-form-responsive (max-width: #{$pool-width-hide-secondary-below}) {
+  .pool-button-holder {
+    display: none !important;
+  }
+}
+
+.pool-button-holder {
+    display: flex;
+    margin-left: 15px
+}
 
 
-.pool-breadcrumbs {
+.pool-breadcrumbs, .pool-breadcrumbs-small {
     margin-left: 15px;
     font-size: $pool-breadcrumb-font-size
+}
+
+.pool-breadcrumbs-button-text {
+    font-size: 12px;
+    margin-left: 10px
+}
+
+.small-pool-breadcrumb {
+    font-size: 12px;
+}
+
+.pool-breadcrumbs-small {
+    li:after {
+        margin: 0;
+    }
 }
 
 .pool-select-tree {
@@ -25,6 +68,6 @@ $pool-sort-font-size: 12px;
     }
 }
 
-.tree-sort-select select {
-    font-size: $pool-sort-font-size
-}
+    .tree-sort-select select {
+        font-size: $pool-sort-font-size
+    }

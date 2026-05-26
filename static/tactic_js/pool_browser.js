@@ -4,28 +4,27 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.PoolBreadcrumbs = PoolBreadcrumbs;
 exports.PoolBrowser = PoolBrowser;
 require("../tactic_css/pool.scss");
 var _react = _interopRequireWildcard(require("react"));
 var _core = require("@blueprintjs/core");
 var _utilities_react = require("./utilities_react");
-var _library_menubars = require("./library_menubars");
 var _combined_metadata = require("./combined_metadata");
 var _pool_tree = require("./pool_tree");
+var _pool_context_menu = require("./pool_context_menu");
 var _resizing_allotment = require("./resizing_allotment");
 var _communication_react = require("./communication_react");
-var _error_drawer = require("./error_drawer");
 var _sizing_tools = require("./sizing_tools");
-var _toaster = require("./toaster");
-var _modal_react = require("./modal_react");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t11 in e) "default" !== _t11 && {}.hasOwnProperty.call(e, _t11) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t11)) && (i.get || i.set) ? o(f, _t11, i) : f[_t11] = e[_t11]); return f; })(e, t); }
-function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
+var _settings = require("./settings");
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -75,13 +74,15 @@ function PoolBrowser(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     showHidden = _useState6[0],
     setShowHidden = _useState6[1];
-  var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
-  var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
+  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var treeRefreshFunc = (0, _react.useRef)(null);
   // Important note: The first mounting of the pool tree must happen after the pool pane
   // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
   // get the callback for the post.
 
+  (0, _react.useEffect)(function () {
+    setCurrentRootPath(settingsContext.settings.workingDirectory);
+  }, [settingsContext.settings.workingDirectory]);
   (0, _react.useEffect)(function () {
     if (props.am_selected && !have_activated) {
       set_have_activated(true);
@@ -109,956 +110,6 @@ function PoolBrowser(props) {
       });
     }
   }, [value]);
-  function sendNewCell(_x, _x2, _x3) {
-    return _sendNewCell.apply(this, arguments);
-  }
-  function _sendNewCell() {
-    _sendNewCell = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(path, main_id, read_as_dataframe) {
-      var ext, code;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
-          case 0:
-            ext = (0, _utilities_react.getFileExtension)(path);
-            if (read_as_dataframe) {
-              if (ext === "csv") {
-                code = "import pandas as pd\ndf = pd.read_csv(\"".concat(path, "\")");
-              } else if (ext === "parquet") {
-                code = "import pandas as pd\ndf = pd.read_parquet(\"".concat(path, "\")");
-              } else {
-                code = "import pandas as pd\ndf = pd.read_pickle(\"".concat(path, "\")");
-              }
-            } else {
-              if (ext == "pkl") {
-                code = "import pickle\nwith open(\"".concat(path, "\", \"rb\") as f:\n    data = pickle.load(f)");
-              } else {
-                code = "with open(\"".concat(path, "\") as f:\n    txt = f.read()");
-              }
-            }
-            _context13.n = 1;
-            return (0, _communication_react.postPromise)("host", "print_code_area_to_console", {
-              "console_text": code,
-              "user_id": window.user_id,
-              "local_id": main_id
-            }, window.global_id);
-          case 1:
-            return _context13.a(2);
-        }
-      }, _callee13);
-    }));
-    return _sendNewCell.apply(this, arguments);
-  }
-  function openInNotebook() {
-    return _openInNotebook.apply(this, arguments);
-  }
-  function _openInNotebook() {
-    _openInNotebook = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
-      var node,
-        path,
-        openResources,
-        open_projects,
-        open_projects_dict,
-        requireNewNotebook,
-        _iterator,
-        _step,
-        entry,
-        _yield$dialogFuncs$sh,
-        _yield$dialogFuncs$sh2,
-        selectedResource,
-        checkResults,
-        _args15 = arguments,
-        _t;
-      return _regenerator().w(function (_context15) {
-        while (1) switch (_context15.n) {
-          case 0:
-            node = _args15.length > 0 && _args15[0] !== undefined ? _args15[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context15.n = 1;
-              break;
-            }
-            return _context15.a(2);
-          case 1:
-            _context15.p = 1;
-            path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            if (!node.isDirectory) {
-              _context15.n = 2;
-              break;
-            }
-            return _context15.a(2);
-          case 2:
-            openResources = props.getOpenResources();
-            open_projects = [];
-            open_projects_dict = {};
-            if (openResources.length === 0) {
-              requireNewNotebook = true;
-            } else {
-              requireNewNotebook = false;
-              _iterator = _createForOfIteratorHelper(openResources);
-              try {
-                for (_iterator.s(); !(_step = _iterator.n()).done;) {
-                  entry = _step.value;
-                  if (entry.res_type === "project" || entry.res_type === "collection") {
-                    open_projects.push(entry.resource_name);
-                    open_projects_dict[entry.resource_name] = entry;
-                  }
-                }
-              } catch (err) {
-                _iterator.e(err);
-              } finally {
-                _iterator.f();
-              }
-            }
-            _context15.n = 3;
-            return dialogFuncs.showModalPromise("SelectDialog", {
-              title: "Open resources in notebook",
-              checkboxes: [{
-                "checkname": "create_new_notebook",
-                "checktext": "Create new notebook",
-                "checked": requireNewNotebook,
-                "disabled": requireNewNotebook
-              }, {
-                "checkname": "read_as_dataframe",
-                "checktext": "Read as dataframe",
-                "checked": false
-              }],
-              select_label: "Project",
-              cancel_text: "Cancel",
-              submit_text: "Open",
-              option_list: open_projects,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 3:
-            _yield$dialogFuncs$sh = _context15.v;
-            _yield$dialogFuncs$sh2 = _slicedToArray(_yield$dialogFuncs$sh, 2);
-            selectedResource = _yield$dialogFuncs$sh2[0];
-            checkResults = _yield$dialogFuncs$sh2[1];
-            if (!checkResults["create_new_notebook"]) {
-              _context15.n = 4;
-              break;
-            }
-            props.handleCreateViewer("new-notebook", null, /*#__PURE__*/function () {
-              var _ref13 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(main_id) {
-                return _regenerator().w(function (_context14) {
-                  while (1) switch (_context14.n) {
-                    case 0:
-                      _context14.n = 1;
-                      return sendNewCell(path, main_id, checkResults["read_as_dataframe"]);
-                    case 1:
-                      return _context14.a(2, _context14.v);
-                  }
-                }, _callee14);
-              }));
-              return function (_x1) {
-                return _ref13.apply(this, arguments);
-              };
-            }());
-            _context15.n = 5;
-            break;
-          case 4:
-            props.setSelectedTabId(open_projects_dict[selectedResource].id);
-            _context15.n = 5;
-            return sendNewCell(path, open_projects_dict[selectedResource].local_id, checkResults["read_as_dataframe"]);
-          case 5:
-            _context15.n = 7;
-            break;
-          case 6:
-            _context15.p = 6;
-            _t = _context15.v;
-            errorDrawerFuncs.addFromError("Error opening in notebook", _t);
-          case 7:
-            return _context15.a(2);
-        }
-      }, _callee15, null, [[1, 6]]);
-    }));
-    return _openInNotebook.apply(this, arguments);
-  }
-  function viewTextFile() {
-    return _viewTextFile.apply(this, arguments);
-  }
-  function _viewTextFile() {
-    _viewTextFile = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
-      var node,
-        path,
-        _args16 = arguments,
-        _t2;
-      return _regenerator().w(function (_context16) {
-        while (1) switch (_context16.n) {
-          case 0:
-            node = _args16.length > 0 && _args16[0] !== undefined ? _args16[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context16.n = 1;
-              break;
-            }
-            return _context16.a(2);
-          case 1:
-            _context16.p = 1;
-            path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            if (!node.isDirectory) {
-              _context16.n = 2;
-              break;
-            }
-            return _context16.a(2);
-          case 2:
-            props.handleCreateViewer("text", null, null, null, path);
-            _context16.n = 4;
-            break;
-          case 3:
-            _context16.p = 3;
-            _t2 = _context16.v;
-            errorDrawerFuncs.addFromError("Error viewing text file", _t2);
-          case 4:
-            return _context16.a(2);
-        }
-      }, _callee16, null, [[1, 3]]);
-    }));
-    return _viewTextFile.apply(this, arguments);
-  }
-  function _copy_func() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    if (!valueRef.current && !node) return;
-    var path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-    (0, _utilities_react.copyToClipboard)(path);
-  }
-  function _rename_func() {
-    return _rename_func2.apply(this, arguments);
-  }
-  function _rename_func2() {
-    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
-      var node,
-        path,
-        new_name,
-        the_data,
-        _args17 = arguments,
-        _t3;
-      return _regenerator().w(function (_context17) {
-        while (1) switch (_context17.n) {
-          case 0:
-            node = _args17.length > 0 && _args17[0] !== undefined ? _args17[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context17.n = 1;
-              break;
-            }
-            return _context17.a(2);
-          case 1:
-            _context17.p = 1;
-            path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            _context17.n = 2;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "Rename Pool Resource",
-              field_title: "New Name",
-              default_value: (0, _pool_tree.getBasename)(path),
-              existing_names: [],
-              checkboxes: [],
-              handleClose: dialogFuncs.hideModal
-            });
-          case 2:
-            new_name = _context17.v;
-            the_data = {
-              new_name: new_name,
-              old_path: path
-            };
-            _context17.n = 3;
-            return (0, _communication_react.postPromise)("host", "rename_pool_resource_task", the_data);
-          case 3:
-            _context17.n = 5;
-            break;
-          case 4:
-            _context17.p = 4;
-            _t3 = _context17.v;
-            if (_t3 != "canceled") {
-              errorDrawerFuncs.addFromError("Error renaming", _t3);
-            }
-          case 5:
-            return _context17.a(2);
-        }
-      }, _callee17, null, [[1, 4]]);
-    }));
-    return _rename_func2.apply(this, arguments);
-  }
-  function _add_directory() {
-    return _add_directory2.apply(this, arguments);
-  }
-  function _add_directory2() {
-    _add_directory2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
-      var node,
-        sNode,
-        initial_address,
-        full_path,
-        the_data,
-        _args18 = arguments,
-        _t4;
-      return _regenerator().w(function (_context18) {
-        while (1) switch (_context18.n) {
-          case 0:
-            node = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context18.n = 1;
-              break;
-            }
-            return _context18.a(2);
-          case 1:
-            _context18.p = 1;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (sNode.isDirectory) {
-              initial_address = sNode.fullpath;
-            } else {
-              initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
-            }
-            _context18.n = 2;
-            return dialogFuncs.showModalPromise("SelectAddressDialog", {
-              title: "Add a Pool Directory",
-              selectType: "folder",
-              initial_address: initial_address,
-              initial_name: "New Directory",
-              showName: true,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 2:
-            full_path = _context18.v;
-            the_data = {
-              full_path: full_path
-            };
-            _context18.n = 3;
-            return (0, _communication_react.postPromise)("host", "create_pool_directory_task", the_data);
-          case 3:
-            _context18.n = 5;
-            break;
-          case 4:
-            _context18.p = 4;
-            _t4 = _context18.v;
-            if (_t4 != "canceled") {
-              errorDrawerFuncs.addFromError("Error adding directory", _t4);
-            }
-          case 5:
-            return _context18.a(2);
-        }
-      }, _callee18, null, [[1, 4]]);
-    }));
-    return _add_directory2.apply(this, arguments);
-  }
-  function _duplicate_file() {
-    return _duplicate_file2.apply(this, arguments);
-  }
-  function _duplicate_file2() {
-    _duplicate_file2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
-      var node,
-        sNode,
-        src,
-        _splitFilePath,
-        _splitFilePath2,
-        initial_address,
-        initial_name,
-        dst,
-        the_data,
-        _args19 = arguments,
-        _t5;
-      return _regenerator().w(function (_context19) {
-        while (1) switch (_context19.n) {
-          case 0:
-            node = _args19.length > 0 && _args19[0] !== undefined ? _args19[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context19.n = 1;
-              break;
-            }
-            return _context19.a(2);
-          case 1:
-            _context19.p = 1;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (!sNode.isDirectory) {
-              _context19.n = 2;
-              break;
-            }
-            (0, _toaster.doFlash)("You can't duplicate a directory");
-            return _context19.a(2);
-          case 2:
-            src = sNode.fullpath;
-            _splitFilePath = (0, _pool_tree.splitFilePath)(sNode.fullpath), _splitFilePath2 = _slicedToArray(_splitFilePath, 2), initial_address = _splitFilePath2[0], initial_name = _splitFilePath2[1];
-            _context19.n = 3;
-            return dialogFuncs.showModalPromise("SelectAddressDialog", {
-              title: "Duplicate a file",
-              selectType: "folder",
-              initial_address: initial_address,
-              initial_name: initial_name,
-              showName: true,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 3:
-            dst = _context19.v;
-            the_data = {
-              dst: dst,
-              src: src
-            };
-            _context19.n = 4;
-            return (0, _communication_react.postPromise)("host", "duplicate_pool_file_task", the_data);
-          case 4:
-            _context19.n = 6;
-            break;
-          case 5:
-            _context19.p = 5;
-            _t5 = _context19.v;
-            if (_t5 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating file", _t5);
-            }
-          case 6:
-            return _context19.a(2);
-        }
-      }, _callee19, null, [[1, 5]]);
-    }));
-    return _duplicate_file2.apply(this, arguments);
-  }
-  function _compress_file() {
-    return _compress_file2.apply(this, arguments);
-  }
-  function _compress_file2() {
-    _compress_file2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
-      var node,
-        sNode,
-        _args20 = arguments,
-        _t6;
-      return _regenerator().w(function (_context20) {
-        while (1) switch (_context20.n) {
-          case 0:
-            node = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context20.n = 1;
-              break;
-            }
-            return _context20.a(2);
-          case 1:
-            _context20.p = 1;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            _context20.n = 2;
-            return (0, _communication_react.postPromise)("host", "compress_pool_resource", {
-              full_path: sNode.fullpath,
-              force_forward: true,
-              user_id: window.user_id
-            });
-          case 2:
-            _context20.n = 4;
-            break;
-          case 3:
-            _context20.p = 3;
-            _t6 = _context20.v;
-            errorDrawerFuncs.addFromError("Error compressing file or folder", _t6);
-          case 4:
-            return _context20.a(2);
-        }
-      }, _callee20, null, [[1, 3]]);
-    }));
-    return _compress_file2.apply(this, arguments);
-  }
-  function _decompress_archive() {
-    return _decompress_archive2.apply(this, arguments);
-  }
-  function _decompress_archive2() {
-    _decompress_archive2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
-      var node,
-        sNode,
-        _args21 = arguments,
-        _t7;
-      return _regenerator().w(function (_context21) {
-        while (1) switch (_context21.n) {
-          case 0:
-            node = _args21.length > 0 && _args21[0] !== undefined ? _args21[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context21.n = 1;
-              break;
-            }
-            return _context21.a(2);
-          case 1:
-            _context21.p = 1;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            _context21.n = 2;
-            return (0, _communication_react.postPromise)("host", "decompress_archive", {
-              full_path: sNode.fullpath,
-              force_forward: true,
-              user_id: window.user_id
-            });
-          case 2:
-            _context21.n = 4;
-            break;
-          case 3:
-            _context21.p = 3;
-            _t7 = _context21.v;
-            errorDrawerFuncs.addFromError("Error decompressing archive", _t7);
-          case 4:
-            return _context21.a(2);
-        }
-      }, _callee21, null, [[1, 3]]);
-    }));
-    return _decompress_archive2.apply(this, arguments);
-  }
-  function _downloadFile() {
-    return _downloadFile2.apply(this, arguments);
-  }
-  function _downloadFile2() {
-    _downloadFile2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee22() {
-      var node,
-        sNode,
-        src,
-        new_name,
-        the_data,
-        _yield$getBlobPromise,
-        _yield$getBlobPromise2,
-        data,
-        xhr,
-        blob,
-        url,
-        a,
-        _args22 = arguments,
-        _t8;
-      return _regenerator().w(function (_context22) {
-        while (1) switch (_context22.n) {
-          case 0:
-            node = _args22.length > 0 && _args22[0] !== undefined ? _args22[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context22.n = 1;
-              break;
-            }
-            return _context22.a(2);
-          case 1:
-            _context22.p = 1;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            if (!sNode.isDirectory) {
-              _context22.n = 2;
-              break;
-            }
-            (0, _toaster.doFlash)("You can't download a directory");
-            return _context22.a(2);
-          case 2:
-            src = sNode.fullpath;
-            _context22.n = 3;
-            return dialogFuncs.showModalPromise("ModalDialog", {
-              title: "Download File",
-              field_title: "New File Name",
-              default_value: (0, _pool_tree.getBasename)(src),
-              existing_names: [],
-              checkboxes: [],
-              handleClose: dialogFuncs.hideModal
-            });
-          case 3:
-            new_name = _context22.v;
-            the_data = {
-              src: src
-            };
-            _context22.n = 4;
-            return (0, _communication_react.getBlobPromise)("download_pool_file", the_data);
-          case 4:
-            _yield$getBlobPromise = _context22.v;
-            _yield$getBlobPromise2 = _slicedToArray(_yield$getBlobPromise, 3);
-            data = _yield$getBlobPromise2[0];
-            xhr = _yield$getBlobPromise2[2];
-            if (xhr.status === 200) {
-              // Create a download link and trigger the download
-              blob = data;
-              url = window.URL.createObjectURL(blob);
-              a = document.createElement('a');
-              a.href = url;
-              a.download = new_name; // Set the desired file name
-              // noinspection XHTMLIncompatabilitiesJS
-              document.body.appendChild(a);
-              a.click();
-              window.URL.revokeObjectURL(url);
-            }
-            _context22.n = 6;
-            break;
-          case 5:
-            _context22.p = 5;
-            _t8 = _context22.v;
-            if (_t8 != "canceled") {
-              errorDrawerFuncs.addFromError("Error downloading from pool", _t8);
-            }
-          case 6:
-            return _context22.a(2);
-        }
-      }, _callee22, null, [[1, 5]]);
-    }));
-    return _downloadFile2.apply(this, arguments);
-  }
-  function MoveResource(_x4, _x5) {
-    return _MoveResource.apply(this, arguments);
-  }
-  function _MoveResource() {
-    _MoveResource = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee23(src, dst) {
-      var the_data, _t9;
-      return _regenerator().w(function (_context23) {
-        while (1) switch (_context23.n) {
-          case 0:
-            if (!(src == dst)) {
-              _context23.n = 1;
-              break;
-            }
-            return _context23.a(2);
-          case 1:
-            _context23.p = 1;
-            the_data = {
-              dst: dst,
-              src: src
-            };
-            _context23.n = 2;
-            return (0, _communication_react.postPromise)("host", "move_pool_resource_task", the_data);
-          case 2:
-            _context23.n = 4;
-            break;
-          case 3:
-            _context23.p = 3;
-            _t9 = _context23.v;
-            errorDrawerFuncs.addFromError("Error moving resource", _t9);
-          case 4:
-            return _context23.a(2);
-        }
-      }, _callee23, null, [[1, 3]]);
-    }));
-    return _MoveResource.apply(this, arguments);
-  }
-  function _move_resource() {
-    return _move_resource2.apply(this, arguments);
-  }
-  function _move_resource2() {
-    _move_resource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee24() {
-      var node,
-        sNode,
-        src,
-        initial_address,
-        dst,
-        _args24 = arguments,
-        _t0;
-      return _regenerator().w(function (_context24) {
-        while (1) switch (_context24.n) {
-          case 0:
-            node = _args24.length > 0 && _args24[0] !== undefined ? _args24[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context24.n = 1;
-              break;
-            }
-            return _context24.a(2);
-          case 1:
-            _context24.p = 1;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            src = sNode.fullpath;
-            if (sNode.isDirectory) {
-              initial_address = sNode.fullpath;
-            } else {
-              initial_address = (0, _pool_tree.getFileParentPath)(sNode.fullpath);
-            }
-            _context24.n = 2;
-            return dialogFuncs.showModalPromise("SelectAddressDialog", {
-              title: "Select a destination for ".concat((0, _pool_tree.getBasename)(src)),
-              selectType: "folder",
-              initial_address: initial_address,
-              initial_name: "",
-              showName: false,
-              handleClose: dialogFuncs.hideModal
-            });
-          case 2:
-            dst = _context24.v;
-            _context24.n = 3;
-            return MoveResource(src, dst);
-          case 3:
-            _context24.n = 5;
-            break;
-          case 4:
-            _context24.p = 4;
-            _t0 = _context24.v;
-            if (_t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error moving resource", _t0);
-            }
-          case 5:
-            return _context24.a(2);
-        }
-      }, _callee24, null, [[1, 4]]);
-    }));
-    return _move_resource2.apply(this, arguments);
-  }
-  function _delete_func() {
-    return _delete_func2.apply(this, arguments);
-  }
-  function _delete_func2() {
-    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee25() {
-      var node,
-        path,
-        sNode,
-        basename,
-        confirm_text,
-        _args25 = arguments,
-        _t1;
-      return _regenerator().w(function (_context25) {
-        while (1) switch (_context25.n) {
-          case 0:
-            node = _args25.length > 0 && _args25[0] !== undefined ? _args25[0] : null;
-            if (!(!valueRef.current && !node)) {
-              _context25.n = 1;
-              break;
-            }
-            return _context25.a(2);
-          case 1:
-            _context25.p = 1;
-            path = node && "isDirectory" in node ? node.fullpath : valueRef.current;
-            sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-            basename = (0, _pool_tree.getBasename)(path);
-            if (sNode.isDirectory && sNode.childNodes.length > 0) {
-              confirm_text = "Are you sure that you want to delete the non-empty directory ".concat(basename, "?");
-            } else {
-              confirm_text = "Are you sure that you want to delete ".concat(basename, "?");
-            }
-            _context25.n = 2;
-            return dialogFuncs.showModalPromise("ConfirmDialog", {
-              title: "Delete resource",
-              text_body: confirm_text,
-              cancel_text: "do nothing",
-              submit_text: "delete",
-              handleClose: dialogFuncs.hideModal
-            });
-          case 2:
-            _context25.n = 3;
-            return (0, _communication_react.postPromise)("host", "delete_pool_resource_task", {
-              full_path: path,
-              is_directory: sNode.isDirectory
-            });
-          case 3:
-            _context25.n = 5;
-            break;
-          case 4:
-            _context25.p = 4;
-            _t1 = _context25.v;
-            if (_t1 != "canceled") {
-              errorDrawerFuncs.addFromError("Error deleting", _t1);
-            }
-          case 5:
-            return _context25.a(2);
-        }
-      }, _callee25, null, [[1, 4]]);
-    }));
-    return _delete_func2.apply(this, arguments);
-  }
-  function _add_to_pool(_x6, _x7, _x8) {
-    return _add_to_pool2.apply(this, arguments);
-  }
-  function _add_to_pool2() {
-    _add_to_pool2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee27(myDropZone, setCurrentUrl, current_value) {
-      var new_url, _iterator2, _step2, _loop, _ret, _t10;
-      return _regenerator().w(function (_context28) {
-        while (1) switch (_context28.n) {
-          case 0:
-            if (window.use_s3) {
-              _context28.n = 1;
-              break;
-            }
-            new_url = "import_pool/".concat(window.global_id);
-            myDropZone.options.url = new_url;
-            setCurrentUrl(new_url);
-            myDropZone.processQueue();
-            _context28.n = 9;
-            break;
-          case 1:
-            _iterator2 = _createForOfIteratorHelper(myDropZone.getQueuedFiles());
-            _context28.p = 2;
-            _loop = /*#__PURE__*/_regenerator().m(function _loop() {
-              var file, resp, _resp$upload_info, url, fields, key, bucket, content_type, fd, xhr;
-              return _regenerator().w(function (_context27) {
-                while (1) switch (_context27.n) {
-                  case 0:
-                    file = _step2.value;
-                    myDropZone.emit("processing", file);
-                    _context27.n = 1;
-                    return (0, _communication_react.postPromise)("host", "get_s3_upload_info_task", {
-                      filename: file.name,
-                      content_type: file.type || "application/octet-stream",
-                      dest_path: current_value
-                    });
-                  case 1:
-                    resp = _context27.v;
-                    if (resp.success) {
-                      _context27.n = 2;
-                      break;
-                    }
-                    myDropZone.emit("error", file, resp.message);
-                    errorDrawerFuncs.addErrorDrawerEntry({
-                      title: "Failed to get presign",
-                      content: resp.message
-                    });
-                    return _context27.a(2, {
-                      v: void 0
-                    });
-                  case 2:
-                    _resp$upload_info = resp.upload_info, url = _resp$upload_info.url, fields = _resp$upload_info.fields, key = _resp$upload_info.key, bucket = _resp$upload_info.bucket, content_type = _resp$upload_info.content_type;
-                    fd = new FormData();
-                    Object.entries(fields).forEach(function (_ref14) {
-                      var _ref15 = _slicedToArray(_ref14, 2),
-                        k = _ref15[0],
-                        v = _ref15[1];
-                      return fd.append(k, v);
-                    });
-                    fd.append("file", file);
-                    try {
-                      xhr = new XMLHttpRequest();
-                      xhr.open("POST", url, true);
-                      xhr.upload.onprogress = function (e) {
-                        if (e.lengthComputable) {
-                          var pct = e.loaded / e.total * 100;
-                          myDropZone.emit("uploadprogress", file, pct, e.loaded);
-                        } else {
-                          myDropZone.emit("uploadprogress", file, 50, 0);
-                        }
-                      };
-                      xhr.onload = /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee26() {
-                        var msg;
-                        return _regenerator().w(function (_context26) {
-                          while (1) switch (_context26.n) {
-                            case 0:
-                              if (xhr.status >= 200 && xhr.status < 300) {
-                                // S3 presigned POST usually returns 204 or 201
-                                myDropZone.emit("success", file, xhr.responseText);
-                                myDropZone.emit("complete", file);
-                              } else {
-                                msg = xhr.responseText || "Status ".concat(xhr.status);
-                                myDropZone.emit("error", file, msg);
-                                errorDrawerFuncs.addErrorDrawerEntry({
-                                  title: "S3 upload failed",
-                                  content: msg
-                                });
-                              }
-                            case 1:
-                              return _context26.a(2);
-                          }
-                        }, _callee26);
-                      }));
-                      xhr.onerror = function () {
-                        myDropZone.emit("error", file, "Network error");
-                        var msg = xhr.responseText || "Status ".concat(xhr.status);
-                        myDropZone.emit("error", file, msg);
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                          title: "S3 upload failed",
-                          content: "Network error"
-                        });
-                      };
-                      xhr.send(fd);
-                    } catch (e) {
-                      myDropZone.emit("error", file, e.message);
-                      errorDrawerFuncs.addErrorDrawerEntry({
-                        title: "S3 upload failed",
-                        content: e.message
-                      });
-                    }
-                  case 3:
-                    return _context27.a(2);
-                }
-              }, _loop);
-            });
-            _iterator2.s();
-          case 3:
-            if ((_step2 = _iterator2.n()).done) {
-              _context28.n = 6;
-              break;
-            }
-            return _context28.d(_regeneratorValues(_loop()), 4);
-          case 4:
-            _ret = _context28.v;
-            if (!_ret) {
-              _context28.n = 5;
-              break;
-            }
-            return _context28.a(2, _ret.v);
-          case 5:
-            _context28.n = 3;
-            break;
-          case 6:
-            _context28.n = 8;
-            break;
-          case 7:
-            _context28.p = 7;
-            _t10 = _context28.v;
-            _iterator2.e(_t10);
-          case 8:
-            _context28.p = 8;
-            _iterator2.f();
-            return _context28.f(8);
-          case 9:
-            return _context28.a(2);
-        }
-      }, _callee27, null, [[2, 7, 8, 9]]);
-    }));
-    return _add_to_pool2.apply(this, arguments);
-  }
-  function _showPoolImport() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    var initial_directory;
-    var sNode = node && "isDirectory" in node ? node : selectedNodeRef.current;
-    if (sNode && sNode.isDirectory) {
-      initial_directory = sNode.fullpath;
-    } else {
-      initial_directory = currentRootPathRef.current;
-    }
-    dialogFuncs.showModal("FileImportDialog", {
-      res_type: "pool",
-      allowed_file_types: null,
-      checkboxes: [],
-      process_handler: _add_to_pool,
-      chunking: true,
-      chunkSize: 1024 * 1000 * 25,
-      forceChunking: true,
-      tsocket: props.tsocket,
-      combine: false,
-      show_csv_options: false,
-      after_upload: null,
-      show_address_selector: true,
-      allowFolderSelection: true,
-      initial_address: initial_directory,
-      handleClose: dialogFuncs.hideModal,
-      handleCancel: null,
-      use_s3: window.use_s3
-    });
-  }
-  function handleDrop(_x9, _x0) {
-    return _handleDrop.apply(this, arguments);
-  }
-  function _handleDrop() {
-    _handleDrop = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee28(e, dst) {
-      var files, src;
-      return _regenerator().w(function (_context29) {
-        while (1) switch (_context29.n) {
-          case 0:
-            files = e.dataTransfer.files;
-            if (!(files.length != 0)) {
-              _context29.n = 1;
-              break;
-            }
-            dialogFuncs.showModal("FileImportDialog", {
-              res_type: "pool",
-              allowed_file_types: null,
-              checkboxes: [],
-              chunking: true,
-              chunkSize: 1024 * 1000 * 25,
-              forceChunking: true,
-              process_handler: _add_to_pool,
-              tsocket: props.tsocket,
-              combine: false,
-              show_csv_options: false,
-              after_upload: null,
-              show_address_selector: true,
-              allowFolderSelection: true,
-              initial_address: dst,
-              handleClose: dialogFuncs.hideModal,
-              handleCancel: null,
-              initialFiles: files,
-              use_s3: window.use_s3
-            });
-            _context29.n = 2;
-            break;
-          case 1:
-            src = e.dataTransfer.getData("fullpath");
-            if (!src) {
-              _context29.n = 2;
-              break;
-            }
-            _context29.n = 2;
-            return MoveResource(src, dst);
-          case 2:
-            return _context29.a(2);
-        }
-      }, _callee28);
-    }));
-    return _handleDrop.apply(this, arguments);
-  }
   function handleNodeClick(node) {
     setValue(node.fullpath);
     setSelectedNode(node);
@@ -1073,206 +124,6 @@ function PoolBrowser(props) {
   }
   function setRootToBase() {
     setCurrentRootPath("/mydisk");
-  }
-  function renderContextMenu(props) {
-    return /*#__PURE__*/_react["default"].createElement(_core.Menu, null, props.node.isDirectory && /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "folder-shared-open",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-        return _regenerator().w(function (_context) {
-          while (1) switch (_context.n) {
-            case 0:
-              _context.n = 1;
-              return setRoot(props.node);
-            case 1:
-              return _context.a(2);
-          }
-        }, _callee);
-      })),
-      text: "Go To Folder"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "home",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-        return _regenerator().w(function (_context2) {
-          while (1) switch (_context2.n) {
-            case 0:
-              _context2.n = 1;
-              return setRootToBase(props.node);
-            case 1:
-              return _context2.a(2);
-          }
-        }, _callee2);
-      })),
-      text: "Go Home"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "clipboard",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-        return _regenerator().w(function (_context3) {
-          while (1) switch (_context3.n) {
-            case 0:
-              _context3.n = 1;
-              return _copy_func(props.node);
-            case 1:
-              return _context3.a(2);
-          }
-        }, _callee3);
-      })),
-      text: "Copy Path"
-    }), !props.node.isDirectory && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "eye-open",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-        return _regenerator().w(function (_context4) {
-          while (1) switch (_context4.n) {
-            case 0:
-              _context4.n = 1;
-              return viewTextFile(props.node);
-            case 1:
-              return _context4.a(2);
-          }
-        }, _callee4);
-      })),
-      text: "View as Text"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "code",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-        return _regenerator().w(function (_context5) {
-          while (1) switch (_context5.n) {
-            case 0:
-              _context5.n = 1;
-              return openInNotebook(props.node);
-            case 1:
-              return _context5.a(2);
-          }
-        }, _callee5);
-      })),
-      text: "Open in Notebook"
-    })), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "edit",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-        return _regenerator().w(function (_context6) {
-          while (1) switch (_context6.n) {
-            case 0:
-              _context6.n = 1;
-              return _rename_func(props.node);
-            case 1:
-              return _context6.a(2);
-          }
-        }, _callee6);
-      })),
-      text: "Rename Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "inheritance",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-        return _regenerator().w(function (_context7) {
-          while (1) switch (_context7.n) {
-            case 0:
-              _context7.n = 1;
-              return _move_resource(props.node);
-            case 1:
-              return _context7.a(2);
-          }
-        }, _callee7);
-      })),
-      text: "Move Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "duplicate",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-        return _regenerator().w(function (_context8) {
-          while (1) switch (_context8.n) {
-            case 0:
-              _context8.n = 1;
-              return _duplicate_file(props.node);
-            case 1:
-              return _context8.a(2);
-          }
-        }, _callee8);
-      })),
-      text: "Duplicate File"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "folder-close",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-        return _regenerator().w(function (_context9) {
-          while (1) switch (_context9.n) {
-            case 0:
-              _context9.n = 1;
-              return _add_directory(props.node);
-            case 1:
-              return _context9.a(2);
-          }
-        }, _callee9);
-      })),
-      text: "Create Directory"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "trash",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
-        return _regenerator().w(function (_context0) {
-          while (1) switch (_context0.n) {
-            case 0:
-              _context0.n = 1;
-              return _delete_func(props.node);
-            case 1:
-              return _context0.a(2);
-          }
-        }, _callee0);
-      })),
-      intent: "danger",
-      text: "Delete Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null), window.on_aws && /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "archive",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-        return _regenerator().w(function (_context1) {
-          while (1) switch (_context1.n) {
-            case 0:
-              _context1.n = 1;
-              return _compress_file(props.node);
-            case 1:
-              return _context1.a(2);
-          }
-        }, _callee1);
-      })),
-      text: "Compress Resource"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "unarchive",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-        return _regenerator().w(function (_context10) {
-          while (1) switch (_context10.n) {
-            case 0:
-              _context10.n = 1;
-              return _decompress_archive(props.node);
-            case 1:
-              return _context10.a(2);
-          }
-        }, _callee10);
-      })),
-      text: "Decompress archive"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuDivider, null)), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "cloud-upload",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-        return _regenerator().w(function (_context11) {
-          while (1) switch (_context11.n) {
-            case 0:
-              _context11.n = 1;
-              return _showPoolImport(props.node);
-            case 1:
-              return _context11.a(2);
-          }
-        }, _callee11);
-      })),
-      text: "Show Import Dialog"
-    }), /*#__PURE__*/_react["default"].createElement(_core.MenuItem, {
-      icon: "download",
-      onClick: /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
-        return _regenerator().w(function (_context12) {
-          while (1) switch (_context12.n) {
-            case 0:
-              _context12.n = 1;
-              return _downloadFile(props.node);
-            case 1:
-              return _context12.a(2);
-          }
-        }, _callee12);
-      })),
-      text: "Download from Pool"
-    }));
   }
   function registerTreeRefreshFunc(func) {
     treeRefreshFunc.current = func;
@@ -1306,7 +157,8 @@ function PoolBrowser(props) {
   }, /*#__PURE__*/_react["default"].createElement("div", {
     className: "d-flex flex-row",
     style: {
-      justifyContent: "space-between"
+      justifyContent: "space-between",
+      marginBottom: 10
     }
   }, /*#__PURE__*/_react["default"].createElement(PoolBreadcrumbs, {
     path: currentRootPathRef.current,
@@ -1314,17 +166,19 @@ function PoolBrowser(props) {
   }), /*#__PURE__*/_react["default"].createElement(PoolHiddenSwitch, {
     showHidden: showHidden,
     setShowHidden: setShowHidden
-  })), /*#__PURE__*/_react["default"].createElement(_pool_tree.PoolTree, {
+  })), /*#__PURE__*/_react["default"].createElement(_pool_context_menu.PoolTreeWithContextMenu, {
     value: valueRef.current,
-    currentRootPath: currentRootPathRef.current,
-    showHidden: showHidden,
     setRoot: setRoot,
-    renderContextMenu: renderContextMenu,
+    currentRootPath: currentRootPathRef.current,
+    selectedNode: selectedNodeRef.current,
+    showHidden: showHidden,
+    handleCreateViewer: props.handleCreateViewer,
+    getOpenResources: props.getOpenResources,
+    allow_import_and_download: true,
     select_type: "both",
     registerTreeRefreshFunc: registerTreeRefreshFunc,
     user_id: window.user_id,
     tsocket: props.tsocket,
-    handleDrop: handleDrop,
     showSecondaryLabel: true,
     handleNodeClick: handleNodeClick
   }))));
@@ -1338,27 +192,19 @@ function PoolBrowser(props) {
   };
   return /*#__PURE__*/_react["default"].createElement("div", {
     style: outer_style
-  }, /*#__PURE__*/_react["default"].createElement(PoolMenubar, _extends({
+  }, /*#__PURE__*/_react["default"].createElement(_pool_context_menu.PoolMenubar, _extends({
     selected_resource: selected_resource_ref.current,
+    value: valueRef.current,
+    selectedNode: selectedNodeRef.current,
     connection_status: null,
-    copy_func: _copy_func,
-    rename_func: _rename_func,
-    delete_func: _delete_func,
-    view_func: viewTextFile,
-    open_in_notebook_func: openInNotebook,
-    add_directory: _add_directory,
-    duplicate_file: _duplicate_file,
-    compress_file: _compress_file,
-    decompress_archive: _decompress_archive,
-    move_resource: _move_resource,
-    download_file: _downloadFile,
-    refreshFunc: treeRefreshFunc.current,
-    showPoolImport: _showPoolImport,
     multi_select: multi_select_ref.current,
     list_of_selected: list_of_selected_ref.current,
     sendContextMenuItems: setContextMenuItems,
     setRootToBase: setRootToBase,
-    setRoot: setRoot
+    setRoot: setRoot,
+    getOpenResources: props.getOpenResources,
+    refreshFunc: treeRefreshFunc.current,
+    handleCreateViewer: props.handleCreateViewer
   }, props.errorDrawerFuncs, {
     controlled: props.controlled,
     tsocket: props.tsocket
@@ -1381,10 +227,19 @@ function PoolBrowser(props) {
 }
 exports.PoolBrowser = PoolBrowser = /*#__PURE__*/(0, _react.memo)(PoolBrowser);
 function PoolBreadcrumb(props) {
-  return /*#__PURE__*/_react["default"].createElement(_core.Breadcrumb, {
-    className: "pool-breadcrumb",
-    key: props.path,
+  props = _objectSpread({
+    crumbSize: "large"
+  }, props);
+  var iconSize = props.crumbSize == "small" ? 12 : 16;
+  var theIcon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
     icon: props.icon,
+    size: iconSize
+  });
+  var crumClassName = props.crumbSize == "small" ? "small-pool-breadcrumb" : "pool-breadcrumb";
+  return /*#__PURE__*/_react["default"].createElement(_core.Breadcrumb, {
+    className: crumClassName,
+    key: props.path,
+    icon: theIcon,
     onClick: props.onClick
   }, props.name);
 }
@@ -1401,6 +256,9 @@ function PoolHiddenSwitch(props) {
 }
 var s3_prefix = "s3://tactic-user-storage/users";
 function PoolBreadcrumbs(props) {
+  props = _objectSpread({
+    crumbSize: "large"
+  }, props);
   function clickFunc(path) {
     return function () {
       props.setRoot({
@@ -1409,6 +267,9 @@ function PoolBreadcrumbs(props) {
     };
   }
   function pathToCrumbs(path) {
+    if (path === undefined || path === null) {
+      return [];
+    }
     var prefix = "";
     if (path.startsWith(s3_prefix)) {
       path = path.slice(s3_prefix.length);
@@ -1417,11 +278,11 @@ function PoolBreadcrumbs(props) {
     var crumbs = [];
     var parts = path.split("/");
     var new_path = prefix;
-    var _iterator3 = _createForOfIteratorHelper(parts),
-      _step3;
+    var _iterator = _createForOfIteratorHelper(parts),
+      _step;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var item = _step3.value;
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var item = _step.value;
         if (item === "") {
           continue;
         }
@@ -1434,121 +295,42 @@ function PoolBreadcrumbs(props) {
         });
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator.e(err);
     } finally {
-      _iterator3.f();
+      _iterator.f();
     }
     return crumbs;
   }
-  function renderBreadcrumb(props) {
-    return /*#__PURE__*/_react["default"].createElement(PoolBreadcrumb, props);
+  function renderBreadcrumb(lprops) {
+    return /*#__PURE__*/_react["default"].createElement(PoolBreadcrumb, _extends({}, lprops, {
+      crumbSize: props.crumbSize
+    }));
+  }
+  function setWorkingDirectory() {
+    (0, _communication_react.postPromise)("host", "update_settings", {
+      "workingDirectory": props.path
+    }).then(function () {});
   }
   var crumbs = pathToCrumbs(props.path);
-  return /*#__PURE__*/_react["default"].createElement(_core.Breadcrumbs, {
-    className: "pool-breadcrumbs",
+  var theClass = "pool-breadcrumbs";
+  if (props.crumbSize == "small") {
+    theClass = "pool-breadcrumbs-small";
+  }
+  return /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "flex-start"
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_core.Breadcrumbs, {
+    className: theClass,
     breadcrumbRenderer: renderBreadcrumb,
     items: crumbs
-  });
+  }), /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    variant: "minimal",
+    text: "Set Default",
+    textClassName: "pool-breadcrumbs-button-text bp6-breadcrumb",
+    onClick: setWorkingDirectory,
+    size: "small"
+  }));
 }
-function PoolMenubar(props) {
-  var _useStateAndRef11 = (0, _utilities_react.useStateAndRef)(props.selected_resource.res_type),
-    _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
-    setSelectedType = _useStateAndRef12[1],
-    selectedTypeRef = _useStateAndRef12[2];
-  (0, _react.useEffect)(function () {
-    setSelectedType(props.selected_resource.res_type);
-  }, [props.selected_resource]);
-  function context_menu_items() {
-    return [];
-  }
-  function menu_specs() {
-    var mspec = {
-      Navigate: [{
-        name_text: "Go Home",
-        icon_name: "home",
-        click_handler: props.setRootToBase
-      }, {
-        name_text: "Go to Folder",
-        icon_name: "folder-shared-open",
-        click_handler: function click_handler() {
-          props.setRoot();
-        },
-        res_type: "poolDir"
-      }],
-      Inspect: [{
-        name_text: "Copy Path",
-        icon_name: "clipboard",
-        click_handler: props.copy_func
-      }, {
-        name_text: "View As Text File",
-        icon_name: "eye-open",
-        click_handler: props.view_func
-      }, {
-        name_text: "Open in Notebook",
-        icon_name: "code",
-        click_handler: props.open_in_notebook_func
-      }],
-      Edit: [{
-        name_text: "Rename Resource",
-        icon_name: "edit",
-        click_handler: props.rename_func
-      }, {
-        name_text: "Move Resource",
-        icon_name: "inheritance",
-        click_handler: props.move_resource
-      }, {
-        name_text: "Duplicate File",
-        icon_name: "duplicate",
-        click_handler: props.duplicate_file
-      }, {
-        name_text: "Create Directory",
-        icon_name: "folder-close",
-        click_handler: props.add_directory
-      }, {
-        name_text: "Delete Resource",
-        icon_name: "trash",
-        click_handler: props.delete_func
-      }],
-      Transfer: [{
-        name_text: "Show Import Dialog",
-        icon_name: "cloud-upload",
-        click_handler: props.showPoolImport
-      }, {
-        name_text: "Download File",
-        icon_name: "download",
-        click_handler: props.download_file
-      }]
-    };
-    if (!window.on_aws) {
-      mspec["Archive"] = [{
-        name_text: "Compress Resource",
-        icon_name: "archive",
-        click_handler: props.compress_file
-      }, {
-        name_text: "Decompress Archive",
-        icon_name: "unarchive",
-        click_handler: props.decompress_archive
-      }];
-    }
-    return mspec;
-  }
-  return /*#__PURE__*/_react["default"].createElement(_library_menubars.LibraryMenubar, {
-    sendContextMenuItems: props.sendContextMenuItems,
-    connection_status: props.connection_status,
-    context_menu_items: context_menu_items(),
-    selected_rows: props.selected_rows,
-    selectedTypeRef: selectedTypeRef,
-    selected_resource: props.selected_resource,
-    resource_icon: _combined_metadata.icon_dict["pool"],
-    menu_specs: menu_specs(),
-    multi_select: props.multi_select,
-    controlled: props.controlled,
-    am_selected: props.am_selected,
-    tsocket: props.tsocket,
-    showRefresh: true,
-    refreshTab: props.refreshFunc,
-    closeTab: null,
-    resource_name: ""
-  });
-}
-PoolMenubar = /*#__PURE__*/(0, _react.memo)(PoolMenubar);

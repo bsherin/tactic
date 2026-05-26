@@ -15,6 +15,7 @@ var _utilities_react = require("./utilities_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _metadata_drawer = require("./metadata_drawer");
+var _pool_drawer = require("./pool_drawer");
 var _sizing_tools = require("./sizing_tools");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t in e) "default" !== _t && {}.hasOwnProperty.call(e, _t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t)) && (i.get || i.set) ? o(f, _t, i) : f[_t] = e[_t]); return f; })(e, t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -33,21 +34,6 @@ var name_style = {
   display: "flex",
   alignItems: "center",
   fontWeight: "bold"
-};
-var top_icon_style = {
-  display: "flex",
-  justifyContent: "flex-end",
-  marginTop: 0,
-  paddingTop: 3,
-  marginRight: 10
-};
-var button_group_style = {
-  position: "absolute",
-  right: 10
-};
-var chat_status_style = {
-  marginRight: 7,
-  paddingTop: 7
 };
 function TacticMenubar(props) {
   props = _objectSpread({
@@ -141,6 +127,7 @@ function TacticMenubar(props) {
     showErrorDrawerButton: props.showErrorDrawerButton,
     showAssistantDrawerButton: props.showAssistantDrawerButton,
     showMetadataDrawerButton: props.showMetadataDrawerButton,
+    showPoolDrawerButton: props.showPoolDrawerButton,
     showSettingsDrawerButton: props.showSettingsDrawerButton
   }));
 }
@@ -170,6 +157,7 @@ function IconBar(props) {
   var assistantDrawerFuncs = (0, _react.useContext)(_assistant.AssistantContext);
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var metadataContext = (0, _react.useContext)(_metadata_drawer.MetadataContext);
+  var poolDrawerFuncs = (0, _react.useContext)(_pool_drawer.PoolDrawerContext);
   return /*#__PURE__*/_react["default"].createElement("div", {
     className: "verticalIconBar",
     style: IconBarStyle
@@ -182,6 +170,7 @@ function IconBar(props) {
         metadataContext.hideMetadata();
       }
       assistantDrawerFuncs.closeAssistantDrawer();
+      poolDrawerFuncs.closeDrawer();
     }
   }), props.showErrorDrawerButton && /*#__PURE__*/_react["default"].createElement(IconBarButton, {
     icon: "bug",
@@ -192,6 +181,7 @@ function IconBar(props) {
       }
       settingsContext.setShowSettingsDrawer(false);
       assistantDrawerFuncs.closeAssistantDrawer();
+      poolDrawerFuncs.closeDrawer();
     }
   }), window.has_openapi_key && props.showAssistantDrawerButton && assistantDrawerFuncs && props.showAssistantDrawerButton && /*#__PURE__*/_react["default"].createElement(IconBarButton, {
     icon: "chat",
@@ -202,6 +192,7 @@ function IconBar(props) {
         metadataContext.hideMetadata();
       }
       settingsContext.setShowSettingsDrawer(false);
+      poolDrawerFuncs.closeDrawer();
     }
   }), props.showMetadataDrawerButton && /*#__PURE__*/_react["default"].createElement(IconBarButton, {
     icon: "list-columns",
@@ -210,6 +201,18 @@ function IconBar(props) {
       errorDrawerFuncs.closeErrorDrawer();
       settingsContext.setShowSettingsDrawer(false);
       assistantDrawerFuncs.closeAssistantDrawer();
+      poolDrawerFuncs.closeDrawer();
+    }
+  }), props.showPoolDrawerButton && /*#__PURE__*/_react["default"].createElement(IconBarButton, {
+    icon: "folder-close",
+    onClick: function onClick() {
+      poolDrawerFuncs.toggleDrawer();
+      errorDrawerFuncs.closeErrorDrawer();
+      settingsContext.setShowSettingsDrawer(false);
+      assistantDrawerFuncs.closeAssistantDrawer();
+      if (props.showMetadataDrawerButton) {
+        metadataContext.hideMetadata();
+      }
     }
   }));
 }
@@ -226,73 +229,52 @@ function IconBarButton(props) {
     onClick: props.onClick
   });
 }
-function ErrorDrawerButton(props) {
+function ErrorDrawerButton() {
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  return (
-    /*#__PURE__*/
-    // <div style={top_icon_style}>
-    _react["default"].createElement(_core.Button, {
-      icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "bug",
-        size: 18
-      })
-      //style={{paddingLeft: 4, paddingRight: 0}}
-      ,
-      className: "context-close-button",
-      text: "Errors",
-      tabIndex: -1,
-      onClick: function onClick() {
-        errorDrawerFuncs.toggleErrorDrawer();
-      }
-    })
-    // </div>
-  );
+  return /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      icon: "bug",
+      size: 18
+    }),
+    className: "context-close-button",
+    text: "Errors",
+    tabIndex: -1,
+    onClick: function onClick() {
+      errorDrawerFuncs.toggleErrorDrawer();
+    }
+  });
 }
 ErrorDrawerButton = /*#__PURE__*/(0, _react.memo)(ErrorDrawerButton);
-function AssistantDrawerButton(props) {
+function AssistantDrawerButton() {
   var assistantDrawerFuncs = (0, _react.useContext)(_assistant.AssistantContext);
-  return (
-    /*#__PURE__*/
-    //div style={top_icon_style}>
-    _react["default"].createElement(_core.Button, {
-      icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "chat",
-        size: 18
-      })
-      //style={{paddingLeft: 4, paddingRight: 0}}
-      ,
-      minimal: false,
-      className: "context-close-button",
-      text: "Assistant",
-      tabIndex: -1,
-      onClick: function onClick() {
-        assistantDrawerFuncs.toggleAssistantDrawer();
-      }
-    })
-    //</div>
-  );
+  return /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      icon: "chat",
+      size: 18
+    }),
+    variant: "minimal",
+    className: "context-close-button",
+    text: "Assistant",
+    tabIndex: -1,
+    onClick: function onClick() {
+      assistantDrawerFuncs.toggleAssistantDrawer();
+    }
+  });
 }
 AssistantDrawerButton = /*#__PURE__*/(0, _react.memo)(AssistantDrawerButton);
 function MetadataDrawerButton(props) {
-  return (
-    /*#__PURE__*/
-    //<div style={top_icon_style}>
-    _react["default"].createElement(_core.Button, {
-      icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
-        icon: "list-columns",
-        size: 18
-      })
-      //style={{paddingLeft: 4, paddingRight: 0}}
-      ,
-      className: "context-close-button",
-      text: "Metadata",
-      tabIndex: -1,
-      onClick: function onClick() {
-        props.showMetadata();
-      }
-    })
-    //</div>
-  );
+  return /*#__PURE__*/_react["default"].createElement(_core.Button, {
+    icon: /*#__PURE__*/_react["default"].createElement(_core.Icon, {
+      icon: "list-columns",
+      size: 18
+    }),
+    className: "context-close-button",
+    text: "Metadata",
+    tabIndex: -1,
+    onClick: function onClick() {
+      props.showMetadata();
+    }
+  });
 }
 MetadataDrawerButton = /*#__PURE__*/(0, _react.memo)(MetadataDrawerButton);
 function TopLeftButtons(props) {
@@ -492,7 +474,6 @@ function ToolMenu(props) {
   props = _objectSpread({
     disabled_items: []
   }, props);
-  var selectedPane = (0, _react.useContext)(_utilities_react.SelectedPaneContext);
   function option_dict() {
     var opt_dict = {};
     var _iterator3 = _createForOfIteratorHelper(props.menu_items),

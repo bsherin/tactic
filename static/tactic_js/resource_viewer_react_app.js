@@ -213,7 +213,8 @@ function ResourceViewerApp(props) {
     showMetadataDrawerButton: false,
     showAssistantDrawerButton: true,
     showErrorDrawerButton: true,
-    showSettingsDrawerButton: true
+    showSettingsDrawerButton: true,
+    showPoolDrawerButton: true
   }), /*#__PURE__*/_react["default"].createElement("div", {
     ref: top_ref,
     className: "resource-viewer-hp-holder",

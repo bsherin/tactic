@@ -114,7 +114,8 @@ function LibraryMenubar(props) {
     showErrorDrawerButton: true,
     showMetadataDrawerButton: false,
     showAssistantDrawerButton: true,
-    showSettingsDrawerButton: true
+    showSettingsDrawerButton: true,
+    showPoolDrawerButton: true
   });
 }
 exports.LibraryMenubar = LibraryMenubar = /*#__PURE__*/(0, _react.memo)(LibraryMenubar);

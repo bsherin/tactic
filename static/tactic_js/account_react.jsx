@@ -8,14 +8,14 @@ import { createRoot } from 'react-dom/client';
 import { Button } from "@blueprintjs/core";
 
 import {doFlash} from "./toaster"
-import {postPromise, postAjax} from "./communication_react";
+import {postPromise, postAjax, handleCallback} from "./communication_react";
 
 import {guid, useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 
 import {withSettings, SettingsContext} from "./settings";
 
-import {AccountTextField, AccountSelectField} from "./account_fields";
+import {AccountTextField, AccountSelectField, AccountAddressSelectField} from "./account_fields";
 import {TacticSocket, useSocketListener} from "./tactic_socket";
 import {DialogContext} from "./modal_react";
 
@@ -25,7 +25,10 @@ function _account_main() {
     if (window._show_message) doFlash(window._message);
     const domContainer = document.querySelector('#root');
     const root = createRoot(domContainer);
-    let tsocket = new TacticSocket("main", 5000, "code_viewer", window.global_id, async ()=> {
+    let tsocket = new TacticSocket("main", 5000, "account_interface", window.global_id, async ()=> {
+        tsocket.attachListener('handle-callback', (task_packet) => {
+            handleCallback(task_packet, window.global_id)
+        });
         let AccountAppPlus = withRegisterActivity(withSettings(AccountApp));
         let the_element = <AccountAppPlus controlled={false} tsocket={tsocket}/>;
         root.render(
@@ -188,6 +191,17 @@ function AccountApp(props) {
                                       onBlur={_submitUpdatedField}
                                       onFieldChange={_onFieldChange}/>)
             }
+            else if (fdict.type == "pool_select") {
+                new_item = (
+                    <AccountAddressSelectField
+                                        name={fdict.name}
+                                        key={fdict.name}
+                                        tsocket={props.tsocket}
+                                        value={fdict.val}
+                                        display_text={fdict.display_text}
+                                        helper_text={fdict.helper_text}
+                                        onFieldChange={_onFieldChange}/>)
+            }
             else {
                 new_item = (
                     <AccountSelectField name={fdict.name}
@@ -216,7 +230,6 @@ function AccountApp(props) {
         else {
             outer_class = outer_class + " light-theme"
         }
-        let self = this;
         return (
             <Fragment>
                 <TacticNavbar is_authenticated={window.is_authenticated}

@@ -1518,6 +1518,7 @@ function CreatorApp(props) {
                            showMetadataDrawerButton={false}
                            showAssistantDrawerButton={true}
                            showSettingsDrawerButton={true}
+                           showPoolDrawerButton={true}
                            controlled={props.controlled}
             />
             <ErrorBoundary custom_message="Error outside context provider">

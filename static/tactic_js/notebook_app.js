@@ -339,7 +339,8 @@ function NotebookApp(props) {
     showErrorDrawerButton: true,
     showMetadataDrawerButton: true,
     showAssistantDrawerButton: true,
-    showSettingsDrawerButton: true
+    showSettingsDrawerButton: true,
+    showPoolDrawerButton: true
   }), /*#__PURE__*/_react["default"].createElement(_resizing_allotment.HorizontalPanes, {
     left_pane: console_pane,
     right_pane: exports_pane,

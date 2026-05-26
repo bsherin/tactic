@@ -21,6 +21,7 @@ var _settings = require("./settings");
 var _library_widgets = require("./library_widgets");
 var _error_drawer = require("./error_drawer");
 var _tactic_socket = require("./tactic_socket");
+var _pool_browser = require("./pool_browser");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t4 in e) "default" !== _t4 && {}.hasOwnProperty.call(e, _t4) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t4)) && (i.get || i.set) ? o(f, _t4, i) : f[_t4] = e[_t4]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -539,7 +540,7 @@ function PoolTree(props) {
       var node = nodeFromPath(props.currentRootPath, nodes_ref.current[0]);
       handleNodeExpand(node).then(function () {});
     }
-  }, [props.currentRootPath]);
+  }, [props.currentRootPath, nodes_ref.current.length]);
   (0, _react.useEffect)(function () {
     if (props.value && nodes_ref.current.length > 0) {
       expandToNode(props.value).then(function () {});
@@ -576,10 +577,12 @@ function PoolTree(props) {
             (0, _toaster.doFlash)("Error getting pool Tree");
             return _context.a(2);
           case 2:
-            data["dtree"][0].isExpanded = true;
-            props.setRoot({
-              fullpath: data["dtree"][0].fullpath
-            });
+            if (!props.currentRootPath) {
+              data["dtree"][0].isExpanded = true;
+              props.setRoot({
+                fullpath: data["dtree"][0].fullpath
+              });
+            }
             dispatch({
               type: "REPLACE_ALL",
               new_nodes: data["dtree"]
@@ -1065,6 +1068,10 @@ function PoolTree(props) {
   function _update_search_state(new_state) {
     setSearchString(new_state.search_string);
   }
+  var cname = "pool-search-form";
+  if (props.showSecondaryLabel) {
+    cname += " pool-search-form-responsive";
+  }
   return /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.ContextMenuPopover, {
     onClose: function onClose() {
       setShowContextMenu(false);
@@ -1077,9 +1084,10 @@ function PoolTree(props) {
     isDarkTheme: settingsContext.isDark(),
     targetOffset: contextMenuTarget
   }), /*#__PURE__*/_react["default"].createElement("div", {
+    className: cname,
     style: {
       paddingLeft: 10,
-      paddingTop: 10,
+      paddingTop: 0,
       display: "flex",
       flexDirection: "row",
       justifyContent: "space-between"
@@ -1090,10 +1098,7 @@ function PoolTree(props) {
     update_search_state: _update_search_state,
     search_string: searchStringRef.current
   }), /*#__PURE__*/_react["default"].createElement("div", {
-    style: {
-      display: "flex",
-      marginLeft: 15
-    }
+    className: "pool-button-holder"
   }, /*#__PURE__*/_react["default"].createElement(_core.HTMLSelect, {
     options: ["name", "size", "updated"],
     className: "tree-sort-select",
@@ -1118,7 +1123,6 @@ function PoolTree(props) {
     sortField: sortBy,
     sortDirection: sortDirection,
     showSecondaryLabel: props.showSecondaryLabel,
-    className: "pool-select-tree",
     handleDrop: props.handleDrop,
     onNodeContextMenu: props.renderContextMenu ? displayContextMenu : null,
     onNodeClick: handleNodeClick,
@@ -1158,13 +1162,14 @@ function PoolAddressSelector(props) {
     _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
     setCurrentRootPath = _useStateAndRef6[1],
     currentRootPathRef = _useStateAndRef6[2];
-  function setRoot() {
-    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-    setCurrentRootPath(node.fullpath);
-  }
+  var clickTimerRef = (0, _react.useRef)(null);
+  var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   (0, _react.useEffect)(function () {
     window.addEventListener("resize", resizePopover);
     setRefAcquired(false);
+    if (!props.value || props.value.includes(settingsContext.settings.workingDirectory)) {
+      setCurrentRootPath(settingsContext.settings.workingDirectory);
+    }
     return function () {
       window.removeEventListener("resize", resizePopover);
     };
@@ -1172,6 +1177,13 @@ function PoolAddressSelector(props) {
   (0, _react.useEffect)(function () {
     resizePopover();
   }, [refAcquired]);
+  (0, _react.useEffect)(function () {
+    return function () {
+      if (clickTimerRef.current != null) {
+        clearTimeout(clickTimerRef.current);
+      }
+    };
+  }, []);
   function resizePopover() {
     if (pop_ref.current) {
       var max_height = window.innerHeight - pop_ref.current.offsetTop - 25;
@@ -1179,9 +1191,24 @@ function PoolAddressSelector(props) {
     }
   }
   function handleNodeClick(node) {
-    props.setValue(node.fullpath);
-    setIsOpen(false);
-    return true;
+    if (clickTimerRef.current != null) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    clickTimerRef.current = setTimeout(function () {
+      clickTimerRef.current = null;
+      props.setValue(node.fullpath);
+      setIsOpen(false);
+      return true;
+    }, 250);
+  }
+  function setRoot() {
+    var node = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    if (clickTimerRef.current != null) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    setCurrentRootPath(node.fullpath);
   }
   function onInteract(next_state, e) {
     if (e && e.currentTarget == document) {
@@ -1195,6 +1222,14 @@ function PoolAddressSelector(props) {
     button_text = getBasename(props.value);
   }
   var tree_element = /*#__PURE__*/_react["default"].createElement("div", {
+    style: {
+      paddingTop: 10
+    }
+  }, /*#__PURE__*/_react["default"].createElement(_pool_browser.PoolBreadcrumbs, {
+    crumbSize: "small",
+    path: currentRootPathRef.current,
+    setRoot: setRoot
+  }), /*#__PURE__*/_react["default"].createElement("div", {
     style: {
       maxHeight: maxPopoverHeightRef.current,
       overflowY: "scroll"
@@ -1213,7 +1248,7 @@ function PoolAddressSelector(props) {
     showSecondaryLabel: false,
     handleDrop: null,
     handleNodeClick: handleNodeClick
-  }));
+  })));
   return /*#__PURE__*/_react["default"].createElement(_core.Popover, {
     popoverRef: pop_ref,
     isOpen: isOpen,
@@ -1367,8 +1402,12 @@ function CustomTree(props) {
         return tnode;
       }
     });
+    var cname = "pool-select-tree";
+    if (props.showSecondaryLabel) {
+      cname += " pool-select-tree-responsive";
+    }
     return /*#__PURE__*/_react["default"].createElement("ul", {
-      className: "bp6-tree-node-list ".concat(props.className)
+      className: "bp6-tree-node-list ".concat(cname)
     }, nodeItems);
   }
   function getNodeFromPath(fullpath, nodes) {

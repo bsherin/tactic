@@ -81,6 +81,7 @@ function LibraryMenubar(props) {
                           showMetadataDrawerButton={false}
                           showAssistantDrawerButton={true}
                           showSettingsDrawerButton={true}
+                          showPoolDrawerButton={true}
     />
 }
 

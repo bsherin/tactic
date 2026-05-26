@@ -9,6 +9,7 @@ import {SelectedPaneContext} from "./utilities_react";
 import {ErrorDrawerContext} from "./error_drawer";
 import {AssistantContext} from "./assistant";
 import {MetadataContext} from "./metadata_drawer";
+import {PoolDrawerContext} from "./pool_drawer";
 
 import {ICON_BAR_WIDTH} from "./sizing_tools";
 
@@ -21,24 +22,6 @@ const name_style = {
     display: "flex",
     alignItems: "center",
     fontWeight: "bold"
-};
-
-let top_icon_style = {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginTop: 0,
-    paddingTop: 3,
-    marginRight: 10,
-};
-
-const button_group_style = {
-    position: "absolute",
-    right: 10
-};
-
-const chat_status_style = {
-    marginRight: 7,
-    paddingTop: 7
 };
 
 function TacticMenubar(props) {
@@ -120,6 +103,7 @@ function TacticMenubar(props) {
                 <IconBar showErrorDrawerButton={props.showErrorDrawerButton}
                          showAssistantDrawerButton={props.showAssistantDrawerButton}
                          showMetadataDrawerButton={props.showMetadataDrawerButton}
+                         showPoolDrawerButton={props.showPoolDrawerButton}
                          showSettingsDrawerButton={props.showSettingsDrawerButton}/>
             }
         </Navbar>
@@ -153,6 +137,7 @@ function IconBar(props) {
     const assistantDrawerFuncs = useContext(AssistantContext);
     const settingsContext = useContext(SettingsContext);
     const metadataContext = useContext(MetadataContext);
+    const poolDrawerFuncs = useContext(PoolDrawerContext);
     return (
     <div className="verticalIconBar" style={IconBarStyle}>
             {props.showSettingsDrawerButton &&
@@ -162,7 +147,8 @@ function IconBar(props) {
                     if (props.showMetadataDrawerButton) {
                         metadataContext.hideMetadata()
                     }
-                    assistantDrawerFuncs.closeAssistantDrawer()
+                    assistantDrawerFuncs.closeAssistantDrawer();
+                    poolDrawerFuncs.closeDrawer();
                 }}/>
             }
            {props.showErrorDrawerButton &&
@@ -172,7 +158,8 @@ function IconBar(props) {
                         metadataContext.hideMetadata()
                     }
                     settingsContext.setShowSettingsDrawer(false);
-                    assistantDrawerFuncs.closeAssistantDrawer()
+                    assistantDrawerFuncs.closeAssistantDrawer();
+                    poolDrawerFuncs.closeDrawer();
                 }}/>
             }
             {window.has_openapi_key && props.showAssistantDrawerButton && assistantDrawerFuncs && props.showAssistantDrawerButton &&
@@ -183,6 +170,7 @@ function IconBar(props) {
                         metadataContext.hideMetadata()
                     }
                     settingsContext.setShowSettingsDrawer(false);
+                    poolDrawerFuncs.closeDrawer();
                 }}/>
             }
             {props.showMetadataDrawerButton &&
@@ -190,7 +178,19 @@ function IconBar(props) {
                     metadataContext.toggleMetadata();
                     errorDrawerFuncs.closeErrorDrawer();
                     settingsContext.setShowSettingsDrawer(false);
+                    assistantDrawerFuncs.closeAssistantDrawer();
+                    poolDrawerFuncs.closeDrawer();
+                }}/>
+            }
+            {props.showPoolDrawerButton &&
+                <IconBarButton icon="folder-close" onClick={() => {
+                    poolDrawerFuncs.toggleDrawer();
+                    errorDrawerFuncs.closeErrorDrawer();
+                    settingsContext.setShowSettingsDrawer(false);
                     assistantDrawerFuncs.closeAssistantDrawer()
+                    if (props.showMetadataDrawerButton) {
+                        metadataContext.hideMetadata()
+                    }
                 }}/>
             }
         </div>
@@ -206,12 +206,10 @@ function IconBarButton(props) {
     )
 }
 
-function ErrorDrawerButton(props) {
+function ErrorDrawerButton() {
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
     return (
-        // <div style={top_icon_style}>
         <Button icon={<Icon icon="bug" size={18}/>}
-            //style={{paddingLeft: 4, paddingRight: 0}}
                 className="context-close-button"
                 text="Errors"
                 tabIndex={-1}
@@ -219,19 +217,16 @@ function ErrorDrawerButton(props) {
                     errorDrawerFuncs.toggleErrorDrawer()
                 }}
         />
-        // </div>
     )
 }
 
 ErrorDrawerButton = memo(ErrorDrawerButton);
 
-function AssistantDrawerButton(props) {
+function AssistantDrawerButton() {
     const assistantDrawerFuncs = useContext(AssistantContext);
     return (
-        //div style={top_icon_style}>
         <Button icon={<Icon icon="chat" size={18}/>}
-            //style={{paddingLeft: 4, paddingRight: 0}}
-                minimal={false}
+                variant="minimal"
                 className="context-close-button"
                 text={"Assistant"}
                 tabIndex={-1}
@@ -239,7 +234,6 @@ function AssistantDrawerButton(props) {
                     assistantDrawerFuncs.toggleAssistantDrawer()
                 }}
         />
-        //</div>
     )
 }
 
@@ -247,17 +241,14 @@ AssistantDrawerButton = memo(AssistantDrawerButton);
 
 function MetadataDrawerButton(props) {
     return (
-        //<div style={top_icon_style}>
         <Button icon={<Icon icon="list-columns" size={18}/>}
-            //style={{paddingLeft: 4, paddingRight: 0}}
-                className="context-close-button"
-                text={"Metadata"}
-                tabIndex={-1}
-                onClick={() => {
-                    props.showMetadata()
-                }}
+            className="context-close-button"
+            text={"Metadata"}
+            tabIndex={-1}
+            onClick={() => {
+                props.showMetadata()
+            }}
         />
-        //</div>
     )
 }
 
@@ -456,7 +447,6 @@ function ToolMenu(props) {
         disabled_items: [],
         ...props
     };
-    const selectedPane = useContext(SelectedPaneContext);
 
     function option_dict() {
         let opt_dict = {};

@@ -147,6 +147,12 @@ table {
     z-index: 10
   }
 
+.settings-drawer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: start !important;
+}
+
   .iconBarButton {
     //margin-bottom: 10px;
   }

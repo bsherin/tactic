@@ -1220,6 +1220,7 @@ function MainApp(props) {
                                    showMetadataDrawerButton={true}
                                    showAssistantDrawerButton={true}
                                    showSettingsDrawerButton={true}
+                                   showPoolDrawerButton={true}
                                    extraButtons={extra_menubar_buttons}
                     />
 
