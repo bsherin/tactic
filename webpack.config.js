@@ -55,7 +55,9 @@ module.exports = (env, argv) => {
                         path.resolve(__dirname, 'node_modules/codemirror'),
                         path.resolve(__dirname, 'node_modules/markdown-it-latex'),
                         path.resolve(__dirname, 'node_modules/highlight.js'),
-                        path.resolve(__dirname, 'node_modules/allotment')
+                        path.resolve(__dirname, 'node_modules/allotment'),
+                        path.resolve(__dirname, 'node_modules/react-grid-layout'),
+                        path.resolve(__dirname, 'node_modules/react-resizable')
                         ],
                     use: [
                         MiniCssExtractPlugin.loader,

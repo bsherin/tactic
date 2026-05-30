@@ -7,10 +7,14 @@ import {SettingsContext} from "./settings";
 import {useSocketListener} from "./tactic_socket";
 
 import {TileComponent} from "./tile_component";
+import {GridTileContainer} from "./grid_container";
 
 export {TileContainer}
 
 function TileContainer(props) {
+    props = {
+        ...props
+    }
 
     const settingsContext = useContext(SettingsContext);
     const [dragging, setDragging] = useState(false);
@@ -163,6 +167,17 @@ function TileContainer(props) {
         })
     }
 
+    const setGridLayout = useCallback((layout) => {
+          const layoutById = Object.fromEntries(
+            layout.map(item => [item.i, item])
+          );
+
+          props.tileDispatch({
+            type: "change_items_grid_layout",
+            layoutById
+          });
+        }, [props.tileDispatch]);
+
     function beforeCapture(_,) {
         setDragging(true)
     }
@@ -185,6 +200,25 @@ function TileContainer(props) {
     const TailoredTileComponent = useMemo(() => {
         return makeTailoredTileComponent();
     }, []);
+
+    if (props.table_is_shrunk && settingsContext && settingsContext.settingsRef.current.float_tiles == "yes") {
+          return (
+            <GridTileContainer
+              className="tile-div tile-container-grid"
+              ElementComponent={TailoredTileComponent}
+              item_list={_.cloneDeep(props.tile_list.current)}
+              setGridLayout={setGridLayout}
+              tileDispatch={props.tileDispatch}
+              setTileState={_setTileState}
+              extraProps={{
+                dragging,
+                current_doc_name: props.current_doc_name,
+                selected_row: props.selected_row,
+                table_is_shrunk: props.table_is_shrunk
+              }}
+            />
+          );
+        }
 
     return (
         <SortableComponent className={props.table_is_shrunk ? "tile-div tile-container-float" : "tile-div"}

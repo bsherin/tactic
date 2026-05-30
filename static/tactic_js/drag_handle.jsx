@@ -95,6 +95,7 @@ function DragHandle(props) {
 
     return (
         <DndContext
+            autoScroll={false}
             onDragStart={handleDragStart}
             onDragMove={handleDragMove}
             onDragEnd={handleDragEnd}>

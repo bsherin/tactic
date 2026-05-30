@@ -364,7 +364,8 @@ function MainApp(props) {
             log_content: "",
             shrunk: false,
             loading_status: "waiting",
-            front_content: ""
+            front_content: "",
+            tile_z: 1,
         }
     }
 

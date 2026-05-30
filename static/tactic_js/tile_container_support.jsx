@@ -1,6 +1,8 @@
-
 import {arrayMove} from "./utilities_react"
 import {guid} from "./utilities_react"
+
+import {GRID_COLS} from "./grid_container";
+import {tileHeightToGridH, ensureGridLayout} from "./grid_container";
 
 export {tilesReducer}
 
@@ -9,15 +11,13 @@ function fixFrontContentRecursively(front_content) {
 
     if (typeof front_content == "string") {
         front_list.push({widgetId: guid(), widgetKind: "rawHtml", widgetData: {value: front_content}});
-    }
-    else if (!Array.isArray(front_content)) {
+    } else if (!Array.isArray(front_content)) {
         let new_content = {...front_content};
         if ("widgets" in new_content.widgetData) {
             new_content.widgetData.widgets = fixFrontContentRecursively(new_content.widgetData.widgets);
         }
         front_list.push(new_content);
-    }
-    else {
+    } else {
         front_list = front_content.map((wdict) => {
             if ("widgets" in wdict.widgetData) {
                 let new_content = {...wdict};
@@ -44,8 +44,7 @@ function recursivelySetWidgetData(widgetList, widgetId, widgetData) {
                 new_d.widgetData.widgets = recursivelySetWidgetData(new_d.widgetData.widgets, widgetId, widgetData);
             }
             return new_d
-        }
-        else {
+        } else {
             if ("widgets" in new_d.widgetData) {
                 new_d.widgetData.widgets = recursivelySetWidgetData(new_d.widgetData.widgets, widgetId, widgetData);
             }
@@ -59,11 +58,11 @@ function tilesReducer(tile_list, action) {
     let new_items;
     switch (action.type) {
         case "initialize":
-            new_items = action.new_items.map(t => {
-                let new_t = {...t};
-                new_t = fixTileFrontContent(new_t);
-                new_t.tile_id = "temp_" + new_t.tile_id;
-                return new_t;
+            new_items = action.new_items.map((tile, i) => {
+              let new_t = {...tile};
+              new_t = fixTileFrontContent(new_t);
+              new_t.tile_id = "temp_" + new_t.tile_id;
+              return ensureGridLayout(new_t, i);
             });
             break;
         case "delete_item":
@@ -102,6 +101,21 @@ function tilesReducer(tile_list, action) {
             });
             break;
 
+        case "change_items_grid_layout":
+            new_items = tile_list.map(tile => {
+                const item = action.layoutById[tile.tile_id];
+                if (!item) return tile;
+
+                return {
+                    ...tile,
+                    grid_x: item.x,
+                    grid_y: item.y,
+                    grid_w: item.w,
+                    grid_h: item.h,
+                };
+            });
+            break;
+
         case "change_items_value":  // Only used to mark source change
             new_items = tile_list.map(t => {
                 if (action.id_list.includes(t.tile_id)) {
@@ -113,6 +127,20 @@ function tilesReducer(tile_list, action) {
                 }
             });
             break;
+
+        case "bring_tile_to_front": {
+            const maxZ = Math.max(
+                1,
+                ...tile_list.map(t => t.tile_z ?? 1)
+            );
+
+            new_items = tile_list.map(t =>
+                t.tile_id === action.tile_id
+                    ? {...t, tile_z: maxZ + 1}
+                    : t
+            );
+            break;
+        }
 
         case "update_widget_data":
             new_items = tile_list.map(t => {
@@ -130,9 +158,23 @@ function tilesReducer(tile_list, action) {
             let old_list = [...tile_list];
             new_items = arrayMove(old_list, action.oldIndex, action.newIndex);
             break;
+
         case "add_at_index":
             new_items = [...tile_list];
+            const maxZ = Math.max(
+                1,
+                ...tile_list.map(t => t.tile_z ?? 1)
+            );
             let new_item = fixTileFrontContent(action.new_item);
+            new_item = {
+                ...new_item,
+                i: new_item.tile_id,
+                grid_x: (action.insert_index * 4) % GRID_COLS,
+                grid_y: Math.floor((action.insert_index * 4) / GRID_COLS) * 4,
+                grid_w: 8,
+                grid_h: tileHeightToGridH(new_item.tile_height),
+                tile_z: maxZ + 1
+            };
             new_items.splice(action.insert_index, 0, new_item);
             break;
         default:

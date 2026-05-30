@@ -65,6 +65,8 @@ function TileComponent(props) {
         max_console_lines: 100,
         memory_usage: 0,
         memory_limit: null,
+        onTileResizeLive: null,
+        onTileResizeStop: null,
         ...props
     };
 
@@ -73,6 +75,7 @@ function TileComponent(props) {
     const inner_log_ref = useRef(null);
     const tda_ref = useRef(null);
     const log_ref = useRef(null);
+    const resize_start_ref = useRef(null);
 
     const last_front_content = useRef("");
 
@@ -409,7 +412,8 @@ function TileComponent(props) {
         postWithCallback(props.tile_id, "LogParams", data_dict, null, null, props.local_id)
     }
 
-    function _startResize() {
+    function _startResize(e) {
+        props.onTileResizeStart?.();
         set_resizing(true);
         set_dwidth(0);
         set_dheight(0);
@@ -418,15 +422,27 @@ function TileComponent(props) {
     function _onResize(e, ui, x, y, dx, dy) {
         set_dwidth(dx);
         set_dheight(dy);
+        props.onTileResizeLive?.(props.tile_id, {
+            width: Math.max(MIN_TILE_WIDTH, props.tile_width + dx),
+            height: Math.max(MIN_TILE_HEIGHT, props.tile_height + dy),
+        });
     }
 
     function _stopResize(e, ui, x, y, dx, dy) {
         set_resizing(false);
         set_dwidth(0);
         set_dheight(0);
-        pushCallback(() => {
-            _resizeTileArea(dx, dy)
-        })
+
+        const width = Math.max(MIN_TILE_WIDTH, props.tile_width + dx);
+        const height = Math.max(MIN_TILE_HEIGHT, props.tile_height + dy);
+
+        if (props.layout_mode === "grid") {
+            props.onTileResizeStop?.(props.tile_id, {width, height});
+        } else {
+            pushCallback(() => {
+                _resizeTileArea(dx, dy);
+            });
+        }
     }
 
     let show_front = (!props.show_form) && (!props.show_log);
@@ -506,7 +522,8 @@ function TileComponent(props) {
         //     main_style.opacity = .5
         // }
     return (
-        <Card ref={my_ref} elevation={2} style={main_style} className="tile-panel" id={props.tile_id}>
+        <Card ref={my_ref} elevation={2} style={main_style} className="tile-panel"
+              id={props.tile_id} onMouseDownCapture={props.onBringToFront}>
             <ErrorBoundary>
                 <div className={props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading"}
                      style={{display: "flex",  paddingRight: 10,
@@ -555,7 +572,6 @@ function TileComponent(props) {
                                         {props.loading_status}
                                     </span>
                             }
-
                             <MenuComponent
                                 option_dict={tile_menu_options}
                                 icon_dict={menu_icons}

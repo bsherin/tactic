@@ -77,13 +77,16 @@ function TileComponent(props) {
     log_since: null,
     max_console_lines: 100,
     memory_usage: 0,
-    memory_limit: null
+    memory_limit: null,
+    onTileResizeLive: null,
+    onTileResizeStop: null
   }, props);
   var my_ref = (0, _react.useRef)(null);
   var body_ref = (0, _react.useRef)(null);
   var inner_log_ref = (0, _react.useRef)(null);
   var tda_ref = (0, _react.useRef)(null);
   var log_ref = (0, _react.useRef)(null);
+  var resize_start_ref = (0, _react.useRef)(null);
   var last_front_content = (0, _react.useRef)("");
   var _useState = (0, _react.useState)(34),
     _useState2 = _slicedToArray(_useState, 2),
@@ -551,22 +554,39 @@ function TileComponent(props) {
     data_dict["tile_name"] = props.tile_name;
     (0, _communication_react.postWithCallback)(props.tile_id, "LogParams", data_dict, null, null, props.local_id);
   }
-  function _startResize() {
+  function _startResize(e) {
+    var _props$onTileResizeSt, _props;
+    (_props$onTileResizeSt = (_props = props).onTileResizeStart) === null || _props$onTileResizeSt === void 0 || _props$onTileResizeSt.call(_props);
     set_resizing(true);
     set_dwidth(0);
     set_dheight(0);
   }
   function _onResize(e, ui, x, y, dx, dy) {
+    var _props$onTileResizeLi, _props2;
     set_dwidth(dx);
     set_dheight(dy);
+    (_props$onTileResizeLi = (_props2 = props).onTileResizeLive) === null || _props$onTileResizeLi === void 0 || _props$onTileResizeLi.call(_props2, props.tile_id, {
+      width: Math.max(MIN_TILE_WIDTH, props.tile_width + dx),
+      height: Math.max(MIN_TILE_HEIGHT, props.tile_height + dy)
+    });
   }
   function _stopResize(e, ui, x, y, dx, dy) {
     set_resizing(false);
     set_dwidth(0);
     set_dheight(0);
-    pushCallback(function () {
-      _resizeTileArea(dx, dy);
-    });
+    var width = Math.max(MIN_TILE_WIDTH, props.tile_width + dx);
+    var height = Math.max(MIN_TILE_HEIGHT, props.tile_height + dy);
+    if (props.layout_mode === "grid") {
+      var _props$onTileResizeSt2, _props3;
+      (_props$onTileResizeSt2 = (_props3 = props).onTileResizeStop) === null || _props$onTileResizeSt2 === void 0 || _props$onTileResizeSt2.call(_props3, props.tile_id, {
+        width: width,
+        height: height
+      });
+    } else {
+      pushCallback(function () {
+        _resizeTileArea(dx, dy);
+      });
+    }
   }
   var show_front = !props.show_form && !props.show_log;
   var outputWidgets = props.front_content.map(function (outputDict, idx) {
@@ -683,7 +703,8 @@ function TileComponent(props) {
     elevation: 2,
     style: main_style,
     className: "tile-panel",
-    id: props.tile_id
+    id: props.tile_id,
+    onMouseDownCapture: props.onBringToFront
   }, /*#__PURE__*/_react["default"].createElement(_error_boundary.ErrorBoundary, null, /*#__PURE__*/_react["default"].createElement("div", {
     className: props.source_changed ? "tile-panel-heading tile-source-changed" : "tile-panel-heading",
     style: {

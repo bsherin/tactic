@@ -438,7 +438,8 @@ function MainApp(props) {
       log_content: "",
       shrunk: false,
       loading_status: "waiting",
-      front_content: ""
+      front_content: "",
+      tile_z: 1
     };
   }
   var _setMainStateValue = (0, _react.useCallback)(function (field_name) {

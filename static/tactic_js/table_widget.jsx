@@ -100,6 +100,7 @@ function TableWidget(props) {
         local_id: null,
         console_id: null,
         tile_id: null,
+        className: "",
         row: 0,
         dispatch: null,
         ...props,

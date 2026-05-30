@@ -16,6 +16,18 @@ $project-outer-padding: 10px;
 $separator-padding: 7px;
 $separator-padding-half: 3.5px;
 
+.react-grid-item {
+  z-index: 1;
+}
+
+.react-grid-item.react-draggable-dragging {
+  z-index: 9999;
+}
+
+.react-grid-item {
+  transition: none !important;
+}
+
 .draggable-pane-separator{
     width: 1px;
     transition: width 0.2s;
@@ -72,6 +84,21 @@ body {
     z-index: 5
 }
 
+.bp6-portal, .bp6-dialog {
+    z-index: 1000;
+}
+
+.react-grid-item.manual-resizing {
+  overflow: visible !important;
+}
+
+.react-grid-item.manual-resizing .tile-panel {
+  overflow: visible !important;
+}
+
+.tile-div.tile-container-grid.manual-resizing-container {
+  overflow: visible;
+}
 
 
 .CodeMirror, .cm-editor, .cm-scroller {
