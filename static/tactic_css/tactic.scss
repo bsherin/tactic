@@ -84,7 +84,11 @@ body {
     z-index: 5
 }
 
-.bp6-portal, .bp6-dialog {
+.bp6-portal,
+.bp6-popover,
+.bp6-popover-content,
+.bp6-overlay,
+.bp6-dialog {
     z-index: 1000;
 }
 
