@@ -289,7 +289,8 @@ const buttonDataDefault = {
     fill: false,
     icon: null,
     text: "Button",
-    variant: "solid"
+    variant: "solid",
+    helperText: null,
 };
 
 function ButtonWidget(props) {
@@ -311,7 +312,7 @@ function ButtonWidget(props) {
     }
 
     return (
-        <div>
+        <FormGroup helperText={props.widgetData.helperText}>
             <Button
                 text={props.widgetData.text}
                 fill={props.widgetData.fill}
@@ -319,13 +320,14 @@ function ButtonWidget(props) {
                 variant={props.widgetData.variant}
                 style={props.widgetData.style}
                 onClick={onClick}/>
-        </div>
+        </FormGroup>
     )
 }
 
 const progressBarDefault = {
     intent: null,
-    stripes: false
+    stripes: false,
+    helperText: null
 };
 
 function ProgressBarWidget(props) {
@@ -343,9 +345,11 @@ function ProgressBarWidget(props) {
     const {style, to_render, ...rest} = props.widgetData;
 
     return (
-        <div style={props.widgetData?.style} key={props.widgetId}>
+        <FormGroup style={props.widgetData?.style}
+                   helperText={props.widgetData.helperText}
+                   key={props.widgetId}>
             <ProgressBar {...rest} key={props.widgetId}/>
-        </div>
+        </FormGroup>
     )
 }
 
@@ -618,7 +622,8 @@ const inputDataDefault = {
     fill: false,
     label: "",
     inline: false,
-    style: {}
+    style: {},
+    helperText: null,
 };
 
 function InputWidget(props) {
@@ -648,7 +653,9 @@ function InputWidget(props) {
         <FormGroup key={props.widgetId}
                    inline={props.widgetData.inline}
                    style={props.widgetData.style}
-                   label={props.widgetData.label}>
+                   label={props.widgetData.label}
+                   helperText={props.widgetData.helperText}
+        >
             <InputGroup type="text"
                         {...rest}
                         value={localValue}

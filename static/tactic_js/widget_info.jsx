@@ -90,7 +90,8 @@ let widgetInfo = {
         on_change: methodField(),
         fill: boolField(),
         inline: boolField(),
-        style: styleField()
+        style: styleField(),
+        helperText: stringField(null)
     },
     table : {
         value: objectField(),
@@ -107,7 +108,8 @@ let widgetInfo = {
         icon: stringField(null),
         fill: boolField(),
         on_click: methodField(),
-        style: styleField()
+        style: styleField(),
+        helperText: stringField(null)
     },
     select: {
         value: stringField(),
@@ -143,7 +145,8 @@ let widgetInfo = {
         value: numberField(),
         stripes: boolField(),
         intent: selectField("primary", ["primary", "success", "warning", "danger"]),
-        style: styleField()
+        style: styleField(),
+        helperText: stringField(null)
     },
     divider: {
         compact: boolField(),

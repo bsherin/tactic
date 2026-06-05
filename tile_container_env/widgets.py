@@ -230,14 +230,15 @@ def is_class_method(func):
 
 class ButtonWidget(Widget):
     widget_kind = "button"
-    extra_fields = ["text", "fill", "icon", "variant", "style", "to_render"]
-    defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None, "to_render": False}
+    extra_fields = ["text", "fill", "icon", "variant", "style", "to_render", "helperText"]
+    defaults = {"text": "Button", "fill": False, "icon": None, "variant": "solid", "style": None, "to_render": False,
+                "helperText": None}
 
 
 class InputWidget(Widget):
     widget_kind = "input"
-    extra_fields = ["fill", "label", "inline", "style", "to_render"]
-    defaults = {"fill": False, "label": "", "inline": False, "style": None, "to_render": False}
+    extra_fields = ["fill", "label", "inline", "style", "to_render", "helperText"]
+    defaults = {"fill": False, "label": "", "inline": False, "style": None, "to_render": False, "helperText": None}
 
     def initialize(self, wdata):
         super().initialize(wdata)
@@ -258,8 +259,8 @@ class SliderWidget(Widget):
 
 class ProgressBarWidget(Widget):
     widget_kind = "progressBar"
-    extra_fields = ["stripes", "intent", "style", "to_render"]
-    defaults = {"stripes": False, "intent": None, "style": None, "to_render": False}
+    extra_fields = ["stripes", "intent", "style", "to_render", "helperText"]
+    defaults = {"stripes": False, "intent": None, "style": None, "to_render": False, "helperText": None}
 
     def initialize(self, wdata):
         super().initialize(wdata)
