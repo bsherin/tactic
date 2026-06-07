@@ -1,4 +1,4 @@
-import React, {createContext, useCallback} from "react";
+import React, {createContext, useCallback, useMemo} from "react";
 import {Fragment, useState, useEffect, memo, useContext} from "react";
 
 import {Drawer, Classes} from "@blueprintjs/core";
@@ -80,7 +80,7 @@ function PoolDrawer(props) {
         return true
     }
 
-    let tree_element = (
+    let tree_element = useMemo(() => (
         <div style={{paddingTop: 10}}>
             <PoolBreadcrumbs
                 crumbSize="small"
@@ -100,7 +100,7 @@ function PoolDrawer(props) {
                                          handleNodeClick={handleNodeClick}/>
             </div>
         </div>
-    );
+    ));
 
     return (
         <Drawer
