@@ -536,12 +536,6 @@ function PoolTree(props) {
     }
   }, []);
   (0, _react.useEffect)(function () {
-    console.log("PoolTree mounted");
-    return function () {
-      return console.log("PoolTree unmounted");
-    };
-  }, []);
-  (0, _react.useEffect)(function () {
     if (props.currentRootPath && nodes_ref.current.length > 0) {
       var node = nodeFromPath(props.currentRootPath, nodes_ref.current[0]);
       handleNodeExpand(node).then(function () {});

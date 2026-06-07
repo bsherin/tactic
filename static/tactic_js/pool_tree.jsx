@@ -402,11 +402,6 @@ function PoolTree(props) {
     }, []);
 
     useEffect(() => {
-        console.log("PoolTree mounted");
-        return () => console.log("PoolTree unmounted");
-    }, []);
-
-    useEffect(() => {
         if (props.currentRootPath && nodes_ref.current.length > 0) {
             let node = nodeFromPath(props.currentRootPath, nodes_ref.current[0]);
             handleNodeExpand(node).then(() => {
