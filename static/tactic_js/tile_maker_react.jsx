@@ -102,7 +102,16 @@ function CreatorApp(props) {
 
     const [, metadataDispatch, metadataRef] = useMetadata(props.mdata, true);
 
-    const [searchState, searchDispatch, searchStateRef] = useSearch([globalsInfoRef, renderContentInfoRef], [umListRef, hmListRef, jsListRef]);
+    const [searchState, searchDispatch, searchStateRef] = useSearch(
+        [globalsInfoRef, renderContentInfoRef],
+        [umListRef, hmListRef, jsListRef],
+        [
+            {kind: "options", ref: option_list_ref},
+            {kind: "widgets", ref: widget_list_ref},
+            {kind: "exports", ref: export_list_ref},
+            {kind: "save_attrs", ref: save_list_ref},
+        ]
+    );
 
     const extraSelfCompletionsRef = useRef([]);
 
@@ -1471,6 +1480,9 @@ function CreatorApp(props) {
                 searchPrev={_searchPrev}
                 searchState={searchStateRef.current}
                 search_ref={search_ref}
+                showSearchResult={(identifier) => {
+                    showTab(identifier);
+                }}
             />
             <div ref={paneListRef} style={{overflow: "auto", flex: "1 1 0", minHeight: 0, minWidth: 0,paddingBottom: 250}}
                  className="creator-pane-list">

@@ -82,6 +82,7 @@ function countOccurrences(query, the_text) {
 }
 
 function createHighlightDeco(view, regex, current_search_number) {
+    regex.lastIndex = 0;
     let counter = 0;
     const builder = new RangeSetBuilder();
     let text = view.state.doc.toString();
@@ -336,7 +337,6 @@ function ReactCodemirror6(props) {
                 const hasSelection = update.state.selection.ranges.some(r => !r.empty);
 
 
-
                 // Cancel any active stream so we don't show ghost text for an old location.
                 activeStreamChangeCounterRef.current = null;
                 activeStreamCursorPosRef.current = null;
@@ -451,12 +451,12 @@ function ReactCodemirror6(props) {
         }
 
         let keymaps = [
-                ...props.extraKeys,
-                ...closeBracketsKeymap,
-                ...historyKeymap,
-                ...triggerAutocompleteKeymap,
-                ...strippedDefaultKeymap,
-                enterInsertsNewlineOnly
+            ...props.extraKeys,
+            ...closeBracketsKeymap,
+            ...historyKeymap,
+            ...triggerAutocompleteKeymap,
+            ...strippedDefaultKeymap,
+            enterInsertsNewlineOnly
         ];
         if (!props.isLite) {
             keymaps = [
@@ -506,15 +506,14 @@ function ReactCodemirror6(props) {
                 extensions = extensions.concat([
                     lineNumberCompartment.current.of(customLineNumbers(props.first_line_number)),
                 ]);
-            }
-            else {
+            } else {
                 extensions = extensions.concat([
                     lineNumberCompartment.current.of([]),
                 ]);
             }
             extensions = extensions.concat([
-                    foldGutter()
-                ]);
+                foldGutter()
+            ]);
         }
         if (props.hideLeadingChars != null) {
             extensions = extensions.concat([
@@ -733,8 +732,7 @@ function ReactCodemirror6(props) {
             editorView.current.dispatch({
                 effects: lineNumberCompartment.current.reconfigure(customLineNumbers(props.first_line_number))
             })
-        }
-        else {
+        } else {
             editorView.current.dispatch({
                 effects: lineNumberCompartment.current.reconfigure([])
             })
@@ -770,7 +768,8 @@ function ReactCodemirror6(props) {
                         effects: setHighlights.of(Decoration.none)
                     });
                 } else {
-                    const current_search_number = props.current_search_number ? props.current_search_number : 0;
+                    const current_search_number =
+                        props.current_search_number != null ? props.current_search_number : 0;
                     let line_info = _lineNumberFromSearchNumber(reg, current_search_number);
                     if (line_info) {
                         _scrollToAndSelectLine(line_info.line);
@@ -865,6 +864,7 @@ function ReactCodemirror6(props) {
             props.handleFocus();
         }
     }
+
     function _searchMatcher(term, global = false, ignore_case = true) {
         let regex;
         let flags = "";
@@ -898,21 +898,43 @@ function ReactCodemirror6(props) {
 
     function _lineNumberFromSearchNumber(matcher, current_search_number) {
         try {
-            let lines = props.code_content.split("\n");
-            let lnum = 1;
-            let mnum = 0;
-            for (let line of lines) {
-                let new_matches = (line.match(matcher) || []).length;
-                if (new_matches + mnum - 1 >= current_search_number) {
-                    return {line: lnum, match: current_search_number - mnum};
+            if (!matcher || current_search_number == null) {
+                return null;
+            }
+
+            const lines = props.code_content.split("\n");
+            let matchCounter = 0;
+
+            for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+                const lineText = lines[lineIndex];
+
+                // Important because matcher is usually global.
+                matcher.lastIndex = 0;
+
+                let match;
+                while ((match = matcher.exec(lineText)) !== null) {
+                    if (matchCounter === current_search_number) {
+                        return {
+                            line: lineIndex + 1,
+                            match: matchCounter,
+                            matchOnLine: match.index,
+                            matchLength: match[0].length
+                        };
+                    }
+
+                    matchCounter += 1;
+
+                    // Avoid infinite loops for zero-width regex matches.
+                    if (match[0].length === 0) {
+                        matcher.lastIndex += 1;
+                    }
                 }
-                mnum += new_matches;
-                lnum += 1
             }
         } catch (e) {
             console.log("Error in _lineNumberFromSearchNumber", e);
         }
-        return null
+
+        return null;
     }
 
     function _scrollToAndSelectLine(lineNumber) {
