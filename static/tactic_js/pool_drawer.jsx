@@ -113,6 +113,8 @@ function PoolDrawer(props) {
             onClose={props.onClose}
             hasBackdrop={false}
             size={props.size}
+            lazy={false}
+            unmountOnClose={false}
         >
             <div className={Classes.DRAWER_BODY}>
                 <div className={Classes.DIALOG_BODY}>
