@@ -12,7 +12,7 @@ import {
     Alignment
 } from "@blueprintjs/core";
 
-import {MenuComponent} from "./main_menus_react.js";
+import {MenuComponent} from "./main_menus_react";
 import {SettingsContext} from "./settings"
 
 import {useRegisterActivity} from "./utilities_react";

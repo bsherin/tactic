@@ -207,10 +207,27 @@ const useConstructor = (callback = () => {
 };
 
 
+// function useStateAndRef(initial) {
+//     const [value, setValue] = useState(initial);
+//     const valueRef = useRef(value);
+//     valueRef.current = value;
+//     return [value, setValue, valueRef];
+// }
+
 function useStateAndRef(initial) {
-    const [value, setValue] = useState(initial);
+    const [value, _setValue] = useState(initial);
     const valueRef = useRef(value);
-    valueRef.current = value;
+
+    const setValue = useCallback((next) => {
+        _setValue(prev => {
+            const resolved =
+                typeof next === "function" ? next(prev) : next;
+
+            valueRef.current = resolved;
+            return resolved;
+        });
+    }, []);
+
     return [value, setValue, valueRef];
 }
 

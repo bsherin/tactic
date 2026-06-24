@@ -13,9 +13,9 @@ import { useHotkeys } from "@blueprintjs/core";
 import {ResourceViewerApp, copyToLibrary} from "./resource_viewer_react_app";
 import {TacticSocket} from "./tactic_socket";
 import {handleCallback, postPromise, postWithCallback} from "./communication_react"
-import {withStatus} from "./toaster.js"
+import {withStatus} from "./toaster"
 
-import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer.js";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
 import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";

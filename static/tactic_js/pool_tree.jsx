@@ -432,10 +432,6 @@ function PoolTree(props) {
                 doFlash("Error getting pool Tree");
                 return
             }
-            if (!props.currentRootPath) {
-                data["dtree"][0].isExpanded = true;
-                props.setRoot({fullpath: data["dtree"][0].fullpath});
-            }
             dispatch({
                 type: "REPLACE_ALL",
                 new_nodes: data["dtree"],

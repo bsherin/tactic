@@ -149,6 +149,7 @@ class PoolBackendECS(PoolBackend):
         boto_s3.copy(src, dst)
 
     def create_directory(self, full_path, hw, user_obj):
+        # loop over the numbers from 1 to 100 and check if the directory exists, if it does, append a number to the end of the directory name
         if not boto_s3.lexists(full_path):
             boto_s3.mkdir(full_path)
         else:

@@ -10,14 +10,14 @@ import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
 import { createRoot } from 'react-dom/client';
 
 import {MergeViewerApp} from "./merge_viewer_app";
-import {doFlash, StatusContext} from "./toaster.js"
-import {handleCallback, postPromise, postWithCallback} from "./communication_react.js"
-import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer.js";
-import {withStatus} from "./toaster.js";
+import {doFlash, StatusContext} from "./toaster"
+import {handleCallback, postPromise, postWithCallback} from "./communication_react"
+import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer";
+import {withStatus} from "./toaster";
 
-import {guid} from "./utilities_react.js";
+import {guid} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
-import {TacticSocket, useConnection} from "./tactic_socket.js";
+import {TacticSocket, useConnection} from "./tactic_socket";
 import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
 import {withSettings} from "./settings";
 import {withDialogs, DialogContext} from "./modal_react";

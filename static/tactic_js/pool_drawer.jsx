@@ -67,10 +67,12 @@ function PoolDrawer(props) {
     const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
+        console.log("setting current root from settings context", settingsContext.settings.workingDirectory);
         setCurrentRootPath(settingsContext.settings.workingDirectory);
     }, [settingsContext.settings.workingDirectory]);
 
     function setRoot(node = null) {
+        console.log("setting current root path manually to", node.fullpath);
         setCurrentRootPath(node.fullpath);
     }
 

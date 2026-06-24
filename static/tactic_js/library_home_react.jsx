@@ -13,7 +13,7 @@ import { createRoot } from 'react-dom/client';
 import {Fragment, useEffect, useRef, memo, useContext, useState} from "react";
 
 import {TacticSocket, useConnection} from "./tactic_socket";
-import {doFlash} from "./toaster.js";
+import {doFlash} from "./toaster";
 import {LibraryPane} from "./library_pane";
 import {withStatus} from "./toaster";
 import {withErrorDrawer} from "./error_drawer";

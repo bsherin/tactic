@@ -13,7 +13,7 @@ import {ReactCodemirror6} from "./react-codemirror6";
 import {postPromise, handleCallback, postWithCallback} from "./communication_react"
 import {withStatus, StatusContext} from "./toaster"
 
-import {withErrorDrawer} from "./error_drawer.js";
+import {withErrorDrawer} from "./error_drawer";
 import {guid, SelectedPaneContext} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
 import {useCallbackStack, useConstructor, useStateAndRef, withRegisterActivity} from "./utilities_react";

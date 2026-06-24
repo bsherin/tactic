@@ -8,8 +8,7 @@ import {BpSelect} from "./selector_advanced";
 import {PoolAddressSelector} from "./pool_tree";
 
 export {
-    LabeledSelectList, LabeledSelectAdvancedList, LabeledFormField, LabeledTextArea, SelectList, GlyphButton, withTooltip,
-    LabeledPoolSelect
+    LabeledSelectList, LabeledSelectAdvancedList, LabeledFormField, LabeledTextArea, SelectList, GlyphButton, withTooltip
 }
 
 function withTooltip(WrappedComponent) {
