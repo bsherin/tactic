@@ -124,7 +124,7 @@ function ReactCodemirrorMergeView(props) {
                 let spaces = new Array(5).join(" ");
                 cm.replaceSelection(spaces);
             },
-            "Ctrl-Space": "autocomplete"
+            "Ctrl-/": "autocomplete"
         });
 
         cmobject.editor().on("change", handleChange);

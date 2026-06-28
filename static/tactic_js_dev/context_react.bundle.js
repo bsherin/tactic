@@ -222954,6 +222954,8 @@ function MakerNavigator(props) {
   props = _objectSpread({
     handleTabSelect: function handleTabSelect() {},
     sections: [],
+    expandedSectionList: [],
+    setSectionOpen: function setSectionOpen() {},
     icon_dict: null,
     icon_field: null,
     registerCmObject: function registerCmObject() {},
@@ -223007,6 +223009,10 @@ function MakerNavigator(props) {
         key: section.title,
         title: section.title,
         dispatch: section.dispatch,
+        setIsOpen: function setIsOpen(isOpen) {
+          return props.setSectionOpen(section.identifier, isOpen);
+        },
+        isOpen: props.expandedSectionList.includes(section.identifier),
         registerCmObject: props.registerCmObject,
         sub_items: section.sub_items,
         icon: section.icon,
@@ -223016,7 +223022,6 @@ function MakerNavigator(props) {
         mode: section.mode,
         showSelf: section.showSelf,
         pushCallback: props.pushCallback,
-        startExpaneded: section.start_expanded,
         createFromList: createFromlist,
         searchStringRef: searchStringRef,
         choiceDict: choiceDict,
@@ -223032,7 +223037,6 @@ function MakerNavigator(props) {
         sub_items: section.sub_items,
         icon: section.icon,
         searchStringRef: searchStringRef,
-        startExpaneded: section.start_expanded,
         icon_dict: section.icon_dict,
         icon_field: section.icon_field
       });
@@ -223099,7 +223103,28 @@ function DirectNavSection(props) {
     className: "direct-nav-section-button"
   }, props);
   var mpContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_tile_maker_support__WEBPACK_IMPORTED_MODULE_8__.MakerPaneContext);
+  var selectedPane = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_utilities_react__WEBPACK_IMPORTED_MODULE_7__.SelectedPaneContext);
   var className = props.className;
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (window.in_context && "mergeOmniItems" in selectedPane) {
+      selectedPane.addOmniItems(_getOmniItems());
+    }
+  }, []);
+  function _getOmniItems() {
+    var omni_items = [];
+    omni_items.push({
+      category: props.title,
+      display_text: props.title,
+      search_text: props.title,
+      icon_name: props.icon,
+      item_type: "command",
+      identifier: props.identifier,
+      the_function: function the_function() {
+        return mpContext.toggleVisibleTab(props.identifier);
+      }
+    });
+    return omni_items;
+  }
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     className: className,
     icon: props.icon,
@@ -223189,6 +223214,8 @@ function NavDivider(props) {
 function SortableNavSection(props) {
   props = _objectSpread({
     title: "",
+    isOpen: false,
+    setIsOpen: function setIsOpen() {},
     item_base: {},
     sub_items: [],
     right_button: null,
@@ -223213,10 +223240,6 @@ function SortableNavSection(props) {
     _React$useState4 = _slicedToArray(_React$useState3, 2),
     activeId = _React$useState4[0],
     setActiveId = _React$useState4[1];
-  var _React$useState5 = react__WEBPACK_IMPORTED_MODULE_0___default().useState(props.startExpanded),
-    _React$useState6 = _slicedToArray(_React$useState5, 2),
-    isOpen = _React$useState6[0],
-    setIsOpen = _React$useState6[1];
   var sensors = (0,_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.useSensors)((0,_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.useSensor)(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.PointerSensor, {
     activationConstraint: {
       distance: 5
@@ -223245,6 +223268,42 @@ function SortableNavSection(props) {
     });
   };
   var mpContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_tile_maker_support__WEBPACK_IMPORTED_MODULE_8__.MakerPaneContext);
+  var selectedPane = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_utilities_react__WEBPACK_IMPORTED_MODULE_7__.SelectedPaneContext);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (window.in_context && "mergeOmniItems" in selectedPane) {
+      selectedPane.mergeOmniItems(_getOmniItems());
+    }
+  }, [props.sub_items]);
+  function _getOmniItems() {
+    var omni_items = [];
+    ;
+    var _iterator5 = _createForOfIteratorHelper(props.sub_items),
+      _step5;
+    try {
+      var _loop = function _loop() {
+        var sub_item = _step5.value;
+        omni_items.push({
+          category: props.title,
+          display_text: sub_item.name,
+          search_text: sub_item.name,
+          icon_name: props.icon,
+          item_type: "command",
+          identifier: sub_item.identifier,
+          the_function: function the_function() {
+            return mpContext.toggleVisibleTab(sub_item.identifier);
+          }
+        });
+      };
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        _loop();
+      }
+    } catch (err) {
+      _iterator5.e(err);
+    } finally {
+      _iterator5.f();
+    }
+    return omni_items;
+  }
   function filterItem(item) {
     return props.searchStringRef.current == null || props.searchStringRef.current === "" || item.name.toLowerCase().includes(props.searchStringRef.current.toLowerCase());
   }
@@ -223257,7 +223316,7 @@ function SortableNavSection(props) {
       type: "add_at_end",
       new_item: new_entry
     });
-    setIsOpen(true);
+    props.setIsOpen(true);
     var lastSubSectionId = findLastSubSection();
     if (lastSubSectionId != -1) {
       mpContext.toggleExpandedSub(lastSubSectionId, true);
@@ -223307,7 +223366,7 @@ function SortableNavSection(props) {
         insert_index: nextSectionIndex + 1
       });
     }
-    setIsOpen(true);
+    props.setIsOpen(true);
     mpContext.toggleExpandedSub(sectionIdentifier, true);
     mpContext.pushCallback(function () {
       mpContext.toggleVisibleTab(uid);
@@ -223322,7 +223381,6 @@ function SortableNavSection(props) {
     }));
   }, []);
   var inSubSection = false;
-  var currentSubSectionParent = null;
   var currentlyExpanded = false;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.ContextMenu, {
     content: contextMenu
@@ -223339,9 +223397,9 @@ function SortableNavSection(props) {
     icon: props.icon,
     size: "medium",
     onClick: function onClick() {
-      setIsOpen(!isOpen);
+      props.setIsOpen(!props.isOpen);
     }
-  }, props.title), isOpen && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(HandlerCreator, {
+  }, props.title), props.isOpen && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(HandlerCreator, {
     choiceDict: props.choiceDict,
     dispatch: props.dispatch
   })), !props.createFromList && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
@@ -223350,7 +223408,7 @@ function SortableNavSection(props) {
     icon: props.icon,
     size: "medium",
     onClick: function onClick() {
-      setIsOpen(!isOpen);
+      props.setIsOpen(!props.isOpen);
     }
   }, props.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     icon: "plus",
@@ -223359,7 +223417,7 @@ function SortableNavSection(props) {
     onClick: createItem
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.Collapse, {
     className: "nav-section",
-    isOpen: isOpen
+    isOpen: props.isOpen
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.DndContext, {
     sensors: sensors,
     collisionDetection: _dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.rectIntersection,
@@ -223792,10 +223850,14 @@ function CreatorApp(props) {
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
     setExpandedSubList = _useStateAndRef4[1],
     expandedSubListRef = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_13__.useStateAndRef)(props.interface_state != null && "visibleMethodList" in props.interface_state ? props.interface_state.visibleMethodList : ["render_content"]),
+  var _useStateAndRef5 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_13__.useStateAndRef)([]),
     _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
-    setMethodsToOpen = _useStateAndRef6[1],
-    methodsToOpenRef = _useStateAndRef6[2];
+    setExpandedSectionList = _useStateAndRef6[1],
+    expandedSectionListRef = _useStateAndRef6[2];
+  var _useStateAndRef7 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_13__.useStateAndRef)(props.interface_state != null && "visibleMethodList" in props.interface_state ? props.interface_state.visibleMethodList : ["render_content"]),
+    _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
+    setMethodsToOpen = _useStateAndRef8[1],
+    methodsToOpenRef = _useStateAndRef8[2];
   var _usePropertyList = (0,_property_list__WEBPACK_IMPORTED_MODULE_18__.usePropertyList)(props.option_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.INITIAL_FORM_PANE_HEIGHT, {
       special_list: []
     }),
@@ -224142,6 +224204,15 @@ function CreatorApp(props) {
         click_handler: handleRedo,
         key_bindings: ['Ctrl+X', 'Cmd+X']
       }],
+      View: [{
+        name_text: "Close All",
+        icon_name: "eye-off",
+        click_handler: hideAllTabs
+      }, {
+        name_text: "Collapse All",
+        icon_name: "collapse-all",
+        click_handler: _collapseAll
+      }],
       Load: [{
         name_text: "Save and Load",
         icon_name: "upload",
@@ -224207,9 +224278,11 @@ function CreatorApp(props) {
       'Ctrl-m': _saveAndCheckpoint,
       'Ctrl-f': function CtrlF() {
         search_ref.current.focus();
+        return true;
       },
       'Cmd-f': function CmdF() {
         search_ref.current.focus();
+        return true;
       }
     };
     var convertedKeys = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_13__.convertExtraKeys)(ekeys);
@@ -224217,6 +224290,13 @@ function CreatorApp(props) {
       key: 'Ctrl-g',
       run: function run() {
         _searchNext();
+      },
+      preventDefault: true
+    }, {
+      key: 'Ctrl-Space',
+      run: function run() {
+        selectedPane.showOmnibar();
+        return true;
       },
       preventDefault: true
     }, {
@@ -224866,6 +224946,9 @@ function CreatorApp(props) {
   function scrollToPane(itemIdentifier) {
     pane_scroll_ref.current = itemIdentifier;
   }
+  function hideAllTabs() {
+    setVisibleTabList([]);
+  }
   function _handleTabSelect(newTabIdentifier) {
     var new_tab_list = _toConsumableArray(visibleTabListRef.current);
     if (!new_tab_list.includes(newTabIdentifier)) {
@@ -224897,6 +224980,41 @@ function CreatorApp(props) {
       });
     }
     setExpandedSubList(new_tab_list);
+  }
+  function _collapseAllSubSections() {
+    setExpandedSubList([]);
+  }
+  function _collapseAll() {
+    setExpandedSubList([]);
+    setExpandedSectionList([]);
+  }
+  function _handleSectionSelect(newSectionIdentifier) {
+    var forceVisible = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var new_section_list = _toConsumableArray(expandedSectionListRef.current);
+    if (!new_section_list.includes(newSectionIdentifier)) {
+      new_section_list.push(newSectionIdentifier);
+    } else if (!forceVisible) {
+      new_section_list = new_section_list.filter(function (tab) {
+        return tab !== newSectionIdentifier;
+      });
+    }
+    setExpandedSectionList(new_section_list);
+  }
+  function _setSectionOpen(sectionIdentifier, isOpen) {
+    var new_section_list = _toConsumableArray(expandedSectionListRef.current);
+    if (isOpen) {
+      if (!new_section_list.includes(sectionIdentifier)) {
+        new_section_list.push(sectionIdentifier);
+      }
+    } else {
+      new_section_list = new_section_list.filter(function (tab) {
+        return tab !== sectionIdentifier;
+      });
+    }
+    setExpandedSectionList(new_section_list);
+  }
+  function _collapseAllSections() {
+    setExpandedSectionList([]);
   }
   function showTab(newTabIdentifier) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -225189,12 +225307,10 @@ function CreatorApp(props) {
     visible: true,
     editable: false,
     dispatch: function dispatch() {},
-    start_expanded: false,
     identifier: "metadata",
     className: "direct-nav-section-button",
     name: "Metadata",
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["metadata"],
-    start_open: true
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["metadata"]
   }, {
     kind: "divider",
     name: "Required Divider",
@@ -225205,7 +225321,6 @@ function CreatorApp(props) {
     editable: false,
     dispatch: function dispatch() {},
     className: "direct-nav-section-button-mono",
-    start_expanded: false,
     identifier: "globals",
     name: "globals",
     mode: "python",
@@ -225226,13 +225341,13 @@ function CreatorApp(props) {
     visible: true
   }, {
     title: "options",
+    identifier: "options",
     kind: "section",
     visible: true,
     editable: true,
     icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["option"],
     icon_dict: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.option_icons,
     icon_field: "type",
-    start_expanded: false,
     showDefault: false,
     showSelf: true,
     showAsCode: true,
@@ -225249,13 +225364,13 @@ function CreatorApp(props) {
     dispatch: optionDispatch
   }, {
     title: "widgets",
+    identifier: "widgets",
     kind: "section",
     visible: true,
     editable: true,
     icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["widget"],
     icon_dict: _widget_info__WEBPACK_IMPORTED_MODULE_22__.widgetIcons,
     icon_field: "kind",
-    start_expanded: false,
     showDefault: false,
     showSelf: true,
     showAsCode: true,
@@ -225272,11 +225387,11 @@ function CreatorApp(props) {
     dispatch: widgetDispatch
   }, {
     title: "exports",
+    identifier: "exports",
     kind: "section",
     visible: true,
     editable: true,
     icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["export"],
-    start_expanded: false,
     showAsCode: true,
     showSelf: true,
     mode: "python",
@@ -225288,9 +225403,9 @@ function CreatorApp(props) {
     dispatch: exportDispatch
   }, {
     title: "save_attrs",
+    identifier: "save_attrs",
     kind: "section",
     visible: !metadataRef.current.couple_save_attrs_and_exports,
-    start_expanded: false,
     item_base: {
       name: "new_item",
       tags: ""
@@ -225305,6 +225420,7 @@ function CreatorApp(props) {
     visible: true
   }, {
     title: "user methods",
+    identifier: "user_methods",
     visible: true,
     editable: true,
     icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["user_method"],
@@ -225318,11 +225434,11 @@ function CreatorApp(props) {
       mode: "python",
       firstLineNumber: 1
     },
-    start_expanded: false,
     sub_items: umListRef.current,
     dispatch: umDispatch
   }, {
     title: "handler methods",
+    identifier: "handler_methods",
     visible: true,
     editable: true,
     mode: "python",
@@ -225337,16 +225453,15 @@ function CreatorApp(props) {
     icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["handler_method"],
     showSignature: true,
     sub_items: hmListRef.current,
-    start_expanded: false,
     createFromList: true,
     choiceDict: props.all_handler_methods,
     dispatch: hmDispatch
   }, {
     title: "javascript",
+    identifier: "javascript",
     visible: true,
     editable: true,
     icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.pane_type_icons["javascript"],
-    start_expanded: false,
     mode: "javascript",
     showAsCode: true,
     item_base: {
@@ -225362,6 +225477,8 @@ function CreatorApp(props) {
   var left_pane = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(react__WEBPACK_IMPORTED_MODULE_1__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.MakerNavigator, {
     handleTabSelect: _handleTabSelect,
     registerCmObject: registerCmObject,
+    expandedSectionList: expandedSectionListRef.current,
+    setSectionOpen: _setSectionOpen,
     pushCallback: pushCallback,
     is_mpl: my_props.is_mpl,
     is_d3: my_props.is_d3,
@@ -229954,6 +230071,18 @@ function ContextApp(props) {
     }
     omniItemsRef.current[tid] = omniItemsRef.current[tid].concat(items);
   }
+  function _mergeOmniItems(tid, items) {
+    if (!(tid in omniItemsRef.current)) {
+      omniItemsRef.current[tid] = [];
+    }
+    var newItemIdentifiers = items.map(function (item) {
+      return item.identifier;
+    });
+    var oldOmniItems = omniItemsRef.current[tid].filter(function (item) {
+      return !newItemIdentifiers.includes(item.identifier);
+    });
+    omniItemsRef.current[tid] = oldOmniItems.concat(items);
+  }
   function _addContextOmniItems() {
     var omni_funcs = [["Go To Next Panel", "context", _goToNextPane, "arrow-right"], ["Go To Previous Panel", "context", _goToPreviousPane, "arrow-left"]];
     var omni_items = [];
@@ -230093,7 +230222,11 @@ function ContextApp(props) {
             amSelected: amSelected,
             addOmniItems: function addOmniItems(items) {
               _addOmniItems(entry.identifier, items);
-            }
+            },
+            mergeOmniItems: function mergeOmniItems(items) {
+              _mergeOmniItems(entry.identifier, items);
+            },
+            showOmnibar: _showOpenOmnibar
           }
         }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_8___default().createElement(_context_elements__WEBPACK_IMPORTED_MODULE_39__.ContextPaneElement, {
           identifier: entry.identifier
@@ -230247,7 +230380,6 @@ function ContextApp(props) {
     value: {
       tab_id: sid,
       selectedTabIdRef: selectedTabIdRef,
-      amSelected: amSelected,
       addOmniItems: function addOmniItems(items) {
         _addOmniItems(sid, items);
       }

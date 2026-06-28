@@ -33,7 +33,7 @@ import {ErrorBoundary} from "./error_boundary";
 
 import {BpSelectAdvanced} from "./selector_advanced";
 import {ReactCodemirror6} from "./react-codemirror6";
-import {guid, isInt, useStateAndRef} from "./utilities_react"
+import {guid, isInt, SelectedPaneContext, useStateAndRef} from "./utilities_react"
 import {MakerPaneContext} from "./tile_maker_support";
 import {LabeledFormField, LabeledSelectList, LabeledTextArea, LabeledSelectAdvancedList} from "./blueprint_react_widgets";
 import {NativeTags, IconSelector, NotesField} from "./combined_metadata";
@@ -1109,6 +1109,9 @@ function MakerNavigator(props) {
         handleTabSelect: () => {
         },
         sections: [],
+        expandedSectionList: [],
+        setSectionOpen: () => {
+        },
         icon_dict: null,
         icon_field: null,
         registerCmObject: () => {
@@ -1152,6 +1155,8 @@ function MakerNavigator(props) {
                     if (section.editable) {
                         return (
                             <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
+                                                setIsOpen={(isOpen)=>props.setSectionOpen(section.identifier, isOpen)}
+                                                isOpen={props.expandedSectionList.includes(section.identifier)}
                                                 registerCmObject={props.registerCmObject}
                                                 sub_items={section.sub_items} icon={section.icon}
                                                 showAsCode={section.showAsCode}
@@ -1160,7 +1165,6 @@ function MakerNavigator(props) {
                                                 mode={section.mode}
                                                 showSelf={section.showSelf}
                                                 pushCallback={props.pushCallback}
-                                                startExpaneded={section.start_expanded}
                                                 createFromList={createFromlist}
                                                 searchStringRef={searchStringRef}
                                                 choiceDict={choiceDict}
@@ -1172,7 +1176,6 @@ function MakerNavigator(props) {
                             <NavSection key={section.title} title={section.title} dispatch={section.dispatch}
                                         sub_items={section.sub_items} icon={section.icon}
                                         searchStringRef={searchStringRef}
-                                        startExpaneded={section.start_expanded}
                                         icon_dict={section.icon_dict} icon_field={section.icon_field}/>
                         )
                     }
@@ -1244,7 +1247,31 @@ function DirectNavSection(props) {
         ...props
     };
     const mpContext = useContext(MakerPaneContext);
+    const selectedPane = useContext(SelectedPaneContext);
+
     const className = props.className;
+
+    useEffect(() => {
+        if (window.in_context && "mergeOmniItems" in selectedPane) {
+            selectedPane.addOmniItems(_getOmniItems())
+        }
+    }, []);
+
+    function _getOmniItems() {
+        let omni_items = [];
+        omni_items.push(
+            {
+                category: props.title,
+                display_text: props.title,
+                search_text: props.title,
+                icon_name: props.icon,
+                item_type: "command",
+                identifier: props.identifier,
+                the_function: () => mpContext.toggleVisibleTab(props.identifier)
+            }
+        );
+        return omni_items
+    }
 
     return (
         <ControlGroup>
@@ -1331,6 +1358,9 @@ function NavDivider(props) {
 function SortableNavSection(props) {
     props = {
         title: "",
+        isOpen: false,
+        setIsOpen: () => {
+        },
         item_base: {},
         sub_items: [],
         right_button: null,
@@ -1357,7 +1387,6 @@ function SortableNavSection(props) {
     };
 
     const [activeId, setActiveId] = React.useState(null);
-    const [isOpen, setIsOpen] = React.useState(props.startExpanded);
 
     const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
 
@@ -1384,6 +1413,33 @@ function SortableNavSection(props) {
     };
 
     const mpContext = useContext(MakerPaneContext);
+    const selectedPane = useContext(SelectedPaneContext);
+
+    useEffect(() => {
+        if (window.in_context && "mergeOmniItems" in selectedPane) {
+            selectedPane.mergeOmniItems(_getOmniItems())
+        }
+    }, [props.sub_items]);
+
+    function _getOmniItems() {
+        let omni_items = [];;
+        for (let sub_item of props.sub_items) {
+            omni_items.push(
+                {
+                    category: props.title,
+                    display_text: sub_item.name,
+                    search_text: sub_item.name,
+                    icon_name: props.icon,
+                    item_type: "command",
+                    identifier: sub_item.identifier,
+                    the_function: () => mpContext.toggleVisibleTab(sub_item.identifier)
+                }
+            );
+        }
+        return omni_items
+    }
+
+
 
     function filterItem(item) {
         return props.searchStringRef.current == null || props.searchStringRef.current === "" || item.name.toLowerCase().includes(props.searchStringRef.current.toLowerCase())
@@ -1394,7 +1450,7 @@ function SortableNavSection(props) {
         const uid = guid();
         const new_entry = {...props.item_base, identifier: uid};
         props.dispatch({type: "add_at_end", new_item: new_entry});
-        setIsOpen(true);
+        props.setIsOpen(true);
         let lastSubSectionId = findLastSubSection();
         if (lastSubSectionId != -1) {
             mpContext.toggleExpandedSub(lastSubSectionId, true)
@@ -1437,7 +1493,7 @@ function SortableNavSection(props) {
         else {
             props.dispatch({type: "add_at_index", new_item: new_entry, insert_index: nextSectionIndex + 1});
         }
-        setIsOpen(true);
+        props.setIsOpen(true);
         mpContext.toggleExpandedSub(sectionIdentifier, true)
         mpContext.pushCallback(() => {
             mpContext.toggleVisibleTab(uid);
@@ -1456,7 +1512,6 @@ function SortableNavSection(props) {
     }, []);
 
     let inSubSection = false;
-    let currentSubSectionParent = null;
     let currentlyExpanded = false;
     return (
         <ContextMenu content={contextMenu}>
@@ -1467,11 +1522,11 @@ function SortableNavSection(props) {
                                 variant="minimal"
                                 icon={props.icon} size="medium"
                                 onClick={() => {
-                                    setIsOpen(!isOpen)
+                                    props.setIsOpen(!props.isOpen)
                                 }}>
                             {props.title}
                         </Button>
-                        {isOpen &&
+                        {props.isOpen &&
                             <HandlerCreator choiceDict={props.choiceDict} dispatch={props.dispatch}/>
                         }
                     </ControlGroup>
@@ -1482,14 +1537,14 @@ function SortableNavSection(props) {
                                 variant="minimal"
                                 icon={props.icon} size="medium"
                                 onClick={() => {
-                                    setIsOpen(!isOpen)
+                                    props.setIsOpen(!props.isOpen)
                                 }}>
                             {props.title}
                         </Button>
                         <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
                     </ButtonGroup>
                 }
-                <Collapse className="nav-section" isOpen={isOpen}>
+                <Collapse className="nav-section" isOpen={props.isOpen}>
                     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
                         <SortableContext items={[...props.sub_items.map(i => i.identifier), '__drop_spacer__']}
                                          strategy={verticalListSortingStrategy}>

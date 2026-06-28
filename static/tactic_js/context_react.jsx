@@ -656,6 +656,15 @@ function ContextApp(props) {
         omniItemsRef.current[tid] = omniItemsRef.current[tid].concat(items);
     }
 
+    function _mergeOmniItems(tid, items) {
+        if (!(tid in omniItemsRef.current)) {
+            omniItemsRef.current[tid] = []
+        }
+        let newItemIdentifiers = items.map(item => item.identifier);
+        let oldOmniItems = omniItemsRef.current[tid].filter(item => !newItemIdentifiers.includes(item.identifier));
+        omniItemsRef.current[tid] = oldOmniItems.concat(items);
+    }
+
     function _addContextOmniItems() {
         let omni_funcs = [
             ["Go To Next Panel", "context", _goToNextPane, "arrow-right"],
@@ -687,7 +696,7 @@ function ContextApp(props) {
                 tab_id: "library",
                 selectedTabIdRef,
                 amSelected,
-                addOmniItems: (items)=>{_addOmniItems("libary", items)}
+                addOmniItems: (items)=>{_addOmniItems("libary", items)},
             }}>
             <ContextPaneElement identifier="library">
                 <div id="library-home-root"
@@ -772,7 +781,9 @@ function ContextApp(props) {
                         tab_id: entry.identifier,
                         selectedTabIdRef,
                         amSelected,
-                        addOmniItems: (items)=>{_addOmniItems(entry.identifier, items)}
+                        addOmniItems: (items)=>{_addOmniItems(entry.identifier, items)},
+                        mergeOmniItems: (items)=>{_mergeOmniItems(entry.identifier, items)},
+                        showOmnibar: _showOpenOmnibar,
                     }}>
                     <ContextPaneElement
                         identifier={entry.identifier}>
@@ -906,7 +917,6 @@ function ContextApp(props) {
                 <SelectedPaneContext.Provider value={{
                     tab_id: sid,
                     selectedTabIdRef,
-                    amSelected,
                     addOmniItems: (items)=>{_addOmniItems(sid, items)}
                 }}>
                     <OpenOmnibar commandItems={commandItems}

@@ -76,6 +76,7 @@ function CreatorApp(props) {
 
     const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
     const [, setExpandedSubList, expandedSubListRef] = useStateAndRef([]);
+    const [, setExpandedSectionList, expandedSectionListRef] = useStateAndRef([]);
     const [, setMethodsToOpen, methodsToOpenRef] = useStateAndRef(props.interface_state != null && "visibleMethodList" in props.interface_state ?
         props.interface_state.visibleMethodList : ["render_content"]);
 
@@ -348,6 +349,10 @@ function CreatorApp(props) {
                 key_bindings: ['Ctrl+X', 'Cmd+X']
             }
             ],
+            View: [
+                {name_text: "Close All", icon_name: "eye-off", click_handler: hideAllTabs},
+                {name_text: "Collapse All", icon_name: "collapse-all", click_handler: _collapseAll}
+            ],
             Load: [{
                 name_text: "Save and Load",
                 icon_name: "upload",
@@ -388,17 +393,25 @@ function CreatorApp(props) {
             'Ctrl-l': _saveAndLoadModule,
             'Ctrl-m': _saveAndCheckpoint,
             'Ctrl-f': () => {
-                search_ref.current.focus()
+                search_ref.current.focus();
+                return true
             },
             'Cmd-f': () => {
-                search_ref.current.focus()
-            }
+                search_ref.current.focus();
+                return true
+            },
         };
         let convertedKeys = convertExtraKeys(ekeys);
         let moreKeys = [
             {
                 key: 'Ctrl-g', run: () => {
                     _searchNext();
+                }, preventDefault: true
+            },
+            {
+                key: 'Ctrl-Space', run: ()=>{
+                    selectedPane.showOmnibar();
+                    return true
                 }, preventDefault: true
             },
             {
@@ -852,6 +865,10 @@ function CreatorApp(props) {
         pane_scroll_ref.current = itemIdentifier;
     }
 
+    function hideAllTabs() {
+        setVisibleTabList([]);
+    }
+
     function _handleTabSelect(newTabIdentifier) {
         let new_tab_list = [...visibleTabListRef.current];
         if (!new_tab_list.includes(newTabIdentifier)) {
@@ -878,6 +895,42 @@ function CreatorApp(props) {
             new_tab_list = new_tab_list.filter(tab => tab !== newTabIdentifier);
         }
         setExpandedSubList(new_tab_list)
+    }
+
+    function _collapseAllSubSections() {
+        setExpandedSubList([]);
+    }
+
+    function _collapseAll() {
+        setExpandedSubList([]);
+        setExpandedSectionList([]);
+    }
+
+    function _handleSectionSelect(newSectionIdentifier, forceVisible=false) {
+        let new_section_list = [...expandedSectionListRef.current];
+        if (!new_section_list.includes(newSectionIdentifier)) {
+            new_section_list.push(newSectionIdentifier);
+        } else if (!forceVisible) {
+            new_section_list = new_section_list.filter(tab => tab !== newSectionIdentifier);
+        }
+        setExpandedSectionList(new_section_list)
+    }
+
+    function _setSectionOpen(sectionIdentifier, isOpen) {
+        let new_section_list = [...expandedSectionListRef.current];
+        if (isOpen) {
+            if (!new_section_list.includes(sectionIdentifier)) {
+                new_section_list.push(sectionIdentifier);
+            }
+        }
+        else {
+            new_section_list = new_section_list.filter(tab => tab !== sectionIdentifier);
+        }
+        setExpandedSectionList(new_section_list)
+    }
+
+    function _collapseAllSections() {
+        setExpandedSectionList([]);
     }
 
     function showTab(newTabIdentifier, callback=null) {
@@ -1095,12 +1148,10 @@ function CreatorApp(props) {
             editable: false,
             dispatch: () => {
             },
-            start_expanded: false,
             identifier: "metadata",
             className: "direct-nav-section-button",
             name: "Metadata",
             icon: pane_type_icons["metadata"],
-            start_open: true,
         },
         {kind: "divider", name: "Required Divider", visible: true},
         {
@@ -1110,7 +1161,6 @@ function CreatorApp(props) {
             dispatch: () => {
             },
             className: "direct-nav-section-button-mono",
-            start_expanded: false,
             identifier: "globals",
             name: "globals",
             mode: "python",
@@ -1131,13 +1181,13 @@ function CreatorApp(props) {
         {kind: "divider", name: "Options Divider", visible: true},
         {
             title: "options",
+            identifier: "options",
             kind: "section",
             visible: true,
             editable: true,
             icon: pane_type_icons["option"],
             icon_dict: option_icons,
             icon_field: "type",
-            start_expanded: false,
             showDefault: false,
             showSelf: true,
             showAsCode: true,
@@ -1155,13 +1205,13 @@ function CreatorApp(props) {
         },
         {
             title: "widgets",
+            identifier: "widgets",
             kind: "section",
             visible: true,
             editable: true,
             icon: pane_type_icons["widget"],
             icon_dict: widgetIcons,
             icon_field: "kind",
-            start_expanded: false,
             showDefault: false,
             showSelf: true,
             showAsCode: true,
@@ -1178,8 +1228,9 @@ function CreatorApp(props) {
             dispatch: widgetDispatch
         },
         {
-            title: "exports", kind: "section", visible: true, editable: true, icon: pane_type_icons["export"],
-            start_expanded: false,
+            title: "exports",
+            identifier: "exports",
+            kind: "section", visible: true, editable: true, icon: pane_type_icons["export"],
             showAsCode: true,
             showSelf: true,
             mode: "python",
@@ -1190,10 +1241,11 @@ function CreatorApp(props) {
             sub_items: export_list_ref.current, dispatch: exportDispatch
         },
         {
-            title: "save_attrs", kind: "section",
+            title: "save_attrs",
+            identifier: "save_attrs",
+            kind: "section",
             visible: !metadataRef.current.couple_save_attrs_and_exports,
-            start_expanded: false,
-            item_base: {
+             item_base: {
                 name: "new_item",
                 tags: "",
             },
@@ -1202,7 +1254,9 @@ function CreatorApp(props) {
         {kind: "divider", name: "Methods Divider", visible: true},
 
         {
-            title: "user methods", visible: true, editable: true, icon: pane_type_icons["user_method"],
+            title: "user methods",
+            identifier: "user_methods",
+            visible: true, editable: true, icon: pane_type_icons["user_method"],
             mode: "python",
             showAsCode: true,
             showSignature: true,
@@ -1213,10 +1267,11 @@ function CreatorApp(props) {
                 mode: "python",
                 firstLineNumber: 1,
             },
-            start_expanded: false, sub_items: umListRef.current, dispatch: umDispatch
+            sub_items: umListRef.current, dispatch: umDispatch
         },
         {
             title: "handler methods",
+            identifier: "handler_methods",
             visible: true,
             editable: true,
             mode: "python",
@@ -1231,17 +1286,16 @@ function CreatorApp(props) {
             icon: pane_type_icons["handler_method"],
             showSignature: true,
             sub_items: hmListRef.current,
-            start_expanded: false,
             createFromList: true,
             choiceDict: props.all_handler_methods,
             dispatch: hmDispatch
         },
         {
             title: "javascript",
+            identifier: "javascript",
             visible: true,
             editable: true,
             icon: pane_type_icons["javascript"],
-            start_expanded: false,
             mode: "javascript",
             showAsCode: true,
             item_base: {
@@ -1260,6 +1314,8 @@ function CreatorApp(props) {
         <Fragment>
             <MakerNavigator handleTabSelect={_handleTabSelect}
                             registerCmObject={registerCmObject}
+                            expandedSectionList={expandedSectionListRef.current}
+                            setSectionOpen={_setSectionOpen}
                             pushCallback={pushCallback}
                             is_mpl={my_props.is_mpl}
                             is_d3={my_props.is_d3}
