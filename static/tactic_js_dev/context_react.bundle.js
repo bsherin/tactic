@@ -223890,6 +223890,28 @@ function CreatorApp(props) {
     _usePropertyList12 = _slicedToArray(_usePropertyList11, 3),
     jsDispatch = _usePropertyList12[1],
     jsListRef = _usePropertyList12[2];
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false),
+    _useState2 = _slicedToArray(_useState, 2),
+    showSearchResultsPane = _useState2[0],
+    setShowSearchResultsPane = _useState2[1];
+  function _selectSearchResult(result) {
+    var _result$matchNumber;
+    var isCurrent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    if (isCurrent) {
+      _handleTabSelect(result.identifier);
+      return;
+    }
+    searchDispatch({
+      type: "GOTO_SEARCH_MATCH",
+      payload: {
+        identifier: result.identifier,
+        matchNumber: (_result$matchNumber = result.matchNumber) !== null && _result$matchNumber !== void 0 ? _result$matchNumber : 0
+      }
+    });
+    pushCallback(function () {
+      showTab(result.identifier);
+    });
+  }
   var otherCmObjects = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
   var _useStateAndRefWithUn = (0,_undo__WEBPACK_IMPORTED_MODULE_19__.useStateAndRefWithUndo)(_objectSpread({
       pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.INITIAL_CODE_PANE_HEIGHT
@@ -223979,10 +224001,10 @@ function CreatorApp(props) {
     handleKeyDown = _useHotkeys.handleKeyDown,
     handleKeyUp = _useHotkeys.handleKeyUp;
   var pushCallback = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_13__.useCallbackStack)();
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(props.resource_name),
-    _useState2 = _slicedToArray(_useState, 2),
-    resource_name = _useState2[0],
-    set_resource_name = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(props.resource_name),
+    _useState4 = _slicedToArray(_useState3, 2),
+    resource_name = _useState4[0],
+    set_resource_name = _useState4[1];
   var connection_status = (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_0__.useConnection)(props.tsocket, initSocket);
   (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
     updateGlobals({
@@ -224091,6 +224113,13 @@ function CreatorApp(props) {
       }
     }
   });
+  (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
+    if (searchStateRef.current.search_string === "") {
+      setShowSearchResultsPane(false);
+    } else {
+      setShowSearchResultsPane(true);
+    }
+  }, [searchStateRef.current.search_string]);
   (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
     function _getOptionNames() {
       var onames = [];
@@ -225778,6 +225807,24 @@ function CreatorApp(props) {
   } finally {
     _iterator23.f();
   }
+  var editor_pane = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
+    ref: paneListRef,
+    style: {
+      overflow: "auto",
+      flex: "1 1 0",
+      minHeight: 0,
+      minWidth: 0,
+      paddingBottom: 250
+    },
+    className: "creator-pane-list"
+  }, right_pane_list);
+  var search_results_pane = showSearchResultsPane ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_24__.TileMakerSearchResultsPane, {
+    searchStateRef: searchStateRef,
+    onSelectResult: _selectSearchResult,
+    onClose: function onClose() {
+      return setShowSearchResultsPane(false);
+    }
+  }) : null;
   var right_pane = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     style: {
       width: "100%",
@@ -225799,20 +225846,23 @@ function CreatorApp(props) {
     searchPrev: _searchPrev,
     searchState: searchStateRef.current,
     search_ref: search_ref,
+    showSearchResultsPane: function showSearchResultsPane() {
+      return setShowSearchResultsPane(true);
+    },
     showSearchResult: function showSearchResult(identifier) {
       showTab(identifier);
     }
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
-    ref: paneListRef,
+    className: "creator-search-and-editor-row",
     style: {
-      overflow: "auto",
+      display: "flex",
+      flexDirection: "row",
       flex: "1 1 0",
       minHeight: 0,
       minWidth: 0,
-      paddingBottom: 250
-    },
-    className: "creator-pane-list"
-  }, right_pane_list));
+      width: "100%"
+    }
+  }, editor_pane, search_results_pane));
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools__WEBPACK_IMPORTED_MODULE_11__.ICON_BAR_WIDTH, "px)"),
     height: "100%",
@@ -225948,22 +225998,23 @@ if (!window.in_context) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   TileMakerSearchForm: () => (/* binding */ TileMakerSearchForm)
+/* harmony export */   TileMakerSearchForm: () => (/* binding */ TileMakerSearchForm),
+/* harmony export */   TileMakerSearchResultsPane: () => (/* binding */ TileMakerSearchResultsPane)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/popover/popover.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -225999,11 +226050,124 @@ function getMatchingIcon(result) {
   }
   return dividerIconDict[result.kind];
 }
-function SearchResultsMenu(props) {
-  var _props$searchStateRef;
+function SearchResultItem(props) {
+  var result = props.result,
+    isCurrent = props.isCurrent,
+    onSelectResult = props.onSelectResult;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "makert-search-result-item ".concat(isCurrent ? "current-search-result" : ""),
+    onClick: function onClick() {
+      return onSelectResult(result, isCurrent);
+    },
+    style: {
+      cursor: "pointer",
+      padding: "5px 7px 5px 12px",
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "baseline",
+      gap: 6
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__.Icon, {
+    icon: isCurrent ? "small-tick" : "blank",
+    size: 16
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+    style: {
+      opacity: .5,
+      flex: "0 0 35px",
+      textAlign: "left",
+      whiteSpace: "nowrap"
+    },
+    className: "sub-label"
+  }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__.Text, {
+    ellipsize: true,
+    className: "code-font",
+    style: {
+      flex: "1 1 auto",
+      minWidth: 0,
+      opacity: .85
+    }
+  }, result.preview));
+}
+function TileMakerSearchResultsPane(props) {
+  var _props$searchStateRef, _props$searchStateRef2;
+  props = _objectSpread({
+    searchStateRef: null,
+    onSelectResult: null,
+    onClose: null
+  }, props);
   var results = (_props$searchStateRef = props.searchStateRef.current.search_results) !== null && _props$searchStateRef !== void 0 ? _props$searchStateRef : [];
+  var currentDividerTitle = null;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "maker-search-results-pane bp6-menu",
+    style: {
+      width: 340,
+      marginLeft: 25,
+      flex: "0 0 340px",
+      minWidth: 0,
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      borderLeft: "1px solid rgba(128,128,128,.35)"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "6px 8px",
+      borderBottom: "1px solid rgba(128,128,128,.25)",
+      flex: "0 0 auto"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.EntityTitle, {
+    title: "Search Results",
+    subtitle: props.searchStateRef.current.search_matches === 1 ? "1 match" : "".concat((_props$searchStateRef2 = props.searchStateRef.current.search_matches) !== null && _props$searchStateRef2 !== void 0 ? _props$searchStateRef2 : 0, " matches"),
+    icon: "search"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
+    icon: "cross",
+    size: "small",
+    variant: "minimal",
+    onClick: props.onClose
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      overflowY: "auto",
+      flex: "1 1 0",
+      minHeight: 0,
+      paddingBottom: 20
+    }
+  }, results.length === 0 && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      padding: 10,
+      opacity: .7
+    }
+  }, "No matches"), results.map(function (result) {
+    var _result$field, _result$globalMatchNu;
+    var isCurrent = result.kind === "code" && result.identifier === props.searchStateRef.current.current_search_cm && result.matchNumber === props.searchStateRef.current.current_search_number;
+    var showTitle = result.paneName !== currentDividerTitle;
+    if (showTitle) {
+      currentDividerTitle = result.paneName;
+    }
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
+      key: "".concat(result.identifier, "-").concat(result.kind, "-").concat(result.matchNumber, "-").concat((_result$field = result.field) !== null && _result$field !== void 0 ? _result$field : "", "-").concat((_result$globalMatchNu = result.globalMatchNumber) !== null && _result$globalMatchNu !== void 0 ? _result$globalMatchNu : "")
+    }, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+      style: {
+        padding: "8px 8px 3px 8px",
+        borderTop: "1px solid rgba(128,128,128,.18)"
+      }
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.EntityTitle, {
+      title: result.paneName,
+      icon: getMatchingIcon(result)
+    })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SearchResultItem, {
+      result: result,
+      isCurrent: isCurrent,
+      onSelectResult: props.onSelectResult
+    }));
+  })));
+}
+function OldSearchResultsMenu(props) {
+  var _props$searchStateRef3;
+  var results = (_props$searchStateRef3 = props.searchStateRef.current.search_results) !== null && _props$searchStateRef3 !== void 0 ? _props$searchStateRef3 : [];
   if (results.length === 0) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.MenuItem, {
       disabled: true,
       text: "No matches"
     }));
@@ -226011,7 +226175,7 @@ function SearchResultsMenu(props) {
   var menuDividerTitle = null;
   var showTitle = false;
   var iconName = null;
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__.Menu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Menu, {
     className: "maker-search-menu",
     style: {
       maxHeight: 360,
@@ -226027,12 +226191,12 @@ function SearchResultsMenu(props) {
     } else {
       showTitle = false;
     }
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.MenuDivider, {
-      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.EntityTitle, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.MenuDivider, {
+      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.EntityTitle, {
         title: result.paneName,
         icon: iconName
       })
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.MenuItem, {
       key: "".concat(result.identifier, "-").concat(result.matchNumber),
       icon: isCurrent ? "small-tick" : "blank",
       text: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -226051,7 +226215,7 @@ function SearchResultsMenu(props) {
           whiteSpace: "nowrap"
         },
         className: "sub-label"
-      }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Text, {
+      }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__.Text, {
         ellipsize: true,
         className: "code-font",
         style: {
@@ -226083,7 +226247,8 @@ function TileMakerSearchForm(props) {
     searchDispatch: null,
     searchNext: null,
     searchPrev: null,
-    showSearchResult: null
+    showSearchResult: null,
+    showSearchResultsPane: null
   }, props);
   var _useDebounce = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_1__.useDebounce)(function (newval) {
       props.searchDispatch({
@@ -226135,7 +226300,7 @@ function TileMakerSearchForm(props) {
   } else {
     match_text = null;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.FormGroup, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     helperText: match_text,
     style: {
       marginBottom: 0,
@@ -226147,7 +226312,7 @@ function TileMakerSearchForm(props) {
       marginTop: 5,
       marginBottom: 5
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.InputGroup, {
     type: "search",
     className: "search-input",
     placeholder: "Search code...",
@@ -226161,38 +226326,33 @@ function TileMakerSearchForm(props) {
     autoCorrect: "off",
     size: "small",
     inputRef: props.search_ref
-  }), props.allow_regex && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Switch, {
+  }), props.allow_regex && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Switch, {
     label: "regexp",
     className: "ml-3 mb-0 mt-1",
     size: "medium",
     checked: props.searchStateRef.current.use_regex,
     onChange: _handleRegexChange
-  }), props.include_search_jumper && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.ButtonGroup, {
+  }), props.include_search_jumper && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.ButtonGroup, {
     style: {
       marginLeft: 5,
       padding: 2
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
     onClick: props.searchNext,
     icon: "caret-down",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
     onClick: props.searchPrev,
     icon: "caret-up",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Popover, {
-    placement: "bottom-start",
-    content: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SearchResultsMenu, {
-      searchStateRef: props.searchStateRef,
-      onSelectResult: _handleSelectResult
-    })
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
     icon: "list",
     size: "small",
-    disabled: !props.searchStateRef.current.search_matches
-  }))))));
+    disabled: !props.searchStateRef.current.search_matches,
+    onClick: props.showSearchResultsPane
+  })))));
 }
 TileMakerSearchForm = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(TileMakerSearchForm);
 

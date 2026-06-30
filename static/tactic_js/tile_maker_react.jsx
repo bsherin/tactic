@@ -1,5 +1,6 @@
 import {TacticSocket} from "./tactic_socket";
 
+
 if (!window.in_context) {
     import("../tactic_css/tactic.scss");
     import("../tactic_css/resource_viewer.scss");
@@ -48,7 +49,10 @@ import {
 } from "./tile_maker_elements";
 import {widgetIcons} from "./widget_info"
 import {useMetadata} from "./metadata_reducer";
-import {TileMakerSearchForm} from "./tile_maker_search_form";
+import {
+    TileMakerSearchForm,
+    TileMakerSearchResultsPane
+} from "./tile_maker_search_form";
 
 export {CreatorApp}
 
@@ -88,6 +92,26 @@ function CreatorApp(props) {
     const [, umDispatch, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, hmDispatch, hmListRef] = usePropertyList(props.used_handler_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, jsDispatch, jsListRef] = usePropertyList(props.javascript_functions_list, INITIAL_CODE_PANE_HEIGHT);
+
+    const [showSearchResultsPane, setShowSearchResultsPane] = useState(false);
+
+    function _selectSearchResult(result, isCurrent=false) {
+        if (isCurrent) {
+            _handleTabSelect(result.identifier);
+            return;
+        }
+        searchDispatch({
+            type: "GOTO_SEARCH_MATCH",
+            payload: {
+                identifier: result.identifier,
+                matchNumber: result.matchNumber ?? 0
+            }
+        });
+
+        pushCallback(() => {
+            showTab(result.identifier);
+        });
+    }
     
     const otherCmObjects = useRef([]);
 
@@ -264,6 +288,16 @@ function CreatorApp(props) {
             }
         }
     });
+
+    useEffect(() => {
+        if (searchStateRef.current.search_string === "") {
+            setShowSearchResultsPane(false);
+        }
+        else {
+            setShowSearchResultsPane(true);
+        }
+    }, [searchStateRef.current.search_string]);
+
 
     useEffect(() => {
         function _getOptionNames() {
@@ -1522,30 +1556,75 @@ function CreatorApp(props) {
         )
     }
 
-    let right_pane = (
-        <div style={{width: "100%", height: "100%", display: "flex", minHeight: 0, minWidth: 0, flexDirection: "column"}}
-             className="creator-right-pane">
-            <TileMakerSearchForm
-                regex={false}
-                allow_regex={true}
-                field_width={200}
-                include_search_jumper={true}
-                searchDispatch={searchDispatch}
-                searchStateRef={searchStateRef}
-                searchNext={_searchNext}
-                searchPrev={_searchPrev}
-                searchState={searchStateRef.current}
-                search_ref={search_ref}
-                showSearchResult={(identifier) => {
-                    showTab(identifier);
-                }}
-            />
-            <div ref={paneListRef} style={{overflow: "auto", flex: "1 1 0", minHeight: 0, minWidth: 0,paddingBottom: 250}}
-                 className="creator-pane-list">
-                {right_pane_list}
-            </div>
+    let editor_pane = (
+    <div
+        ref={paneListRef}
+        style={{
+            overflow: "auto",
+            flex: "1 1 0",
+            minHeight: 0,
+            minWidth: 0,
+            paddingBottom: 250,
+        }}
+        className="creator-pane-list"
+    >
+        {right_pane_list}
+    </div>
+);
+
+let search_results_pane = showSearchResultsPane ? (
+    <TileMakerSearchResultsPane
+        searchStateRef={searchStateRef}
+        onSelectResult={_selectSearchResult}
+        onClose={() => setShowSearchResultsPane(false)}
+    />
+) : null;
+
+let right_pane = (
+    <div
+        style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            minHeight: 0,
+            minWidth: 0,
+            flexDirection: "column",
+        }}
+        className="creator-right-pane"
+    >
+        <TileMakerSearchForm
+            regex={false}
+            allow_regex={true}
+            field_width={200}
+            include_search_jumper={true}
+            searchDispatch={searchDispatch}
+            searchStateRef={searchStateRef}
+            searchNext={_searchNext}
+            searchPrev={_searchPrev}
+            searchState={searchStateRef.current}
+            search_ref={search_ref}
+            showSearchResultsPane={() => setShowSearchResultsPane(true)}
+            showSearchResult={(identifier) => {
+                showTab(identifier);
+            }}
+        />
+
+        <div
+            className="creator-search-and-editor-row"
+            style={{
+                display: "flex",
+                flexDirection: "row",
+                flex: "1 1 0",
+                minHeight: 0,
+                minWidth: 0,
+                width: "100%",
+            }}
+        >
+            {editor_pane}
+            {search_results_pane}
         </div>
-    );
+    </div>
+);
 
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
