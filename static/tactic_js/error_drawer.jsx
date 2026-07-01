@@ -86,7 +86,9 @@ function withErrorDrawer(WrappedComponent, lposition = "right", error_drawer_siz
             const newcontents = {...contents_ref.current};
             delete newcontents[ukey];
             set_contents(newcontents);
-            set_show_drawer(false)
+            if (Object.keys(newcontents).length == 0) {
+                set_show_drawer(false)
+            }
         }, [contents_ref.current]);
 
         const _clearAll = useCallback((data) =>{

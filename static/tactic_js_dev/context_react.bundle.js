@@ -193083,7 +193083,9 @@ function withErrorDrawer(WrappedComponent) {
       var newcontents = _objectSpread({}, contents_ref.current);
       delete newcontents[ukey];
       set_contents(newcontents);
-      set_show_drawer(false);
+      if (Object.keys(newcontents).length == 0) {
+        set_show_drawer(false);
+      }
     }, [contents_ref.current]);
     var _clearAll = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (data) {
       if (data == null || !("local_id" in data) || data.local_id == props.local_id) {
@@ -223999,7 +224001,7 @@ function CreatorApp(props) {
       combo: "Ctrl+F",
       global: false,
       group: "Tile Creator",
-      label: "Redo",
+      label: "Search",
       onKeyDown: function onKeyDown() {
         search_ref.current.focus();
         return false;
@@ -224008,10 +224010,10 @@ function CreatorApp(props) {
       combo: "Cmd+F",
       global: false,
       group: "Tile Creator",
-      label: "Redo",
+      label: "Search",
       onKeyDown: function onKeyDown() {
         search_ref.current.focus();
-        return false;
+        return true;
       }
     }];
   }, [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]);
