@@ -197,6 +197,26 @@ function CreatorApp(props) {
                 group: "Tile Creator",
                 label: "Redo",
                 onKeyDown: handleRedo
+            },
+            {
+                combo: "Ctrl+F",
+                global: false,
+                group: "Tile Creator",
+                label: "Search",
+                onKeyDown: () => {
+                    search_ref.current.focus();
+                    return false
+                }
+            },
+            {
+                combo: "Cmd+F",
+                global: false,
+                group: "Tile Creator",
+                label: "Search",
+                onKeyDown: () => {
+                    search_ref.current.focus();
+                    return true
+                }
             }
         ], [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]
     );

@@ -223995,6 +223995,24 @@ function CreatorApp(props) {
       group: "Tile Creator",
       label: "Redo",
       onKeyDown: handleRedo
+    }, {
+      combo: "Ctrl+F",
+      global: false,
+      group: "Tile Creator",
+      label: "Redo",
+      onKeyDown: function onKeyDown() {
+        search_ref.current.focus();
+        return false;
+      }
+    }, {
+      combo: "Cmd+F",
+      global: false,
+      group: "Tile Creator",
+      label: "Redo",
+      onKeyDown: function onKeyDown() {
+        search_ref.current.focus();
+        return false;
+      }
     }];
   }, [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]);
   var _useHotkeys = (0,_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.useHotkeys)(hotkeys),
@@ -226324,7 +226342,7 @@ function TileMakerSearchForm(props) {
     },
     autoCapitalize: "none",
     autoCorrect: "off",
-    size: "small",
+    size: "medium",
     inputRef: props.search_ref
   }), props.allow_regex && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Switch, {
     label: "regexp",

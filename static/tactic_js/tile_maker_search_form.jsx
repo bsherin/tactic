@@ -344,7 +344,7 @@ function TileMakerSearchForm(props) {
                                 style={{"width": props.field_width}}
                                 autoCapitalize="none"
                                 autoCorrect="off"
-                                size="small"
+                                size="medium"
                                 inputRef={props.search_ref}
                     />
                     {props.allow_regex &&
