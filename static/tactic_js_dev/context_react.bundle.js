@@ -226122,7 +226122,7 @@ function TileMakerSearchResultsPane(props) {
     style: {
       width: 340,
       marginLeft: 25,
-      flex: "0 0 340px",
+      flex: ".4 .4 0",
       minWidth: 0,
       height: "100%",
       display: "flex",
