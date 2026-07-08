@@ -582,11 +582,11 @@ class LoadSaveTasksMixin:
                 if not sess.doc_type == "notebook":
                     doc, project_dict, mdata = (
                         self.prepare_project_data(sid, sess.project_name, project_dict, sess.doc_type, "",
-                                                  interface_state, sess.metadata, False))
+                                                  interface_state, sess.metadata, True))
                 else:
                     doc, project_dict, mdata = (
                         self.prepare_project_data(sid, sess.project_name, project_dict, "notebook", sess.collection_name,
-                                                  interface_state, sess.metadata, False))
+                                                  interface_state, sess.metadata, True))
                 sess.metadata = mdata
                 self.update_project(sid, doc, project_dict)
                 self.emit_clear_status(sid)

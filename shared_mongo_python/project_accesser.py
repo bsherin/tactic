@@ -217,7 +217,7 @@ class ProjectAccess(object):
         return text
 
     def prepare_project_data(self, sid, project_name, project_dict, doc_type, collection_name, interface_state,
-                             mdata=None, purgetiles=False, is_new_project=True):
+                             mdata=None, purgetiles=True, is_new_project=True):
         sess = self.get_session(sid)
         if mdata is None:
             mdata = self.create_initial_metadata()
