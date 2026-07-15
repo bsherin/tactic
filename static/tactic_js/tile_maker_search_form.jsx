@@ -1,4 +1,4 @@
-import React, {Fragment, memo} from "react";
+import React, {Fragment, memo, useContext} from "react";
 import {useDebounce} from "./utilities_react";
 import {
     Button,
@@ -13,8 +13,12 @@ import {
     Icon,
     Text
 } from "@blueprintjs/core";
+import {SettingsContext} from "./settings";
+import {AccountSwitchField} from "./account_fields";
+import {postPromise} from "./communication_react";
+import {doFlash} from "./toaster";
 
-export {TileMakerSearchForm, TileMakerSearchResultsPane};
+export {TileMakerSearchForm, TileMakerSearchResultsPane, TileMakerLocalSettings};
 
 const dividerIconDict = {
     "code": "code",
@@ -267,6 +271,56 @@ function OldSearchResultsMenu(props) {
     );
 }
 
+function TileMakerLocalSettings(props) {
+    const settingsContext = useContext(SettingsContext);
+
+    function _onFieldChange(fname, value, submit = false) {
+        _submitUpdatedField(fname, value)
+    }
+
+    const lnum_icon = <Icon icon="numbered-list" size={14}/>;
+    const ai_icon = <Icon icon="intelligence" size={14}/>;
+
+    function _submitUpdatedField(fname, fvalue) {
+        let data = {};
+        data[fname] = fvalue;
+        postPromise("host", "update_settings", data)
+            .catch(() => {
+                data.alert_type = "alert-warning";
+                doFlash(data);
+            })
+    }
+
+    let lineNumberField = (
+        <AccountSwitchField
+                        name="show_line_numbers"
+                        key="show_line_numbers"
+                        inline={true}
+                        value={settingsContext.settings["show_line_numbers"]}
+                        display_text={lnum_icon}
+                        onFieldChange={_onFieldChange}/>
+    )
+
+    let aiField = (
+        <AccountSwitchField
+                        name="use_ai_code_suggestions"
+                        key="use_ai_code_suggestions"
+                        inline={true}
+                        value={settingsContext.settings["use_ai_code_suggestions"]}
+                        display_text={ai_icon}
+                        onFieldChange={_onFieldChange}/>
+    )
+
+    return (
+        <div className="maker-local-settings"
+            style={{padding: 0, display: "flex", flexDirection: "row", gap: 3}}>
+            {lineNumberField}
+            {window.has_openapi_key && aiField}
+        </div>
+    )
+
+}
+
 function TileMakerSearchForm(props) {
     props = {
         allow_regex: false,
@@ -334,7 +388,7 @@ function TileMakerSearchForm(props) {
         <Fragment>
             <FormGroup helperText={match_text}
                        style={{marginBottom: 0, paddingLeft: 5}}>
-                <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 5}}>
+                <div className="d-flex flex-row" style={{marginTop: 5, marginBottom: 0}}>
                     <InputGroup type="search"
                                 className="search-input"
                                 placeholder="Search code..."

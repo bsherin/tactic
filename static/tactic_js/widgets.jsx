@@ -28,6 +28,8 @@ const widgetDict = {
     select: SelectWidget,
     multi_select: MultiSelectWidget,
     input: InputWidget,
+    integer: IntegerWidget,
+    float: FloatWidget,
     iframe: IframeWidget,
     matplotlib: MatplotlibWidget,
     divider: DividerWidget,
@@ -635,12 +637,33 @@ function InputWidget(props) {
         dispatch: null,
         row: 0,
         widgetData: inputDataDefault,
+        validator: null,
+        converter: null,
         ...props
     };
 
+    const [helperText, setHelperText] = useState("")
+
     const [localValue, setLocalValue] = useState(props.widgetData.value);
     const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
-    const [, doUpdate] = useDebounce(widgetSet);
+    const [, doUpdate] = useDebounce((data)=>{
+        if (props.validator) {
+            let valid = props.validator(data.value);
+            if (!valid) {
+                if (!props.widgetData.helperText) {
+                    setHelperText("Invalid input");
+                    return;
+                }
+            }
+            else {
+                setHelperText("");
+            }
+        }
+        if (props.converter) {
+            data.value = props.converter(data.value);
+        }
+        widgetSet(data)
+    });
     const {style, label, inline, value, to_render, ...rest} = props.widgetData;
 
     function onChange(val) {
@@ -654,8 +677,7 @@ function InputWidget(props) {
                    inline={props.widgetData.inline}
                    style={props.widgetData.style}
                    label={props.widgetData.label}
-                   helperText={props.widgetData.helperText}
-        >
+                   helperText={props.widgetData.helperText ? props.widgetData.helperText : helperText}>
             <InputGroup type="text"
                         {...rest}
                         value={localValue}
@@ -664,6 +686,81 @@ function InputWidget(props) {
         </FormGroup>
     )
 }
+
+function IntegerWidget(props) {
+    props = {
+        widgetId: null,
+        local_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: inputDataDefault,
+        validator: null,
+        ...props
+    };
+
+    function validator(val) {
+        // Check if the value is a string that can be converted to an integer
+        if (typeof val === "string" && val.trim() !== "") {
+            const intValue = parseInt(val, 10);
+            return !isNaN(intValue) && intValue.toString() === val.trim();
+        }
+        return false;
+    }
+
+    function converter(val) {
+        if (validator(val)) {
+            return parseInt(val, 10);
+        }
+        else {
+            return null;
+        }
+    }
+
+    return (
+        <InputWidget {...props} validator={validator} converter={converter}/>
+    )
+
+}
+
+function FloatWidget(props) {
+    props = {
+        widgetId: null,
+        local_id: null,
+        console_id: null,
+        tile_id: null,
+        dispatch: null,
+        row: 0,
+        widgetData: inputDataDefault,
+        validator: null,
+        ...props
+    };
+
+    function validator(val) {
+        // Check if the value is a string that can be converted to a float
+        if (typeof val === "string" && val.trim() !== "") {
+            const floatValue = parseFloat(val);
+            return !isNaN(floatValue);
+        }
+        return false;
+    }
+
+    function converter(val) {
+        if (validator(val)) {
+            return parseFloat(val);
+        }
+        else {
+            return null;
+        }
+    }
+
+    return (
+        <InputWidget {...props} validator={validator} converter={converter}/>
+    )
+
+}
+
 
 function JavascriptWidget(props) {
     props = {

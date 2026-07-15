@@ -107,6 +107,15 @@ class Widget(object):
     def preprocess_widget_data(self, widget_data):
         return widget_data
 
+    def update_exports_if_necessary(self):
+        current_exports = Tile.get_export_type_info()
+        if Tile.exports_have_changed(current_exports):
+            Tile._last_exports = current_exports
+            Tile._tworker.post_to_main("update_pipe_dict_task",
+                                       {"exports": current_exports,
+                                        "tile_id": Tile._tworker.my_id,
+                                        "tile_name": Tile.tile_name})
+
     def set(self, widget_data):
         widget_data = self.preprocess_widget_data(widget_data)
         for attr in self.extra_fields:
@@ -131,6 +140,7 @@ class Widget(object):
             if self.on_change is not None:
                 if self.on_change_is_method:
                     getattr(Tile, self.on_change)(self._value)
+                    self.update_exports_if_necessary()
                 else:
                     if in_pseudo_tile:
                         getattr(sys.modules["pseudo_tile_base"], self.on_change)(self._value)
@@ -143,6 +153,7 @@ class Widget(object):
         if self.on_click is not None:
             if self.on_click_is_method:
                 getattr(Tile, self.on_click)(value)
+                self.update_exports_if_necessary()
             else:
                 if in_pseudo_tile:
                     getattr(sys.modules["pseudo_tile_base"], self.on_click)(value)
@@ -245,6 +256,25 @@ class InputWidget(Widget):
         if "on_change" not in wdata:
             self.on_change = None
 
+class IntegerWidget(Widget):
+    widget_kind = "integer"
+    extra_fields = ["fill", "label", "inline", "style", "to_render", "helperText"]
+    defaults = {"fill": False, "label": "", "inline": False, "style": None, "to_render": False, "helperText": None}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if "on_change" not in wdata:
+            self.on_change = None
+
+class FloatWidget(Widget):
+    widget_kind = "float"
+    extra_fields = ["fill", "label", "inline", "style", "to_render", "helperText"]
+    defaults = {"fill": False, "label": "", "inline": False, "style": None, "to_render": False, "helperText": None}
+
+    def initialize(self, wdata):
+        super().initialize(wdata)
+        if "on_change" not in wdata:
+            self.on_change = None
 
 class SliderWidget(Widget):
     widget_kind = "slider"
@@ -516,6 +546,8 @@ kind_dict = {
     "multi_select": MultiSelectWidget,
     "pool_select": PoolSelectWidget,
     "input": InputWidget,
+    "integer": IntegerWidget,
+    "float": FloatWidget,
     "matplotlib": MatplotlibWidget,
     "box": Box,
     "collapse": CollapseWidget,

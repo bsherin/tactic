@@ -125,13 +125,15 @@ function ExportButtonList(props) {
         }
         return groups
     }
+
+    let groups = create_groups();
     return (
         <div ref={top_ref}
              style={{flexDirection: "column", display: "flex",
                  minHeight: 0, minWidth: 0,
                  verticalAlign: "top", height: "100%", position: "relative"}}
              className="exports-button-list contingent-scroll">
-            {create_groups()}
+            {groups}
         </div>
     )
 }
@@ -413,7 +415,7 @@ function ExportsViewer(props) {
                      >
                          <div className="d-flex flex-row"
                               style={{flex: "1 1 0", minHeight: 0, minWidth: 0, width: "100%", position: "relative", overflow: "auto"}}>
-                             <ExportButtonList pipe_dict={pipe_dict}
+                             ab<ExportButtonList pipe_dict={pipe_dict}
                                                value={selected_export_ref.current}
                                                handleChange={_handleExportListChange}
                              />

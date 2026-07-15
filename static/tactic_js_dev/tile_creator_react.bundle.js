@@ -176149,13 +176149,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   AccountAddressSelectField: () => (/* binding */ AccountAddressSelectField),
 /* harmony export */   AccountSelectField: () => (/* binding */ AccountSelectField),
+/* harmony export */   AccountSwitchField: () => (/* binding */ AccountSwitchField),
 /* harmony export */   AccountTextField: () => (/* binding */ AccountTextField)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html-select/htmlSelect.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html-select/htmlSelect.js");
 /* harmony import */ var _pool_tree__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./pool_tree */ "./static/tactic_js/pool_tree.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -176195,6 +176197,21 @@ function AccountTextField(props) {
   }));
 }
 AccountTextField = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(AccountTextField);
+function AccountSwitchField(props) {
+  props = _objectSpread({
+    inline: false
+  }, props);
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.Switch, {
+    key: props.name,
+    checked: props.value === "yes",
+    inline: props.inline,
+    label: props.display_text,
+    size: "small",
+    onChange: function onChange(e) {
+      props.onFieldChange(props.name, e.currentTarget.checked ? "yes" : "no", true);
+    }
+  });
+}
 function AccountSelectField(props) {
   props = _objectSpread({
     inline: false
@@ -176207,7 +176224,7 @@ function AccountSelectField(props) {
     },
     label: props.display_text,
     helperText: props.helper_text
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.HTMLSelect, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.HTMLSelect, {
     options: props.options,
     onChange: function onChange(e) {
       props.onFieldChange(props.name, e.currentTarget.value, true);
@@ -199231,23 +199248,28 @@ function NavItem(props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   TileMakerLocalSettings: () => (/* binding */ TileMakerLocalSettings),
 /* harmony export */   TileMakerSearchForm: () => (/* binding */ TileMakerSearchForm),
 /* harmony export */   TileMakerSearchResultsPane: () => (/* binding */ TileMakerSearchResultsPane)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
+/* harmony import */ var _account_fields__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./account_fields */ "./static/tactic_js/account_fields.jsx");
+/* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
+/* harmony import */ var _toaster__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./toaster */ "./static/tactic_js/toaster.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -199260,6 +199282,10 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
+
+
+
 
 
 
@@ -199300,7 +199326,7 @@ function SearchResultItem(props) {
       alignItems: "baseline",
       gap: 6
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__.Icon, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Icon, {
     icon: isCurrent ? "small-tick" : "blank",
     size: 16
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
@@ -199311,7 +199337,7 @@ function SearchResultItem(props) {
       whiteSpace: "nowrap"
     },
     className: "sub-label"
-  }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__.Text, {
+  }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Text, {
     ellipsize: true,
     className: "code-font",
     style: {
@@ -199351,11 +199377,11 @@ function TileMakerSearchResultsPane(props) {
       borderBottom: "1px solid rgba(128,128,128,.25)",
       flex: "0 0 auto"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.EntityTitle, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
     title: "Search Results",
     subtitle: props.searchStateRef.current.search_matches === 1 ? "1 match" : "".concat((_props$searchStateRef2 = props.searchStateRef.current.search_matches) !== null && _props$searchStateRef2 !== void 0 ? _props$searchStateRef2 : 0, " matches"),
     icon: "search"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
     icon: "cross",
     size: "small",
     variant: "minimal",
@@ -199386,7 +199412,7 @@ function TileMakerSearchResultsPane(props) {
         padding: "8px 8px 3px 8px",
         borderTop: "1px solid rgba(128,128,128,.18)"
       }
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.EntityTitle, {
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
       title: result.paneName,
       icon: getMatchingIcon(result)
     })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SearchResultItem, {
@@ -199400,7 +199426,7 @@ function OldSearchResultsMenu(props) {
   var _props$searchStateRef3;
   var results = (_props$searchStateRef3 = props.searchStateRef.current.search_results) !== null && _props$searchStateRef3 !== void 0 ? _props$searchStateRef3 : [];
   if (results.length === 0) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
       disabled: true,
       text: "No matches"
     }));
@@ -199408,7 +199434,7 @@ function OldSearchResultsMenu(props) {
   var menuDividerTitle = null;
   var showTitle = false;
   var iconName = null;
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Menu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, {
     className: "maker-search-menu",
     style: {
       maxHeight: 360,
@@ -199424,12 +199450,12 @@ function OldSearchResultsMenu(props) {
     } else {
       showTitle = false;
     }
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.MenuDivider, {
-      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.EntityTitle, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuDivider, {
+      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
         title: result.paneName,
         icon: iconName
       })
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
       key: "".concat(result.identifier, "-").concat(result.matchNumber),
       icon: isCurrent ? "small-tick" : "blank",
       text: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -199448,7 +199474,7 @@ function OldSearchResultsMenu(props) {
           whiteSpace: "nowrap"
         },
         className: "sub-label"
-      }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__.Text, {
+      }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Text, {
         ellipsize: true,
         className: "code-font",
         style: {
@@ -199464,6 +199490,54 @@ function OldSearchResultsMenu(props) {
       }
     }));
   }));
+}
+function TileMakerLocalSettings(props) {
+  var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_2__.SettingsContext);
+  function _onFieldChange(fname, value) {
+    var submit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    _submitUpdatedField(fname, value);
+  }
+  var lnum_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Icon, {
+    icon: "numbered-list",
+    size: 14
+  });
+  var ai_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Icon, {
+    icon: "intelligence",
+    size: 14
+  });
+  function _submitUpdatedField(fname, fvalue) {
+    var data = {};
+    data[fname] = fvalue;
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_4__.postPromise)("host", "update_settings", data)["catch"](function () {
+      data.alert_type = "alert-warning";
+      (0,_toaster__WEBPACK_IMPORTED_MODULE_5__.doFlash)(data);
+    });
+  }
+  var lineNumberField = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_account_fields__WEBPACK_IMPORTED_MODULE_3__.AccountSwitchField, {
+    name: "show_line_numbers",
+    key: "show_line_numbers",
+    inline: true,
+    value: settingsContext.settings["show_line_numbers"],
+    display_text: lnum_icon,
+    onFieldChange: _onFieldChange
+  });
+  var aiField = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_account_fields__WEBPACK_IMPORTED_MODULE_3__.AccountSwitchField, {
+    name: "use_ai_code_suggestions",
+    key: "use_ai_code_suggestions",
+    inline: true,
+    value: settingsContext.settings["use_ai_code_suggestions"],
+    display_text: ai_icon,
+    onFieldChange: _onFieldChange
+  });
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "maker-local-settings",
+    style: {
+      padding: 0,
+      display: "flex",
+      flexDirection: "row",
+      gap: 3
+    }
+  }, lineNumberField, window.has_openapi_key && aiField);
 }
 function TileMakerSearchForm(props) {
   props = _objectSpread({
@@ -199533,7 +199607,7 @@ function TileMakerSearchForm(props) {
   } else {
     match_text = null;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.FormGroup, {
     helperText: match_text,
     style: {
       marginBottom: 0,
@@ -199543,9 +199617,9 @@ function TileMakerSearchForm(props) {
     className: "d-flex flex-row",
     style: {
       marginTop: 5,
-      marginBottom: 5
+      marginBottom: 0
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.InputGroup, {
     type: "search",
     className: "search-input",
     placeholder: "Search code...",
@@ -199559,28 +199633,28 @@ function TileMakerSearchForm(props) {
     autoCorrect: "off",
     size: "medium",
     inputRef: props.search_ref
-  }), props.allow_regex && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Switch, {
+  }), props.allow_regex && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Switch, {
     label: "regexp",
     className: "ml-3 mb-0 mt-1",
     size: "medium",
     checked: props.searchStateRef.current.use_regex,
     onChange: _handleRegexChange
-  }), props.include_search_jumper && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.ButtonGroup, {
+  }), props.include_search_jumper && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.ButtonGroup, {
     style: {
       marginLeft: 5,
       padding: 2
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
     onClick: props.searchNext,
     icon: "caret-down",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
     onClick: props.searchPrev,
     icon: "caret-up",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
     icon: "list",
     size: "small",
     disabled: !props.searchStateRef.current.search_matches,
@@ -200972,6 +201046,8 @@ var widgetIcons = {
   multi_select: "menu-open",
   pool_select: "folder-open",
   input: "text-highlight",
+  integer: "numerical",
+  "float": "floating-point",
   box: "selection-box",
   collapse: "collapse-all",
   matplotlib: "scatter-plot",
@@ -201076,6 +201152,24 @@ var widgetInfo = {
   input: {
     value: stringField(),
     label: stringField("input"),
+    on_change: methodField(),
+    fill: boolField(),
+    inline: boolField(),
+    style: styleField(),
+    helperText: stringField(null)
+  },
+  integer: {
+    value: numberField(),
+    label: stringField("integer"),
+    on_change: methodField(),
+    fill: boolField(),
+    inline: boolField(),
+    style: styleField(),
+    helperText: stringField(null)
+  },
+  "float": {
+    value: numberField(),
+    label: stringField("float"),
     on_change: methodField(),
     fill: boolField(),
     inline: boolField(),
@@ -201276,6 +201370,8 @@ var widgetDict = {
   select: SelectWidget,
   multi_select: MultiSelectWidget,
   input: InputWidget,
+  integer: IntegerWidget,
+  "float": FloatWidget,
   iframe: IframeWidget,
   matplotlib: MatplotlibWidget,
   divider: DividerWidget,
@@ -201946,16 +202042,38 @@ function InputWidget(props) {
     tile_id: null,
     dispatch: null,
     row: 0,
-    widgetData: inputDataDefault
+    widgetData: inputDataDefault,
+    validator: null,
+    converter: null
   }, props);
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(props.widgetData.value),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
     _useState4 = _slicedToArray(_useState3, 2),
-    localValue = _useState4[0],
-    setLocalValue = _useState4[1];
+    helperText = _useState4[0],
+    setHelperText = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(props.widgetData.value),
+    _useState6 = _slicedToArray(_useState5, 2),
+    localValue = _useState6[0],
+    setLocalValue = _useState6[1];
   var _useWidget25 = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id),
     _useWidget26 = _slicedToArray(_useWidget25, 2),
     widgetSet = _useWidget26[1];
-  var _useDebounce = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_4__.useDebounce)(widgetSet),
+  var _useDebounce = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_4__.useDebounce)(function (data) {
+      if (props.validator) {
+        var valid = props.validator(data.value);
+        if (!valid) {
+          if (!props.widgetData.helperText) {
+            setHelperText("Invalid input");
+            return;
+          }
+        } else {
+          setHelperText("");
+        }
+      }
+      if (props.converter) {
+        data.value = props.converter(data.value);
+      }
+      widgetSet(data);
+    }),
     _useDebounce2 = _slicedToArray(_useDebounce, 2),
     doUpdate = _useDebounce2[1];
   var _props$widgetData14 = props.widgetData,
@@ -201977,13 +202095,75 @@ function InputWidget(props) {
     inline: props.widgetData.inline,
     style: props.widgetData.style,
     label: props.widgetData.label,
-    helperText: props.widgetData.helperText
+    helperText: props.widgetData.helperText ? props.widgetData.helperText : helperText
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.InputGroup, _extends({
     type: "text"
   }, rest, {
     value: localValue,
     onValueChange: onChange
   })));
+}
+function IntegerWidget(props) {
+  props = _objectSpread({
+    widgetId: null,
+    local_id: null,
+    console_id: null,
+    tile_id: null,
+    dispatch: null,
+    row: 0,
+    widgetData: inputDataDefault,
+    validator: null
+  }, props);
+  function validator(val) {
+    // Check if the value is a string that can be converted to an integer
+    if (typeof val === "string" && val.trim() !== "") {
+      var intValue = parseInt(val, 10);
+      return !isNaN(intValue) && intValue.toString() === val.trim();
+    }
+    return false;
+  }
+  function converter(val) {
+    if (validator(val)) {
+      return parseInt(val, 10);
+    } else {
+      return null;
+    }
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(InputWidget, _extends({}, props, {
+    validator: validator,
+    converter: converter
+  }));
+}
+function FloatWidget(props) {
+  props = _objectSpread({
+    widgetId: null,
+    local_id: null,
+    console_id: null,
+    tile_id: null,
+    dispatch: null,
+    row: 0,
+    widgetData: inputDataDefault,
+    validator: null
+  }, props);
+  function validator(val) {
+    // Check if the value is a string that can be converted to a float
+    if (typeof val === "string" && val.trim() !== "") {
+      var floatValue = parseFloat(val);
+      return !isNaN(floatValue);
+    }
+    return false;
+  }
+  function converter(val) {
+    if (validator(val)) {
+      return parseFloat(val);
+    } else {
+      return null;
+    }
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(InputWidget, _extends({}, props, {
+    validator: validator,
+    converter: converter
+  }));
 }
 function JavascriptWidget(props) {
   var _props$widgetData$cod, _props$widgetData15, _props$widgetData$val3, _props$widgetData16, _props$widgetData17;
@@ -204573,6 +204753,14 @@ function CreatorApp(props) {
       flexDirection: "column"
     },
     className: "creator-right-pane"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "4px 8px"
+    }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_24__.TileMakerSearchForm, {
     regex: false,
     allow_regex: true,
@@ -204590,7 +204778,7 @@ function CreatorApp(props) {
     showSearchResult: function showSearchResult(identifier) {
       showTab(identifier);
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_24__.TileMakerLocalSettings, null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     className: "creator-search-and-editor-row",
     style: {
       display: "flex",

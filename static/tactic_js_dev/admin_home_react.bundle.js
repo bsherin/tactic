@@ -171228,13 +171228,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   AccountAddressSelectField: () => (/* binding */ AccountAddressSelectField),
 /* harmony export */   AccountSelectField: () => (/* binding */ AccountSelectField),
+/* harmony export */   AccountSwitchField: () => (/* binding */ AccountSwitchField),
 /* harmony export */   AccountTextField: () => (/* binding */ AccountTextField)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html-select/htmlSelect.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html-select/htmlSelect.js");
 /* harmony import */ var _pool_tree__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./pool_tree */ "./static/tactic_js/pool_tree.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -171274,6 +171276,21 @@ function AccountTextField(props) {
   }));
 }
 AccountTextField = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(AccountTextField);
+function AccountSwitchField(props) {
+  props = _objectSpread({
+    inline: false
+  }, props);
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.Switch, {
+    key: props.name,
+    checked: props.value === "yes",
+    inline: props.inline,
+    label: props.display_text,
+    size: "small",
+    onChange: function onChange(e) {
+      props.onFieldChange(props.name, e.currentTarget.checked ? "yes" : "no", true);
+    }
+  });
+}
 function AccountSelectField(props) {
   props = _objectSpread({
     inline: false
@@ -171286,7 +171303,7 @@ function AccountSelectField(props) {
     },
     label: props.display_text,
     helperText: props.helper_text
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_4__.HTMLSelect, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.HTMLSelect, {
     options: props.options,
     onChange: function onChange(e) {
       props.onFieldChange(props.name, e.currentTarget.value, true);
@@ -193415,6 +193432,8 @@ var widgetDict = {
   select: SelectWidget,
   multi_select: MultiSelectWidget,
   input: InputWidget,
+  integer: IntegerWidget,
+  "float": FloatWidget,
   iframe: IframeWidget,
   matplotlib: MatplotlibWidget,
   divider: DividerWidget,
@@ -194085,16 +194104,38 @@ function InputWidget(props) {
     tile_id: null,
     dispatch: null,
     row: 0,
-    widgetData: inputDataDefault
+    widgetData: inputDataDefault,
+    validator: null,
+    converter: null
   }, props);
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(props.widgetData.value),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
     _useState4 = _slicedToArray(_useState3, 2),
-    localValue = _useState4[0],
-    setLocalValue = _useState4[1];
+    helperText = _useState4[0],
+    setHelperText = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(props.widgetData.value),
+    _useState6 = _slicedToArray(_useState5, 2),
+    localValue = _useState6[0],
+    setLocalValue = _useState6[1];
   var _useWidget25 = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id),
     _useWidget26 = _slicedToArray(_useWidget25, 2),
     widgetSet = _useWidget26[1];
-  var _useDebounce = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_4__.useDebounce)(widgetSet),
+  var _useDebounce = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_4__.useDebounce)(function (data) {
+      if (props.validator) {
+        var valid = props.validator(data.value);
+        if (!valid) {
+          if (!props.widgetData.helperText) {
+            setHelperText("Invalid input");
+            return;
+          }
+        } else {
+          setHelperText("");
+        }
+      }
+      if (props.converter) {
+        data.value = props.converter(data.value);
+      }
+      widgetSet(data);
+    }),
     _useDebounce2 = _slicedToArray(_useDebounce, 2),
     doUpdate = _useDebounce2[1];
   var _props$widgetData14 = props.widgetData,
@@ -194116,13 +194157,75 @@ function InputWidget(props) {
     inline: props.widgetData.inline,
     style: props.widgetData.style,
     label: props.widgetData.label,
-    helperText: props.widgetData.helperText
+    helperText: props.widgetData.helperText ? props.widgetData.helperText : helperText
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.InputGroup, _extends({
     type: "text"
   }, rest, {
     value: localValue,
     onValueChange: onChange
   })));
+}
+function IntegerWidget(props) {
+  props = _objectSpread({
+    widgetId: null,
+    local_id: null,
+    console_id: null,
+    tile_id: null,
+    dispatch: null,
+    row: 0,
+    widgetData: inputDataDefault,
+    validator: null
+  }, props);
+  function validator(val) {
+    // Check if the value is a string that can be converted to an integer
+    if (typeof val === "string" && val.trim() !== "") {
+      var intValue = parseInt(val, 10);
+      return !isNaN(intValue) && intValue.toString() === val.trim();
+    }
+    return false;
+  }
+  function converter(val) {
+    if (validator(val)) {
+      return parseInt(val, 10);
+    } else {
+      return null;
+    }
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(InputWidget, _extends({}, props, {
+    validator: validator,
+    converter: converter
+  }));
+}
+function FloatWidget(props) {
+  props = _objectSpread({
+    widgetId: null,
+    local_id: null,
+    console_id: null,
+    tile_id: null,
+    dispatch: null,
+    row: 0,
+    widgetData: inputDataDefault,
+    validator: null
+  }, props);
+  function validator(val) {
+    // Check if the value is a string that can be converted to a float
+    if (typeof val === "string" && val.trim() !== "") {
+      var floatValue = parseFloat(val);
+      return !isNaN(floatValue);
+    }
+    return false;
+  }
+  function converter(val) {
+    if (validator(val)) {
+      return parseFloat(val);
+    } else {
+      return null;
+    }
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(InputWidget, _extends({}, props, {
+    validator: validator,
+    converter: converter
+  }));
 }
 function JavascriptWidget(props) {
   var _props$widgetData$cod, _props$widgetData15, _props$widgetData$val3, _props$widgetData16, _props$widgetData17;

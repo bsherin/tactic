@@ -17,6 +17,8 @@ const widgetIcons = {
     multi_select: "menu-open",
     pool_select: "folder-open",
     input: "text-highlight",
+    integer: "numerical",
+    float: "floating-point",
     box: "selection-box",
     collapse: "collapse-all",
     matplotlib: "scatter-plot",
@@ -87,6 +89,24 @@ let widgetInfo = {
     input: {
         value: stringField(),
         label: stringField("input"),
+        on_change: methodField(),
+        fill: boolField(),
+        inline: boolField(),
+        style: styleField(),
+        helperText: stringField(null)
+    },
+    integer: {
+        value: numberField(),
+        label: stringField("integer"),
+        on_change: methodField(),
+        fill: boolField(),
+        inline: boolField(),
+        style: styleField(),
+        helperText: stringField(null)
+    },
+    float: {
+        value: numberField(),
+        label: stringField("float"),
         on_change: methodField(),
         fill: boolField(),
         inline: boolField(),

@@ -50,6 +50,7 @@ import {
 import {widgetIcons} from "./widget_info"
 import {useMetadata} from "./metadata_reducer";
 import {
+    TileMakerLocalSettings,
     TileMakerSearchForm,
     TileMakerSearchResultsPane
 } from "./tile_maker_search_form";
@@ -1612,6 +1613,8 @@ let right_pane = (
         }}
         className="creator-right-pane"
     >
+        <div style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+            padding: "4px 8px"}}>
         <TileMakerSearchForm
             regex={false}
             allow_regex={true}
@@ -1628,6 +1631,8 @@ let right_pane = (
                 showTab(identifier);
             }}
         />
+            <TileMakerLocalSettings/>
+        </div>
 
         <div
             className="creator-search-and-editor-row"

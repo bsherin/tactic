@@ -2,11 +2,11 @@ import React from "react";
 
 import {memo} from "react";
 
-import { FormGroup, InputGroup, HTMLSelect } from "@blueprintjs/core";
+import { FormGroup, InputGroup, HTMLSelect, Switch } from "@blueprintjs/core";
 
 import {PoolAddressSelector} from "./pool_tree";
 
-export {AccountTextField, AccountSelectField, AccountAddressSelectField}
+export {AccountTextField, AccountSelectField, AccountAddressSelectField, AccountSwitchField}
 
 function AccountTextField(props){
     return (
@@ -29,6 +29,23 @@ function AccountTextField(props){
 }
 
 AccountTextField = memo(AccountTextField);
+
+function AccountSwitchField(props) {
+    props = {
+        inline: false,
+        ...props
+    };
+    return (
+        <Switch key={props.name}
+                checked={props.value === "yes"}
+                inline={props.inline}
+                label={props.display_text}
+                size="small"
+                onChange={(e)=>{props.onFieldChange(props.name, e.currentTarget.checked ? "yes" : "no", true)}}
+
+        />
+    )
+}
 
 function AccountSelectField(props) {
     props = {
