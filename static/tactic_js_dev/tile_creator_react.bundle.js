@@ -177540,9 +177540,13 @@ function LabeledFormField(props) {
     show: true,
     helperText: null,
     isBool: false,
-    className: ""
+    className: "",
+    show_dot: false
   }, props);
   var fvalue = props.the_value == null ? "" : props.the_value;
+  if (props.show_dot) {
+    fvalue = fvalue.toString() + ".";
+  }
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.FormGroup, {
     label: props.label,
     style: {
@@ -197969,6 +197973,20 @@ function WidgetModuleForm(props) {
     widgetItem: null,
     dispatch: function dispatch() {}
   }, props);
+  function isInt(val) {
+    if (typeof val === "string" && val.trim() !== "") {
+      var intValue = parseInt(val, 10);
+      return !isNaN(intValue) && intValue.toString() === val.trim();
+    }
+    return false;
+  }
+  function isFloat(val) {
+    if (typeof val === "string" && val.trim() !== "") {
+      var floatValue = parseFloat(val);
+      return !isNaN(floatValue);
+    }
+    return false;
+  }
   function handleFieldChange(field, event) {
     if (field == "kind") {
       handleKindChange(event);
@@ -197979,6 +197997,56 @@ function WidgetModuleForm(props) {
     switch (fieldKind) {
       case "boolean":
         the_value = event.target.checked;
+        break;
+      case "integer":
+        the_value = event.target.value;
+        if (the_value.length == 0) {
+          the_value = null;
+          break;
+        }
+        if (!isInt(the_value)) {
+          props.dispatch({
+            type: "update_item",
+            new_item: {
+              helperText: "invalid"
+            },
+            identifier: props.widgetItem.identifier
+          });
+          return;
+        }
+        the_value = parseInt(the_value, 10);
+        break;
+      case "float":
+        the_value = event.target.value;
+        if (the_value.length == 0) {
+          the_value = null;
+          break;
+        }
+        if (!isFloat(the_value)) {
+          props.dispatch({
+            type: "update_item",
+            new_item: {
+              helperText: "invalid"
+            },
+            identifier: props.widgetItem.identifier
+          });
+          return;
+        }
+        if (the_value.endsWith(".")) {
+          the_value = parseFloat(the_value);
+          var _new_item = {
+            helperText: "",
+            show_dot: true
+          };
+          _new_item[field] = the_value;
+          props.dispatch({
+            type: "update_item",
+            new_item: _new_item,
+            identifier: props.widgetItem.identifier
+          });
+          return;
+        }
+        the_value = parseFloat(the_value);
         break;
       case "number":
         the_value = event.target.value;
@@ -197994,7 +198062,10 @@ function WidgetModuleForm(props) {
       default:
         the_value = event.target.value;
     }
-    var new_item = {};
+    var new_item = {
+      helperText: "",
+      show_dot: false
+    };
     new_item[field] = the_value;
     props.dispatch({
       type: "update_item",
@@ -198111,6 +198182,31 @@ function WidgetModuleForm(props) {
           key: field,
           isBool: false,
           className: "code-font",
+          onChange: function onChange(event) {
+            handleFieldChange(field, event);
+          }
+        });
+      case "integer":
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_9__.LabeledFormField, {
+          label: field,
+          the_value: props.widgetItem[field],
+          key: field,
+          isBool: false,
+          className: "code-font",
+          helperText: props.widgetItem.helperText,
+          onChange: function onChange(event) {
+            handleFieldChange(field, event);
+          }
+        });
+      case "float":
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_9__.LabeledFormField, {
+          label: field,
+          the_value: props.widgetItem[field],
+          key: field,
+          show_dot: props.widgetItem.show_dot,
+          isBool: false,
+          className: "code-font",
+          helperText: props.widgetItem.helperText,
           onChange: function onChange(event) {
             handleFieldChange(field, event);
           }
@@ -201103,6 +201199,20 @@ function numberField() {
     "default": the_val
   };
 }
+function integerField() {
+  var the_val = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+  return {
+    type: "integer",
+    "default": the_val
+  };
+}
+function floatField() {
+  var the_val = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+  return {
+    type: "float",
+    "default": the_val
+  };
+}
 function selectField() {
   var the_val = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
   var the_list = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
@@ -201159,7 +201269,7 @@ var widgetInfo = {
     helperText: stringField(null)
   },
   integer: {
-    value: numberField(),
+    value: integerField(),
     label: stringField("integer"),
     on_change: methodField(),
     fill: boolField(),
@@ -201168,7 +201278,7 @@ var widgetInfo = {
     helperText: stringField(null)
   },
   "float": {
-    value: numberField(),
+    value: floatField(),
     label: stringField("float"),
     on_change: methodField(),
     fill: boolField(),
@@ -201182,7 +201292,7 @@ var widgetInfo = {
   },
   matplotlib: {
     use_svg: boolField(),
-    dpi: numberField(96),
+    dpi: integerField(96),
     style: styleField()
   },
   button: {

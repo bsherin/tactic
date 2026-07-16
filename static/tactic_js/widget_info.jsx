@@ -56,6 +56,15 @@ function numberField(the_val=0) {
     return  {type: "number", default: the_val};
 }
 
+function integerField(the_val=0) {
+    return  {type: "integer", default: the_val};
+}
+
+function floatField(the_val=0) {
+    return  {type: "float", default: the_val};
+}
+
+
 function selectField(the_val="", the_list=[]) {
     return  {type: "select", default: the_val, options: the_list};
 }
@@ -96,7 +105,7 @@ let widgetInfo = {
         helperText: stringField(null)
     },
     integer: {
-        value: numberField(),
+        value: integerField(),
         label: stringField("integer"),
         on_change: methodField(),
         fill: boolField(),
@@ -105,7 +114,7 @@ let widgetInfo = {
         helperText: stringField(null)
     },
     float: {
-        value: numberField(),
+        value: floatField(),
         label: stringField("float"),
         on_change: methodField(),
         fill: boolField(),
@@ -119,7 +128,7 @@ let widgetInfo = {
     },
     matplotlib: {
         use_svg: boolField(),
-        dpi: numberField(96),
+        dpi: integerField(96),
         style: styleField()
     },
     button: {

@@ -136,10 +136,14 @@ function LabeledFormField(props) {
         helperText: null,
         isBool: false,
         className: "",
+        show_dot: false,
         ...props
     };
 
     let fvalue = props.the_value == null ? "" : props.the_value;
+    if (props.show_dot) {
+        fvalue = fvalue.toString() + "."
+    }
     return (
         <FormGroup label={props.label} style={{marginRight: 5}} helperText={props.helperText}>
             {props.isBool ?

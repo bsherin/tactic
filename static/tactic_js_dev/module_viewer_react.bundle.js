@@ -172155,9 +172155,13 @@ function LabeledFormField(props) {
     show: true,
     helperText: null,
     isBool: false,
-    className: ""
+    className: "",
+    show_dot: false
   }, props);
   var fvalue = props.the_value == null ? "" : props.the_value;
+  if (props.show_dot) {
+    fvalue = fvalue.toString() + ".";
+  }
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.FormGroup, {
     label: props.label,
     style: {

@@ -664,6 +664,22 @@ function WidgetModuleForm(props) {
         ...props
     };
 
+     function isInt(val) {
+        if (typeof val === "string" && val.trim() !== "") {
+            const intValue = parseInt(val, 10);
+            return !isNaN(intValue) && intValue.toString() === val.trim();
+        }
+        return false;
+    }
+
+    function isFloat(val) {
+        if (typeof val === "string" && val.trim() !== "") {
+            const floatValue = parseFloat(val);
+            return !isNaN(floatValue);
+        }
+        return false;
+    }
+
     function handleFieldChange(field, event) {
         if (field == "kind") {
             handleKindChange(event);
@@ -675,6 +691,40 @@ function WidgetModuleForm(props) {
             case "boolean":
                 the_value = event.target.checked;
                 break;
+            case "integer":
+                the_value = event.target.value;
+                if (the_value.length == 0) {
+                    the_value = null;
+                    break;
+                }
+                if (!isInt(the_value)) {
+                    props.dispatch({type: "update_item", new_item: {helperText: "invalid"}, identifier: props.widgetItem.identifier})
+                    return
+                }
+                the_value = parseInt(the_value, 10);
+                break
+            case "float":
+                the_value = event.target.value;
+                if (the_value.length == 0) {
+                    the_value = null;
+                    break;
+                }
+                if (!isFloat(the_value)) {
+                    props.dispatch({type: "update_item", new_item: {helperText: "invalid"},
+                        identifier: props.widgetItem.identifier})
+                    return
+                }
+                if (the_value.endsWith(".")) {
+                    the_value = parseFloat(the_value);
+                    let new_item = {helperText: "", show_dot: true};
+                    new_item[field] = the_value
+                    props.dispatch({type: "update_item", new_item: new_item,
+                        identifier: props.widgetItem.identifier})
+                    return;
+                }
+
+                the_value = parseFloat(the_value);
+                break
             case "number":
                 the_value = event.target.value;
                 if (the_value.length == 0 || the_value.endsWith("."))
@@ -690,7 +740,7 @@ function WidgetModuleForm(props) {
             default:
                 the_value = event.target.value
         }
-        let new_item = {}
+        let new_item = {helperText: "", show_dot: false};
         new_item[field] = the_value
         props.dispatch({type: "update_item", new_item: new_item, identifier: props.widgetItem.identifier})
     }
@@ -768,6 +818,23 @@ function WidgetModuleForm(props) {
                                             <LabeledFormField label={field} the_value={props.widgetItem[field]}
                                                               key={field}
                                                               isBool={false} className="code-font"
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                    case "integer":
+                                      return (
+                                            <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              key={field}
+                                                              isBool={false} className="code-font"
+                                                              helperText={props.widgetItem.helperText}
+                                                              onChange={(event)=>{handleFieldChange(field, event)}}/>
+                                        )
+                                    case "float":
+                                      return (
+                                            <LabeledFormField label={field} the_value={props.widgetItem[field]}
+                                                              key={field}
+                                                              show_dot={props.widgetItem.show_dot}
+                                                              isBool={false} className="code-font"
+                                                              helperText={props.widgetItem.helperText}
                                                               onChange={(event)=>{handleFieldChange(field, event)}}/>
                                         )
                                     default:
