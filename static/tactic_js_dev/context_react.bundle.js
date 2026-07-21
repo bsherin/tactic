@@ -224860,6 +224860,8 @@ function CreatorApp(props) {
         var w = _step9.value;
         delete w["pane_height"];
         delete w["identifier"];
+        delete w["show_dot"];
+        delete w["helperText"];
       }
     } catch (err) {
       _iterator9.e(err);

@@ -716,6 +716,8 @@ function CreatorApp(props) {
         for (let w of widgetsToSave) {
             delete w["pane_height"];
             delete w["identifier"];
+            delete w["show_dot"];
+            delete w["helperText"]
         }
         return {
             "module_name": _cProp("resource_name"),
