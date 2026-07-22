@@ -114,7 +114,7 @@ function CreatorApp(props) {
         });
     }
     
-    const otherCmObjects = useRef([]);
+    const otherCmObjects = useRef(new Set());
 
     const [, setRenderContentInfo, renderContentInfoRef] = useStateAndRefWithUndo({
         pane_height: INITIAL_CODE_PANE_HEIGHT,
@@ -263,12 +263,13 @@ function CreatorApp(props) {
             for (let listRef of [jsListRef, umListRef, hmListRef]) {
                 destroyCmObjects(listRef);
             }
-            for (let cm of otherCmObjects.current) {
+            for (const cm of otherCmObjects.current) {
                 if (cm) {
                     cm.destroy();
                 }
             }
-            otherCmObjects.current = [];
+
+            otherCmObjects.current.clear();
             clearUndoStack(undoStackRef);
 
             errorDrawerFuncs.setGoToLineNumber(null);
@@ -378,10 +379,15 @@ function CreatorApp(props) {
         return props.controlled ? props[pname] : cPropGetters()[pname]
     }
 
-    function registerCmObject(cmObject) {
-        otherCmObjects.current.push(cmObject);
-    }
+    function registerCmObject(cmObject, previousCmObject = null) {
+        if (previousCmObject) {
+            otherCmObjects.current.delete(previousCmObject);
+        }
 
+        if (cmObject) {
+            otherCmObjects.current.add(cmObject);
+        }
+    }
     function menu_specs() {
         return {
             Save: [{name_text: "Save", icon_name: "saved", click_handler: _saveMe, key_bindings: ['Ctrl+S']},

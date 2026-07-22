@@ -600,7 +600,9 @@ function ReactCodemirror6(props) {
             }
 
             // Unregister external refs
-            if (props.setCMObject) props.setCMObject(null);
+            if (props.setCMObject) {
+                props.setCMObject(null, view);
+            }
             if (props.registerSetFocusFunc) props.registerSetFocusFunc(null);
 
             // Destroy editor
@@ -1029,6 +1031,8 @@ function ReactCodemirror6(props) {
     );
 }
 
-ReactCodemirror6 = memo(ReactCodemirror6, (prevProps, newProps) => {
-    propsAreEqual(prevProps, newProps, ["extraKeys"]);
-});
+ReactCodemirror6 = memo(
+    ReactCodemirror6,
+    (prevProps, newProps) =>
+        propsAreEqual(prevProps, newProps, ["extraKeys"])
+);

@@ -157,8 +157,8 @@ function AnimatedItem({visible, children}) {
             timeout={300}
             classNames="fade"
             nodeRef={nodeRef}
-            unmountOnExit={false}
-            mountOnEnter={false}
+            unmountOnExit={true}
+            mountOnEnter={true}
         >
             <div ref={nodeRef} className="fade-container">{children}</div>
         </CSSTransition>

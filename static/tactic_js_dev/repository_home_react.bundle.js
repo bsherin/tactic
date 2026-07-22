@@ -174131,8 +174131,9 @@ function NotesField(props) {
     }
   }
   function _setCmObject(cmobject) {
+    var previousCmObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (props.setCMObject) {
-      props.setCMObject(cmobject);
+      props.setCMObject(cmobject, previousCmObject);
     } else {
       cmObject.current = cmobject;
     }
@@ -191135,7 +191136,9 @@ function ReactCodemirror6(props) {
       }
 
       // Unregister external refs
-      if (props.setCMObject) props.setCMObject(null);
+      if (props.setCMObject) {
+        props.setCMObject(null, view);
+      }
       if (props.registerSetFocusFunc) props.registerSetFocusFunc(null);
 
       // Destroy editor
@@ -191532,7 +191535,7 @@ function ReactCodemirror6(props) {
   }));
 }
 ReactCodemirror6 = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ReactCodemirror6, function (prevProps, newProps) {
-  (0,_utilities_react__WEBPACK_IMPORTED_MODULE_1__.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
+  return (0,_utilities_react__WEBPACK_IMPORTED_MODULE_1__.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
 });
 
 /***/ }),

@@ -179339,8 +179339,9 @@ function NotesField(props) {
     }
   }
   function _setCmObject(cmobject) {
+    var previousCmObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     if (props.setCMObject) {
-      props.setCMObject(cmobject);
+      props.setCMObject(cmobject, previousCmObject);
     } else {
       cmObject.current = cmobject;
     }
@@ -194135,7 +194136,9 @@ function ReactCodemirror6(props) {
       }
 
       // Unregister external refs
-      if (props.setCMObject) props.setCMObject(null);
+      if (props.setCMObject) {
+        props.setCMObject(null, view);
+      }
       if (props.registerSetFocusFunc) props.registerSetFocusFunc(null);
 
       // Destroy editor
@@ -194532,7 +194535,7 @@ function ReactCodemirror6(props) {
   }));
 }
 ReactCodemirror6 = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ReactCodemirror6, function (prevProps, newProps) {
-  (0,_utilities_react__WEBPACK_IMPORTED_MODULE_1__.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
+  return (0,_utilities_react__WEBPACK_IMPORTED_MODULE_1__.propsAreEqual)(prevProps, newProps, ["extraKeys"]);
 });
 
 /***/ }),
@@ -197409,8 +197412,8 @@ function AnimatedItem(_ref) {
     timeout: 300,
     classNames: "fade",
     nodeRef: nodeRef,
-    unmountOnExit: false,
-    mountOnEnter: false
+    unmountOnExit: true,
+    mountOnEnter: true
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     ref: nodeRef,
     className: "fade-container"
@@ -202922,7 +202925,7 @@ function CreatorApp(props) {
       showTab(result.identifier);
     });
   }
-  var otherCmObjects = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
+  var otherCmObjects = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(new Set());
   var _useStateAndRefWithUn = (0,_undo__WEBPACK_IMPORTED_MODULE_19__.useStateAndRefWithUndo)(_objectSpread({
       pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.INITIAL_CODE_PANE_HEIGHT
     }, props.render_content_info)),
@@ -203086,7 +203089,7 @@ function CreatorApp(props) {
       } finally {
         _iterator.f();
       }
-      otherCmObjects.current = [];
+      otherCmObjects.current.clear();
       clearUndoStack(undoStackRef);
       errorDrawerFuncs.setGoToLineNumber(null);
       visibleTabListRef.current = null;
@@ -203231,7 +203234,13 @@ function CreatorApp(props) {
     return props.controlled ? props[pname] : cPropGetters()[pname];
   }
   function registerCmObject(cmObject) {
-    otherCmObjects.current.push(cmObject);
+    var previousCmObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+    if (previousCmObject) {
+      otherCmObjects.current["delete"](previousCmObject);
+    }
+    if (cmObject) {
+      otherCmObjects.current.add(cmObject);
+    }
   }
   function menu_specs() {
     return {

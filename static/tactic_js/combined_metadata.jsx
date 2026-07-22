@@ -218,11 +218,11 @@ function NotesField(props) {
         }
     }
 
-    function _setCmObject(cmobject) {
+    function _setCmObject(cmobject, previousCmObject = null) {
         if (props.setCMObject) {
-            props.setCMObject(cmobject);
+            props.setCMObject(cmobject, previousCmObject);
         } else {
-            cmObject.current = cmobject
+            cmObject.current = cmobject;
         }
     }
 
