@@ -79,8 +79,49 @@ const searchable_console_style = {padding: 15};
 const sHandleStyle = {marginLeft: 0, marginRight: 6};
 
 const FILTER_SEARCH_RIGHT_MARGIN = 20;
+const MAX_NOTEBOOK_AI_SOURCE_CHARS = 30000;
 
 const empty_style = {};
+
+function getPrecedingNotebookCodeCells(consoleItems, activeIdentifier) {
+    const activeIndex = consoleItems.findIndex((entry) => entry.unique_id === activeIdentifier);
+    if (activeIndex < 0) return [];
+
+    const candidates = consoleItems.slice(0, activeIndex)
+        .map((entry, index) => ({entry, index}))
+        .filter(({entry}) => entry.type === "code" &&
+            typeof entry.console_text === "string" && entry.console_text.trim());
+
+    // Prefer recently executed cells when the request budget is tight. Once
+    // selected, restore notebook order so definitions retain their chronology.
+    candidates.sort((left, right) => {
+        const leftExecuted = Number(left.entry.execution_count) > 0;
+        const rightExecuted = Number(right.entry.execution_count) > 0;
+        if (leftExecuted !== rightExecuted) return leftExecuted ? -1 : 1;
+        return right.index - left.index;
+    });
+
+    let remaining = MAX_NOTEBOOK_AI_SOURCE_CHARS;
+    const selected = [];
+    for (const candidate of candidates) {
+        let code = candidate.entry.console_text;
+        if (code.length > remaining) {
+            if (selected.length > 0 || remaining === 0) continue;
+            code = code.slice(-remaining);
+        }
+        selected.push({
+            index: candidate.index,
+            identifier: candidate.entry.unique_id,
+            execution_count: candidate.entry.execution_count,
+            code: code,
+        });
+        remaining -= code.length;
+        if (remaining === 0) break;
+    }
+
+    selected.sort((left, right) => left.index - right.index);
+    return selected.map(({index, ...cell}) => cell);
+}
 
 function ConsoleComponent(props) {
     props = {
@@ -1307,6 +1348,23 @@ function ConsoleComponent(props) {
         }
     }, []);
 
+    const getNotebookAIContext = useCallback((activeEditor) => {
+        const contextSetting = settingsContext.settingsRef.current["ai_code_suggestion_context"];
+        if (!["full tile", "full workspace"].includes(contextSetting)) return null;
+
+        return {
+            kind: "notebook",
+            cells: getPrecedingNotebookCodeCells(
+                props.console_items.current,
+                activeEditor.identifier,
+            ),
+            active_editor: {
+                identifier: activeEditor.identifier,
+                mode: activeEditor.mode,
+            },
+        };
+    }, []);
+
 
     function superItemMaker(passDowns) {
         return memo(function (item_props) {
@@ -1334,6 +1392,7 @@ function ConsoleComponent(props) {
             widgetHomesRef: widgetHomesRef,
             dispatch: props.dispatch,
             handleCreateViewer: props.handleCreateViewer,
+            getAIContext: getNotebookAIContext,
         })
     }, []);
 
@@ -2476,6 +2535,8 @@ function ConsoleCodeItem(props) {
                                                       tsocket={props.tsocket}
                                                       local_id={props.local_id}
                                                       parentService="main_service"
+                                                      getAIContext={props.getAIContext}
+                                                      aiEditorInfo={{identifier: props.unique_id}}
                                                       saveMe={null}/>
                                     <div className="button-div float-buttons d-flex flex-row">
                                         <GlyphButton handleClick={_deleteMe}
@@ -2912,7 +2973,6 @@ function ConsoleTextItem(props) {
 }
 
 ConsoleTextItem = memo(ConsoleTextItem);
-
 
 
 

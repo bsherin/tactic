@@ -9,6 +9,7 @@ try:
     import exception_mixin
     from exception_mixin import ExceptionMixin
     from tactic_copilot_mixin import CopilotMixin
+    from notebook_ai_context import build_notebook_background
     from aws_helpers import resolve_task_identity, get_ssm_parameter
 
     import copy
@@ -40,6 +41,9 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
 
     def get_session(self, sid):
         return self.mwindow.get_session(sid)
+
+    def get_ai_background_context(self, data_dict):
+        return build_notebook_background(data_dict.get("ai_context"))
 
     @staticmethod
     def is_container_local(the_id):

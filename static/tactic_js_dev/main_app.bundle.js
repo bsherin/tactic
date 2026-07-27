@@ -186837,9 +186837,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _memory_utilities__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./memory_utilities */ "./static/tactic_js/memory_utilities.jsx");
 /* harmony import */ var _undo__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./undo */ "./static/tactic_js/undo.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+var _excluded = ["index"];
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
@@ -186850,8 +186850,6 @@ function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -186859,6 +186857,11 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
+function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 // noinspection JSConstructorReturnsPrimitive,JSUnusedAssignment
 
 
@@ -186953,7 +186956,66 @@ var sHandleStyle = {
   marginRight: 6
 };
 var FILTER_SEARCH_RIGHT_MARGIN = 20;
+var MAX_NOTEBOOK_AI_SOURCE_CHARS = 30000;
 var empty_style = {};
+function getPrecedingNotebookCodeCells(consoleItems, activeIdentifier) {
+  var activeIndex = consoleItems.findIndex(function (entry) {
+    return entry.unique_id === activeIdentifier;
+  });
+  if (activeIndex < 0) return [];
+  var candidates = consoleItems.slice(0, activeIndex).map(function (entry, index) {
+    return {
+      entry: entry,
+      index: index
+    };
+  }).filter(function (_ref) {
+    var entry = _ref.entry;
+    return entry.type === "code" && typeof entry.console_text === "string" && entry.console_text.trim();
+  });
+
+  // Prefer recently executed cells when the request budget is tight. Once
+  // selected, restore notebook order so definitions retain their chronology.
+  candidates.sort(function (left, right) {
+    var leftExecuted = Number(left.entry.execution_count) > 0;
+    var rightExecuted = Number(right.entry.execution_count) > 0;
+    if (leftExecuted !== rightExecuted) return leftExecuted ? -1 : 1;
+    return right.index - left.index;
+  });
+  var remaining = MAX_NOTEBOOK_AI_SOURCE_CHARS;
+  var selected = [];
+  var _iterator = _createForOfIteratorHelper(candidates),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var candidate = _step.value;
+      var code = candidate.entry.console_text;
+      if (code.length > remaining) {
+        if (selected.length > 0 || remaining === 0) continue;
+        code = code.slice(-remaining);
+      }
+      selected.push({
+        index: candidate.index,
+        identifier: candidate.entry.unique_id,
+        execution_count: candidate.entry.execution_count,
+        code: code
+      });
+      remaining -= code.length;
+      if (remaining === 0) break;
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  selected.sort(function (left, right) {
+    return left.index - right.index;
+  });
+  return selected.map(function (_ref2) {
+    var index = _ref2.index,
+      cell = _objectWithoutProperties(_ref2, _excluded);
+    return cell;
+  });
+}
 function ConsoleComponent(props) {
   props = _objectSpread({
     style: {},
@@ -187201,7 +187263,7 @@ function ConsoleComponent(props) {
   }
   function _pasteImage2() {
     _pasteImage2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
-      var clipboardContents, blob, _iterator1, _step1, item, gotBlob, _gotBlob, _t5;
+      var clipboardContents, blob, _iterator10, _step10, item, gotBlob, _gotBlob, _t5;
       return _regenerator().w(function (_context15) {
         while (1) switch (_context15.n) {
           case 0:
@@ -187239,15 +187301,15 @@ function ConsoleComponent(props) {
             return navigator.clipboard.read();
           case 1:
             clipboardContents = _context15.v;
-            _iterator1 = _createForOfIteratorHelper(clipboardContents);
+            _iterator10 = _createForOfIteratorHelper(clipboardContents);
             _context15.p = 2;
-            _iterator1.s();
+            _iterator10.s();
           case 3:
-            if ((_step1 = _iterator1.n()).done) {
+            if ((_step10 = _iterator10.n()).done) {
               _context15.n = 8;
               break;
             }
-            item = _step1.value;
+            item = _step10.value;
             if (!item.types.includes("image/png")) {
               _context15.n = 7;
               break;
@@ -187275,10 +187337,10 @@ function ConsoleComponent(props) {
           case 9:
             _context15.p = 9;
             _t5 = _context15.v;
-            _iterator1.e(_t5);
+            _iterator10.e(_t5);
           case 10:
             _context15.p = 10;
-            _iterator1.f();
+            _iterator10.f();
             return _context15.f(10);
           case 11:
             return _context15.a(2);
@@ -187392,7 +187454,7 @@ function ConsoleComponent(props) {
     return id_list;
   }
   var _deleteSection = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(unique_id) {
+    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(unique_id) {
       var centry, confirm_text, id_list, cindex, new_console_items, _t;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.n) {
@@ -187432,7 +187494,7 @@ function ConsoleComponent(props) {
       }, _callee5, null, [[1, 3]]);
     }));
     return function (_x4) {
-      return _ref4.apply(this, arguments);
+      return _ref6.apply(this, arguments);
     };
   }(), []);
   var _copySection = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
@@ -187474,11 +187536,11 @@ function ConsoleComponent(props) {
   function _copyItems(id_list) {
     var entry_list = [];
     var in_section = false;
-    var _iterator = _createForOfIteratorHelper(props.console_items.current),
-      _step;
+    var _iterator2 = _createForOfIteratorHelper(props.console_items.current),
+      _step2;
     try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var entry = _step.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var entry = _step2.value;
         if (in_section) {
           entry.am_selected = false;
           entry_list.push(entry);
@@ -187494,9 +187556,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator.f();
+      _iterator2.f();
     }
     var result_dict = {
       "local_id": props.local_id,
@@ -187793,11 +187855,11 @@ function ConsoleComponent(props) {
     var updates = {};
     var shift_down = event != null && event.shiftKey;
     if (!shift_down) {
-      var _iterator2 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-        _step2;
+      var _iterator3 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+        _step3;
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var uid = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var uid = _step3.value;
           if (uid != unique_id) {
             updates[uid] = {
               am_selected: false,
@@ -187806,9 +187868,9 @@ function ConsoleComponent(props) {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
       updates[unique_id] = {
         am_selected: true,
@@ -187848,26 +187910,26 @@ function ConsoleComponent(props) {
     if (console_items == null) {
       console_items = props.console_items.current;
     }
-    var _iterator3 = _createForOfIteratorHelper(console_items),
-      _step3;
+    var _iterator4 = _createForOfIteratorHelper(console_items),
+      _step4;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var entry = _step3.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var entry = _step4.value;
         if (entry.unique_id == unique_id) {
           return counter;
         }
         ++counter;
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator3.f();
+      _iterator4.f();
     }
     return -1;
   }
-  function _moveSection(_ref8, filtered_items) {
-    var oldIndex = _ref8.oldIndex,
-      newIndex = _ref8.newIndex;
+  function _moveSection(_ref0, filtered_items) {
+    var oldIndex = _ref0.oldIndex,
+      newIndex = _ref0.newIndex;
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     if (newIndex > oldIndex) {
       newIndex += 1;
@@ -187968,7 +188030,7 @@ function ConsoleComponent(props) {
     _moveEntryAfterEntry(move_entry.unique_id, target_id, callback);
   }, []);
   var _goToNextCell = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/function () {
-    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(unique_id) {
+    var _ref1 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(unique_id) {
       var next_index, _loop, _ret;
       return _regenerator().w(function (_context0) {
         while (1) switch (_context0.n) {
@@ -188027,35 +188089,35 @@ function ConsoleComponent(props) {
       }, _callee9);
     }));
     return function (_x6) {
-      return _ref9.apply(this, arguments);
+      return _ref1.apply(this, arguments);
     };
   }(), []);
   function _isDividerSelected() {
-    var _iterator4 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-      _step4;
+    var _iterator5 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+      _step5;
     try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var uid = _step4.value;
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var uid = _step5.value;
         var centry = get_console_item_entry(uid);
         if (centry.type == "divider") {
           return true;
         }
       }
     } catch (err) {
-      _iterator4.e(err);
+      _iterator5.e(err);
     } finally {
-      _iterator4.f();
+      _iterator5.f();
     }
     return false;
   }
   function _doDeleteSelected() {
     var in_section = false;
     var to_delete = [];
-    var _iterator5 = _createForOfIteratorHelper(props.console_items.current),
-      _step5;
+    var _iterator6 = _createForOfIteratorHelper(props.console_items.current),
+      _step6;
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var entry = _step5.value;
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        var entry = _step6.value;
         if (in_section) {
           to_delete.push(entry.unique_id);
           in_section = entry.type != "section-end";
@@ -188069,9 +188131,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator6.e(err);
     } finally {
-      _iterator5.f();
+      _iterator6.f();
     }
     _clear_all_selected_items(function () {
       props.dispatch({
@@ -188125,7 +188187,7 @@ function ConsoleComponent(props) {
     return _deleteSelected2.apply(this, arguments);
   }
   var _closeConsoleItem = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/function () {
-    var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(unique_id) {
+    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(unique_id) {
       var centry;
       return _regenerator().w(function (_context1) {
         while (1) switch (_context1.n) {
@@ -188153,34 +188215,34 @@ function ConsoleComponent(props) {
       }, _callee0);
     }));
     return function (_x7) {
-      return _ref0.apply(this, arguments);
+      return _ref10.apply(this, arguments);
     };
   }(), []);
   function _getNextEndIndex(start_id) {
     var start_index = _consoleItemIndex(start_id);
-    var _iterator6 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
-      _step6;
+    var _iterator7 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
+      _step7;
     try {
-      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        var entry = _step6.value;
+      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+        var entry = _step7.value;
         if (entry.type == "section-end") {
           return _consoleItemIndex(entry.unique_id);
         }
       }
     } catch (err) {
-      _iterator6.e(err);
+      _iterator7.e(err);
     } finally {
-      _iterator6.f();
+      _iterator7.f();
     }
     return props.console_items.current.length;
   }
   function _isInSection(unique_id) {
     var idx = _consoleItemIndex(unique_id);
-    var _iterator7 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
-      _step7;
+    var _iterator8 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
+      _step8;
     try {
-      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-        var entry = _step7.value;
+      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+        var entry = _step8.value;
         if (entry.type == "divider") {
           return false;
         } else {
@@ -188190,9 +188252,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator7.e(err);
+      _iterator8.e(err);
     } finally {
-      _iterator7.f();
+      _iterator8.f();
     }
     return false;
   }
@@ -188203,19 +188265,19 @@ function ConsoleComponent(props) {
     var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
     lodash__WEBPACK_IMPORTED_MODULE_5___default().last(new_entries).set_focus = set_focus;
     var inserting_divider = false;
-    var _iterator8 = _createForOfIteratorHelper(new_entries),
-      _step8;
+    var _iterator9 = _createForOfIteratorHelper(new_entries),
+      _step9;
     try {
-      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-        var entry = _step8.value;
+      for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+        var entry = _step9.value;
         if (entry.type == "divider") {
           inserting_divider = true;
         }
       }
     } catch (err) {
-      _iterator8.e(err);
+      _iterator9.e(err);
     } finally {
-      _iterator8.f();
+      _iterator9.f();
     }
     var last_id = lodash__WEBPACK_IMPORTED_MODULE_5___default().last(new_entries).unique_id;
     var insert_index;
@@ -188369,19 +188431,19 @@ function ConsoleComponent(props) {
     set_search_string(nval);
     pushCallback(function () {
       if (_are_selected()) {
-        var _iterator9 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-          _step9;
+        var _iterator0 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+          _step0;
         try {
-          for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-            var uid = _step9.value;
+          for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
+            var uid = _step0.value;
             updates[uid] = {
               search_string: search_string_ref.current
             };
           }
         } catch (err) {
-          _iterator9.e(err);
+          _iterator0.e(err);
         } finally {
-          _iterator9.f();
+          _iterator0.f();
         }
         _multiple_console_item_updates(updates);
       }
@@ -188396,11 +188458,11 @@ function ConsoleComponent(props) {
   }
   function _handleFilter() {
     var updates = {};
-    var _iterator0 = _createForOfIteratorHelper(props.console_items.current),
-      _step0;
+    var _iterator1 = _createForOfIteratorHelper(props.console_items.current),
+      _step1;
     try {
-      for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-        var entry = _step0.value;
+      for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
+        var entry = _step1.value;
         if (entry.type == "code" || entry.type == "text") {
           updates[entry.unique_id] = {
             show_on_filtered: entry.console_text.toLowerCase().includes(search_string_ref.current.toLowerCase())
@@ -188412,9 +188474,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator0.e(err);
+      _iterator1.e(err);
     } finally {
-      _iterator0.f();
+      _iterator1.f();
     }
     _multiple_console_item_updates(updates, function () {
       set_filter_console_items(true);
@@ -188722,13 +188784,25 @@ function ConsoleComponent(props) {
       opacity: "100%"
     });
   }
-  var _sortStart = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (_ref10) {
-    var draggableId = _ref10.draggableId;
+  var _sortStart = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (_ref12) {
+    var draggableId = _ref12.draggableId;
     var idx = _consoleItemIndex(draggableId);
     var entry = props.console_items.current[idx];
     if (entry.type == "divider") {
       _hideNonDividers();
     }
+  }, []);
+  var getNotebookAIContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (activeEditor) {
+    var contextSetting = settingsContext.settingsRef.current["ai_code_suggestion_context"];
+    if (!["full tile", "full workspace"].includes(contextSetting)) return null;
+    return {
+      kind: "notebook",
+      cells: getPrecedingNotebookCodeCells(props.console_items.current, activeEditor.identifier),
+      active_editor: {
+        identifier: activeEditor.identifier,
+        mode: activeEditor.mode
+      }
+    };
   }, []);
   function superItemMaker(passDowns) {
     return /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(function (item_props) {
@@ -188754,7 +188828,8 @@ function ConsoleComponent(props) {
       pseudo_tile_id: pseudo_tile_id,
       widgetHomesRef: widgetHomesRef,
       dispatch: props.dispatch,
-      handleCreateViewer: props.handleCreateViewer
+      handleCreateViewer: props.handleCreateViewer,
+      getAIContext: getNotebookAIContext
     });
   }, []);
   var console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
@@ -189173,19 +189248,19 @@ function LogItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator10 = _createForOfIteratorHelper(scripts),
-        _step10;
+      var _iterator11 = _createForOfIteratorHelper(scripts),
+        _step11;
       try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var script = _step10.value;
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+          var script = _step11.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator11.e(err);
       } finally {
-        _iterator10.f();
+        _iterator11.f();
       }
     }
   }
@@ -189377,19 +189452,19 @@ function BlobItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator11 = _createForOfIteratorHelper(scripts),
-        _step11;
+      var _iterator12 = _createForOfIteratorHelper(scripts),
+        _step12;
       try {
-        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-          var script = _step11.value;
+        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+          var script = _step12.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator11.e(err);
+        _iterator12.e(err);
       } finally {
-        _iterator11.f();
+        _iterator12.f();
       }
     }
   }
@@ -189905,6 +189980,10 @@ function ConsoleCodeItem(props) {
     tsocket: props.tsocket,
     local_id: props.local_id,
     parentService: "main_service",
+    getAIContext: props.getAIContext,
+    aiEditorInfo: {
+      identifier: props.unique_id
+    },
     saveMe: null
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
@@ -207814,6 +207893,8 @@ function ReactCodemirror6(props) {
     restrict_edits_to_range: false,
     getEditableRanges: null,
     parentService: null,
+    getAIContext: null,
+    aiEditorInfo: null,
     hideLeadingChars: null,
     isLite: false
   }, props);
@@ -207831,6 +207912,8 @@ function ReactCodemirror6(props) {
   var highlightStyle = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var autocompletionArgRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)({});
   var cmUniqueId = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var getAIContextRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.getAIContext);
+  getAIContextRef.current = props.getAIContext;
   var lastUserDocRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.code_content);
   var changeCounterRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(0);
   var activeStreamChangeCounterRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -208029,6 +208112,16 @@ function ReactCodemirror6(props) {
     });
   }
   (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_4__.useSocketListener)(props.tsocket, "AutocompleteDelta", handleAutocompleteDelta);
+  var handleAutocompleteError = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (data) {
+    if (data.cmUniqueId !== cmUniqueId.current) return;
+    if (data.room !== props.local_id) return;
+    if (data.change_counter !== activeStreamChangeCounterRef.current) return;
+    if (data.cursor_counter !== activeStreamCursorCounterRef.current) return;
+    setAIText(null);
+    if (editorView.current) (0,_ghost_text__WEBPACK_IMPORTED_MODULE_6__.setGhostText)(editorView.current, "");
+    console.warn("AI autocomplete error:", data.message);
+  }, [props.local_id]);
+  (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_4__.useSocketListener)(props.tsocket, "AutocompleteError", handleAutocompleteError);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     return function () {
       var view = editorView.current;
@@ -208219,6 +208312,18 @@ function ReactCodemirror6(props) {
     activeStreamCursorPosRef.current = cursorPos;
     activeStreamCursorCounterRef.current = cursor_counter;
     var code_str = new_code;
+    var ai_context = null;
+    if (getAIContextRef.current) {
+      try {
+        ai_context = getAIContextRef.current(_objectSpread(_objectSpread({}, props.aiEditorInfo), {}, {
+          code: new_code,
+          cursor_position: cursorPos,
+          mode: props.mode
+        }));
+      } catch (error) {
+        console.warn("Error building AI autocomplete context", error);
+      }
+    }
 
     // the AI and ghost text should already be cleared. but just in case.
     setAIText(null);
@@ -208229,6 +208334,8 @@ function ReactCodemirror6(props) {
       "code_str": code_str,
       "change_counter": change_counter,
       "mode": props.mode,
+      "model_name": settingsContext.settingsRef.current["ai_code_suggestion_model"],
+      "ai_context": ai_context,
       "cursor_position": cursorPos,
       "cursor_counter": cursor_counter,
       "local_id": props.local_id,
@@ -209896,7 +210003,7 @@ function SettingsDrawer(props) {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var fdict = _step.value;
         var new_item = void 0;
-        if (fdict.name == "use_ai_code_suggestions" && !window.has_openapi_key) {
+        if (["use_ai_code_suggestions", "ai_code_suggestion_model", "ai_code_suggestion_context"].includes(fdict.name) && !window.has_openapi_key) {
           continue;
         }
         if (!fdict.settings_drawer) {

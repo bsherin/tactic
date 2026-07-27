@@ -743,6 +743,17 @@ function CreatorApp(props) {
         };
     }
 
+    function getAIContext(activeEditor) {
+        if (settingsContext.settingsRef.current["ai_code_suggestion_context"] !== "full tile") {
+            return null;
+        }
+        return {
+            kind: "tile",
+            tile: _getSaveDict(),
+            active_editor: activeEditor,
+        };
+    }
+
     function doSavePromise() {
         return new Promise(async (resolve, reject) => {
             let result_dict = _getSaveDict();
@@ -1033,6 +1044,8 @@ function CreatorApp(props) {
     codeElemDict["globals"] = () => {
         return (
             <CmElement cmState={gi}
+                       getAIContext={getAIContext}
+                       aiContextGroup="globals"
                        allowSignatureChange={false}
                        allowDelete={false}
                        argString={""}
@@ -1061,6 +1074,8 @@ function CreatorApp(props) {
     codeElemDict["render_content"] = () => {
         return (
             <CmElement cmState={ri}
+                       getAIContext={getAIContext}
+                       aiContextGroup="render_content"
                        allowSignatureChange={false}
                        allowDelete={false}
                        argString={""}
@@ -1088,6 +1103,8 @@ function CreatorApp(props) {
         codeElemDict[um["identifier"]] = () => {
             return (
                 <CmElement cmState={um}
+                           getAIContext={getAIContext}
+                           aiContextGroup="user_methods"
                            allowDelete={true}
                            showSignatureHeader={true}
                            allowSignatureChange={true}
@@ -1114,6 +1131,8 @@ function CreatorApp(props) {
         codeElemDict[hm["identifier"]] = () => {
             return (
                 <CmElement cmState={hm}
+                           getAIContext={getAIContext}
+                           aiContextGroup="used_handler_methods"
                            allowDelete={true}
                            showSignatureHeader={true}
                            allowSignatureChange={false}
@@ -1140,6 +1159,8 @@ function CreatorApp(props) {
         codeElemDict[js["identifier"]] = () => {
             return (
                 <CmElement cmState={js}
+                           getAIContext={getAIContext}
+                           aiContextGroup="javascript_functions"
                            allowDelete={true}
                            showSignatureHeader={true}
                            allowSignatureChange={true}

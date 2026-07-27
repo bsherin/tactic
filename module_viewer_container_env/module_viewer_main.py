@@ -10,6 +10,7 @@ try:
     from flask import render_template, Flask
 
     from tile_code_parser import TileParser, remove_indents, insert_indents
+    from tile_ai_context import prepare_tile_context
     from mongo_accesser import MongoAccess
     from tile_accesser import TileAccess
     from mongo_db_fs import get_dbs
@@ -176,6 +177,17 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                                         used_handler_methods=used_handler_methods_list_of_dicts,
                                         standard_methods=standard_methods_list_of_dicts)
         return full_code
+
+    def get_ai_background_context(self, data_dict):
+        tile_data = prepare_tile_context(data_dict.get("ai_context"))
+        if tile_data is None:
+            return ""
+
+        try:
+            return self.build_code(tile_data)
+        except Exception:
+            log.exception("Could not assemble tile context for autocomplete")
+            return ""
 
     def get_username(self, local_id):
         sess = self.get_session(local_id)

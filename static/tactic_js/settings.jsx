@@ -176,7 +176,11 @@ function SettingsDrawer(props) {
         let settings_items = {};
         for (let fdict of props.fields) {
             let new_item;
-            if (fdict.name == "use_ai_code_suggestions" && !window.has_openapi_key) {
+            if ([
+                "use_ai_code_suggestions",
+                "ai_code_suggestion_model",
+                "ai_code_suggestion_context",
+            ].includes(fdict.name) && !window.has_openapi_key) {
                 continue;
             }
             if (!fdict.settings_drawer) {

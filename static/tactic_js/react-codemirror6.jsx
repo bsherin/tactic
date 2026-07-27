@@ -285,6 +285,8 @@ function ReactCodemirror6(props) {
         restrict_edits_to_range: false,
         getEditableRanges: null,
         parentService: null,
+        getAIContext: null,
+        aiEditorInfo: null,
         hideLeadingChars: null,
         isLite: false,
         ...props
@@ -304,6 +306,8 @@ function ReactCodemirror6(props) {
     const highlightStyle = useRef(null);
     const autocompletionArgRef = useRef({});
     const cmUniqueId = useRef(null)
+    const getAIContextRef = useRef(props.getAIContext);
+    getAIContextRef.current = props.getAIContext;
 
     const lastUserDocRef = useRef(props.code_content);
 
@@ -587,6 +591,18 @@ function ReactCodemirror6(props) {
 
     useSocketListener(props.tsocket, "AutocompleteDelta", handleAutocompleteDelta);
 
+    const handleAutocompleteError = useCallback((data) => {
+        if (data.cmUniqueId !== cmUniqueId.current) return;
+        if (data.room !== props.local_id) return;
+        if (data.change_counter !== activeStreamChangeCounterRef.current) return;
+        if (data.cursor_counter !== activeStreamCursorCounterRef.current) return;
+        setAIText(null);
+        if (editorView.current) setGhostText(editorView.current, "");
+        console.warn("AI autocomplete error:", data.message);
+    }, [props.local_id]);
+
+    useSocketListener(props.tsocket, "AutocompleteError", handleAutocompleteError);
+
     useEffect(() => {
         return () => {
             const view = editorView.current;
@@ -803,6 +819,19 @@ function ReactCodemirror6(props) {
         activeStreamCursorCounterRef.current = cursor_counter;
 
         let code_str = new_code;
+        let ai_context = null;
+        if (getAIContextRef.current) {
+            try {
+                ai_context = getAIContextRef.current({
+                    ...props.aiEditorInfo,
+                    code: new_code,
+                    cursor_position: cursorPos,
+                    mode: props.mode,
+                });
+            } catch (error) {
+                console.warn("Error building AI autocomplete context", error);
+            }
+        }
 
         // the AI and ghost text should already be cleared. but just in case.
         setAIText(null);
@@ -814,6 +843,8 @@ function ReactCodemirror6(props) {
                 "code_str": code_str,
                 "change_counter": change_counter,
                 "mode": props.mode,
+                "model_name": settingsContext.settingsRef.current["ai_code_suggestion_model"],
+                "ai_context": ai_context,
                 "cursor_position": cursorPos,
                 "cursor_counter": cursor_counter,
                 "local_id": props.local_id,

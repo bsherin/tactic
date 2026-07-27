@@ -190908,6 +190908,8 @@ function ReactCodemirror6(props) {
     restrict_edits_to_range: false,
     getEditableRanges: null,
     parentService: null,
+    getAIContext: null,
+    aiEditorInfo: null,
     hideLeadingChars: null,
     isLite: false
   }, props);
@@ -190925,6 +190927,8 @@ function ReactCodemirror6(props) {
   var highlightStyle = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var autocompletionArgRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)({});
   var cmUniqueId = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var getAIContextRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.getAIContext);
+  getAIContextRef.current = props.getAIContext;
   var lastUserDocRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.code_content);
   var changeCounterRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(0);
   var activeStreamChangeCounterRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -191123,6 +191127,16 @@ function ReactCodemirror6(props) {
     });
   }
   (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_4__.useSocketListener)(props.tsocket, "AutocompleteDelta", handleAutocompleteDelta);
+  var handleAutocompleteError = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (data) {
+    if (data.cmUniqueId !== cmUniqueId.current) return;
+    if (data.room !== props.local_id) return;
+    if (data.change_counter !== activeStreamChangeCounterRef.current) return;
+    if (data.cursor_counter !== activeStreamCursorCounterRef.current) return;
+    setAIText(null);
+    if (editorView.current) (0,_ghost_text__WEBPACK_IMPORTED_MODULE_6__.setGhostText)(editorView.current, "");
+    console.warn("AI autocomplete error:", data.message);
+  }, [props.local_id]);
+  (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_4__.useSocketListener)(props.tsocket, "AutocompleteError", handleAutocompleteError);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     return function () {
       var view = editorView.current;
@@ -191313,6 +191327,18 @@ function ReactCodemirror6(props) {
     activeStreamCursorPosRef.current = cursorPos;
     activeStreamCursorCounterRef.current = cursor_counter;
     var code_str = new_code;
+    var ai_context = null;
+    if (getAIContextRef.current) {
+      try {
+        ai_context = getAIContextRef.current(_objectSpread(_objectSpread({}, props.aiEditorInfo), {}, {
+          code: new_code,
+          cursor_position: cursorPos,
+          mode: props.mode
+        }));
+      } catch (error) {
+        console.warn("Error building AI autocomplete context", error);
+      }
+    }
 
     // the AI and ghost text should already be cleared. but just in case.
     setAIText(null);
@@ -191323,6 +191349,8 @@ function ReactCodemirror6(props) {
       "code_str": code_str,
       "change_counter": change_counter,
       "mode": props.mode,
+      "model_name": settingsContext.settingsRef.current["ai_code_suggestion_model"],
+      "ai_context": ai_context,
       "cursor_position": cursorPos,
       "cursor_counter": cursor_counter,
       "local_id": props.local_id,
@@ -192440,7 +192468,7 @@ function SettingsDrawer(props) {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
         var fdict = _step.value;
         var new_item = void 0;
-        if (fdict.name == "use_ai_code_suggestions" && !window.has_openapi_key) {
+        if (["use_ai_code_suggestions", "ai_code_suggestion_model", "ai_code_suggestion_context"].includes(fdict.name) && !window.has_openapi_key) {
           continue;
         }
         if (!fdict.settings_drawer) {

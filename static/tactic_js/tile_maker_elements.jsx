@@ -1069,6 +1069,8 @@ function CmElement(props) {
         no_height: false,
         allowSignatureChange: true,
         registerCmObject: null,
+        getAIContext: null,
+        aiContextGroup: null,
         ...props
     };
 
@@ -1166,6 +1168,12 @@ function CmElement(props) {
                               extraSelfCompletions={props.cmState.mode == "python" ? props.extraSelfCompletions : []}
                               local_id={props.local_id}
                               parentService="module_viewer"
+                              getAIContext={props.getAIContext}
+                              aiEditorInfo={{
+                                  group: props.aiContextGroup,
+                                  identifier: props.identifier,
+                                  name: props.name,
+                              }}
                               highlight_active_line={true}/>
         </div>
     )
@@ -1912,4 +1920,3 @@ function NavItem(props) {
         </ControlGroup>
     );
 }
-

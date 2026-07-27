@@ -3,55 +3,55 @@ import json
 import pika
 import uuid
 import threading
+import time
 from qworker import task_worthy
 from openai import OpenAI
 from openai import APIError, RateLimitError, APITimeoutError
 from rabbit_manage import get_pika_connection_with_retries, declare_queue
 from tactic_logging import log
 from contextvars import copy_context
+from copilot_context import (
+    build_completion_input,
+    extract_response_usage,
+    limit_background_context,
+    normalize_copilot_model,
+    split_code_at_cursor,
+)
 
 
 class StreamWorker:
-    def __init__(self, local_id, change_counter, client, instructions, context_code, model_name, cm_unique_id):
+    def __init__(self, local_id, change_counter, cursor_counter, client, instructions,
+                 completion_input, model_name, cm_unique_id, context_metrics=None):
         self.connection, self.channel = get_pika_connection_with_retries(0)
         self.client = client
         self.instructions = instructions
-        self.context_code = context_code
+        self.completion_input = completion_input
         self.model_name = model_name
         self.cm_unique_id = cm_unique_id
+        self.context_metrics = context_metrics or {}
 
         self.local_id = local_id
         self.change_counter = change_counter
+        self.cursor_counter = cursor_counter
         self.my_id = str(uuid.uuid4())
 
     def event_loop(self):
         chunks = []
+        started_at = time.monotonic()
 
         try:
             stream = self.client.responses.create(
                 model=self.model_name,
                 instructions=self.instructions,
-                input=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "input_text",
-                                "text": (
-                                    "Complete the following code. "
-                                    "The cursor is at the end of this snippet:\n\n"
-                                    f"{self.context_code}"
-                                ),
-                            }
-                        ],
-                    }
-                ],
-                max_output_tokens=128,
+                input=self.completion_input,
+                reasoning={"effort": "none"},
+                max_output_tokens=64,
                 stream=True,
             )
 
             for event in stream:
-                if getattr(event, "type", None) == "response.output_text.delta":
+                event_type = getattr(event, "type", None)
+                if event_type == "response.output_text.delta":
                     delta = getattr(event, "delta", "")
                     # delta may be a string or an object with .text
                     if hasattr(delta, "text"):
@@ -72,10 +72,22 @@ class StreamWorker:
                         {
                             "text": new_text,
                             "change_counter": self.change_counter,
+                            "cursor_counter": self.cursor_counter,
                             "display_label": first_line,
                             "room": self.local_id,
                             "cmUniqueId": self.cm_unique_id,
                         },
+                    )
+                elif event_type == "response.completed":
+                    response = getattr(event, "response", None)
+                    usage = extract_response_usage(response)
+                    log.info(
+                        "OpenAI autocomplete completed",
+                        requested_model=self.model_name,
+                        response_model=getattr(response, "model", None),
+                        latency_ms=round((time.monotonic() - started_at) * 1000),
+                        **self.context_metrics,
+                        **usage,
                     )
 
         except RateLimitError:
@@ -86,7 +98,9 @@ class StreamWorker:
                     "error": "rate_limit",
                     "message": "OpenAI rate limit exceeded for autocomplete. Please try again shortly.",
                     "change_counter": self.change_counter,
+                    "cursor_counter": self.cursor_counter,
                     "room": self.local_id,
+                    "cmUniqueId": self.cm_unique_id,
                 },
             )
         except APITimeoutError:
@@ -97,7 +111,9 @@ class StreamWorker:
                     "error": "timeout",
                     "message": "Timed out while contacting OpenAI for autocomplete.",
                     "change_counter": self.change_counter,
+                    "cursor_counter": self.cursor_counter,
                     "room": self.local_id,
+                    "cmUniqueId": self.cm_unique_id,
                 },
             )
         except APIError:
@@ -108,7 +124,9 @@ class StreamWorker:
                     "error": "api_error",
                     "message": "Error from OpenAI while generating autocomplete.",
                     "change_counter": self.change_counter,
+                    "cursor_counter": self.cursor_counter,
                     "room": self.local_id,
+                    "cmUniqueId": self.cm_unique_id,
                 },
             )
         except Exception:
@@ -119,7 +137,9 @@ class StreamWorker:
                     "error": "unexpected",
                     "message": "Unexpected error while generating autocomplete.",
                     "change_counter": self.change_counter,
+                    "cursor_counter": self.cursor_counter,
                     "room": self.local_id,
+                    "cmUniqueId": self.cm_unique_id,
                 },
             )
         finally:
@@ -189,24 +209,9 @@ class CopilotMixin:
             log.warning("Could not build API spec for session")
             return ""
 
-    @staticmethod
-    def extract_context(code_str, cursor_pos,
-                        before_lines: int = 40,
-                        after_lines: int = 10) -> str:
-        lines = code_str.splitlines()
-        running_len = 0
-        line_idx = len(lines)
-
-        for i, line in enumerate(lines):
-            running_len += len(line) + 1  # +1 for '\n'
-            if running_len > cursor_pos:
-                line_idx = i
-                break
-
-        start_idx = max(0, line_idx - before_lines)
-        end_idx = min(len(lines), line_idx + after_lines + 1)
-        context_lines = lines[start_idx:end_idx]
-        return "\n".join(context_lines)
+    def get_ai_background_context(self, _data_dict):
+        """Service-specific hook for tile or notebook context."""
+        return ""
 
     @staticmethod
     def clean_openai_completion(text: str) -> str:
@@ -247,8 +252,18 @@ class CopilotMixin:
         cursor_position = data_dict["cursor_position"]
         mode = data_dict.get("mode", "python")
         change_counter = data_dict.get("change_counter")
+        cursor_counter = data_dict.get("cursor_counter")
 
-        context_code = self.extract_context(code_str, cursor_position)
+        prefix, suffix = split_code_at_cursor(code_str, cursor_position)
+        background_context = limit_background_context(
+            self.get_ai_background_context(data_dict)
+        )
+        completion_input = build_completion_input(
+            prefix=prefix,
+            suffix=suffix,
+            mode=mode,
+            background_context=background_context,
+        )
 
         instructions = (
             "You are a helpful coding assistant embedded in an IDE.\n"
@@ -271,17 +286,26 @@ class CopilotMixin:
             )
 
 
-        model_name = "gpt-5.4"  # or "gpt-4.1" / "gpt-4o" / "gpt-4o-mini"
+        model_name = normalize_copilot_model(data_dict.get("model_name"))
+        ai_context = data_dict.get("ai_context")
+        context_kind = ai_context.get("kind") if isinstance(ai_context, dict) else "local"
 
         try:
             stream_worker = StreamWorker(
                 local_id=local_id,
                 change_counter=change_counter,
+                cursor_counter=cursor_counter,
                 client=client,
                 instructions=instructions,
-                context_code=context_code,
+                completion_input=completion_input,
                 model_name=model_name,
-                cm_unique_id=cm_unique_id
+                cm_unique_id=cm_unique_id,
+                context_metrics={
+                    "context_kind": context_kind or "local",
+                    "background_context_chars": len(background_context),
+                    "active_prefix_chars": len(prefix),
+                    "active_suffix_chars": len(suffix),
+                },
             )
             stream_worker.start()
             return {"success": True}
