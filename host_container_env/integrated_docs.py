@@ -1,143 +1,38 @@
-import requests
-import re
-from docutils.core import publish_string
+"""Compatibility exports backed by the packaged Tactic API catalog."""
+
+from tactic_api_catalog import catalog_to_legacy, load_catalog
 from tactic_logging import log
-
-def get_api_from_rst():
-    url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Tile-Commands.rst'
-    response = requests.get(url)
-    if response.status_code == 200:
-        txt = response.content.decode('utf-8')
-    else:
-        log.error("Failed to retrieve Tile-Commands.rst", status_code=response.status_code)
-        return []
-    categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
-    newres = []
-    for cat in categories:
-        catname = re.findall(r"\n*(.*?)\n", cat)[0]
-        methods = re.findall(r"py:(method|attribute):: ([\s\S]*?)(?=\n *?\.\.|$)", cat)
-        mlist = []
-        for m in methods:
-            kind = m[0]
-            msig = re.findall(r"(^.*)", m[1])[0]
-            mbody = re.findall(r"\n\n([\s\S]*)", m[1])[0]
-            mlist.append([msig, mbody, kind])
-        newres.append([catname, mlist])
-    return newres
-
-def get_handlers_from_rst():
-    url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Handler-Methods.rst'
-    response = requests.get(url)
-    if response.status_code == 200:
-        txt = response.content.decode('utf-8')
-    else:
-        log.error(f"Failed to retrieve Handler_Methodss.rst", status_code=response.status_code)
-        return {}
-
-    # modify the next line so that it matches for the case where there is just (self) as well as self, args
-    hm_list = re.findall(r"py:method:: ([\s\S]*?)\(self(?:, (.*?))?\)", txt)
-    # hm_list = re.findall(r"py:method:: ([\s\S]*?)\(self, (.*?)\)", txt)
-    hm_dict = {}
-    for hm in hm_list:
-        hm_dict[hm[0]] = hm[1]
-    return hm_dict
-
-def get_object_api_from_rst():
-    url = 'https://raw.githubusercontent.com/bsherin/tacticdocs/main/docs/Object-Oriented-API.rst'
-    response = requests.get(url)
-    if response.status_code == 200:
-        txt = response.content.decode('utf-8')
-    else:
-        log.error("Failed to retrieve Object-Oriented-API.rst", status_code=response.status_code)
-        return [], {}
-
-    categories = re.findall(r".. category_start([\s\S]*?).. category_end", txt)
-    newres = {}
-    ordered_catnames = []
-    for cat in categories:
-        catname = re.findall(r"\n*(.*?)\n", cat)[0]
-        ordered_catnames.append(catname)
-        classes = re.findall(r"py:class:: ([\s\S]*?)(?=\n *?\.\. py:class::|$)", cat)
-        global_consts = re.findall(r"py:data:: ([\s\S]*?)(?=\n *?\.\. |$)", cat)
-        newres[catname] = []
-        for const in global_consts:
-            const_name = re.findall(r"^([a-zA-Z()]*)", const)[0]
-            const_body = process_body(re.findall(r"\n\n([\s\S]*)", const)[0])
-            newres[catname].append([const_name,
-                                    {"signature": const_name, "body": const_body, "kind": "global"}, "global"])
-        for cla in classes:
-            cname = re.findall(r"^([a-zA-Z()]*)", cla)[0]
-            methods = re.findall(r"py:(method|attribute):: ([\s\S]*?)(?=\n *?\.\.|$)", cla)
-            mlist = []
-            for m in methods:
-                kind = m[0]
-                msig = re.findall(r"(^.*)", m[1])[0]
-                mbody = process_body(re.findall(r"\n\n([\s\S]*)", m[1])[0])
-                mlist.append({"signature": msig, "body": mbody, "kind": kind})
-            newres[catname].append([cname, mlist, "class"])
-    return ordered_catnames, newres
-
-
-def get_api_html(ar):
-    result = ""
-    for section in ar:
-        result += "<h4>{}</h4>\n".format(section[0])
-        for entry in section[1]:
-            result += "<button class='accordion btn btn-info'>{}</button>\n<div class='accordion-panel'><p>{}</p></div>\n".format(entry[0], entry[1])
-    return result
-
-def process_body(rbody):
-    raw_body = rbody.strip()
-    raw_body = re.sub(":py:class:", "", raw_body)
-    raw_body = re.sub("\n\n", "XXX", raw_body)
-    raw_body = re.sub("\n", " ", raw_body)
-    raw_body = re.sub("XXX", "\n\n", raw_body)
-    raw_body = re.sub("(\:param [a-z]* )", ":", raw_body)
-    raw_body = re.sub("\:py\:meth\:", "", raw_body)
-    return publish_string(raw_body, writer_name='html').decode("utf-8")
-
-
-def create_api_dict_by_category(_api_array):
-    result = {}
-    ordered_categories = []
-    for cat_array in _api_array:
-        # cat_list = [entry[0] for entry in cat_array[1]]
-        revised_cat_list = []
-        for entry in cat_array[1]:
-            signature = entry[0]
-            kind = entry[2]
-            if kind == "attribute":
-                short_name = signature
-            else:
-                short_name = re.findall("(^.*?)\(", signature)[0]
-            body = process_body(entry[1])
-            revised_cat_list.append({"name": short_name, "signature": signature, "body": body, "kind": kind})
-        result[cat_array[0]] = revised_cat_list
-        ordered_categories.append(cat_array[0])
-    return result, ordered_categories
-
-
-def create_api_dict_by_name(_api_dict_by_category):
-    result = {}
-    for cat_name, cat_list in _api_dict_by_category.items():
-        for entry in cat_list:
-            result[entry["name"]] = {"signature": entry["signature"], "category": cat_name}
-    return result
 
 
 try:
-    api_array = get_api_from_rst()
-    api_dict_by_category, ordered_api_categories = create_api_dict_by_category(api_array)
-    api_dict_by_name = create_api_dict_by_name(api_dict_by_category)
-    ordered_object_categories, object_api_dict_by_category = get_object_api_from_rst()
-    handler_methods = get_handlers_from_rst()
-except Exception as ex:
-    log.exception("problem getting integrated_docs")
-    api_array = []
+    api_catalog = load_catalog()
+    legacy_catalog = catalog_to_legacy(api_catalog)
+    api_dict_by_category = legacy_catalog["api_dict_by_category"]
+    api_dict_by_name = legacy_catalog["api_dict_by_name"]
+    ordered_api_categories = legacy_catalog["ordered_api_categories"]
+    object_api_dict_by_category = legacy_catalog["object_api_dict_by_category"]
+    ordered_object_categories = legacy_catalog["ordered_object_categories"]
+    handler_methods = legacy_catalog["handler_methods"]
+    log.info(
+        "Loaded packaged Tactic API catalog",
+        schema_version=api_catalog["schema_version"],
+        source_hash=api_catalog["source_hash"],
+        entry_count=len(api_catalog["entries"]),
+    )
+except Exception:
+    log.exception("Problem loading packaged Tactic API catalog")
+    api_catalog = {
+        "schema_version": 1,
+        "source_hash": None,
+        "source_files": [],
+        "categories": {},
+        "types": {},
+        "globals": {},
+        "entries": [],
+    }
     api_dict_by_category = {}
     api_dict_by_name = {}
     ordered_api_categories = []
-    ordered_object_categories = []
     object_api_dict_by_category = {}
-    tile_command_html = ""
-    api_html = ""
+    ordered_object_categories = []
+    handler_methods = {}

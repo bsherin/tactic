@@ -27,6 +27,8 @@ except Exception:
     raise
 
 class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
+    copilot_api_scope = "tile"
+
     def __init__(self):
         id_prefix = get_ssm_parameter("MODULE_VIEWER_PREFIX", "module_viewer_")
         self.my_arn, self.my_id = resolve_task_identity(id_prefix)
@@ -37,6 +39,8 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
         self.handler_methods = None
         self.ss = ModuleViewerSessionStore()
         self.api_spec = None
+        self.api_catalog = None
+        self._api_metadata_loaded = False
         return
 
     def retrieve_handler_methods(self):

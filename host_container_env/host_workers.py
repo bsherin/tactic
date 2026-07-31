@@ -562,13 +562,14 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 
     @task_worthy
     def get_api_dict_task(self, _data):
-        from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
+        from integrated_docs import api_catalog, api_dict_by_category, api_dict_by_name, ordered_api_categories
         from integrated_docs import object_api_dict_by_category, ordered_object_categories
         return {"success": True, "api_dict_by_name": api_dict_by_name,
                         "api_dict_by_category": api_dict_by_category,
                         "ordered_api_categories": ordered_api_categories,
                         "object_api_dict_by_category": object_api_dict_by_category,
-                        "ordered_object_categories": ordered_object_categories}
+                        "ordered_object_categories": ordered_object_categories,
+                        "api_catalog": api_catalog}
 
     @task_worthy
     def print_to_console(self, data):

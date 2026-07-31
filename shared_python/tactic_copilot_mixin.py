@@ -17,6 +17,10 @@ from copilot_context import (
     normalize_copilot_model,
     split_code_at_cursor,
 )
+from tactic_api_retrieval import (
+    build_legacy_api_context,
+    build_relevant_api_context,
+)
 
 
 class StreamWorker:
@@ -187,27 +191,10 @@ class StreamWorker:
 class CopilotMixin:
     @staticmethod
     def _get_api_spec(api_dict, max_entries=50):
-        try:
-            lines = []
-            api_dict_by_category = api_dict.get("api_dict_by_category", {})
-            ordered_api_categories = api_dict.get("ordered_api_categories", [])
-            for cat in ordered_api_categories:
-                lines.append(f"Category: {cat}")
-                for entry in api_dict_by_category[cat]:
-                    name = entry.get("name", "")
-                    sig = entry.get("signature", "")
-                    #doc = (entry.get("docstring") or "").strip().replace("\n", " ")
-                    # if max_doc_chars:
-                    #     doc = doc[:max_doc_chars]
-                    lines.append(f"- {name}{sig}")
-                    if len(lines) >= max_entries:
-                        break
-                if len(lines) >= max_entries:
-                    break
-            return "\n".join(lines)
-        except Exception:
+        result = build_legacy_api_context(api_dict, max_entries=max_entries)
+        if not result and api_dict:
             log.warning("Could not build API spec for session")
-            return ""
+        return result
 
     def get_ai_background_context(self, _data_dict):
         """Service-specific hook for tile or notebook context."""
@@ -230,11 +217,19 @@ class CopilotMixin:
 
     @task_worthy
     def update_ai_complete(self, data_dict):
-        if self.api_spec is None:
-            log.debug("No API spec available, fetching...")
-            api_dict = self.post_and_wait("host", "get_api_dict_task", {})
-            self.api_spec = self._get_api_spec(api_dict)
-            log.debug("API spec fetched successfully.")
+        if not getattr(self, "_api_metadata_loaded", False):
+            log.debug("No API catalog available, fetching...")
+            api_response = self.post_and_wait("host", "get_api_dict_task", {})
+            if not isinstance(api_response, dict):
+                api_response = {}
+            catalog = api_response.get("api_catalog")
+            self.api_catalog = catalog if isinstance(catalog, dict) else {}
+            self.api_spec = self._get_api_spec(api_response)
+            self._api_metadata_loaded = True
+            log.debug(
+                "API catalog fetched successfully.",
+                catalog_entries=len(self.api_catalog.get("entries", [])),
+            )
         cm_unique_id = data_dict.get("cmUniqueId")
         local_id = data_dict.get("local_id")
 
@@ -265,6 +260,30 @@ class CopilotMixin:
             background_context=background_context,
         )
 
+        ai_context = data_dict.get("ai_context")
+        context_kind = ai_context.get("kind") if isinstance(ai_context, dict) else "local"
+        api_scope = getattr(self, "copilot_api_scope", None) or context_kind
+        catalog_entries = self.api_catalog.get("entries", [])
+        catalog_available = isinstance(catalog_entries, list) and bool(catalog_entries)
+        if catalog_available:
+            api_context = build_relevant_api_context(
+                self.api_catalog,
+                prefix=prefix,
+                suffix=suffix,
+                scope=api_scope,
+                language=mode,
+            )
+            api_context_source = "catalog" if api_context else "none"
+        elif str(mode or "").lower() in ("python", "py"):
+            api_context = self.api_spec or ""
+            api_context_source = "legacy" if api_context else "none"
+        else:
+            api_context = ""
+            api_context_source = "none"
+        api_reference_count = sum(
+            1 for line in api_context.splitlines() if line.startswith("- ")
+        )
+
         instructions = (
             "You are a helpful coding assistant embedded in an IDE.\n"
             "Your job is to provide *only* the code that should appear "
@@ -278,17 +297,15 @@ class CopilotMixin:
             "- Just return the raw code continuation.\n"
         )
 
-        if self.api_spec:
+        if api_context:
             instructions += (
                 "\n\nYou are coding against the Tactic API. "
-                "Prefer to use these functions and respect their signatures when relevant:\n"
-                f"{self.api_spec}\n"
+                "Use these references when relevant:\n"
+                f"{api_context}\n"
             )
 
 
         model_name = normalize_copilot_model(data_dict.get("model_name"))
-        ai_context = data_dict.get("ai_context")
-        context_kind = ai_context.get("kind") if isinstance(ai_context, dict) else "local"
 
         try:
             stream_worker = StreamWorker(
@@ -305,6 +322,9 @@ class CopilotMixin:
                     "background_context_chars": len(background_context),
                     "active_prefix_chars": len(prefix),
                     "active_suffix_chars": len(suffix),
+                    "api_context_chars": len(api_context),
+                    "api_reference_count": api_reference_count,
+                    "api_context_source": api_context_source,
                 },
             )
             stream_worker.start()

@@ -23,6 +23,8 @@ except Exception:
     raise
 
 class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
+    copilot_api_scope = "notebook"
+
     def __init__(self, ):
         id_prefix = get_ssm_parameter("MAIN_ID_PREFIX", "main_service_")
         self.my_arn, self.my_id = resolve_task_identity(id_prefix)
@@ -31,6 +33,8 @@ class MainWorker(QWorker, ExceptionMixin, CopilotMixin):
         self.handler_instances["mainwindow"] = self.mwindow
         self.get_megaplex_task_now = False
         self.api_spec = None
+        self.api_catalog = None
+        self._api_metadata_loaded = False
 
     def ask_host(self, sid, msg_type, task_data=None, callback_func=None):
         if task_data is None:

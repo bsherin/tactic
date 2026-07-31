@@ -1,0 +1,4323 @@
+{
+  "schema_version": 1,
+  "source_hash": "6b479e3a46612ffc8b769474d986af7a4ab5413c0a6fe9b4be5e1c73c2378300",
+  "source_files": [
+    "Handler-Methods.md",
+    "Object-Oriented-API.md",
+    "Tile-Commands.md"
+  ],
+  "categories": {
+    "tile": [
+      "Display",
+      "Data Access",
+      "Data Setting",
+      "Filter-And-Iterate",
+      "Object API-related",
+      "Other TileBase",
+      "Plot-Related",
+      "Global and Notebook-Only"
+    ],
+    "object": [
+      "Accessing and manipulating the collection",
+      "Creating and manipulating detached data",
+      "Communicating with other tiles",
+      "The Pipes Object",
+      "The Library Object",
+      "The Settings Object"
+    ],
+    "handler": [
+      "Clicks on Tile Front",
+      "Environment changes",
+      "Dynamic Options",
+      "Other"
+    ]
+  },
+  "types": {
+    "TileBase": {
+      "access_paths": [
+        "self"
+      ]
+    },
+    "TacticCollection": {
+      "access_paths": [
+        "Collection",
+        "self.collection"
+      ]
+    },
+    "RemoteTiles": {
+      "access_paths": [
+        "Tiles",
+        "self.tiles"
+      ]
+    },
+    "RemotePipes": {
+      "access_paths": [
+        "Pipes"
+      ]
+    },
+    "TacticLibrary": {
+      "access_paths": [
+        "Library"
+      ]
+    },
+    "TacticListSet": {
+      "access_paths": [
+        "Library.lists"
+      ]
+    },
+    "TacticCollectionSet": {
+      "access_paths": [
+        "Library.collections"
+      ]
+    },
+    "TacticFunctionSet": {
+      "access_paths": [
+        "Library.functions"
+      ]
+    },
+    "TacticClassSet": {
+      "access_paths": [
+        "Library.classes"
+      ]
+    },
+    "TacticCodeSet": {
+      "access_paths": [
+        "Library.codes"
+      ]
+    },
+    "TacticSettings": {
+      "access_paths": [
+        "Settings"
+      ]
+    }
+  },
+  "globals": {
+    "Collection": "TacticCollection",
+    "Tiles": "RemoteTiles",
+    "Pipes": "RemotePipes",
+    "Library": "TacticLibrary",
+    "Settings": "TacticSettings"
+  },
+  "entries": [
+    {
+      "id": "tile.TileBase.start_spinner",
+      "surface": "tile",
+      "category": "Display",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "start_spinner",
+      "signature": "start_spinner()",
+      "canonical": "self.start_spinner()",
+      "summary": "Start the spinning animation on the tile",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 29
+      }
+    },
+    {
+      "id": "tile.TileBase.stop_spinner",
+      "surface": "tile",
+      "category": "Display",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "stop_spinner",
+      "signature": "stop_spinner()",
+      "canonical": "self.stop_spinner()",
+      "summary": "Stop the spinning animation on the tile.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 33
+      }
+    },
+    {
+      "id": "tile.TileBase.refresh_tile_now",
+      "surface": "tile",
+      "category": "Display",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "refresh_tile_now",
+      "signature": "refresh_tile_now(new_html=None)",
+      "canonical": "self.refresh_tile_now(new_html=None)",
+      "summary": "Updates the front of the tile using the passed html. If new_html is None then render_content is called to generate the html to be displayed.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 37
+      }
+    },
+    {
+      "id": "tile.TileBase.display_status",
+      "surface": "tile",
+      "category": "Display",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "display_status",
+      "signature": "display_status(new_html)",
+      "canonical": "self.display_status(new_html)",
+      "summary": "Updates the front of the tile using the passed html. It looks like this might behave differently than refresh_tile_now under some circumstances. In particular, it looks like it updates pipe information if necessary.",
+      "aliases": [
+        "ds"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 46
+      }
+    },
+    {
+      "id": "tile.TileBase.spin_and_refresh",
+      "surface": "tile",
+      "category": "Display",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "spin_and_refresh",
+      "signature": "spin_and_refresh()",
+      "canonical": "self.spin_and_refresh()",
+      "summary": "Starts the spinner, refreshes the tile, then stops the spinner.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 58
+      }
+    },
+    {
+      "id": "tile.TileBase.widget",
+      "surface": "tile",
+      "category": "Display",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "widget",
+      "signature": "widget(kind, data=None, **kwargs)",
+      "canonical": "self.widget(kind, data=None, **kwargs)",
+      "summary": "This is the method for creating widgets that can be displayed on tiles and in the notebook. See the widgets docs for details: Widgets.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 64
+      }
+    },
+    {
+      "id": "tile.TileBase.render_all_widgets",
+      "surface": "tile",
+      "category": "Display",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "render_all_widgets",
+      "signature": "render_all_widgets()",
+      "canonical": "self.render_all_widgets()",
+      "summary": "This renders all of the widgets that were created with the Tile Creator and which have to_render=True",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 75
+      }
+    },
+    {
+      "id": "tile.TileBase.get_document_names",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_document_names",
+      "signature": "get_document_names()",
+      "canonical": "self.get_document_names()",
+      "summary": "Returns a list of all document names in the current collection.",
+      "aliases": [
+        "gdn"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 92
+      }
+    },
+    {
+      "id": "tile.TileBase.get_current_document_name",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_current_document_name",
+      "signature": "get_current_document_name()",
+      "canonical": "self.get_current_document_name()",
+      "summary": "Returns the name of the current document.",
+      "aliases": [
+        "gcdn"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 100
+      }
+    },
+    {
+      "id": "tile.TileBase.get_document_data",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_document_data",
+      "signature": "get_document_data(document_name)",
+      "canonical": "self.get_document_data(document_name)",
+      "summary": "For table-based documents,returns all of the data in the document represented as a dictionary. The keys of the dictionary are the values of the \\__id_\\_ field for each row, represented as strings.",
+      "aliases": [
+        "gdd"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 108
+      }
+    },
+    {
+      "id": "tile.TileBase.get_document_data_as_list",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_document_data_as_list",
+      "signature": "get_document_data_as_list(document_name)",
+      "canonical": "self.get_document_data_as_list(document_name)",
+      "summary": "Returns all of the data in the document represented as a list.",
+      "aliases": [
+        "gddl"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 120
+      }
+    },
+    {
+      "id": "tile.TileBase.get_column_names",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_column_names",
+      "signature": "get_column_names(document_name)",
+      "canonical": "self.get_column_names(document_name)",
+      "summary": "Returns a list containing the column names of the specified document. (Table documents only.)",
+      "aliases": [
+        "gcn"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 131
+      }
+    },
+    {
+      "id": "tile.TileBase.get_number_rows",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_number_rows",
+      "signature": "get_number_rows(document_name)",
+      "canonical": "self.get_number_rows(document_name)",
+      "summary": "Returns the number of rows in the specified document for table documents. For freeform documents, returns the number of lines.",
+      "aliases": [
+        "gnr"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 139
+      }
+    },
+    {
+      "id": "tile.TileBase.get_row",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_row",
+      "signature": "get_row(document_name, row_id)",
+      "canonical": "self.get_row(document_name, row_id)",
+      "summary": "For table documents, the specified row is returned. For freeform documents, the specified line is returned. self.get_line is a synonym.",
+      "aliases": [
+        "gr"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 148
+      }
+    },
+    {
+      "id": "tile.TileBase.get_cell",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_cell",
+      "signature": "get_cell(document_name, row_id, column_name)",
+      "canonical": "self.get_cell(document_name, row_id, column_name)",
+      "summary": "Returns the text in the specified cell.",
+      "aliases": [
+        "gc"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 158
+      }
+    },
+    {
+      "id": "tile.TileBase.get_column_data",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_column_data",
+      "signature": "get_column_data(column_name, document_name)",
+      "canonical": "self.get_column_data(column_name, document_name)",
+      "summary": "Get all contents of a column as a list. If document_name is not provided or is None then the content of the column from all documents is returned as one long list. (Table documents only.)",
+      "aliases": [
+        "gcd"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 168
+      }
+    },
+    {
+      "id": "tile.TileBase.get_column_data_dict",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_column_data_dict",
+      "signature": "get_column_data_dict(column_name)",
+      "canonical": "self.get_column_data_dict(column_name)",
+      "summary": "Returns a dictionary. The keys of the dictionary are the document names. Each value is a list corresponding to the values in column_name for the document. (Table documents only.)",
+      "aliases": [
+        "gcdd"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 177
+      }
+    },
+    {
+      "id": "tile.TileBase.get_document_metadata",
+      "surface": "tile",
+      "category": "Data Access",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_document_metadata",
+      "signature": "get_document_metadata(document_name)",
+      "canonical": "self.get_document_metadata(document_name)",
+      "summary": "Returns a the document-level metadata for the given document. Returns a dict.",
+      "aliases": [
+        "gdm"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 187
+      }
+    },
+    {
+      "id": "tile.TileBase.set_cell",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "set_cell",
+      "signature": "set_cell(document_name, row_id, column_name, text, cellchange=True)",
+      "canonical": "self.set_cell(document_name, row_id, column_name, text, cellchange=True)",
+      "summary": "Sets the text in the specified cell. By default generates a CellChange event.",
+      "aliases": [
+        "sc"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 205
+      }
+    },
+    {
+      "id": "tile.TileBase.add_document",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "add_document",
+      "signature": "add_document(document_name, column_names, list_of_dicts)",
+      "canonical": "self.add_document(document_name, column_names, list_of_dicts)",
+      "summary": "Adds a new table document to the collection. Note that if the name of an existing document is given that document is overwritten.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 218
+      }
+    },
+    {
+      "id": "tile.TileBase.remove_document",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "remove_document",
+      "signature": "remove_document(document_name)",
+      "canonical": "self.remove_document(document_name)",
+      "summary": "Removes a document from the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 227
+      }
+    },
+    {
+      "id": "tile.TileBase.add_freeform_document",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "add_freeform_document",
+      "signature": "add_freeform_document(document_name, doc_text)",
+      "canonical": "self.add_freeform_document(document_name, doc_text)",
+      "summary": "Adds a new freeform document to the collection. Note that if the name of an existing document is given that document is overwritten.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 233
+      }
+    },
+    {
+      "id": "tile.TileBase.insert_row",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "insert_row",
+      "signature": "insert_row(document_name, index, row_as_dict)",
+      "canonical": "self.insert_row(document_name, index, row_as_dict)",
+      "summary": "Insert a new row in a document at the specified index.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 240
+      }
+    },
+    {
+      "id": "tile.TileBase.delete_row",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "delete_row",
+      "signature": "delete_row(document_name, index)",
+      "canonical": "self.delete_row(document_name, index)",
+      "summary": "Delete a row from a document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 246
+      }
+    },
+    {
+      "id": "tile.TileBase.rename_document",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "rename_document",
+      "signature": "rename_document(old name, newname)",
+      "canonical": "self.rename_document(old name, newname)",
+      "summary": "Rename a document in the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 252
+      }
+    },
+    {
+      "id": "tile.TileBase.set_document",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "set_document",
+      "signature": "set_document(document_name, new_data, cellchange=False)",
+      "canonical": "self.set_document(document_name, new_data, cellchange=False)",
+      "summary": "This is a general utility for setting document data.",
+      "aliases": [
+        "sd"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 258
+      }
+    },
+    {
+      "id": "tile.TileBase.set_column_data",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "set_column_data",
+      "signature": "set_column_data(document_name, column_name, column_data, cellchange=False)",
+      "canonical": "self.set_column_data(document_name, column_name, column_data, cellchange=False)",
+      "summary": "Sets the column in a document.",
+      "aliases": [
+        "scd"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 273
+      }
+    },
+    {
+      "id": "tile.TileBase.set_document_metadata",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "set_document_metadata",
+      "signature": "set_document_metadata(document_name, metadata_dict)",
+      "canonical": "self.set_document_metadata(document_name, metadata_dict)",
+      "summary": "Sets the document_level metadata for the given document.",
+      "aliases": [
+        "sdm"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 287
+      }
+    },
+    {
+      "id": "tile.TileBase.set_cell_background",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "set_cell_background",
+      "signature": "set_cell_background(document_name, row_id, column_name, color)",
+      "canonical": "self.set_cell_background(document_name, row_id, column_name, color)",
+      "summary": "Sets the the background color of the specified cell to the given color. The color is used in an expression of the form: $(el).css(\"background-color\", color). So color has to be something that can appear in that expression. ColorMapper.color_from_val() generates the right sort of thing.",
+      "aliases": [
+        "scb"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 299
+      }
+    },
+    {
+      "id": "tile.TileBase.color_cell_text",
+      "surface": "tile",
+      "category": "Data Setting",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "color_cell_text",
+      "signature": "color_cell_text(document_name, row_id, column_name, tokenized_text, color_dict)",
+      "canonical": "self.color_cell_text(document_name, row_id, column_name, tokenized_text, color_dict)",
+      "summary": "Highlights the words in the target cell.",
+      "aliases": [
+        "cct"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 315
+      }
+    },
+    {
+      "id": "tile.TileBase.get_matching_documents",
+      "surface": "tile",
+      "category": "Filter-And-Iterate",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_matching_documents",
+      "signature": "get_matching_documents(filter_function)",
+      "canonical": "self.get_matching_documents(filter_function)",
+      "summary": "and should output a boolean. Returns a list of the matching documents.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 333
+      }
+    },
+    {
+      "id": "tile.TileBase.get_matching_rows",
+      "surface": "tile",
+      "category": "Filter-And-Iterate",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_matching_rows",
+      "signature": "get_matching_rows(filter_function, document_name)",
+      "canonical": "self.get_matching_rows(filter_function, document_name)",
+      "summary": "and should output a boolean. For freeform docs, this functin should take a string (corresponding to a line) as an argument, and should return a boolean.",
+      "aliases": [
+        "gmr"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 340
+      }
+    },
+    {
+      "id": "tile.TileBase.display_matching_rows",
+      "surface": "tile",
+      "category": "Filter-And-Iterate",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "display_matching_rows",
+      "signature": "display_matching_rows(filter_function, document_name)",
+      "canonical": "self.display_matching_rows(filter_function, document_name)",
+      "summary": "Will cause the table to only display rows matching the filter_function.",
+      "aliases": [
+        "dmr"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 355
+      }
+    },
+    {
+      "id": "tile.TileBase.clear_table_highlighting",
+      "surface": "tile",
+      "category": "Filter-And-Iterate",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "clear_table_highlighting",
+      "signature": "clear_table_highlighting()",
+      "canonical": "self.clear_table_highlighting()",
+      "summary": "Clears a main table highlighting.",
+      "aliases": [
+        "cth"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 367
+      }
+    },
+    {
+      "id": "tile.TileBase.highlight_matching_text",
+      "surface": "tile",
+      "category": "Filter-And-Iterate",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "highlight_matching_text",
+      "signature": "highlight_matching_text(text)",
+      "canonical": "self.highlight_matching_text(text)",
+      "summary": "Highlights matching text in the main table.",
+      "aliases": [
+        "hmt"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 375
+      }
+    },
+    {
+      "id": "tile.TileBase.display_all_rows",
+      "surface": "tile",
+      "category": "Filter-And-Iterate",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "display_all_rows",
+      "signature": "display_all_rows()",
+      "canonical": "self.display_all_rows()",
+      "summary": "Will cause the table to display all rows. (Table documents only.)",
+      "aliases": [
+        "dar"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 383
+      }
+    },
+    {
+      "id": "tile.TileBase.apply_to_rows",
+      "surface": "tile",
+      "category": "Filter-And-Iterate",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "apply_to_rows",
+      "signature": "apply_to_rows(func, document_name=None, cellchange=False)",
+      "canonical": "self.apply_to_rows(func, document_name=None, cellchange=False)",
+      "summary": "Applies the specified func to each row.",
+      "aliases": [
+        "atr"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 391
+      }
+    },
+    {
+      "id": "tile.TileBase.collection",
+      "surface": "tile",
+      "category": "Object API-related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "attribute",
+      "name": "collection",
+      "signature": "collection",
+      "canonical": "self.collection",
+      "summary": "self.collection returns a TacticCollection object corresponding to the collection in the current project. It is equivalent to typing Collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 417
+      },
+      "value_type": "TacticCollection"
+    },
+    {
+      "id": "tile.TileBase.create_collection_object",
+      "surface": "tile",
+      "category": "Object API-related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_collection_object",
+      "signature": "create_collection_object(doc_type, doc_list=None)",
+      "canonical": "self.create_collection_object(doc_type, doc_list=None)",
+      "summary": "Creates a new DetachedTacticCollection object.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 424
+      }
+    },
+    {
+      "id": "tile.TileBase.create_document",
+      "surface": "tile",
+      "category": "Object API-related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_document",
+      "signature": "create_document(doc_data=None, docname=\"document1\", metadata=None)",
+      "canonical": "self.create_document(doc_data=None, docname=\"document1\", metadata=None)",
+      "summary": "Creates a new DetachedTacticDocument object.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 432
+      }
+    },
+    {
+      "id": "tile.TileBase.create_freeform_document",
+      "surface": "tile",
+      "category": "Object API-related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_freeform_document",
+      "signature": "create_freeform_document(docname=\"document1\", lines=None, metadata=None)",
+      "canonical": "self.create_freeform_document(docname=\"document1\", lines=None, metadata=None)",
+      "summary": "Creates a new DetachedFreeformTacticCollection object.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 440
+      }
+    },
+    {
+      "id": "tile.TileBase.create_row",
+      "surface": "tile",
+      "category": "Object API-related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_row",
+      "signature": "create_row(row_dict=None)",
+      "canonical": "self.create_row(row_dict=None)",
+      "summary": "Creates a new DetachedTacticRow object.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 447
+      }
+    },
+    {
+      "id": "tile.TileBase.create_line",
+      "surface": "tile",
+      "category": "Object API-related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_line",
+      "signature": "create_line(txt=None)",
+      "canonical": "self.create_line(txt=None)",
+      "summary": "Creates a new DetachedTacticLIne object.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 455
+      }
+    },
+    {
+      "id": "tile.TileBase.tiles",
+      "surface": "tile",
+      "category": "Object API-related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "attribute",
+      "name": "tiles",
+      "signature": "tiles",
+      "canonical": "self.tiles",
+      "summary": "self.tiles returns a RemoteTiles object corresponding to the tiles in the current project. This is equivalent to typing Tiles.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 461
+      },
+      "value_type": "RemoteTiles"
+    },
+    {
+      "id": "tile.TileBase.create_collection",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_collection",
+      "signature": "create_collection(name, doc_dict, doc_type=\"table\", doc_metadata=None, header_list_dict=None, collection_metadata=None)",
+      "canonical": "self.create_collection(name, doc_dict, doc_type=\"table\", doc_metadata=None, header_list_dict=None, collection_metadata=None)",
+      "summary": "Creates a new collection in the user\u2019s resource library.",
+      "aliases": [
+        "cc"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 474
+      }
+    },
+    {
+      "id": "tile.TileBase.download_collection",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "download_collection",
+      "signature": "download_collection(collection_name, file_name=None)",
+      "canonical": "self.download_collection(collection_name, file_name=None)",
+      "summary": "Downloads the named collection from the user's library to the local client.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 501
+      }
+    },
+    {
+      "id": "tile.TileBase.download_data",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "download_data",
+      "signature": "download_data(text_data, file_name=None)",
+      "canonical": "self.download_data(text_data, file_name=None)",
+      "summary": "Downloads the given text_data to the local client.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 507
+      }
+    },
+    {
+      "id": "tile.TileBase.go_to_document",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "go_to_document",
+      "signature": "go_to_document(document_name)",
+      "canonical": "self.go_to_document(document_name)",
+      "summary": "Shows the named document in the table.",
+      "aliases": [
+        "gtd"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 513
+      }
+    },
+    {
+      "id": "tile.TileBase.go_to_row_in_document",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "go_to_row_in_document",
+      "signature": "go_to_row_in_document(document_name, row_id)",
+      "canonical": "self.go_to_row_in_document(document_name, row_id)",
+      "summary": "For table documents, this shows the named document and selects the named row. For freeform documents, the corresponding line is scrolled into view.",
+      "aliases": [
+        "gtrid"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 521
+      }
+    },
+    {
+      "id": "tile.TileBase.get_selected_text",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_selected_text",
+      "signature": "get_selected_text()",
+      "canonical": "self.get_selected_text()",
+      "summary": "Returns the text currently highlighted by the user",
+      "aliases": [
+        "gst"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 531
+      }
+    },
+    {
+      "id": "tile.TileBase.log_it",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "log_it",
+      "signature": "log_it(html_string, force_open=True, is_error=False, summary=None)",
+      "canonical": "self.log_it(html_string, force_open=True, is_error=False, summary=None)",
+      "summary": "Adds the given html to the log (formerly called the console).",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 539
+      }
+    },
+    {
+      "id": "tile.TileBase.get_container_log",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_container_log",
+      "signature": "get_container_log()",
+      "canonical": "self.get_container_log()",
+      "summary": "Returns, as a string, the current contents of the container log file. This is the log file of the container that holds the tile. All error messages go to this file. Also and print statements.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 555
+      }
+    },
+    {
+      "id": "tile.TileBase.send_tile_message",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "send_tile_message",
+      "signature": "send_tile_message(tile_name, event_name, data=None, callback_func=None)",
+      "canonical": "self.send_tile_message(tile_name, event_name, data=None, callback_func=None)",
+      "summary": "Sends a message to a tile with the given name. The event_name and data are passed to the named tile, which it can capture by defining a handle_tile_message method. (See Events and handlers )",
+      "aliases": [
+        "stm"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 563
+      }
+    },
+    {
+      "id": "tile.TileBase.get_function_names",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_function_names",
+      "signature": "get_function_names(tag=None); self.get_class_names(tag=None)",
+      "canonical": "self.get_function_names(tag=None); self.get_class_names(tag=None)",
+      "summary": "Returns a list of the available user function names or class names. This list can be restricted to those with the specified tag. These names can then be used to access the associated function or class with get_user_function() or get_user_class().",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 576
+      }
+    },
+    {
+      "id": "tile.TileBase.get_user_list",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_user_list",
+      "signature": "get_user_list(list_name)",
+      "canonical": "self.get_user_list(list_name)",
+      "summary": "get_pipe_value(pipe_name) get_user_function(function_name) get_user_class(class_name) get_user_collection(collection_name)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 585
+      }
+    },
+    {
+      "id": "tile.TileBase.html_table",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "html_table",
+      "signature": "html_table(data, title=None, click_type=\"word-clickable\", sortable=True, sidebyside=False, has_header=True, max_rows=100, header_style=None, body_style=None, column_order=None, include_row_labels=False)",
+      "canonical": "self.html_table(data, title=None, click_type=\"word-clickable\", sortable=True, sidebyside=False, has_header=True, max_rows=100, header_style=None, body_style=None, column_order=None, include_row_labels=False)",
+      "summary": "Returns html for a table.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 607
+      }
+    },
+    {
+      "id": "tile.TileBase.build_html_table_from_data_list",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "build_html_table_from_data_list",
+      "signature": "build_html_table_from_data_list(data_list, title=None, click_type=\"word-clickable\", sortable=True, sidebyside=False, has_header=True header_style=None, body_style=None)",
+      "canonical": "self.build_html_table_from_data_list(data_list, title=None, click_type=\"word-clickable\", sortable=True, sidebyside=False, has_header=True header_style=None, body_style=None)",
+      "summary": "Returns html for table. *data_list* must be in the form of a list of lists. The first row is treated as the heading row. A title can optionally be given. If *has_header* is True, then the first list is treated as headers.",
+      "aliases": [
+        "bht"
+      ],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 652
+      }
+    },
+    {
+      "id": "tile.TileBase.get_user_settings",
+      "surface": "tile",
+      "category": "Other TileBase",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "get_user_settings",
+      "signature": "get_user_settings()",
+      "canonical": "self.get_user_settings()",
+      "summary": "Returns a dictionary with the current value of user's account-level settings. There's not much there at this point. The same functionality is available from the object-oriented API .",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 681
+      }
+    },
+    {
+      "id": "tile.TileBase.create_figure_html",
+      "surface": "tile",
+      "category": "Plot-Related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_figure_html",
+      "signature": "create_figure_html(fig, use_svg=True)",
+      "canonical": "self.create_figure_html(fig, use_svg=True)",
+      "summary": "Given a matplotlib Figure instance this generates html that can be included in a tile or used in a notebook to display the figure.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 693
+      }
+    },
+    {
+      "id": "tile.TileBase.create_pyplot_html",
+      "surface": "tile",
+      "category": "Plot-Related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_pyplot_html",
+      "signature": "create_pyplot_html(use_svg=True)",
+      "canonical": "self.create_pyplot_html(use_svg=True)",
+      "summary": "When using matplotlib.pyplot to work in interactive mode, use this alternative command to generate html to display the figure. in the page. If it's false, then the html produced contains a link that references a png file hosted on the server.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 706
+      }
+    },
+    {
+      "id": "tile.TileBase.create_bokeh_html",
+      "surface": "tile",
+      "category": "Plot-Related",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "create_bokeh_html",
+      "signature": "create_bokeh_html(plot)",
+      "canonical": "self.create_bokeh_html(plot)",
+      "summary": "Given a bokeh plot, this returns html to display the plot. The entirety of what this method is below, in case you want to do something slightly different. However, doing something other than Resources(\"inline\") can cause problems, especially when loading a saved project.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 721
+      }
+    },
+    {
+      "id": "tile.global.tactic_import",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "tactic_import",
+      "signature": "tactic_import(code_resource_name)",
+      "canonical": "tactic_import(code_resource_name)",
+      "summary": "This command imports a code resource as a module. See the section on Code Resources for more details.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 762
+      }
+    },
+    {
+      "id": "tile.global.ColorMapper",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "ColorMapper",
+      "signature": "ColorMapper(bottom_val, top_val, color_palette_name)",
+      "canonical": "ColorMapper(bottom_val, top_val, color_palette_name)",
+      "summary": "",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 769
+      }
+    },
+    {
+      "id": "tile.ColorMapper.color_from_val",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": "ColorMapper",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "color_from_val",
+      "signature": "color_from_val(val)",
+      "canonical": "color_from_val(val)",
+      "summary": "ColorMapper is a class for creating mappings between values and colors. ColorMapper() creates the class instance.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 773
+      }
+    },
+    {
+      "id": "tile.global.global_import",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "global_import",
+      "signature": "global_import(module_name)",
+      "canonical": "global_import(module_name)",
+      "summary": "This command imports a module into the global namespace. So, for example, global_import(\"nltk\") within render_content would make nltk available within all method calls in your tile.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 788
+      }
+    },
+    {
+      "id": "tile.global.ds",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "ds",
+      "signature": "ds(text)",
+      "canonical": "ds(text)",
+      "summary": "Shortcut for self.display_status(text)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 800
+      }
+    },
+    {
+      "id": "tile.global.escape_html",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "escape_html",
+      "signature": "escape_html(text)",
+      "canonical": "escape_html(text)",
+      "summary": "Returns the text with html characters escaped.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 808
+      }
+    },
+    {
+      "id": "tile.global.xh",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "xh",
+      "signature": "xh(text)",
+      "canonical": "xh(text)",
+      "summary": "Shortcut for self.escape_html(text)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 816
+      }
+    },
+    {
+      "id": "tile.global.display",
+      "surface": "tile",
+      "category": "Global and Notebook-Only",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "display",
+      "signature": "display(output_string) [notebook only]",
+      "canonical": "display(output_string) [notebook only]",
+      "summary": "Displays the given string as the output of the current cell, replacing any output that was already there.",
+      "aliases": [],
+      "scopes": [
+        "notebook"
+      ],
+      "source": {
+        "file": "Tile-Commands.md",
+        "line": 824
+      }
+    },
+    {
+      "id": "object.global.Collection",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [
+        "Collection"
+      ],
+      "kind": "data",
+      "name": "Collection",
+      "signature": "Collection",
+      "canonical": "Collection",
+      "summary": "Collection is a global containing a TacticCollection object corresponding to the collection in the current project. self.collection can also be used.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 13
+      },
+      "value_type": "TacticCollection"
+    },
+    {
+      "id": "object.global.TacticCollection",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticCollection",
+      "signature": "TacticCollection()",
+      "canonical": "TacticCollection()",
+      "summary": "Iterating over the TacticCollection object iterates over the documents in the collection, giving TacticDocument objects. These can also be accessed by name.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 20
+      }
+    },
+    {
+      "id": "object.TacticCollection.document_names",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticCollection",
+      "receiver": "Collection",
+      "access_paths": [
+        "Collection",
+        "self.collection"
+      ],
+      "kind": "attribute",
+      "name": "document_names",
+      "signature": "document_names",
+      "canonical": "Collection.document_names",
+      "summary": "A list of the names of the documents in the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 35
+      }
+    },
+    {
+      "id": "object.TacticCollection.current_document",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticCollection",
+      "receiver": "Collection",
+      "access_paths": [
+        "Collection",
+        "self.collection"
+      ],
+      "kind": "attribute",
+      "name": "current_document",
+      "signature": "current_document",
+      "canonical": "Collection.current_document",
+      "summary": "A TacticDocument object corresponding to the currently visible document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 39
+      },
+      "value_type": "TacticDocument"
+    },
+    {
+      "id": "object.TacticCollection.column",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticCollection",
+      "receiver": "Collection",
+      "access_paths": [
+        "Collection",
+        "self.collection"
+      ],
+      "kind": "method",
+      "name": "column",
+      "signature": "column(column_name)",
+      "canonical": "Collection.column(column_name)",
+      "summary": "Returns, as a list, the data in the specified column from all of the documents in the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 43
+      }
+    },
+    {
+      "id": "object.TacticCollection.tokenize",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticCollection",
+      "receiver": "Collection",
+      "access_paths": [
+        "Collection",
+        "self.collection"
+      ],
+      "kind": "method",
+      "name": "tokenize",
+      "signature": "tokenize(column_name=None, tokenizer_func=None)",
+      "canonical": "Collection.tokenize(column_name=None, tokenizer_func=None)",
+      "summary": "In table documents, applies tokenizer_func to each entry in the column column_name, in every document, and returns the result as a list.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 47
+      }
+    },
+    {
+      "id": "object.TacticCollection.detach",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticCollection",
+      "receiver": "Collection",
+      "access_paths": [
+        "Collection",
+        "self.collection"
+      ],
+      "kind": "method",
+      "name": "detach",
+      "signature": "detach()",
+      "canonical": "Collection.detach()",
+      "summary": "Returns a DetachedTacticCollection with the data corresponding to this collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 57
+      }
+    },
+    {
+      "id": "object.TacticCollection.rewind",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticCollection",
+      "receiver": "Collection",
+      "access_paths": [
+        "Collection",
+        "self.collection"
+      ],
+      "kind": "method",
+      "name": "rewind",
+      "signature": "rewind()",
+      "canonical": "Collection.rewind()",
+      "summary": "Reset the iterator to the first document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 61
+      }
+    },
+    {
+      "id": "object.global.TacticDocument",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticDocument",
+      "signature": "TacticDocument()",
+      "canonical": "TacticDocument()",
+      "summary": "Objects in this class correspond to one of the documents in the collection in the current project. It is only for table documents. Freeform documents have their own class, FreeformTacticDocument described below.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 67
+      }
+    },
+    {
+      "id": "object.TacticDocument.name",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "name",
+      "signature": "name",
+      "canonical": "name",
+      "summary": "The name of the document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 94
+      }
+    },
+    {
+      "id": "object.TacticDocument.metadata",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "metadata",
+      "signature": "metadata",
+      "canonical": "metadata",
+      "summary": "A dictionary with the metadata for the document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 98
+      }
+    },
+    {
+      "id": "object.TacticDocument.column_names",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "column_names",
+      "signature": "column_names",
+      "canonical": "column_names",
+      "summary": "A list of the column_names for the document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 104
+      }
+    },
+    {
+      "id": "object.TacticDocument.df",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "df",
+      "signature": "df",
+      "canonical": "df",
+      "summary": "Returns the document as a pandas DataFrame.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 108
+      }
+    },
+    {
+      "id": "object.TacticDocument.insert",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "insert",
+      "signature": "insert(index, detached_row_or_row_dict)",
+      "canonical": "insert(index, detached_row_or_row_dict)",
+      "summary": "Inserts a new row at the specified index. The new row can either be a",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 113
+      }
+    },
+    {
+      "id": "object.TacticDocument.column",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "column",
+      "signature": "column(column_name)",
+      "canonical": "column(column_name)",
+      "summary": "Returns, as a list, the data in the specified column.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 118
+      }
+    },
+    {
+      "id": "object.TacticDocument.dict_list",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "dict_list",
+      "signature": "dict_list",
+      "canonical": "dict_list",
+      "summary": "The contents of the document as a list of dictionaries.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 122
+      }
+    },
+    {
+      "id": "object.TacticDocument.get_matching_rows",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "get_matching_rows",
+      "signature": "get_matching_rows(filter_function)",
+      "canonical": "get_matching_rows(filter_function)",
+      "summary": "Returns a list of rows meeting the requirement in filter_function. filter_function should expect a TacticRow as an argument, and it should return True or False. See get_matching_rows.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 126
+      }
+    },
+    {
+      "id": "object.TacticDocument.tokenize",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "tokenize",
+      "signature": "tokenize(column_name, tokenizer_func=None)",
+      "canonical": "tokenize(column_name, tokenizer_func=None)",
+      "summary": "Applies tokenizer_func to each entry in the column column_name and returns the result as a list. If tokenizer_func is None then uses nltk.word_tokenize.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 132
+      }
+    },
+    {
+      "id": "object.TacticDocument.set_column_data",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "set_column_data",
+      "signature": "set_column_data(column_name, column_data, cellchange=False)",
+      "canonical": "set_column_data(column_name, column_data, cellchange=False)",
+      "summary": "Sets the column in the document using column_data. column_data can be either a dict or a list. If it\u2019s a dict, then the keys are interpreted as the row_id. If it\u2019s a list, then the ordinal position in the list is interpreted as the row_id. See set_column_data.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 137
+      }
+    },
+    {
+      "id": "object.TacticDocument.to_html",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "to_html",
+      "signature": "to_html(title=None, click_type=\"word-clickable\", sortable=True, sidebyside=False, has_header=True,",
+      "canonical": "to_html(title=None, click_type=\"word-clickable\", sortable=True, sidebyside=False, has_header=True,",
+      "summary": "max_rows=None, header_style=None, body_style=None, column_order=None, include_row_labels=False)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 145
+      }
+    },
+    {
+      "id": "object.TacticDocument.detach",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "detach",
+      "signature": "detach()",
+      "canonical": "detach()",
+      "summary": "Returns a DetachedTacticDocument object with the data in this document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 151
+      }
+    },
+    {
+      "id": "object.TacticDocument.rewind",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "rewind",
+      "signature": "rewind()",
+      "canonical": "rewind()",
+      "summary": "Reset the iterator to the first row.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 155
+      }
+    },
+    {
+      "id": "object.global.TacticRow",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticRow",
+      "signature": "TacticRow()",
+      "canonical": "TacticRow()",
+      "summary": "Objects in this class correspond to a row in one of the the documents in the current project. Keep in mind that changes to a row will be reflected in the project's table.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 161
+      }
+    },
+    {
+      "id": "object.TacticRow.row_dict",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticRow",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "row_dict",
+      "signature": "row_dict",
+      "canonical": "row_dict",
+      "summary": "A dictionary with the data corresponding to the row.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 177
+      }
+    },
+    {
+      "id": "object.TacticRow.series",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticRow",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "series",
+      "signature": "series",
+      "canonical": "series",
+      "summary": "Returns the row as a pandas Series.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 181
+      }
+    },
+    {
+      "id": "object.TacticRow.detach",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticRow",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "detach",
+      "signature": "detach()",
+      "canonical": "detach()",
+      "summary": "Returns a DetachedTacticRow object with the data in this document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 185
+      }
+    },
+    {
+      "id": "object.global.FreeformTacticDocument",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "FreeformTacticDocument",
+      "signature": "FreeformTacticDocument()",
+      "canonical": "FreeformTacticDocument()",
+      "summary": "This is the document object class for freeform collections.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 192
+      }
+    },
+    {
+      "id": "object.FreeformTacticDocument.text",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "FreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "text",
+      "signature": "text",
+      "canonical": "text",
+      "summary": "The text of the entire current document as a string.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 206
+      }
+    },
+    {
+      "id": "object.FreeformTacticDocument.line_list",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "FreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "line_list",
+      "signature": "line_list",
+      "canonical": "line_list",
+      "summary": "A list of TacticLine objects corresponding to the lines in the document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 210
+      }
+    },
+    {
+      "id": "object.FreeformTacticDocument.metadata",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "FreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "metadata",
+      "signature": "metadata",
+      "canonical": "metadata",
+      "summary": "A dictionary with the metadata for the document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 214
+      }
+    },
+    {
+      "id": "object.FreeformTacticDocument.tokenize",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "FreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "tokenize",
+      "signature": "tokenize(tokenizer_func=None)",
+      "canonical": "tokenize(tokenizer_func=None)",
+      "summary": "Applies tokenizer_func to each line and returns the result as a list. If tokenizer_func is None then uses nltk.word_tokenize.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 220
+      }
+    },
+    {
+      "id": "object.FreeformTacticDocument.download",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "FreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "download",
+      "signature": "download(file_name=None)",
+      "canonical": "download(file_name=None)",
+      "summary": "Downloads the text of the document to the local client.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 225
+      }
+    },
+    {
+      "id": "object.FreeformTacticDocument.rewind",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "FreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "rewind",
+      "signature": "rewind()",
+      "canonical": "rewind()",
+      "summary": "Resets the iterator to the first line.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 229
+      }
+    },
+    {
+      "id": "object.global.TacticLine",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticLine",
+      "signature": "TacticLine()",
+      "canonical": "TacticLine()",
+      "summary": "Objects in this class correspond to a line in one of the the documents in a freeform project. Keep in mind that changes to a row will be reflected in the project's table.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 235
+      }
+    },
+    {
+      "id": "object.TacticLine.text",
+      "surface": "object",
+      "category": "Accessing and manipulating the collection",
+      "owner": "TacticLine",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "text",
+      "signature": "text",
+      "canonical": "text",
+      "summary": "The text of the line as a string.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 246
+      }
+    },
+    {
+      "id": "object.global.DetachedTacticCollection",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "DetachedTacticCollection",
+      "signature": "DetachedTacticCollection()",
+      "canonical": "DetachedTacticCollection()",
+      "summary": "A DetachedTacticCollection can be created either via the .detach() method of project collection or using the create_collection_object method of TileBase.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 265
+      }
+    },
+    {
+      "id": "object.DetachedTacticCollection.document_names",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticCollection",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "document_names",
+      "signature": "document_names",
+      "canonical": "document_names",
+      "summary": "A list of the names of the documents in the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 282
+      }
+    },
+    {
+      "id": "object.DetachedTacticCollection.append",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticCollection",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "append",
+      "signature": "append(detached_tactic_document)",
+      "canonical": "append(detached_tactic_document)",
+      "summary": "Adds the specified DetachedTacticDocument object to the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 286
+      }
+    },
+    {
+      "id": "object.DetachedTacticCollection.column",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticCollection",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "column",
+      "signature": "column(column_name)",
+      "canonical": "column(column_name)",
+      "summary": "Returns, as a list, the data in the specified column from all of the documents in the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 290
+      }
+    },
+    {
+      "id": "object.DetachedTacticCollection.update",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticCollection",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "update",
+      "signature": "update(other_collection)",
+      "canonical": "update(other_collection)",
+      "summary": "This works like a dictionary update. other_collection can be a DetachedTacticCollection or a TacticCollection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 294
+      }
+    },
+    {
+      "id": "object.DetachedTacticCollection.rewind",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticCollection",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "rewind",
+      "signature": "rewind()",
+      "canonical": "rewind()",
+      "summary": "Reset the iterator to the first document.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 299
+      }
+    },
+    {
+      "id": "object.DetachedTacticCollection.add_to_library",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticCollection",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "add_to_library",
+      "signature": "add_to_library(collection_name)",
+      "canonical": "add_to_library(collection_name)",
+      "summary": "Creates a new collection in the user's library, with the name collection_name, with all of the data in the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 303
+      }
+    },
+    {
+      "id": "object.global.DetachedTacticDocument",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "DetachedTacticDocument",
+      "signature": "DetachedTacticDocument(TacticDocument)",
+      "canonical": "DetachedTacticDocument(TacticDocument)",
+      "summary": "A DetachedTacticDocument can be created either via the .detach() method of a TacticDocument or using the create_document method of TileBase.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 310
+      }
+    },
+    {
+      "id": "object.DetachedTacticDocument.name",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "name",
+      "signature": "name",
+      "canonical": "name",
+      "summary": "The name of the document. The name can be set with doc.name = new_name.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 324
+      }
+    },
+    {
+      "id": "object.DetachedTacticDocument.add_column",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "add_column",
+      "signature": "add_column(column_name)",
+      "canonical": "add_column(column_name)",
+      "summary": "Adds a new column with the given name. The value of the corresponding field in all rows will be initialized to None.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 328
+      }
+    },
+    {
+      "id": "object.DetachedTacticDocument.append",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "append",
+      "signature": "append(detached_row)",
+      "canonical": "append(detached_row)",
+      "summary": "Appends the DetachedTacticRow object to the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 333
+      }
+    },
+    {
+      "id": "object.DetachedTacticDocument.insert",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "insert",
+      "signature": "insert(position, element)",
+      "canonical": "insert(position, element)",
+      "summary": "Inserts the element in the specified position. Element can be either a DetachedTacticRow or a dict.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 337
+      }
+    },
+    {
+      "id": "object.global.DetachedTacticRow",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "DetachedTacticRow",
+      "signature": "DetachedTacticRow()",
+      "canonical": "DetachedTacticRow()",
+      "summary": "A DetachedTacticDocument can be created either via the .detach() method of a TacticRow or using the create_row method of TileBase.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 344
+      }
+    },
+    {
+      "id": "object.DetachedTacticRow.row_dict",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticRow",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "row_dict",
+      "signature": "row_dict",
+      "canonical": "row_dict",
+      "summary": "A dictionary with the data corresponding to the row.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 349
+      }
+    },
+    {
+      "id": "object.DetachedTacticRow.series",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticRow",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "series",
+      "signature": "series",
+      "canonical": "series",
+      "summary": "Returns the row as a pandas Series.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 353
+      }
+    },
+    {
+      "id": "object.global.DetachedFreeformTacticDocument",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "DetachedFreeformTacticDocument",
+      "signature": "DetachedFreeformTacticDocument(FreeformTacticDocument)",
+      "canonical": "DetachedFreeformTacticDocument(FreeformTacticDocument)",
+      "summary": "A DetachedFreeformTacticDocument can be created either via the .detach() method of a TacticDocument or using the create_freeform_document method of TileBase.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 377
+      }
+    },
+    {
+      "id": "object.DetachedFreeformTacticDocument.name",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedFreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "name",
+      "signature": "name",
+      "canonical": "name",
+      "summary": "The name of the document. The name can be set with doc.name = new_name.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 390
+      }
+    },
+    {
+      "id": "object.DetachedFreeformTacticDocument.append",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedFreeformTacticDocument",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "append",
+      "signature": "append(detached_line)",
+      "canonical": "append(detached_line)",
+      "summary": "Appends the DetachedTacticLine object to the collection.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 394
+      }
+    },
+    {
+      "id": "object.global.DetachedTacticLine",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "DetachedTacticLine",
+      "signature": "DetachedTacticLine()",
+      "canonical": "DetachedTacticLine()",
+      "summary": "A DetachedTacticDocument can be created either via the .detach() method of a TacticLine or using the create_line method of TileBase.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 400
+      }
+    },
+    {
+      "id": "object.DetachedTacticLine.text",
+      "surface": "object",
+      "category": "Creating and manipulating detached data",
+      "owner": "DetachedTacticLine",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "text",
+      "signature": "text",
+      "canonical": "text",
+      "summary": "The text of the line as a string. Also, dline.text = new_text sets the text of the line.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 411
+      }
+    },
+    {
+      "id": "object.global.Tiles",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [
+        "Tiles"
+      ],
+      "kind": "data",
+      "name": "Tiles",
+      "signature": "Tiles",
+      "canonical": "Tiles",
+      "summary": "Tiles is a global containing a RemoteTiles object corresponding to the tiles in the current project. self.tiles can also be used.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 425
+      },
+      "value_type": "RemoteTiles"
+    },
+    {
+      "id": "object.global.RemoteTiles",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "RemoteTiles",
+      "signature": "RemoteTiles()",
+      "canonical": "RemoteTiles()",
+      "summary": "Iterating over this object iterates over the tiles in the project, giving RemoteTile objects. These can also be accessed by name.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 433
+      }
+    },
+    {
+      "id": "object.RemoteTiles.names",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": "RemoteTiles",
+      "receiver": "Tiles",
+      "access_paths": [
+        "Tiles",
+        "self.tiles"
+      ],
+      "kind": "attribute",
+      "name": "names",
+      "signature": "names",
+      "canonical": "Tiles.names",
+      "summary": "A list of the names of other tiles in the project.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 445
+      }
+    },
+    {
+      "id": "object.RemoteTiles.rewind",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": "RemoteTiles",
+      "receiver": "Tiles",
+      "access_paths": [
+        "Tiles",
+        "self.tiles"
+      ],
+      "kind": "method",
+      "name": "rewind",
+      "signature": "rewind()",
+      "canonical": "Tiles.rewind()",
+      "summary": "Reset the iterator.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 449
+      }
+    },
+    {
+      "id": "object.global.RemoteTile",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "RemoteTile",
+      "signature": "RemoteTile()",
+      "canonical": "RemoteTile()",
+      "summary": "Object corresponding to another tile in a project.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 455
+      }
+    },
+    {
+      "id": "object.RemoteTile.name",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": "RemoteTile",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "name",
+      "signature": "name",
+      "canonical": "name",
+      "summary": "The name of the tile.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 466
+      }
+    },
+    {
+      "id": "object.RemoteTile.pipe_names",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": "RemoteTile",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "pipe_names",
+      "signature": "pipe_names",
+      "canonical": "pipe_names",
+      "summary": "A list of the names of the pipes (exports) of the tile.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 470
+      }
+    },
+    {
+      "id": "object.RemoteTile.pipe_tags",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": "RemoteTile",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "pipe_tags",
+      "signature": "pipe_tags",
+      "canonical": "pipe_tags",
+      "summary": "A dict where the keys are the names of the pipes, and the values are the tags associated with those pipes.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 474
+      }
+    },
+    {
+      "id": "object.RemoteTile.tile_id",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": "RemoteTile",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "tile_id",
+      "signature": "tile_id",
+      "canonical": "tile_id",
+      "summary": "The id of this tile.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 478
+      }
+    },
+    {
+      "id": "object.RemoteTile.send_message",
+      "surface": "object",
+      "category": "Communicating with other tiles",
+      "owner": "RemoteTile",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "method",
+      "name": "send_message",
+      "signature": "send_message(event_name, data=None, callback_func=None)",
+      "canonical": "send_message(event_name, data=None, callback_func=None)",
+      "summary": "Send a message from the tile in which the code is executing to this RemoteTile object. Refer to py:meth:send_tile_message.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 482
+      }
+    },
+    {
+      "id": "object.global.Pipes",
+      "surface": "object",
+      "category": "The Pipes Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [
+        "Pipes"
+      ],
+      "kind": "data",
+      "name": "Pipes",
+      "signature": "Pipes",
+      "canonical": "Pipes",
+      "summary": "Pipes is a global containing a RemotePipes object corresponding to the pipes in the current project.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 496
+      },
+      "value_type": "RemotePipes"
+    },
+    {
+      "id": "object.global.RemotePipes",
+      "surface": "object",
+      "category": "The Pipes Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "RemotePipes",
+      "signature": "RemotePipes()",
+      "canonical": "RemotePipes()",
+      "summary": "This class provides easy access to pipe values.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 503
+      }
+    },
+    {
+      "id": "object.RemotePipes.names",
+      "surface": "object",
+      "category": "The Pipes Object",
+      "owner": "RemotePipes",
+      "receiver": "Pipes",
+      "access_paths": [
+        "Pipes"
+      ],
+      "kind": "attribute",
+      "name": "names",
+      "signature": "names",
+      "canonical": "Pipes.names",
+      "summary": "Returns the keys for all of the pipes.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 512
+      }
+    },
+    {
+      "id": "object.global.Library",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [
+        "Library"
+      ],
+      "kind": "data",
+      "name": "Library",
+      "signature": "Library",
+      "canonical": "Library",
+      "summary": "Library is a global containing a TacticLibrary object corresponding to the user's library.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 526
+      },
+      "value_type": "TacticLibrary"
+    },
+    {
+      "id": "object.global.TacticLibrary",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticLibrary",
+      "signature": "TacticLibrary()",
+      "canonical": "TacticLibrary()",
+      "summary": "Library returns a TacticLibrary object corresponding to the user's library.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 534
+      }
+    },
+    {
+      "id": "object.TacticLibrary.collections",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticLibrary",
+      "receiver": "Library",
+      "access_paths": [
+        "Library"
+      ],
+      "kind": "attribute",
+      "name": "collections",
+      "signature": "collections",
+      "canonical": "Library.collections",
+      "summary": "Returns a TacticCollectionSet object corresponding to a user's collection resources",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 538
+      },
+      "value_type": "TacticCollectionSet"
+    },
+    {
+      "id": "object.TacticLibrary.lists",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticLibrary",
+      "receiver": "Library",
+      "access_paths": [
+        "Library"
+      ],
+      "kind": "attribute",
+      "name": "lists",
+      "signature": "lists",
+      "canonical": "Library.lists",
+      "summary": "Returns a TacticListSet object corresponding to a user's list resources",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 542
+      },
+      "value_type": "TacticListSet"
+    },
+    {
+      "id": "object.TacticLibrary.functions",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticLibrary",
+      "receiver": "Library",
+      "access_paths": [
+        "Library"
+      ],
+      "kind": "attribute",
+      "name": "functions",
+      "signature": "functions",
+      "canonical": "Library.functions",
+      "summary": "Returns a TacticFunctionSet object corresponding to a user's function resources",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 546
+      },
+      "value_type": "TacticFunctionSet"
+    },
+    {
+      "id": "object.TacticLibrary.classes",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticLibrary",
+      "receiver": "Library",
+      "access_paths": [
+        "Library"
+      ],
+      "kind": "attribute",
+      "name": "classes",
+      "signature": "classes",
+      "canonical": "Library.classes",
+      "summary": "Returns a TacticClassSet object corresponding to a user's class resources",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 550
+      },
+      "value_type": "TacticClassSet"
+    },
+    {
+      "id": "object.TacticLibrary.codes",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticLibrary",
+      "receiver": "Library",
+      "access_paths": [
+        "Library"
+      ],
+      "kind": "attribute",
+      "name": "codes",
+      "signature": "codes",
+      "canonical": "Library.codes",
+      "summary": "Returns a TacticCodesSet object corresponding to a user's code resources represented as raw text.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 554
+      },
+      "value_type": "TacticCodeSet"
+    },
+    {
+      "id": "object.global.TacticListSet",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticListSet",
+      "signature": "TacticListSet()",
+      "canonical": "TacticListSet()",
+      "summary": "Object corresponding to a user's list resources.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 566
+      }
+    },
+    {
+      "id": "object.TacticListSet.names",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticListSet",
+      "receiver": "Library.lists",
+      "access_paths": [
+        "Library.lists"
+      ],
+      "kind": "method",
+      "name": "names",
+      "signature": "names(tag_filter=None, search_filter=None)",
+      "canonical": "Library.lists.names(tag_filter=None, search_filter=None)",
+      "summary": "Returns the names of the user's list resources. If tag_filter or search_filter are specified, then the results are filtered accordingly. (This behaves just as it does when typing into the corresponding fields in the library interface.)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 576
+      }
+    },
+    {
+      "id": "object.global.ListResource",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "ListResource",
+      "signature": "ListResource(list)",
+      "canonical": "ListResource(list)",
+      "summary": "Corresponds to an item in the list library. It behaves just like a list except that it has a metadata attribute.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 584
+      }
+    },
+    {
+      "id": "object.ListResource.metadata",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "ListResource",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "metadata",
+      "signature": "metadata",
+      "canonical": "metadata",
+      "summary": "Returns the ListResource's metadata",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 593
+      }
+    },
+    {
+      "id": "object.global.TacticCollectionSet",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticCollectionSet",
+      "signature": "TacticCollectionSet()",
+      "canonical": "TacticCollectionSet()",
+      "summary": "Object corresponding to a user's collection resources.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 599
+      }
+    },
+    {
+      "id": "object.TacticCollectionSet.names",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticCollectionSet",
+      "receiver": "Library.collections",
+      "access_paths": [
+        "Library.collections"
+      ],
+      "kind": "method",
+      "name": "names",
+      "signature": "names(tag_filter=None, search_filter=None)",
+      "canonical": "Library.collections.names(tag_filter=None, search_filter=None)",
+      "summary": "Returns the names of the user's collection resources. If tag_filter or search_filter are specified, then the results are filtered accordingly. (This behaves just as it does when typing into the corresponding fields in the library interface.)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 609
+      }
+    },
+    {
+      "id": "object.global.TacticFunctionSet",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticFunctionSet",
+      "signature": "TacticFunctionSet()",
+      "canonical": "TacticFunctionSet()",
+      "summary": "Object corresponding to a user's function resources.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 617
+      }
+    },
+    {
+      "id": "object.TacticFunctionSet.names",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticFunctionSet",
+      "receiver": "Library.functions",
+      "access_paths": [
+        "Library.functions"
+      ],
+      "kind": "method",
+      "name": "names",
+      "signature": "names(tag_filter=None, search_filter=None)",
+      "canonical": "Library.functions.names(tag_filter=None, search_filter=None)",
+      "summary": "Returns the names of the user's function resources. If tag_filter or search_filter are specified, then the results are filtered accordingly. (This behaves just as it does when typing into the corresponding fields in the library interface.)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 628
+      }
+    },
+    {
+      "id": "object.global.FunctionResource",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "FunctionResource",
+      "signature": "FunctionResource()",
+      "canonical": "FunctionResource()",
+      "summary": "Corresponds to a function library resource. It should be have like a function, except it has a couple of attributes, as noted below.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 636
+      }
+    },
+    {
+      "id": "object.FunctionResource.metadata",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "FunctionResource",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "metadata",
+      "signature": "metadata",
+      "canonical": "metadata",
+      "summary": "Returns the FunctionResource's metadata",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 646
+      }
+    },
+    {
+      "id": "object.FunctionResource.code_resource",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "FunctionResource",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "code_resource",
+      "signature": "code_resource",
+      "canonical": "code_resource",
+      "summary": "Returns the the name of the code resource containing the function.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 650
+      }
+    },
+    {
+      "id": "object.global.TacticCodeSet",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticCodeSet",
+      "signature": "TacticCodeSet()",
+      "canonical": "TacticCodeSet()",
+      "summary": "Object corresponding to a user's code resources as text.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 656
+      }
+    },
+    {
+      "id": "object.TacticCodeSet.names",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "TacticCodeSet",
+      "receiver": "Library.codes",
+      "access_paths": [
+        "Library.codes"
+      ],
+      "kind": "method",
+      "name": "names",
+      "signature": "names(tag_filter=None, search_filter=None)",
+      "canonical": "Library.codes.names(tag_filter=None, search_filter=None)",
+      "summary": "Returns the names of the user's code resources. If tag_filter or search_filter are specified, then the results are filtered accordingly. (This behaves just as it does when typing into the corresponding fields in the library interface.)",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 660
+      }
+    },
+    {
+      "id": "object.global.CodeResource",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "CodeResource",
+      "signature": "CodeResource(list)",
+      "canonical": "CodeResource(list)",
+      "summary": "Corresponds to an code resource in the code library. This is used when you want to access the code resource as raw text..",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 668
+      }
+    },
+    {
+      "id": "object.CodeResource.metadata",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "CodeResource",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "metadata",
+      "signature": "metadata",
+      "canonical": "metadata",
+      "summary": "Returns the CodeResource's metadata",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 678
+      }
+    },
+    {
+      "id": "object.CodeResource.the_code",
+      "surface": "object",
+      "category": "The Library Object",
+      "owner": "CodeResource",
+      "receiver": null,
+      "access_paths": [],
+      "kind": "attribute",
+      "name": "the_code",
+      "signature": "the_code",
+      "canonical": "the_code",
+      "summary": "Returns the code as a string",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 682
+      }
+    },
+    {
+      "id": "object.global.Settings",
+      "surface": "object",
+      "category": "The Settings Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [
+        "Settings"
+      ],
+      "kind": "data",
+      "name": "Settings",
+      "signature": "Settings",
+      "canonical": "Settings",
+      "summary": "Settings is a global containing a TacticSettings object corresponding to the user's settings.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 696
+      },
+      "value_type": "TacticSettings"
+    },
+    {
+      "id": "object.global.TacticSettings",
+      "surface": "object",
+      "category": "The Settings Object",
+      "owner": null,
+      "receiver": null,
+      "access_paths": [],
+      "kind": "class",
+      "name": "TacticSettings",
+      "signature": "TacticSettings()",
+      "canonical": "TacticSettings()",
+      "summary": "Settings.names # Returns the keys for all of the settings Settings[\"theme\"] # Returns the value of the setting \"theme\"",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 704
+      }
+    },
+    {
+      "id": "object.TacticSettings.names",
+      "surface": "object",
+      "category": "The Settings Object",
+      "owner": "TacticSettings",
+      "receiver": "Settings",
+      "access_paths": [
+        "Settings"
+      ],
+      "kind": "attribute",
+      "name": "names",
+      "signature": "names",
+      "canonical": "Settings.names",
+      "summary": "Returns the keys for all of the settings.",
+      "aliases": [],
+      "scopes": [
+        "tile",
+        "notebook"
+      ],
+      "source": {
+        "file": "Object-Oriented-API.md",
+        "line": 711
+      }
+    },
+    {
+      "id": "handler.TileBase.handle_button_click",
+      "surface": "handler",
+      "category": "Clicks on Tile Front",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_button_click",
+      "signature": "handle_button_click(self, value, doc_name, active_row_index)",
+      "canonical": "def handle_button_click(self, value, doc_name, active_row_index)",
+      "summary": "A call to this handler is generated when the the user clicks a button within the body of a tile. value is the button value. The default handler has no effect.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 33
+      },
+      "arguments": "value, doc_name, active_row_index"
+    },
+    {
+      "id": "handler.TileBase.handle_select_change",
+      "surface": "handler",
+      "category": "Clicks on Tile Front",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_select_change",
+      "signature": "handle_select_change(self, value, doc_name, active_row_index, select_name)",
+      "canonical": "def handle_select_change(self, value, doc_name, active_row_index, select_name)",
+      "summary": "This handler is called when the user changes the value of a select element in the body of the tile. value is the value selected. select_name is the value of the name property assigned in the html for your select component. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 47
+      },
+      "arguments": "value, doc_name, active_row_index, select_name"
+    },
+    {
+      "id": "handler.TileBase.handle_tile_row_click",
+      "surface": "handler",
+      "category": "Clicks on Tile Front",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_tile_row_click",
+      "signature": "handle_tile_row_click(self, clicked_row, doc_name, active_row_id=None)",
+      "canonical": "def handle_tile_row_click(self, clicked_row, doc_name, active_row_id=None)",
+      "summary": "This handler is called when the user clicks on a row in a table that is displayed on the tile. Note that the row must have the class row-clickable. This can be accomplished by calling html_table with click_type=row-clickable. clicked_row contains a list of the values in the cells in the row. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 56
+      },
+      "arguments": "clicked_row, doc_name, active_row_id=None"
+    },
+    {
+      "id": "handler.TileBase.handle_tile_word_click",
+      "surface": "handler",
+      "category": "Clicks on Tile Front",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_tile_word_click",
+      "signature": "handle_tile_word_click(self, clicked_word, doc_name, active_row_id=None)",
+      "canonical": "def handle_tile_word_click(self, clicked_word, doc_name, active_row_id=None)",
+      "summary": "This handler is called when the user clicks on a word on the front of the tile. Note that the word must be within an element with the class word-clickable. The default handler selects all appearances of the clicked word in the main data table.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 65
+      },
+      "arguments": "clicked_word, doc_name, active_row_id=None"
+    },
+    {
+      "id": "handler.TileBase.handle_form_submit",
+      "surface": "handler",
+      "category": "Clicks on Tile Front",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_form_submit",
+      "signature": "handle_form_submit(self, form_data, doc_name, active_row_index)",
+      "canonical": "def handle_form_submit(self, form_data, doc_name, active_row_index)",
+      "summary": "Called when the user clicks submit in a form within the body of a tile. form_data is a dictionary in which the keys are the names of elements in the form, and the values are their current values. Note that one of these entries will correspond to the submit button itself. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 73
+      },
+      "arguments": "form_data, doc_name, active_row_index"
+    },
+    {
+      "id": "handler.TileBase.handle_textarea_change",
+      "surface": "handler",
+      "category": "Clicks on Tile Front",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_textarea_change",
+      "signature": "handle_textarea_change(self, value)",
+      "canonical": "def handle_textarea_change(self, value)",
+      "summary": "Called when the user the user changes the contents of a textarea DOM element on the front of the tile. value is the new content of the textarea. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 83
+      },
+      "arguments": "value"
+    },
+    {
+      "id": "handler.TileBase.handle_size_change",
+      "surface": "handler",
+      "category": "Environment changes",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_size_change",
+      "signature": "handle_size_change(self)",
+      "canonical": "def handle_size_change(self)",
+      "summary": "The size of the current tile has been changed by the user. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 97
+      },
+      "arguments": ""
+    },
+    {
+      "id": "handler.TileBase.handle_doc_change",
+      "surface": "handler",
+      "category": "Environment changes",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_doc_change",
+      "signature": "handle_doc_change(self, new_doc_name)",
+      "canonical": "def handle_doc_change(self, new_doc_name)",
+      "summary": "The visible document in the main data has been changed. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 104
+      },
+      "arguments": "new_doc_name"
+    },
+    {
+      "id": "handler.TileBase.handle_text_select",
+      "surface": "handler",
+      "category": "Environment changes",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_text_select",
+      "signature": "handle_text_select(self, selected_text)",
+      "canonical": "def handle_text_select(self, selected_text)",
+      "summary": "The has selected text within the main table. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 111
+      },
+      "arguments": "selected_text"
+    },
+    {
+      "id": "handler.TileBase.handle_cell_change",
+      "surface": "handler",
+      "category": "Environment changes",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_cell_change",
+      "signature": "handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name)",
+      "canonical": "def handle_cell_change(self, column_header, row_index, old_content, new_content, doc_name)",
+      "summary": "A cell in the main data table has been changed. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 118
+      },
+      "arguments": "column_header, row_index, old_content, new_content, doc_name"
+    },
+    {
+      "id": "handler.TileBase.handle_freeform_text_change",
+      "surface": "handler",
+      "category": "Environment changes",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_freeform_text_change",
+      "signature": "handle_freeform_text_change(self, new_content, doc_name)",
+      "canonical": "def handle_freeform_text_change(self, new_content, doc_name)",
+      "summary": "The text of a freeform data table has been changed. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 125
+      },
+      "arguments": "new_content, doc_name"
+    },
+    {
+      "id": "handler.TileBase.handle_pipe_update",
+      "surface": "handler",
+      "category": "Environment changes",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_pipe_update",
+      "signature": "handle_pipe_update(self, pipe_name)",
+      "canonical": "def handle_pipe_update(self, pipe_name)",
+      "summary": "The value of a pipe has changed. The default handler does nothing.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 132
+      },
+      "arguments": "pipe_name"
+    },
+    {
+      "id": "handler.TileBase.modify_options",
+      "surface": "handler",
+      "category": "Dynamic Options",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "modify_options",
+      "signature": "modify_options(self)",
+      "canonical": "def modify_options(self)",
+      "summary": "Sometimes you might want the options in a tile to vary based on some conditions. For example, you might want some options to appear or disappear based on the value of another boolean option. This can be accomplished by adding a modify_options method to your tile.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 152
+      },
+      "arguments": ""
+    },
+    {
+      "id": "handler.TileBase.handle_option_change",
+      "surface": "handler",
+      "category": "Dynamic Options",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_option_change",
+      "signature": "handle_option_change(self, opt_name, value)",
+      "canonical": "def handle_option_change(self, opt_name, value)",
+      "summary": "Called when the user changes an individual option on the back of a tile. opt_name is the name of the option and value is the new value.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 198
+      },
+      "arguments": "opt_name, value"
+    },
+    {
+      "id": "handler.TileBase.handle_tile_message",
+      "surface": "handler",
+      "category": "Other",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_tile_message",
+      "signature": "handle_tile_message(self, event_name, data)",
+      "canonical": "def handle_tile_message(self, event_name, data)",
+      "summary": "This handler is called when the a message is sent using the send_tile_message command. Note that this handler can return a value.",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 211
+      },
+      "arguments": "event_name, data"
+    },
+    {
+      "id": "handler.TileBase.handle_log_tile",
+      "surface": "handler",
+      "category": "Other",
+      "owner": "TileBase",
+      "receiver": "self",
+      "access_paths": [
+        "self"
+      ],
+      "kind": "method",
+      "name": "handle_log_tile",
+      "signature": "handle_log_tile(self)",
+      "canonical": "def handle_log_tile(self)",
+      "summary": "The user has selected :guilabel:Log me from the tile menu. The default handler looks like this:",
+      "aliases": [],
+      "scopes": [
+        "tile"
+      ],
+      "source": {
+        "file": "Handler-Methods.md",
+        "line": 218
+      },
+      "arguments": ""
+    }
+  ]
+}

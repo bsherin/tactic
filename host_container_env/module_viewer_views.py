@@ -27,13 +27,14 @@ def show_history_viewer(module_name):
 @app.route('/get_api_dict', methods=['GET', 'POST'])
 @login_required
 def get_api_dict():
-    from integrated_docs import api_dict_by_category, api_dict_by_name, ordered_api_categories
+    from integrated_docs import api_catalog, api_dict_by_category, api_dict_by_name, ordered_api_categories
     from integrated_docs import object_api_dict_by_category, ordered_object_categories
     return jsonify({"success": True, "api_dict_by_name": api_dict_by_name,
                     "api_dict_by_category": api_dict_by_category,
                     "ordered_api_categories": ordered_api_categories,
                     "object_api_dict_by_category": object_api_dict_by_category,
-                    "ordered_object_categories": ordered_object_categories})
+                    "ordered_object_categories": ordered_object_categories,
+                    "api_catalog": api_catalog})
 
 
 @app.route('/show_tile_differ/<module_name>', defaults={'second_module_name': "none"})
