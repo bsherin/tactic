@@ -747,6 +747,11 @@ function WidgetModuleForm(props) {
 
     function handleKindChange(new_kind) {
         let new_entry = {...widgetDefaults[new_kind]};
+        for (let field in props.widgetItem) {
+            if (field in new_entry && field != "kind") {
+                new_entry[field] = props.widgetItem[field]
+            }
+        }
         new_entry.name = props.widgetItem.name;
         new_entry.pane_height = props.widgetItem.pane_height;
         new_entry.identifier = props.widgetItem.identifier;

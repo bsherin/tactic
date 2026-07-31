@@ -222680,6 +222680,11 @@ function WidgetModuleForm(props) {
   }
   function handleKindChange(new_kind) {
     var new_entry = _objectSpread({}, _widget_info__WEBPACK_IMPORTED_MODULE_14__.widgetDefaults[new_kind]);
+    for (var field in props.widgetItem) {
+      if (field in new_entry && field != "kind") {
+        new_entry[field] = props.widgetItem[field];
+      }
+    }
     new_entry.name = props.widgetItem.name;
     new_entry.pane_height = props.widgetItem.pane_height;
     new_entry.identifier = props.widgetItem.identifier;
