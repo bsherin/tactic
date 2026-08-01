@@ -373,15 +373,16 @@ class IframeWidget(Widget):
 
 class Box(ContainerWidget):
     widget_kind = "box"
-    extra_fields = ["style", "widgets", "direction", "to_render"]
-    defaults = {"style": None, "widgets": [], "direction": "horizontal", "to_render": False}
+    extra_fields = ["style", "widgets", "direction", "title", "border", "to_render"]
+    defaults = {"style": None, "widgets": [], "direction": "horizontal", "title": "",
+                "border": False, "to_render": False}
 
 
 class CollapseWidget(ContainerWidget):
     widget_kind = "collapse"
-    extra_fields = ["widgets", "label", "startOpen", "intent", "className", "to_render"]
+    extra_fields = ["widgets", "label", "startOpen", "direction", "intent", "className", "to_render"]
     defaults = {"widgets": [], "label": "collapse", "startOpen": True,
-                "intent": "primary", "className": None, "to_render": False}
+                "direction": "vertical", "intent": "primary", "className": None, "to_render": False}
 
 
 class MatplotlibWidget(Widget):

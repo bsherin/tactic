@@ -190,12 +190,15 @@ let widgetInfo = {
     box: {
         widgets: listField(),
         direction: selectField("horizontal", ["horizontal", "vertical"]),
+        title: stringField(),
+        border: boolField(),
         style: styleField()
     },
     collapse: {
         widgets: listField(),
         label: stringField("collapse"),
         startOpen: boolField(true),
+        direction: selectField("vertical", ["horizontal", "vertical"]),
         intent: selectField("primary", ["primary", "success", "warning", "danger"]),
         className: codeStringField("")
     },

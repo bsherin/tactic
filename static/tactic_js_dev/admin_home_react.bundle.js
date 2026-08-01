@@ -193528,6 +193528,7 @@ function CollapseWidget(props) {
       widgets: [],
       startOpen: true,
       label: "collapse",
+      direction: "vertical",
       intent: "primary",
       className: null
     },
@@ -193586,6 +193587,13 @@ function CollapseWidget(props) {
     return the_widget;
   });
   var but_bottom_margin = isOpen ? 10 : 20;
+  var contentStyle = {
+    boxShadow: "none",
+    marginBottom: 10,
+    borderRadius: 10,
+    display: props.widgetData.direction === "horizontal" ? "inline-flex" : "flex",
+    flexDirection: props.widgetData.direction === "horizontal" ? "row" : "column"
+  };
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Button, {
     onClick: _handleClick,
     text: props.widgetData.label,
@@ -193604,11 +193612,7 @@ function CollapseWidget(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Card, {
     interactive: false,
     elevation: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Elevation.TWO,
-    style: {
-      boxShadow: "none",
-      marginBottom: 10,
-      borderRadius: 10
-    }
+    style: contentStyle
   }, outputWidgets)));
 }
 function BoxWidget(props) {
@@ -193622,6 +193626,8 @@ function BoxWidget(props) {
     widgetData: {
       widgets: [],
       direction: "horizontal",
+      title: "",
+      border: false,
       style: {
         display: "flex",
         flexDirection: "column"
@@ -193683,11 +193689,36 @@ function BoxWidget(props) {
     }
     return the_widget;
   });
+  var title = props.widgetData.title;
+  var border = props.widgetData.border;
+  if (!title && !border) {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+      className: "box-widget",
+      style: full_style,
+      key: props.widgetId
+    }, outputWidgets);
+  }
+  var containerStyle = _objectSpread({
+    display: "inline-block"
+  }, border ? {
+    border: "1px solid rgba(128, 128, 128, 0.5)",
+    borderRadius: 4,
+    padding: 8
+  } : {});
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "box-widget",
-    style: full_style,
+    className: "box-widget-container",
+    style: containerStyle,
     key: props.widgetId
-  }, outputWidgets);
+  }, title && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "box-widget-title",
+    style: {
+      fontWeight: 600,
+      marginBottom: 6
+    }
+  }, title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "box-widget",
+    style: full_style
+  }, outputWidgets));
 }
 function RawHtmlWidget(props) {
   var _props$widgetData2;

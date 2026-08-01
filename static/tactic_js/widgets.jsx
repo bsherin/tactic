@@ -80,7 +80,7 @@ function CollapseWidget(props) {
         tile_id: null,
         dispatch: null,
         row: 0,
-        widgetData: {widgets: [], startOpen: true, label:"collapse", intent: "primary", className: null},
+        widgetData: {widgets: [], startOpen: true, label:"collapse", direction: "vertical", intent: "primary", className: null},
         widgetDict: {},
         tileWidth: null,
         tileHeight: null,
@@ -126,6 +126,13 @@ function CollapseWidget(props) {
         return the_widget;
     });
     let but_bottom_margin = isOpen ? 10 : 20;
+    let contentStyle = {
+        boxShadow: "none",
+        marginBottom: 10,
+        borderRadius: 10,
+        display: props.widgetData.direction === "horizontal" ? "inline-flex" : "flex",
+        flexDirection: props.widgetData.direction === "horizontal" ? "row" : "column"
+    };
     return (
         <Fragment>
             <Button onClick={_handleClick}
@@ -138,7 +145,7 @@ function CollapseWidget(props) {
             <Collapse isOpen={isOpen} className={props.widgetData?.className} key={props.widgetId}>
                 <Card interactive={false}
                       elevation={Elevation.TWO}
-                      style={{boxShadow: "none", marginBottom: 10, borderRadius: 10}}
+                      style={contentStyle}
                 >
                    {outputWidgets}
                 </Card>
@@ -155,7 +162,13 @@ function BoxWidget(props) {
         tile_id: null,
         dispatch: null,
         row: 0,
-        widgetData: {widgets: [], direction: "horizontal", style: {display: "flex", flexDirection: "column"}},
+        widgetData: {
+            widgets: [],
+            direction: "horizontal",
+            title: "",
+            border: false,
+            style: {display: "flex", flexDirection: "column"}
+        },
         widgetDict: {},
         tileWidth: null,
         tileHeight: null,
@@ -208,8 +221,29 @@ function BoxWidget(props) {
         }
         return the_widget;
     });
-    return (<div className="box-widget" style={full_style} key={props.widgetId}>
-        {outputWidgets}
+    let title = props.widgetData.title;
+    let border = props.widgetData.border;
+
+    if (!title && !border) {
+        return (<div className="box-widget" style={full_style} key={props.widgetId}>
+            {outputWidgets}
+        </div>)
+    }
+
+    let containerStyle = {
+        display: "inline-block",
+        ...(border ? {
+            border: "1px solid rgba(128, 128, 128, 0.5)",
+            borderRadius: 4,
+            padding: 8
+        } : {})
+    };
+
+    return (<div className="box-widget-container" style={containerStyle} key={props.widgetId}>
+        {title && <div className="box-widget-title" style={{fontWeight: 600, marginBottom: 6}}>{title}</div>}
+        <div className="box-widget" style={full_style}>
+            {outputWidgets}
+        </div>
     </div>)
 }
 
@@ -836,4 +870,3 @@ function JavascriptWidget(props) {
     return (<div id={props.widgetId} className="jscript-target" style={props.widgetData?.style}
                  key={props.widgetId}/>)
 }
-
