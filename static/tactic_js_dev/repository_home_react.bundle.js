@@ -195244,7 +195244,11 @@ function BoxWidget(props) {
   }, props);
   var _useWidget3 = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id),
     _useWidget4 = _slicedToArray(_useWidget3, 1);
-  var full_style = props.widgetData.style ? _objectSpread({}, props.widgetData.style) : {};
+  var base_style = {
+    margin: 10,
+    gap: 10
+  };
+  var full_style = props.widgetData.style ? _objectSpread(_objectSpread({}, base_style), props.widgetData.style) : base_style;
   if ("direction" in props.widgetData) {
     if (props.widgetData.direction == "vertical") {
       full_style["display"] = "flex";
@@ -195302,7 +195306,8 @@ function BoxWidget(props) {
     }, outputWidgets);
   }
   var containerStyle = _objectSpread({
-    display: "inline-block"
+    display: "inline-block",
+    margin: 10
   }, border ? {
     border: "1px solid rgba(128, 128, 128, 0.5)",
     borderRadius: 4,

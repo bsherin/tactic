@@ -178,7 +178,8 @@ function BoxWidget(props) {
     };
     const [,] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
 
-    let full_style = props.widgetData.style ? {...props.widgetData.style} : {};
+    let base_style = {margin: 10, gap: 10};
+    let full_style = props.widgetData.style ? {...base_style, ...props.widgetData.style} : base_style;
 
     if ("direction" in props.widgetData) {
         if (props.widgetData.direction == "vertical") {
@@ -232,6 +233,7 @@ function BoxWidget(props) {
 
     let containerStyle = {
         display: "inline-block",
+        margin: 10,
         ...(border ? {
             border: "1px solid rgba(128, 128, 128, 0.5)",
             borderRadius: 4,
