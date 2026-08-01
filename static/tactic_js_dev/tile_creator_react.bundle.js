@@ -201646,11 +201646,12 @@ function CollapseWidget(props) {
     }
     return the_widget;
   });
-  var but_bottom_margin = isOpen ? 10 : 20;
+  var but_bottom_margin = isOpen ? 0 : 20;
   var contentStyle = {
     boxShadow: "none",
     marginBottom: 10,
     borderRadius: 10,
+    gap: 10,
     display: props.widgetData.direction === "horizontal" ? "inline-flex" : "flex",
     flexDirection: props.widgetData.direction === "horizontal" ? "row" : "column"
   };
@@ -201659,6 +201660,7 @@ function CollapseWidget(props) {
     text: props.widgetData.label,
     size: "medium",
     variant: "outlined",
+    fill: false,
     intent: "primary",
     style: {
       width: "fit-content",
@@ -201712,6 +201714,7 @@ function BoxWidget(props) {
       full_style["flexDirection"] = "column";
     } else {
       full_style["display"] = "inline-flex";
+      full_style["alignItems"] = "flex-start";
     }
   }
   var outputWidgets = props.widgetData.widgets.map(function (outputDict, idx) {

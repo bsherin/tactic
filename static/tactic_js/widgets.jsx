@@ -125,22 +125,24 @@ function CollapseWidget(props) {
         }
         return the_widget;
     });
-    let but_bottom_margin = isOpen ? 10 : 20;
+    let but_bottom_margin = isOpen ? 0 : 20;
     let contentStyle = {
         boxShadow: "none",
         marginBottom: 10,
         borderRadius: 10,
+        gap: 10,
         display: props.widgetData.direction === "horizontal" ? "inline-flex" : "flex",
         flexDirection: props.widgetData.direction === "horizontal" ? "row" : "column"
     };
     return (
         <Fragment>
             <Button onClick={_handleClick}
-                        text={props.widgetData.label}
-                        size="medium"
-                        variant="outlined"
-                        intent="primary"
-                        style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
+                    text={props.widgetData.label}
+                    size="medium"
+                    variant="outlined"
+                    fill={false}
+                    intent="primary"
+                    style={{width: "fit-content", marginBottom: but_bottom_margin, marginTop: 10}}
                 />
             <Collapse isOpen={isOpen} className={props.widgetData?.className} key={props.widgetId}>
                 <Card interactive={false}
@@ -188,7 +190,8 @@ function BoxWidget(props) {
 
         }
         else {
-            full_style["display"] = "inline-flex"
+            full_style["display"] = "inline-flex";
+            full_style["alignItems"] = "flex-start";
         }
     }
 
