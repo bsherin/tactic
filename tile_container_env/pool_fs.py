@@ -29,6 +29,10 @@ class PoolFS(s3fs.S3FileSystem):
         self._tactic_bucket = BUCKET
         self._tactic_prefix = f"{USERS_ROOT}/{username}"
 
+    @property
+    def myroot(self):
+        return f"{self._tactic_bucket}/{self._tactic_prefix}".rstrip("/")
+
     def _qualify(self, path: str) -> str:
         # remove protocol if present
         p = super()._strip_protocol(path)

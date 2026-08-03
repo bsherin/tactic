@@ -272,6 +272,10 @@ function OldSearchResultsMenu(props) {
 }
 
 function TileMakerLocalSettings(props) {
+    props = {
+        style: {},
+        ...props
+    }
     const settingsContext = useContext(SettingsContext);
 
     function _onFieldChange(fname, value, submit = false) {
@@ -310,10 +314,11 @@ function TileMakerLocalSettings(props) {
                         display_text={ai_icon}
                         onFieldChange={_onFieldChange}/>
     )
+    let base_style = {padding: 0, display: "flex", flexDirection: "row", gap: 3};
 
     return (
         <div className="maker-local-settings"
-            style={{padding: 0, display: "flex", flexDirection: "row", gap: 3}}>
+            style={{...base_style, ...props.style}}>
             {lineNumberField}
             {window.has_openapi_key && aiField}
         </div>

@@ -199632,6 +199632,9 @@ function OldSearchResultsMenu(props) {
   }));
 }
 function TileMakerLocalSettings(props) {
+  props = _objectSpread({
+    style: {}
+  }, props);
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_2__.SettingsContext);
   function _onFieldChange(fname, value) {
     var submit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
@@ -199669,14 +199672,15 @@ function TileMakerLocalSettings(props) {
     display_text: ai_icon,
     onFieldChange: _onFieldChange
   });
+  var base_style = {
+    padding: 0,
+    display: "flex",
+    flexDirection: "row",
+    gap: 3
+  };
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "maker-local-settings",
-    style: {
-      padding: 0,
-      display: "flex",
-      flexDirection: "row",
-      gap: 3
-    }
+    style: _objectSpread(_objectSpread({}, base_style), props.style)
   }, lineNumberField, window.has_openapi_key && aiField);
 }
 function TileMakerSearchForm(props) {

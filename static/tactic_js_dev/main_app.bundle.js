@@ -4054,6 +4054,105 @@ function inputSupportsSelection(input) {
 
 /***/ }),
 
+/***/ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js":
+/*!***************************************************************************************!*\
+  !*** ./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js ***!
+  \***************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   EntityTitle: () => (/* binding */ EntityTitle)
+/* harmony export */ });
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _blueprintjs_icons__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/icons */ "./node_modules/@blueprintjs/icons/lib/esm/iconNames.js");
+/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../common */ "./node_modules/@blueprintjs/core/lib/esm/common/classes.js");
+/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../common */ "./node_modules/@blueprintjs/core/lib/esm/common/props.js");
+/* harmony import */ var _html_html__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../html/html */ "./node_modules/@blueprintjs/core/lib/esm/components/html/html.js");
+/* harmony import */ var _icon_icon__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../icon/icon */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _text_text__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../text/text */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
+/*
+ * Copyright 2024 Palantir Technologies, Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+
+
+
+
+
+/**
+ * EntityTitle component.
+ *
+ * @see https://blueprintjs.com/docs/#core/components/entity-title
+ */
+const EntityTitle = react__WEBPACK_IMPORTED_MODULE_1__.forwardRef((props, ref) => {
+    const { className, ellipsize = false, fill = false, heading = _text_text__WEBPACK_IMPORTED_MODULE_2__.Text, icon, loading = false, subtitle, tags, title, titleURL, } = props;
+    const titleElement = react__WEBPACK_IMPORTED_MODULE_1__.useMemo(() => {
+        const maybeTitleWithURL = titleURL != null ? (react__WEBPACK_IMPORTED_MODULE_1__.createElement("a", { target: "_blank", href: titleURL, rel: "noreferrer" }, title)) : (title);
+        return react__WEBPACK_IMPORTED_MODULE_1__.createElement(heading, {
+            className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_TITLE, {
+                [_common__WEBPACK_IMPORTED_MODULE_3__.SKELETON]: loading,
+                [_common__WEBPACK_IMPORTED_MODULE_3__.TEXT_OVERFLOW_ELLIPSIS]: heading !== _text_text__WEBPACK_IMPORTED_MODULE_2__.Text && ellipsize,
+            }),
+            ellipsize: heading === _text_text__WEBPACK_IMPORTED_MODULE_2__.Text ? ellipsize : undefined,
+        }, maybeTitleWithURL);
+    }, [titleURL, title, heading, loading, ellipsize]);
+    const maybeSubtitle = react__WEBPACK_IMPORTED_MODULE_1__.useMemo(() => {
+        if (subtitle == null) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__.createElement(_text_text__WEBPACK_IMPORTED_MODULE_2__.Text, { className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_common__WEBPACK_IMPORTED_MODULE_3__.TEXT_MUTED, _common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_SUBTITLE, {
+                [_common__WEBPACK_IMPORTED_MODULE_3__.SKELETON]: loading,
+            }), ellipsize: ellipsize }, subtitle));
+    }, [ellipsize, loading, subtitle]);
+    return (react__WEBPACK_IMPORTED_MODULE_1__.createElement("div", { className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(className, _common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE, getClassNameFromHeading(heading), {
+            [_common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_ELLIPSIZE]: ellipsize,
+            [_common__WEBPACK_IMPORTED_MODULE_3__.FILL]: fill,
+        }), ref: ref },
+        icon != null && (react__WEBPACK_IMPORTED_MODULE_1__.createElement("div", { className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_ICON_CONTAINER, {
+                [_common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_HAS_SUBTITLE]: maybeSubtitle != null,
+            }) },
+            react__WEBPACK_IMPORTED_MODULE_1__.createElement(_icon_icon__WEBPACK_IMPORTED_MODULE_4__.Icon, { "aria-hidden": true, className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_common__WEBPACK_IMPORTED_MODULE_3__.TEXT_MUTED, { [_common__WEBPACK_IMPORTED_MODULE_3__.SKELETON]: loading }), icon: loading ? _blueprintjs_icons__WEBPACK_IMPORTED_MODULE_5__.IconNames.SQUARE : icon, tabIndex: -1 }))),
+        react__WEBPACK_IMPORTED_MODULE_1__.createElement("div", { className: _common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_TEXT },
+            react__WEBPACK_IMPORTED_MODULE_1__.createElement("div", { className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_TITLE_AND_TAGS, {
+                    [_common__WEBPACK_IMPORTED_MODULE_3__.SKELETON]: loading,
+                }) },
+                titleElement,
+                tags != null && react__WEBPACK_IMPORTED_MODULE_1__.createElement("div", { className: _common__WEBPACK_IMPORTED_MODULE_3__.ENTITY_TITLE_TAGS_CONTAINER }, tags)),
+            maybeSubtitle)));
+});
+EntityTitle.displayName = `${_common__WEBPACK_IMPORTED_MODULE_6__.DISPLAYNAME_PREFIX}.EntityTitle`;
+/**
+ * Construct header class name from H{*}. Returns `undefined` if `heading` is not a Blueprint heading.
+ */
+function getClassNameFromHeading(heading) {
+    const headerIndex = [_html_html__WEBPACK_IMPORTED_MODULE_7__.H1, _html_html__WEBPACK_IMPORTED_MODULE_7__.H2, _html_html__WEBPACK_IMPORTED_MODULE_7__.H3, _html_html__WEBPACK_IMPORTED_MODULE_7__.H4, _html_html__WEBPACK_IMPORTED_MODULE_7__.H5, _html_html__WEBPACK_IMPORTED_MODULE_7__.H6].findIndex(header => header === heading);
+    if (headerIndex < 0) {
+        return undefined;
+    }
+    return [_common__WEBPACK_IMPORTED_MODULE_3__.getClassNamespace(), "entity-title-heading", `h${headerIndex + 1}`].join("-");
+}
+//# sourceMappingURL=entityTitle.js.map
+
+/***/ }),
+
 /***/ "./node_modules/@blueprintjs/core/lib/esm/components/forms/asyncControllableInput.js":
 /*!*******************************************************************************************!*\
   !*** ./node_modules/@blueprintjs/core/lib/esm/components/forms/asyncControllableInput.js ***!
@@ -186795,47 +186894,48 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/card/card.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/context-menu/contextMenu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/editable-text/editableText.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/spinner/spinner.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/hooks/hotkeys/useHotkeys.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/card/card.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/context-menu/contextMenu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/editable-text/editableText.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/spinner/spinner.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/hooks/hotkeys/useHotkeys.js");
 /* harmony import */ var _error_boundary__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./error_boundary */ "./static/tactic_js/error_boundary.jsx");
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _tactic_socket__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./tactic_socket */ "./static/tactic_js/tactic_socket.js");
 /* harmony import */ var _widgets__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./widgets */ "./static/tactic_js/widgets.jsx");
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! highlight.js/lib/core */ "./node_modules/highlight.js/es/core.js");
-/* harmony import */ var highlight_js_lib_languages_javascript__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! highlight.js/lib/languages/javascript */ "./node_modules/highlight.js/es/languages/javascript.js");
-/* harmony import */ var highlight_js_lib_languages_python__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! highlight.js/lib/languages/python */ "./node_modules/highlight.js/es/languages/python.js");
-/* harmony import */ var markdown_it__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! markdown-it */ "./node_modules/markdown-it/index.js");
-/* harmony import */ var markdown_it__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(markdown_it__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var markdown_it_latex_dist_index_css__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! markdown-it-latex/dist/index.css */ "./node_modules/markdown-it-latex/dist/index.css");
-/* harmony import */ var markdown_it_latex__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! markdown-it-latex */ "./node_modules/markdown-it-latex/dist/index.js");
-/* harmony import */ var markdown_it_latex__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(markdown_it_latex__WEBPACK_IMPORTED_MODULE_11__);
-/* harmony import */ var _blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./blueprint_react_widgets */ "./static/tactic_js/blueprint_react_widgets.jsx");
-/* harmony import */ var _react_codemirror6__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./react-codemirror6 */ "./static/tactic_js/react-codemirror6.jsx");
-/* harmony import */ var _sortable_container__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./sortable_container */ "./static/tactic_js/sortable_container.jsx");
-/* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
-/* harmony import */ var _combined_metadata__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./combined_metadata */ "./static/tactic_js/combined_metadata.jsx");
-/* harmony import */ var _library_pane__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./library_pane */ "./static/tactic_js/library_pane.jsx");
-/* harmony import */ var _menu_utilities__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./menu_utilities */ "./static/tactic_js/menu_utilities.jsx");
-/* harmony import */ var _search_form__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./search_form */ "./static/tactic_js/search_form.jsx");
-/* harmony import */ var _searchable_console__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./searchable_console */ "./static/tactic_js/searchable_console.jsx");
-/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
-/* harmony import */ var _modal_react__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./modal_react */ "./static/tactic_js/modal_react.jsx");
-/* harmony import */ var _error_drawer__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./error_drawer */ "./static/tactic_js/error_drawer.jsx");
-/* harmony import */ var _assistant__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./assistant */ "./static/tactic_js/assistant.jsx");
-/* harmony import */ var _memory_utilities__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./memory_utilities */ "./static/tactic_js/memory_utilities.jsx");
-/* harmony import */ var _undo__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./undo */ "./static/tactic_js/undo.jsx");
+/* harmony import */ var _tile_maker_search_form__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./tile_maker_search_form */ "./static/tactic_js/tile_maker_search_form.jsx");
+/* harmony import */ var _searchable_console__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./searchable_console */ "./static/tactic_js/searchable_console.jsx");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! highlight.js/lib/core */ "./node_modules/highlight.js/es/core.js");
+/* harmony import */ var highlight_js_lib_languages_javascript__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! highlight.js/lib/languages/javascript */ "./node_modules/highlight.js/es/languages/javascript.js");
+/* harmony import */ var highlight_js_lib_languages_python__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! highlight.js/lib/languages/python */ "./node_modules/highlight.js/es/languages/python.js");
+/* harmony import */ var markdown_it__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! markdown-it */ "./node_modules/markdown-it/index.js");
+/* harmony import */ var markdown_it__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(markdown_it__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var markdown_it_latex_dist_index_css__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! markdown-it-latex/dist/index.css */ "./node_modules/markdown-it-latex/dist/index.css");
+/* harmony import */ var markdown_it_latex__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! markdown-it-latex */ "./node_modules/markdown-it-latex/dist/index.js");
+/* harmony import */ var markdown_it_latex__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(markdown_it_latex__WEBPACK_IMPORTED_MODULE_13__);
+/* harmony import */ var _blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./blueprint_react_widgets */ "./static/tactic_js/blueprint_react_widgets.jsx");
+/* harmony import */ var _react_codemirror6__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./react-codemirror6 */ "./static/tactic_js/react-codemirror6.jsx");
+/* harmony import */ var _sortable_container__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./sortable_container */ "./static/tactic_js/sortable_container.jsx");
+/* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
+/* harmony import */ var _combined_metadata__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./combined_metadata */ "./static/tactic_js/combined_metadata.jsx");
+/* harmony import */ var _library_pane__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./library_pane */ "./static/tactic_js/library_pane.jsx");
+/* harmony import */ var _menu_utilities__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./menu_utilities */ "./static/tactic_js/menu_utilities.jsx");
+/* harmony import */ var _search_form__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./search_form */ "./static/tactic_js/search_form.jsx");
+/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
+/* harmony import */ var _modal_react__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./modal_react */ "./static/tactic_js/modal_react.jsx");
+/* harmony import */ var _error_drawer__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./error_drawer */ "./static/tactic_js/error_drawer.jsx");
+/* harmony import */ var _assistant__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./assistant */ "./static/tactic_js/assistant.jsx");
+/* harmony import */ var _memory_utilities__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./memory_utilities */ "./static/tactic_js/memory_utilities.jsx");
+/* harmony import */ var _undo__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./undo */ "./static/tactic_js/undo.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 var _excluded = ["index"];
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
@@ -186876,18 +186976,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
 
 
-highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_6__["default"].registerLanguage('javascript', highlight_js_lib_languages_javascript__WEBPACK_IMPORTED_MODULE_7__["default"]);
-
-highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_6__["default"].registerLanguage('python', highlight_js_lib_languages_python__WEBPACK_IMPORTED_MODULE_8__["default"]);
 
 
+highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_8__["default"].registerLanguage('javascript', highlight_js_lib_languages_javascript__WEBPACK_IMPORTED_MODULE_9__["default"]);
 
-var mdi = markdown_it__WEBPACK_IMPORTED_MODULE_9___default()({
+highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_8__["default"].registerLanguage('python', highlight_js_lib_languages_python__WEBPACK_IMPORTED_MODULE_10__["default"]);
+
+
+
+var mdi = markdown_it__WEBPACK_IMPORTED_MODULE_11___default()({
   html: true,
   highlight: function highlight(str, lang) {
-    if (lang && highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_6__["default"].getLanguage(lang)) {
+    if (lang && highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_8__["default"].getLanguage(lang)) {
       try {
-        return '<pre><code class="hljs">' + highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_6__["default"].highlight(str, {
+        return '<pre><code class="hljs">' + highlight_js_lib_core__WEBPACK_IMPORTED_MODULE_8__["default"].highlight(str, {
           language: lang,
           ignoreIllegals: true
         }).value + '</code></pre>';
@@ -186896,7 +186998,7 @@ var mdi = markdown_it__WEBPACK_IMPORTED_MODULE_9___default()({
     return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
   }
 });
-mdi.use((markdown_it_latex__WEBPACK_IMPORTED_MODULE_11___default()));
+mdi.use((markdown_it_latex__WEBPACK_IMPORTED_MODULE_13___default()));
 
 
 
@@ -186914,11 +187016,11 @@ mdi.use((markdown_it_latex__WEBPACK_IMPORTED_MODULE_11___default()));
 
 
 
-var trash_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.Icon, {
+var trash_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Icon, {
   icon: "trash",
   size: 14
 });
-var clean_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.Icon, {
+var clean_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Icon, {
   icon: "clean",
   size: 14
 });
@@ -187062,12 +187164,12 @@ function ConsoleComponent(props) {
     _useState16 = _slicedToArray(_useState15, 2),
     pseudo_tile_id = _useState16[0],
     set_pseudo_tile_id = _useState16[1];
-  var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_21__.SettingsContext);
-  var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_22__.DialogContext);
+  var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_22__.SettingsContext);
+  var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_23__.DialogContext);
   var pushCallback = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_2__.useCallbackStack)();
   var selectedPane = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_utilities_react__WEBPACK_IMPORTED_MODULE_2__.SelectedPaneContext);
-  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_23__.ErrorDrawerContext);
-  var _useContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_26__.UndoContext),
+  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_24__.ErrorDrawerContext);
+  var _useContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_27__.UndoContext),
     handleUndo = _useContext.handleUndo,
     handleRedo = _useContext.handleRedo;
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -187182,7 +187284,7 @@ function ConsoleComponent(props) {
       onKeyDown: handleRedo
     }];
   }, [_addBlankCode, _addBlankText, _runSelected, _clear_all_selected_items]);
-  var _useHotkeys = (0,_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.useHotkeys)(hotkeys),
+  var _useHotkeys = (0,_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.useHotkeys)(hotkeys),
     handleKeyDown = _useHotkeys.handleKeyDown,
     handleKeyUp = _useHotkeys.handleKeyUp;
   (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_3__.useSocketListener)(props.tsocket, "console-message", function (data) {
@@ -187253,7 +187355,7 @@ function ConsoleComponent(props) {
   }
   function _requestPseudoTileId() {
     if (pseudo_tile_id == null) {
-      (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postWithCallbackMain)(props.local_id, "get_pseudo_tile_id", {}, function (res) {
+      (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postWithCallbackMain)(props.local_id, "get_pseudo_tile_id", {}, function (res) {
         set_pseudo_tile_id(res.pseudo_tile_id);
       });
     }
@@ -187278,7 +187380,7 @@ function ConsoleComponent(props) {
                       formData.append("local_id", props.local_id);
                       _context14.p = 1;
                       _context14.n = 2;
-                      return (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postFormDataPromise)("print_blob_area_to_console", formData);
+                      return (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postFormDataPromise)("print_blob_area_to_console", formData);
                     case 2:
                       _context14.n = 4;
                       break;
@@ -187363,7 +187465,7 @@ function ConsoleComponent(props) {
             callback = _args16.length > 1 && _args16[1] !== undefined ? _args16[1] : null;
             _context16.p = 1;
             _context16.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postPromise)("host", "print_text_area_to_console", {
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postPromise)("host", "print_text_area_to_console", {
               "console_text": the_text,
               "user_id": window.user_id,
               "local_id": props.local_id
@@ -187402,7 +187504,7 @@ function ConsoleComponent(props) {
             callback = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : null;
             _context17.p = 1;
             _context17.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postPromise)("host", "print_divider_area_to_console", {
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postPromise)("host", "print_divider_area_to_console", {
               "header_text": header_text,
               "user_id": window.user_id,
               "local_id": props.local_id
@@ -187531,7 +187633,7 @@ function ConsoleComponent(props) {
       "console_items": props.console_items.current,
       "user_id": window.user_id
     };
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.local_id);
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.local_id);
   }
   function _copyItems(id_list) {
     var entry_list = [];
@@ -187565,7 +187667,7 @@ function ConsoleComponent(props) {
       "console_items": entry_list,
       "user_id": window.user_id
     };
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.local_id);
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.local_id);
   }
   var _pasteCell = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
     var unique_id,
@@ -187578,7 +187680,7 @@ function ConsoleComponent(props) {
           unique_id = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : null;
           _context6.p = 1;
           _context6.n = 2;
-          return (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postPromise)("host", "get_copied_console_cells", {
+          return (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postPromise)("host", "get_copied_console_cells", {
             user_id: window.user_id
           }, props.local_id);
         case 2:
@@ -187609,7 +187711,7 @@ function ConsoleComponent(props) {
             callback = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
             _context18.p = 1;
             _context18.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postPromise)("host", "print_link_area_to_console", {
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postPromise)("host", "print_link_area_to_console", {
               "user_id": window.user_id,
               "local_id": props.local_id
             }, props.local_id);
@@ -187634,7 +187736,7 @@ function ConsoleComponent(props) {
     if (props.console_selected_items_ref.current.length == 0) {
       return null;
     } else {
-      return lodash__WEBPACK_IMPORTED_MODULE_5___default().last(props.console_selected_items_ref.current);
+      return lodash__WEBPACK_IMPORTED_MODULE_7___default().last(props.console_selected_items_ref.current);
     }
   }
   var _insertResourceLink = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
@@ -187709,7 +187811,7 @@ function ConsoleComponent(props) {
   function _addCodeArea(the_text) {
     var force_open = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
     try {
-      (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postWithCallback)("host", "print_code_area_to_console", {
+      (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postWithCallback)("host", "print_code_area_to_console", {
         console_text: the_text,
         user_id: window.user_id,
         local_id: props.local_id,
@@ -187723,12 +187825,12 @@ function ConsoleComponent(props) {
     props.dispatch({
       type: "reset"
     });
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postWithCallback)("main_service", "clear_console_namespace", {
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postWithCallback)("main_service", "clear_console_namespace", {
       local_id: props.local_id
     }, null, null, props.local_id);
   }, []);
   function _stopAll() {
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postWithCallback)("main_service", "stop_all_console_code", {
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postWithCallback)("main_service", "stop_all_console_code", {
       local_id: props.local_id
     }, null, null, props.local_id);
   }
@@ -187826,7 +187928,7 @@ function ConsoleComponent(props) {
     pushCallback(callback);
   }
   function get_console_item_entry(unique_id) {
-    return lodash__WEBPACK_IMPORTED_MODULE_5___default().cloneDeep(props.console_items.current[_consoleItemIndex(unique_id)]);
+    return lodash__WEBPACK_IMPORTED_MODULE_7___default().cloneDeep(props.console_items.current[_consoleItemIndex(unique_id)]);
   }
   function _dselectOneItem(unique_id) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -187837,7 +187939,7 @@ function ConsoleComponent(props) {
         search_string: null
       };
       _multiple_console_item_updates(updates, function () {
-        var narray = lodash__WEBPACK_IMPORTED_MODULE_5___default().cloneDeep(props.console_selected_items_ref.current);
+        var narray = lodash__WEBPACK_IMPORTED_MODULE_7___default().cloneDeep(props.console_selected_items_ref.current);
         var myIndex = narray.indexOf(unique_id);
         if (myIndex !== -1) {
           narray.splice(myIndex, 1);
@@ -187889,7 +187991,7 @@ function ConsoleComponent(props) {
           search_string: search_string_ref.current
         };
         _multiple_console_item_updates(updates, function () {
-          var narray = lodash__WEBPACK_IMPORTED_MODULE_5___default().cloneDeep(props.console_selected_items_ref.current);
+          var narray = lodash__WEBPACK_IMPORTED_MODULE_7___default().cloneDeep(props.console_selected_items_ref.current);
           narray.push(unique_id);
           props.set_console_selected_items(narray);
           pushCallback(callback);
@@ -187898,7 +188000,7 @@ function ConsoleComponent(props) {
     }
   }, []);
   function _sortSelectedItems() {
-    var sitems = lodash__WEBPACK_IMPORTED_MODULE_5___default().cloneDeep(props.console_selected_items_ref.current);
+    var sitems = lodash__WEBPACK_IMPORTED_MODULE_7___default().cloneDeep(props.console_selected_items_ref.current);
     sitems.sort(function (firstEl, secondEl) {
       return _consoleItemIndex(firstEl) < _consoleItemIndex(secondEl) ? -1 : 1;
     });
@@ -187937,7 +188039,7 @@ function ConsoleComponent(props) {
     var move_entry = filtered_items[oldIndex];
     var move_index = _consoleItemIndex(move_entry.unique_id);
     var section_ids = _getSectionIds(move_entry.unique_id);
-    var the_section = lodash__WEBPACK_IMPORTED_MODULE_5___default().cloneDeep(props.console_items.current.slice(move_index, move_index + section_ids.length));
+    var the_section = lodash__WEBPACK_IMPORTED_MODULE_7___default().cloneDeep(props.console_items.current.slice(move_index, move_index + section_ids.length));
     props.dispatch({
       type: "delete_items",
       id_list: section_ids
@@ -187975,7 +188077,7 @@ function ConsoleComponent(props) {
   }
   function _moveEntryAfterEntry(move_id, above_id) {
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-    var move_entry = lodash__WEBPACK_IMPORTED_MODULE_5___default().cloneDeep(get_console_item_entry(move_id));
+    var move_entry = lodash__WEBPACK_IMPORTED_MODULE_7___default().cloneDeep(get_console_item_entry(move_id));
     props.dispatch({
       type: "delete_item",
       unique_id: move_id
@@ -188021,7 +188123,7 @@ function ConsoleComponent(props) {
       }
       if (above_entry.type == "divider" && above_entry.am_shrunk) {
         var section_ids = _getSectionIds(above_entry.unique_id);
-        var lastIdInSection = lodash__WEBPACK_IMPORTED_MODULE_5___default().last(section_ids);
+        var lastIdInSection = lodash__WEBPACK_IMPORTED_MODULE_7___default().last(section_ids);
         _moveEntryAfterEntry(move_entry.unique_id, lastIdInSection, callback);
         return;
       }
@@ -188263,7 +188365,7 @@ function ConsoleComponent(props) {
     var set_focus = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
     var unique_id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
     var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
-    lodash__WEBPACK_IMPORTED_MODULE_5___default().last(new_entries).set_focus = set_focus;
+    lodash__WEBPACK_IMPORTED_MODULE_7___default().last(new_entries).set_focus = set_focus;
     var inserting_divider = false;
     var _iterator9 = _createForOfIteratorHelper(new_entries),
       _step9;
@@ -188279,7 +188381,7 @@ function ConsoleComponent(props) {
     } finally {
       _iterator9.f();
     }
-    var last_id = lodash__WEBPACK_IMPORTED_MODULE_5___default().last(new_entries).unique_id;
+    var last_id = lodash__WEBPACK_IMPORTED_MODULE_7___default().last(new_entries).unique_id;
     var insert_index;
     if (unique_id) {
       if (inserting_divider && _isInSection(unique_id)) {
@@ -188753,7 +188855,7 @@ function ConsoleComponent(props) {
             _startSpinner(unique_id);
             entry = get_console_item_entry(unique_id);
             _context13.n = 1;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postPromise)("main_service", "exec_console_code", {
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postPromise)("main_service", "exec_console_code", {
               "the_code": entry.console_text,
               "local_id": props.local_id,
               "console_id": unique_id
@@ -188894,7 +188996,7 @@ function ConsoleComponent(props) {
       tsocket: props.tsocket
     };
   }, [props.local_id, props.tsocket]);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.Card, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Card, {
     className: console_class,
     elevation: props.mState.console_is_shrunk ? 0 : 2,
     style: outer_style,
@@ -188909,17 +189011,17 @@ function ConsoleComponent(props) {
     className: "console-heading d-flex flex-row justify-content-between"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "console-header-left d-flex flex-row"
-  }, props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _expandConsole,
     style: SHRINK_EXPAND_GLYPH_BUTTON_STYLE,
     icon: "chevron-right"
-  }), !props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), !props.mState.console_is_shrunk && props.shrinkable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _shrinkConsole,
     style: SHRINK_EXPAND_GLYPH_BUTTON_STYLE,
     icon: "chevron-down"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_assistant__WEBPACK_IMPORTED_MODULE_24__.AssistantContext.Provider, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_assistant__WEBPACK_IMPORTED_MODULE_25__.AssistantContext.Provider, {
     value: null
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_menu_utilities__WEBPACK_IMPORTED_MODULE_18__.TacticMenubar, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_menu_utilities__WEBPACK_IMPORTED_MODULE_20__.TacticMenubar, {
     menu_specs: menu_specs,
     disabled_items: disabled_items(),
     suggestionGlyphs: suggestionGlyphs,
@@ -188932,7 +189034,7 @@ function ConsoleComponent(props) {
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "console-header-right",
     className: "d-flex flex-row"
-  }, props.mState.pseudoTileStatus == "loaded" && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_memory_utilities__WEBPACK_IMPORTED_MODULE_25__.MemoryIndicator, {
+  }, props.mState.pseudoTileStatus == "loaded" && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_memory_utilities__WEBPACK_IMPORTED_MODULE_26__.MemoryIndicator, {
     usage: memory_usage,
     limit: memory_limit
   }), props.mState.pseudoTileStatus != "loaded" && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
@@ -188941,7 +189043,7 @@ function ConsoleComponent(props) {
       marginRight: 10,
       marginLeft: 5
     }
-  }, props.mState.pseudoTileStatus), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, props.mState.pseudoTileStatus), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     extra_glyph_text: _glif_text(show_glif_text, "exports"),
     tooltip: "Show export browser",
     size: "small",
@@ -188949,28 +189051,36 @@ function ConsoleComponent(props) {
     style: SHOW_EXPORTS_GLYPH_BUTTON_STYLE2,
     handleClick: _toggleExports,
     icon: "variable"
-  }), !props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), !props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _zoomConsole,
     icon: "maximize"
-  }), props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _unzoomConsole,
     icon: "minimize"
-  })))), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_search_form__WEBPACK_IMPORTED_MODULE_19__.FilterSearchForm, {
-    search_string: search_string_ref.current,
-    handleSearchFieldChange: _handleSearchFieldChange,
-    handleFilter: _handleFilter,
-    handleUnFilter: _handleUnFilter,
-    searchNext: _searchNext,
-    searchPrevious: _searchPrevious,
-    outer_style: {
-      marginRight: 50,
-      marginTop: 10,
-      justifyContent: 'flex-end'
-    },
-    marginLeft: 0,
-    marginRight: FILTER_SEARCH_RIGHT_MARGIN,
-    search_helper_text: search_helper_text
-  }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_searchable_console__WEBPACK_IMPORTED_MODULE_20__.SearchableConsole, {
+  })))), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_searchable_console__WEBPACK_IMPORTED_MODULE_6__.ResponsiveFlex, {
+    leftContent: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_5__.TileMakerLocalSettings, {
+      style: {
+        marginLeft: 82,
+        marginTop: 15
+      }
+    }),
+    rightContent: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_search_form__WEBPACK_IMPORTED_MODULE_21__.FilterSearchForm, {
+      search_string: search_string_ref.current,
+      handleSearchFieldChange: _handleSearchFieldChange,
+      handleFilter: _handleFilter,
+      handleUnFilter: _handleUnFilter,
+      searchNext: _searchNext,
+      searchPrevious: _searchPrevious,
+      outer_style: {
+        marginRight: 50,
+        marginTop: 10,
+        justifyContent: 'flex-end'
+      },
+      marginLeft: 0,
+      marginRight: FILTER_SEARCH_RIGHT_MARGIN,
+      search_helper_text: search_helper_text
+    })
+  }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_searchable_console__WEBPACK_IMPORTED_MODULE_6__.SearchableConsole, {
     local_id: props.local_id,
     tsocket: props.tsocket,
     container_id: pseudo_tile_id,
@@ -188985,7 +189095,7 @@ function ConsoleComponent(props) {
       position: "relative",
       overflow: "auto"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_sortable_container__WEBPACK_IMPORTED_MODULE_14__.SortableComponent, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_sortable_container__WEBPACK_IMPORTED_MODULE_16__.SortableComponent, {
     className: "console-items-div",
     direction: "vertical",
     style: empty_style,
@@ -189010,7 +189120,7 @@ function ConsoleComponent(props) {
 }
 ConsoleComponent = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ConsoleComponent);
 function Shandle(props) {
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", props.dragHandleProps, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.Icon, _extends({
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", props.dragHandleProps, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Icon, _extends({
     icon: "drag-handle-vertical"
   }, props.dragHandleProps, {
     style: sHandleStyle,
@@ -189075,27 +189185,27 @@ function DividerItem(props) {
   }
   var contextMenu = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
     // return a single element, or nothing to use default browser behavior
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "duplicate",
       onClick: _copyMe,
       text: "Copy"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "clipboard",
       onClick: _pasteCell,
       text: "Paste Cells"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "new-text-box",
       onClick: _addBlankText,
       text: "New Text Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "code",
       onClick: _addBlankCode,
       text: "New Code Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "header",
       onClick: _addBlankDivider,
       text: "New Section"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "trash",
       onClick: _deleteMe,
       intent: "danger",
@@ -189113,7 +189223,7 @@ function DividerItem(props) {
   if (props["is_error"]) {
     panel_class += " error-log-panel";
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.ContextMenu, {
     content: contextMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: panel_class + " d-flex flex-row",
@@ -189124,14 +189234,14 @@ function DividerItem(props) {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Shandle, {
     dragHandleProps: props.dragHandleProps
-  }), !props["am_shrunk"] && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), !props["am_shrunk"] && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-down",
     handleClick: _toggleShrink
-  }), props["am_shrunk"] && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), props["am_shrunk"] && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-right",
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.EditableText, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.EditableText, {
     value: props.header_text,
     onChange: _handleHeaderTextChange,
     style: {
@@ -189141,7 +189251,7 @@ function DividerItem(props) {
     className: "console-divider-text"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div d-flex flex-row"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _deleteMe,
     intent: "danger",
     tooltip: "Delete this item",
@@ -189176,23 +189286,23 @@ function SectionEndItem(props) {
   }
   var contextMenu = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
     // return a single element, or nothing to use default browser behavior
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "clipboard",
       onClick: _pasteCell,
       text: "Paste Cells"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "new-text-box",
       onClick: _addBlankText,
       text: "New Text Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "code",
       onClick: _addBlankCode,
       text: "New Code Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "header",
       onClick: _addBlankDivider,
       text: "New Section"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null));
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null));
   }, []);
   var _consoleItemClick = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (e) {
     _selectMe(e);
@@ -189208,20 +189318,20 @@ function SectionEndItem(props) {
     marginTop: 10,
     borderBottomWidth: 2
   };
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.ContextMenu, {
     content: contextMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: panel_class + " d-flex flex-row",
     onClick: _consoleItemClick,
     id: props.unique_id,
     style: MB10_STYLE
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.ButtonGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_36__.ButtonGroup, {
     variant: "minimal",
     vertical: true,
     style: {
       width: "100%"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", props.dragHandleProps), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_36__.Divider, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", props.dragHandleProps), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_37__.Divider, {
     style: line_style
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div d-flex flex-row"
@@ -189300,27 +189410,27 @@ function LogItem(props) {
   }
   function renderContextMenu() {
     // return a single element, or nothing to use default browser behavior
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "duplicate",
       onClick: _copyMe,
       text: "Copy Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "clipboard",
       onClick: _pasteCell,
       text: "Paste Cells"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "new-text-box",
       onClick: _addBlankText,
       text: "New Text Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "code",
       onClick: _addBlankCode,
       text: "New Code Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "header",
       onClick: _addBlankDivider,
       text: "New Section"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "trash",
       onClick: _deleteMe,
       intent: "danger",
@@ -189386,7 +189496,7 @@ function LogItem(props) {
     props.widgetHomesRef.current[widgetId] = props.unique_id;
     return the_widget;
   });
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: panel_class + " d-flex flex-row",
@@ -189397,10 +189507,10 @@ function LogItem(props) {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Shandle, {
     dragHandleProps: props.dragHandleProps
-  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-down",
     handleClick: _toggleShrink
-  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-right",
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
@@ -189415,7 +189525,7 @@ function LogItem(props) {
     className: "log-panel-body d-flex flex-row"
   }, props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "body-shrunk-style"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.EditableText, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.EditableText, {
     value: props.summary_text,
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
@@ -189424,7 +189534,7 @@ function LogItem(props) {
     style: {}
   }, outputWidgets), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div d-flex flex-row"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: GlYPH_BUTTON_STYLE4,
@@ -189504,27 +189614,27 @@ function BlobItem(props) {
   }
   function renderContextMenu() {
     // return a single element, or nothing to use default browser behavior
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "duplicate",
       onClick: _copyMe,
       text: "Copy Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "clipboard",
       onClick: _pasteCell,
       text: "Paste Cells"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "new-text-box",
       onClick: _addBlankText,
       text: "New Text Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "code",
       onClick: _addBlankCode,
       text: "New Code Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "header",
       onClick: _addBlankDivider,
       text: "New Section"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "trash",
       onClick: _deleteMe,
       intent: "danger",
@@ -189542,7 +189652,7 @@ function BlobItem(props) {
   if (props.am_selected) {
     panel_class += " selected";
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.ContextMenu, {
     content: renderContextMenu()
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: panel_class + " d-flex flex-row",
@@ -189553,10 +189663,10 @@ function BlobItem(props) {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Shandle, {
     dragHandleProps: props.dragHandleProps
-  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-down",
     handleClick: _toggleShrink
-  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-right",
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
@@ -189571,7 +189681,7 @@ function BlobItem(props) {
     className: "log-panel-body d-flex flex-row"
   }, props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "body-shrunk-style"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.EditableText, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.EditableText, {
     value: props.summary_text,
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
@@ -189582,7 +189692,7 @@ function BlobItem(props) {
     alt: "An Image"
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div d-flex flex-row"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: GlYPH_BUTTON_STYLE4,
@@ -189599,7 +189709,7 @@ function ConsoleCodeItem(props) {
   var am_selected_previous = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
   var setFocusFunc = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var simpleTableId = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
-  var _useContext2 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_26__.UndoContext),
+  var _useContext2 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_27__.UndoContext),
     handleUndo = _useContext2.handleUndo,
     handleRedo = _useContext2.handleRedo;
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -189667,7 +189777,7 @@ function ConsoleCodeItem(props) {
 
   var _stopMe = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function () {
     _stopMySpinner();
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_15__.postWithCallback)("main_service", "stop_console_code", {
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_17__.postWithCallback)("main_service", "stop_console_code", {
       "console_id": props.unique_id,
       "local_id": props.local_id
     }, null, null, props.local_id);
@@ -189781,42 +189891,42 @@ function ConsoleCodeItem(props) {
   }, []);
   var cm = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
     // return a single element, or nothing to use default browser behavior
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, !props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Menu, null, !props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "play",
       intent: "success",
       onClick: _codeRunner,
       text: "Run Cell"
-    }), props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "stop",
       intent: "danger",
       onClick: _stopMe,
       text: "Stop Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "new-text-box",
       onClick: _addBlankText,
       text: "New Text Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "code",
       onClick: _addBlankCode,
       text: "New Code Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "header",
       onClick: _addBlankDivider,
       text: "New Section"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "duplicate",
       onClick: _copyMe,
       text: "Copy Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "clipboard",
       onClick: _pasteCell,
       text: "Paste Cells"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "trash",
       onClick: _deleteMe,
       intent: "danger",
       text: "Delete Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "clean",
       intent: "warning",
       onClick: _clearOutput,
@@ -189906,7 +190016,7 @@ function ConsoleCodeItem(props) {
   var spinner_val = props.running ? null : 0;
 
   // noinspection JSValidateTypes
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.ContextMenu, {
     content: cm,
     key: props.unique_id
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -189919,22 +190029,22 @@ function ConsoleCodeItem(props) {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Shandle, {
     dragHandleProps: props.dragHandleProps
-  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-down",
     handleClick: _toggleShrink
-  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-right",
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "d-flex flex-row console-code body-shrunk-style"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.EditableText, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.EditableText, {
     value: props.summary_text ? props.summary_text : _getFirstLine(),
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary code-panel-summary"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: empty_style,
@@ -189956,17 +190066,17 @@ function ConsoleCodeItem(props) {
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div d-flex pr-1"
-  }, !props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, !props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _codeRunner,
     intent: "success",
     tooltip: "Execute this item",
     icon: "play"
-  }), props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _stopMe,
     intent: "danger",
     tooltip: "Stop this item",
     icon: "stop"
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_13__.ReactCodemirror6, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_15__.ReactCodemirror6, {
     handleChange: _handleChange,
     handleFocus: _handleFocus,
     registerSetFocusFunc: registerSetFocusFunc,
@@ -189987,12 +190097,12 @@ function ConsoleCodeItem(props) {
     saveMe: null
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: empty_style,
     icon: trash_icon
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _clearOutput,
     tooltip: "Clear this item's output",
     style: empty_style,
@@ -190001,7 +190111,7 @@ function ConsoleCodeItem(props) {
     className: "execution-counter"
   }, "[", String(props.execution_count), "]"), props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     style: SPINNER_STYLE
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_37__.Spinner, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_38__.Spinner, {
     size: 13,
     value: spinner_val
   }))), outputWidgets && outputWidgets.length > 0 && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -190018,9 +190128,9 @@ function ConsoleCodeItem(props) {
 ConsoleCodeItem = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ConsoleCodeItem);
 function ResourceLinkButton(props) {
   var my_view = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
-  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_23__.ErrorDrawerContext);
+  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_24__.ErrorDrawerContext);
   (0,_utilities_react__WEBPACK_IMPORTED_MODULE_2__.useConstructor)(function () {
-    my_view.current = (0,_library_pane__WEBPACK_IMPORTED_MODULE_17__.view_views)(false)[props.res_type];
+    my_view.current = (0,_library_pane__WEBPACK_IMPORTED_MODULE_19__.view_views)(false)[props.res_type];
   });
   function _goToLink() {
     return _goToLink2.apply(this, arguments);
@@ -190046,15 +190156,15 @@ function ResourceLinkButton(props) {
     }));
     return _goToLink2.apply(this, arguments);
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.ButtonGroup, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_36__.ButtonGroup, {
     className: "link-button-group"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_38__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_39__.Button, {
     size: "small",
     text: props.res_name,
-    icon: _combined_metadata__WEBPACK_IMPORTED_MODULE_16__.icon_dict[props.res_type],
+    icon: _combined_metadata__WEBPACK_IMPORTED_MODULE_18__.icon_dict[props.res_type],
     variant: "minimal",
     onClick: _goToLink
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_38__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_39__.Button, {
     size: "small",
     icon: "small-cross",
     variant: "minimal",
@@ -190073,9 +190183,9 @@ function ConsoleTextItem(props) {
   var elRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var am_selected_previous = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
   var setFocusFunc = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
-  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_23__.ErrorDrawerContext);
-  var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_22__.DialogContext);
-  var _useContext3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_26__.UndoContext),
+  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_24__.ErrorDrawerContext);
+  var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_23__.DialogContext);
+  var _useContext3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_27__.UndoContext),
     handleUndo = _useContext3.handleUndo,
     handleRedo = _useContext3.handleRedo;
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -190203,7 +190313,7 @@ function ConsoleTextItem(props) {
     return _insertResourceLink2.apply(this, arguments);
   }
   function _deleteLinkButton(index) {
-    var new_links = lodash__WEBPACK_IMPORTED_MODULE_5___default().cloneDeep(props.links);
+    var new_links = lodash__WEBPACK_IMPORTED_MODULE_7___default().cloneDeep(props.links);
     new_links.splice(index, 1);
     props.setConsoleItemValue(props.unique_id, "links", new_links, function () {
       console.log("i am here with nlinks " + String(props.links.length));
@@ -190225,36 +190335,36 @@ function ConsoleTextItem(props) {
     });
   }
   var contextMenu = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "paragraph",
       intent: "success",
       onClick: _showMarkdown,
       text: "Show Markdown"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "new-text-box",
       onClick: _addBlankText,
       text: "New Text Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "code",
       onClick: _addBlankCode,
       text: "New Code Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "header",
       onClick: _addBlankDivider,
       text: "New Section"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "link",
       onClick: _insertResourceLink,
       text: "Insert ResourceLink"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "duplicate",
       onClick: _copyMe,
       text: "Copy Cell"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "clipboard",
       onClick: _pasteCell,
       text: "Paste Cells"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuItem, {
       icon: "trash",
       onClick: _deleteMe,
       intent: "danger",
@@ -190340,7 +190450,7 @@ function ConsoleTextItem(props) {
   });
 
   // noinspection JSUnusedAssignment,JSValidateTypes
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.ContextMenu, {
     content: contextMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: panel_class + " d-flex flex-row",
@@ -190352,22 +190462,22 @@ function ConsoleTextItem(props) {
     className: "button-div shrink-expand-div d-flex flex-row"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Shandle, {
     dragHandleProps: props.dragHandleProps
-  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), !props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-down",
     handleClick: _toggleShrink
-  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     icon: "chevron-right",
     style: GLYPH_BUTTON_STYLE5,
     handleClick: _toggleShrink
   })), props.am_shrunk && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "d-flex flex-row text-box body-shrunk-style"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.EditableText, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.EditableText, {
     value: props.summary_text ? props.summary_text : _getFirstLine(),
     onChange: _handleSummaryTextChange,
     className: "log-panel-summary"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: empty_style,
@@ -190387,7 +190497,7 @@ function ConsoleTextItem(props) {
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div d-flex pr-1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _toggleMarkdown,
     intent: "success",
     tooltip: "Convert to/from markdown",
@@ -190400,7 +190510,7 @@ function ConsoleTextItem(props) {
       position: "relative",
       overflow: "hidden"
     }
-  }, !really_show_markdown && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_13__.ReactCodemirror6, {
+  }, !really_show_markdown && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_15__.ReactCodemirror6, {
     handleChange: _handleChange,
     readOnly: false,
     controlled: true,
@@ -190430,7 +190540,7 @@ function ConsoleTextItem(props) {
     }
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_12__.GlyphButton, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_14__.GlyphButton, {
     handleClick: _deleteMe,
     tooltip: "Delete this item",
     style: empty_style,
@@ -213784,6 +213894,436 @@ function PipeOption(props) {
   }));
 }
 PipeOption = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(PipeOption);
+
+/***/ }),
+
+/***/ "./static/tactic_js/tile_maker_search_form.jsx":
+/*!*****************************************************!*\
+  !*** ./static/tactic_js/tile_maker_search_form.jsx ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   TileMakerLocalSettings: () => (/* binding */ TileMakerLocalSettings),
+/* harmony export */   TileMakerSearchForm: () => (/* binding */ TileMakerSearchForm),
+/* harmony export */   TileMakerSearchResultsPane: () => (/* binding */ TileMakerSearchResultsPane)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
+/* harmony import */ var _account_fields__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./account_fields */ "./static/tactic_js/account_fields.jsx");
+/* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
+/* harmony import */ var _toaster__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./toaster */ "./static/tactic_js/toaster.jsx");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
+
+
+
+
+
+
+
+var dividerIconDict = {
+  "code": "code",
+  "signature": "code",
+  "render_content": "control",
+  "globals": "globe",
+  "options": "select",
+  "widgets": "widget",
+  "exports": "export"
+};
+function getMatchingIcon(result) {
+  if (result.kind == "code") {
+    if (result.paneName in dividerIconDict) {
+      return dividerIconDict[result.paneName];
+    } else {
+      return dividerIconDict["code"];
+    }
+  }
+  return dividerIconDict[result.kind];
+}
+function SearchResultItem(props) {
+  var result = props.result,
+    isCurrent = props.isCurrent,
+    onSelectResult = props.onSelectResult;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "makert-search-result-item ".concat(isCurrent ? "current-search-result" : ""),
+    onClick: function onClick() {
+      return onSelectResult(result, isCurrent);
+    },
+    style: {
+      cursor: "pointer",
+      padding: "5px 7px 5px 12px",
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "baseline",
+      gap: 6
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Icon, {
+    icon: isCurrent ? "small-tick" : "blank",
+    size: 16
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+    style: {
+      opacity: .5,
+      flex: "0 0 35px",
+      textAlign: "left",
+      whiteSpace: "nowrap"
+    },
+    className: "sub-label"
+  }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Text, {
+    ellipsize: true,
+    className: "code-font",
+    style: {
+      flex: "1 1 auto",
+      minWidth: 0,
+      opacity: .85
+    }
+  }, result.preview));
+}
+function TileMakerSearchResultsPane(props) {
+  var _props$searchStateRef, _props$searchStateRef2;
+  props = _objectSpread({
+    searchStateRef: null,
+    onSelectResult: null,
+    onClose: null
+  }, props);
+  var results = (_props$searchStateRef = props.searchStateRef.current.search_results) !== null && _props$searchStateRef !== void 0 ? _props$searchStateRef : [];
+  var currentDividerTitle = null;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "maker-search-results-pane bp6-menu",
+    style: {
+      width: 340,
+      marginLeft: 25,
+      flex: ".4 .4 0",
+      minWidth: 0,
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      borderLeft: "1px solid rgba(128,128,128,.35)"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "6px 8px",
+      borderBottom: "1px solid rgba(128,128,128,.25)",
+      flex: "0 0 auto"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+    title: "Search Results",
+    subtitle: props.searchStateRef.current.search_matches === 1 ? "1 match" : "".concat((_props$searchStateRef2 = props.searchStateRef.current.search_matches) !== null && _props$searchStateRef2 !== void 0 ? _props$searchStateRef2 : 0, " matches"),
+    icon: "search"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+    icon: "cross",
+    size: "small",
+    variant: "minimal",
+    onClick: props.onClose
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      overflowY: "auto",
+      flex: "1 1 0",
+      minHeight: 0,
+      paddingBottom: 20
+    }
+  }, results.length === 0 && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      padding: 10,
+      opacity: .7
+    }
+  }, "No matches"), results.map(function (result) {
+    var _result$field, _result$globalMatchNu;
+    var isCurrent = result.kind === "code" && result.identifier === props.searchStateRef.current.current_search_cm && result.matchNumber === props.searchStateRef.current.current_search_number;
+    var showTitle = result.paneName !== currentDividerTitle;
+    if (showTitle) {
+      currentDividerTitle = result.paneName;
+    }
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
+      key: "".concat(result.identifier, "-").concat(result.kind, "-").concat(result.matchNumber, "-").concat((_result$field = result.field) !== null && _result$field !== void 0 ? _result$field : "", "-").concat((_result$globalMatchNu = result.globalMatchNumber) !== null && _result$globalMatchNu !== void 0 ? _result$globalMatchNu : "")
+    }, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+      style: {
+        padding: "8px 8px 3px 8px",
+        borderTop: "1px solid rgba(128,128,128,.18)"
+      }
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+      title: result.paneName,
+      icon: getMatchingIcon(result)
+    })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SearchResultItem, {
+      result: result,
+      isCurrent: isCurrent,
+      onSelectResult: props.onSelectResult
+    }));
+  })));
+}
+function OldSearchResultsMenu(props) {
+  var _props$searchStateRef3;
+  var results = (_props$searchStateRef3 = props.searchStateRef.current.search_results) !== null && _props$searchStateRef3 !== void 0 ? _props$searchStateRef3 : [];
+  if (results.length === 0) {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
+      disabled: true,
+      text: "No matches"
+    }));
+  }
+  var menuDividerTitle = null;
+  var showTitle = false;
+  var iconName = null;
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, {
+    className: "maker-search-menu",
+    style: {
+      maxHeight: 360,
+      overflowY: "auto",
+      minWidth: 520
+    }
+  }, results.map(function (result) {
+    var isCurrent = result.kind == "code" && result.identifier === props.searchStateRef.current.current_search_cm && result.matchNumber === props.searchStateRef.current.current_search_number;
+    if (result.paneName != menuDividerTitle) {
+      showTitle = true;
+      menuDividerTitle = result.paneName;
+      iconName = getMatchingIcon(result);
+    } else {
+      showTitle = false;
+    }
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuDivider, {
+      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+        title: result.paneName,
+        icon: iconName
+      })
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
+      key: "".concat(result.identifier, "-").concat(result.matchNumber),
+      icon: isCurrent ? "small-tick" : "blank",
+      text: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "baseline"
+        }
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+        style: {
+          opacity: .5,
+          flex: "0 0 25px",
+          // fixed label column
+          textAlign: "left",
+          paddingRight: 8,
+          whiteSpace: "nowrap"
+        },
+        className: "sub-label"
+      }, result.subLabel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Text, {
+        ellipsize: true,
+        className: "code-font",
+        style: {
+          flex: "1 1 auto",
+          minWidth: 0,
+          // important for ellipsize inside flex
+          maxWidth: 460,
+          opacity: .85
+        }
+      }, result.preview)),
+      onClick: function onClick() {
+        props.onSelectResult(result);
+      }
+    }));
+  }));
+}
+function TileMakerLocalSettings(props) {
+  props = _objectSpread({
+    style: {}
+  }, props);
+  var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_2__.SettingsContext);
+  function _onFieldChange(fname, value) {
+    var submit = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+    _submitUpdatedField(fname, value);
+  }
+  var lnum_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Icon, {
+    icon: "numbered-list",
+    size: 14
+  });
+  var ai_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Icon, {
+    icon: "intelligence",
+    size: 14
+  });
+  function _submitUpdatedField(fname, fvalue) {
+    var data = {};
+    data[fname] = fvalue;
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_4__.postPromise)("host", "update_settings", data)["catch"](function () {
+      data.alert_type = "alert-warning";
+      (0,_toaster__WEBPACK_IMPORTED_MODULE_5__.doFlash)(data);
+    });
+  }
+  var lineNumberField = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_account_fields__WEBPACK_IMPORTED_MODULE_3__.AccountSwitchField, {
+    name: "show_line_numbers",
+    key: "show_line_numbers",
+    inline: true,
+    value: settingsContext.settings["show_line_numbers"],
+    display_text: lnum_icon,
+    onFieldChange: _onFieldChange
+  });
+  var aiField = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_account_fields__WEBPACK_IMPORTED_MODULE_3__.AccountSwitchField, {
+    name: "use_ai_code_suggestions",
+    key: "use_ai_code_suggestions",
+    inline: true,
+    value: settingsContext.settings["use_ai_code_suggestions"],
+    display_text: ai_icon,
+    onFieldChange: _onFieldChange
+  });
+  var base_style = {
+    padding: 0,
+    display: "flex",
+    flexDirection: "row",
+    gap: 3
+  };
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "maker-local-settings",
+    style: _objectSpread(_objectSpread({}, base_style), props.style)
+  }, lineNumberField, window.has_openapi_key && aiField);
+}
+function TileMakerSearchForm(props) {
+  props = _objectSpread({
+    allow_regex: false,
+    regex: false,
+    show_hidden: false,
+    field_width: 265,
+    include_search_jumper: false,
+    search_ref: null,
+    number_matches: null,
+    update_delay: 500,
+    searchState: null,
+    searchStateRef: null,
+    searchDispatch: null,
+    searchNext: null,
+    searchPrev: null,
+    showSearchResult: null,
+    showSearchResultsPane: null
+  }, props);
+  var _useDebounce = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_1__.useDebounce)(function (newval) {
+      props.searchDispatch({
+        type: "SET_SEARCH_STRING",
+        payload: newval
+      });
+    }),
+    _useDebounce2 = _slicedToArray(_useDebounce, 2),
+    doUpdate = _useDebounce2[1];
+  function _handleSearchFieldChange(event) {
+    doUpdate(event.target.value);
+    props.searchDispatch({
+      type: "SET_TEMP_SEARCH_STRING",
+      payload: event.target.value
+    });
+  }
+  function _handleRegexChange(event) {
+    props.searchDispatch({
+      type: "SET_REGEX",
+      payload: event.target.checked
+    });
+  }
+  function _handleSelectResult(result) {
+    var _result$matchNumber;
+    props.searchDispatch({
+      type: "GOTO_SEARCH_MATCH",
+      payload: {
+        identifier: result.identifier,
+        matchNumber: (_result$matchNumber = result.matchNumber) !== null && _result$matchNumber !== void 0 ? _result$matchNumber : 0
+      }
+    });
+    if (props.showSearchResult) {
+      props.showSearchResult(result.identifier);
+    }
+  }
+  var match_text;
+  if (props.searchStateRef.current.search_matches != null && props.searchStateRef.current.search_string != "") {
+    switch (props.searchStateRef.current.search_matches) {
+      case 0:
+        match_text = "no matches";
+        break;
+      case 1:
+        match_text = "1 match";
+        break;
+      default:
+        match_text = "".concat(props.searchStateRef.current.search_matches, " matches");
+        break;
+    }
+  } else {
+    match_text = null;
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.FormGroup, {
+    helperText: match_text,
+    style: {
+      marginBottom: 0,
+      paddingLeft: 5
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "d-flex flex-row",
+    style: {
+      marginTop: 5,
+      marginBottom: 0
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.InputGroup, {
+    type: "search",
+    className: "search-input",
+    placeholder: "Search code...",
+    leftIcon: "search",
+    value: props.searchStateRef.current.temp_search_string,
+    onChange: _handleSearchFieldChange,
+    style: {
+      "width": props.field_width
+    },
+    autoCapitalize: "none",
+    autoCorrect: "off",
+    size: "medium",
+    inputRef: props.search_ref
+  }), props.allow_regex && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Switch, {
+    label: "regexp",
+    className: "ml-3 mb-0 mt-1",
+    size: "medium",
+    checked: props.searchStateRef.current.use_regex,
+    onChange: _handleRegexChange
+  }), props.include_search_jumper && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.ButtonGroup, {
+    style: {
+      marginLeft: 5,
+      padding: 2
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+    onClick: props.searchNext,
+    icon: "caret-down",
+    text: undefined,
+    size: "small"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+    onClick: props.searchPrev,
+    icon: "caret-up",
+    text: undefined,
+    size: "small"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+    icon: "list",
+    size: "small",
+    disabled: !props.searchStateRef.current.search_matches,
+    onClick: props.showSearchResultsPane
+  })))));
+}
+TileMakerSearchForm = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(TileMakerSearchForm);
 
 /***/ }),
 

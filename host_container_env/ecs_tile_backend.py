@@ -33,7 +33,7 @@ class ECSTileBackend(TileBackend):
         self.worker = worker
 
     @staticmethod
-    def issue_user_s3_session(username: str, ttl_seconds: int = 7200):
+    def issue_user_s3_session(username: str, ttl_seconds: int = 18000):
         role_arn = f"arn:aws:iam::{os.getenv('ACCOUNT_ID', '924818964184')}:role/TacticTileS3SessionRole"
         sts = _sts()
         resp = sts.assume_role(

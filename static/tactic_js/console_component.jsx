@@ -10,6 +10,8 @@ import {ErrorBoundary} from "./error_boundary";
 import {SelectedPaneContext, guid} from "./utilities_react";
 import {useSocketListener} from "./tactic_socket";
 import {widgetDict} from "./widgets";
+import {TileMakerLocalSettings} from "./tile_maker_search_form";
+import {ResponsiveFlex} from "./searchable_console";
 import _ from 'lodash';
 
 import hljs from 'highlight.js/lib/core';
@@ -1523,23 +1525,30 @@ function ConsoleComponent(props) {
                     </div>
                 </div>
             </div>
+
             {!props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log &&
-                <FilterSearchForm
-                    search_string={search_string_ref.current}
-                    handleSearchFieldChange={_handleSearchFieldChange}
-                    handleFilter={_handleFilter}
-                    handleUnFilter={_handleUnFilter}
-                    searchNext={_searchNext}
-                    searchPrevious={_searchPrevious}
-                    outer_style = {{
-                        marginRight: 50,
-                        marginTop: 10,
-                        justifyContent: 'flex-end'
-                    }}
-                    marginLeft={0}
-                    marginRight={FILTER_SEARCH_RIGHT_MARGIN}
-                    search_helper_text={search_helper_text}
-                />
+                <ResponsiveFlex
+                    leftContent={<TileMakerLocalSettings
+                        style={{marginLeft: 82, marginTop: 15}}
+                    />}
+                    rightContent={
+                        <FilterSearchForm
+                            search_string={search_string_ref.current}
+                            handleSearchFieldChange={_handleSearchFieldChange}
+                            handleFilter={_handleFilter}
+                            handleUnFilter={_handleUnFilter}
+                            searchNext={_searchNext}
+                            searchPrevious={_searchPrevious}
+                            outer_style = {{
+                                marginRight: 50,
+                                marginTop: 10,
+                                justifyContent: 'flex-end'
+                            }}
+                            marginLeft={0}
+                            marginRight={FILTER_SEARCH_RIGHT_MARGIN}
+                            search_helper_text={search_helper_text}
+                        />
+                    }/>
             }
             {!props.mState.console_is_shrunk && show_pseudo_log &&
                 <SearchableConsole local_id={props.local_id}
