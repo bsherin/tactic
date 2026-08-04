@@ -11,6 +11,312 @@ $small-pane-buttom-offset: 10px;
 
 $option-divider-color: #ec9a3c;
 
+.tile-debugger-panel {
+    flex: 0 0 auto;
+    font-size: 12px;
+    margin-bottom: 10px;
+
+}
+
+.right-drawer-panes,
+.right-drawer-main-pane,
+.right-drawer-pane {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.right-drawer-panes {
+    flex: 1 1 0;
+}
+
+.tile-debugger-toolbar {
+    min-height: 34px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tile-debugger-title {
+    font-weight: 600;
+    margin-right: 2px;
+}
+
+.tile-debugger-target {
+    max-width: 240px;
+    height: 24px;
+    border: 1px solid rgba(127, 127, 127, .4);
+    border-radius: 3px;
+    background: inherit;
+    color: inherit;
+    font-size: 12px;
+}
+
+.tile-debugger-breakpoint-count {
+    white-space: nowrap;
+    color: #c23030;
+}
+
+.tile-debugger-exception-toggle {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.tile-debugger-message {
+    flex: 1 1 auto;
+    min-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: .78;
+}
+
+.tile-debugger-inspector {
+    border-top: 1px solid rgba(127, 127, 127, .22);
+    max-height: 260px;
+    overflow: auto;
+}
+
+.tile-debugger-exception {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 9px;
+    background: rgba(194, 48, 48, .1);
+    color: #8f1d1d;
+
+    code {
+        color: inherit;
+        overflow-wrap: anywhere;
+    }
+}
+
+.tile-debugger-location {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 5px 9px;
+    font-family: monospace;
+    font-weight: 600;
+    background: rgba(45, 114, 210, .1);
+    color: #184a7d;
+}
+
+.tile-debugger-locals {
+    display: grid;
+    grid-template-columns: minmax(90px, max-content) minmax(60px, max-content) 1fr;
+}
+
+.tile-debugger-inspector-body {
+    display: grid;
+    grid-template-columns: minmax(150px, 240px) minmax(280px, 1fr);
+    align-items: start;
+}
+
+.tile-debugger-stack {
+    align-self: stretch;
+    border-right: 1px solid rgba(127, 127, 127, .22);
+
+    button {
+        width: 100%;
+        padding: 4px 8px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        border: 0;
+        border-top: 1px solid rgba(127, 127, 127, .14);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(127, 127, 127, .1);
+        }
+
+        &.active {
+            background: rgba(45, 114, 210, .14);
+            box-shadow: inset 2px 0 0 #2d72d2;
+        }
+
+        code {
+            color: inherit;
+            opacity: .65;
+            white-space: nowrap;
+        }
+    }
+}
+
+.tile-debugger-section-title {
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    opacity: .65;
+    text-transform: uppercase;
+}
+
+.tile-debugger-local {
+    display: contents;
+
+    > * {
+        padding: 3px 8px;
+        border-top: 1px solid rgba(127, 127, 127, .14);
+    }
+}
+
+.tile-debugger-local-name {
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.tile-debugger-local-type {
+    opacity: .62;
+}
+
+.tile-debugger-local-value {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.tile-debugger-empty {
+    padding: 6px 9px;
+    grid-column: 1 / -1;
+    opacity: .65;
+}
+
+.tile-debugger-drawer {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    .tile-debugger-inspector {
+        flex: 1 1 0;
+        max-height: none;
+        min-height: 0;
+        overflow: auto;
+        border-top: 0;
+    }
+
+    .tile-debugger-inspector-body {
+        display: block;
+    }
+
+    .tile-debugger-stack {
+        border-right: 0;
+        border-bottom: 1px solid rgba(127, 127, 127, .22);
+    }
+}
+
+.tile-debugger-drawer-header {
+    min-height: 38px;
+    padding: 5px 6px 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid rgba(127, 127, 127, .22);
+
+    > div {
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+}
+
+.tile-debugger-drawer-status {
+    font-size: 10px;
+    letter-spacing: .04em;
+    opacity: .6;
+    text-transform: uppercase;
+}
+
+.tile-debugger-paused .tile-debugger-drawer-status {
+    color: #c23030;
+    font-weight: 600;
+    opacity: 1;
+}
+
+.tile-debugger-drawer-empty {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    color: rgba(92, 112, 128, .85);
+    line-height: 1.45;
+    text-align: center;
+}
+
+.bp6-dark .tile-debugger-location {
+    background: rgba(45, 114, 210, .14);
+    color: #b8d8ff;
+}
+
+.bp6-dark .tile-debugger-exception {
+    color: #ffb7b7;
+}
+
+.cm-debug-gutter {
+    width: 15px;
+    cursor: pointer;
+
+    .cm-gutterElement {
+        min-width: 15px;
+    }
+}
+
+.cm-debug-gutter-marker {
+    position: relative;
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: 1px;
+}
+
+.cm-debug-breakpoint::before {
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #d33b3b;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .2);
+}
+
+.cm-debug-current::after {
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid #d9822b;
+}
+
+.cm-debug-breakpoint.cm-debug-current::after {
+    left: -1px;
+    top: -1px;
+}
+
+.cm-debug-current-line {
+    background: rgba(245, 166, 35, .23) !important;
+    box-shadow: inset 3px 0 0 #d9822b;
+}
+
 .light-theme {
     .cm-signature {
         .cm-editor {
@@ -156,14 +462,17 @@ $option-divider-color: #ec9a3c;
     }
 
     .creator-right-pane {
-        padding-left: $standard-padding;
+        padding-left: 15px;
     }
 
     .maker-pane {
         background-color: transparent !important;
         //margin-right: 20px; // for separation from scrollbar
 
-        margin-left: 25px;
+        margin-left: 10px;
+        box-shadow: none;
+        border-bottom: .5px solid gray;
+        margin-right: 10px;
 
         &:first-child {
             margin-top: 8px;
@@ -207,16 +516,18 @@ $option-divider-color: #ec9a3c;
             z-index: 5;
 
             &.maker-pane-left-button {
-                left: $small-pane-buttom-offset
+                left: $small-pane-buttom-offset;
+                top: 17px;
             }
 
             &.maker-pane-right-button {
-                right: $small-pane-buttom-offset
+                right: 22px;
+                top: 17px;
             }
         }
 
         .maker-form-container {
-            padding-top: 20px;
+            padding-top: 25px;
 
             .code-font {
                 font-family: monospace;
@@ -232,5 +543,3 @@ $option-divider-color: #ec9a3c;
 
 
 }
-
-

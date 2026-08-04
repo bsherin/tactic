@@ -1080,6 +1080,11 @@ function CmElement(props) {
     };
 
     const [doScroll, setDoScroll] = useState(props.cmState.scrollTop != null);
+    const makerContext = useContext(MakerPaneContext);
+    const firstLineNumber = props.cmState.firstLineNumber || 1;
+    const editorBreakpoints = (makerContext.debugBreakpoints || [])
+        .filter(breakpoint => breakpoint.identifier === props.identifier)
+        .map(breakpoint => firstLineNumber + breakpoint.line - 1);
 
     function handleCodeChange(new_code) {
         if (props.updateItem) {
@@ -1179,6 +1184,16 @@ function CmElement(props) {
                                   identifier: props.identifier,
                                   name: props.name,
                               }}
+                              show_debug_gutter={props.cmState.mode === "python"}
+                              debug_breakpoints={editorBreakpoints}
+                              debug_line={makerContext.debugLine}
+                              onBreakpointToggle={(absoluteLine) => makerContext.toggleBreakpoint(
+                                  props.identifier, absoluteLine - firstLineNumber + 1
+                              )}
+                              onBreakpointsChanged={(absoluteLines) => makerContext.replaceEditorBreakpoints(
+                                  props.identifier,
+                                  absoluteLines.map(line => line - firstLineNumber + 1)
+                              )}
                               highlight_active_line={true}/>
         </div>
     )

@@ -34,7 +34,8 @@ function TileContainer(props) {
                 displayTileContentWithJavascript: _displayTileContentWithJavascript,
                 tileWidgetUpdate: updateWidgetData,
                 updateMemoryUsage: _updateMemoryUsage,
-                updateTileStatus: _handleTileStatusMessage
+                updateTileStatus: _handleTileStatusMessage,
+                sourceSynchronized: (tile_id) => _setTileValue(tile_id, "source_changed", false),
             }
             if (data["tile_message"] in handlerDict) {
                 handlerDict[data["tile_message"]](tile_id, data)

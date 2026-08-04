@@ -838,9 +838,26 @@ class LoadSaveTasksMixin:
     @task_worthy
     def update_reload_dict(self, data_dict):
         sid = data_dict["sid"]
-        tile_info = self.get_session(sid).tile_info
-        tile_info.set_reload_dict(data_dict["tile_id"], data_dict["reload_dict"])
-        return {"success": True}
+        tile_id = data_dict["tile_id"]
+        open_sids = self.ss.get_unique_sids()
+        resolved_sid = sid if sid in open_sids else None
+        if resolved_sid is None:
+            # A tile container can outlive a replaced browser/main session.
+            # Its globally unique tile ID still lets us find the session that
+            # currently owns it and repair the tile's cached sid.
+            for candidate_sid in open_sids:
+                candidate = self.get_session(candidate_sid)
+                if candidate.tile_info.id_exists(tile_id):
+                    resolved_sid = candidate_sid
+                    break
+        if resolved_sid is None:
+            log.warning("Could not resolve session for reload update",
+                        stale_sid=sid, tile_id=tile_id)
+            return {"success": False, "message": "The tile's main session is no longer open."}
+
+        tile_info = self.get_session(resolved_sid).tile_info
+        tile_info.set_reload_dict(tile_id, data_dict["reload_dict"])
+        return {"success": True, "sid": resolved_sid}
 
     @task_worthy
     def remove_collection_from_project(self, data_dict):
@@ -1256,6 +1273,45 @@ class APISupportTasksMixin:
         if sess.pseudo_tile_id is not None:
             tile_ids.append(sess.pseudo_tile_id)
         return {"success": True, "tile_ids": tile_ids}
+
+    @task_worthy
+    def get_tile_debug_targets(self, data):
+        """Return running tiles whose loaded class can be debugged by this editor."""
+        requested_sid = data.get("sid")
+        global_id = data.get("global_id")
+        requested_types = {
+            value for value in (data.get("tile_type"), data.get("module_name")) if value
+        }
+        open_sids = self.ss.get_unique_sids()
+        if requested_sid in open_sids:
+            matching_sids = [requested_sid]
+        else:
+            # A Tile Maker tab has its own module-viewer session.  Its shared
+            # browser context ID identifies the one or more open main sessions.
+            context_id = global_id or requested_sid
+            matching_sids = [
+                sid for sid in open_sids
+                if self.ss.get_val(sid, "global_id") == context_id
+            ]
+
+        targets = []
+        for sid in matching_sids:
+            sess = self.get_session(sid)
+            if data.get("user_id") and sess.user_id != data["user_id"]:
+                continue
+            for tile_id in sess.tile_info.tile_ids:
+                params = sess.tile_info.get_tile_params(tile_id) or {}
+                tile_type = params.get("tile_type")
+                if requested_types and tile_type not in requested_types:
+                    continue
+                targets.append({
+                    "tile_id": tile_id,
+                    "tile_name": params.get("tile_name") or tile_id,
+                    "tile_type": tile_type,
+                    "main_sid": sid,
+                })
+        targets.sort(key=lambda target: (target["tile_name"], target["tile_id"]))
+        return {"success": True, "targets": targets}
 
     @task_worthy
     def SearchTable(self, data):

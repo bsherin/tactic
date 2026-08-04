@@ -1,3 +1,4 @@
+import hashlib
 import re
 from tactic_logging import log, setup_logging
 
@@ -230,7 +231,8 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                     "alert_type": "alert-success", "render_content_line_numbers": render_content_line_numbers,
                     "standard_methods_line_numbers": standard_methods_line_numbers,
                     "used_handler_methods_line_numbers": used_handler_methods_line_numbers,
-                    "user_methods_line_numbers": user_methods_line_numbers}
+                    "user_methods_line_numbers": user_methods_line_numbers,
+                    "source_info": self.source_info(module_code)}
         except Exception as ex:
             log.exception("error updating module")
             return self.get_traceback_exception_dict(ex, "Error updating module: ")
@@ -316,8 +318,20 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                        "is_mpl": tp.is_mpl,
                        "user_methods_list": user_methods_list,
                        "used_handler_methods_list": used_handler_methods_list,
-                       "category": tp.category}
+                       "category": tp.category,
+                       "tile_type": tp.class_name,
+                       "source_info": ModuleViewerWorker.source_info(tp.module_code)}
         return parsed_data
+
+    @staticmethod
+    def source_info(module_code):
+        """Describe generated code using the same identity as the tile runtime."""
+        source_hash = hashlib.sha256(module_code.encode("utf-8")).hexdigest()
+        return {
+            "filename": f"/tactic/user-code/{source_hash[:16]}.py",
+            "source_hash": source_hash,
+            "line_count": len(module_code.splitlines()),
+        }
 
     @task_worthy
     def stop_me(self, _data):

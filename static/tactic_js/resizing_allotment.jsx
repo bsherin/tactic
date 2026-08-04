@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { Button, Icon } from "@blueprintjs/core";
 
@@ -203,6 +203,103 @@ export function HorizontalPanes({
                         {snap_left && snapped && <UnsnapButton unSnap={unSnap} />}
                         {right_pane}
                     </div>
+                </Panel>
+            </Group>
+        </div>
+    );
+}
+
+export function RightDrawerPanes({
+    main_pane,
+    drawer,
+    open,
+    initial_drawer_fraction = 0.32,
+    min_main_width = 360,
+    min_drawer_width = 280,
+    onDrawerResizeEnd = null,
+    className = "",
+}) {
+    const drawerPanelRef = useRef(null);
+    const savedDrawerSizeRef = useRef(initial_drawer_fraction * 100);
+    const restoringDrawerRef = useRef(false);
+    const previousOpenRef = useRef(open);
+    const [hover, setHover] = useState(false);
+
+    // Guard layout callbacks from the render that adds/removes the separator,
+    // before child layout effects have a chance to report an interim width.
+    if (previousOpenRef.current !== open) {
+        restoringDrawerRef.current = true;
+        previousOpenRef.current = open;
+    }
+
+    useLayoutEffect(() => {
+        const panel = drawerPanelRef.current;
+        if (!panel) return;
+        if (open) {
+            // expand() first restores the panel to its minimum size. Preserve
+            // the user's target across that intermediate layout notification,
+            // then apply it after the panel has expanded.
+            const targetSize = savedDrawerSizeRef.current;
+            restoringDrawerRef.current = true;
+            panel.expand?.();
+            queueMicrotask(() => {
+                panel.resize?.(`${targetSize}%`);
+                restoringDrawerRef.current = false;
+            });
+        } else {
+            const currentSize = panel.getSize?.();
+            if (typeof currentSize === "number" && currentSize > 0) {
+                savedDrawerSizeRef.current = currentSize;
+            }
+            restoringDrawerRef.current = true;
+            panel.collapse?.();
+            queueMicrotask(() => {
+                restoringDrawerRef.current = false;
+            });
+        }
+    }, [open]);
+
+    function handleLayoutChanged(layout) {
+        if (restoringDrawerRef.current) return;
+        const drawerSize = layout["right-drawer"];
+        if (drawerSize == null || drawerSize <= 0) return;
+        savedDrawerSizeRef.current = drawerSize;
+        onDrawerResizeEnd?.(drawerSize / 100);
+    }
+
+    return (
+        <div className={`right-drawer-panes ${className}`}>
+            <Group
+                orientation="horizontal"
+                onLayoutChanged={handleLayoutChanged}
+                style={{width: "100%", height: "100%", minHeight: 0, minWidth: 0, overflow: "hidden"}}
+                resizeTargetMinimumSize={HANDLE_SIZE}
+            >
+                <Panel id="right-drawer-main"
+                       order={1}
+                       defaultSize={`${(1 - initial_drawer_fraction) * 100}%`}
+                       minSize={`${min_main_width}px`}>
+                    <div className="right-drawer-main-pane">{main_pane}</div>
+                </Panel>
+
+                {open && (
+                    <Separator disableDoubleClick
+                               style={horizontalSeparatorStyle}
+                               onMouseEnter={() => setHover(true)}
+                               onMouseLeave={() => setHover(false)}>
+                        <div style={{...horizontalSeparatorLineStyle, width: hover ? 5 : 1}}
+                             className="draggable-pane-separator"/>
+                    </Separator>
+                )}
+
+                <Panel id="right-drawer"
+                       order={2}
+                       defaultSize={open ? `${initial_drawer_fraction * 100}%` : "0%"}
+                       minSize={`${min_drawer_width}px`}
+                       collapsible={true}
+                       collapsedSize="0%"
+                       panelRef={drawerPanelRef}>
+                    <div className="right-drawer-pane">{drawer}</div>
                 </Panel>
             </Group>
         </div>

@@ -789,6 +789,7 @@ function ContextApp(props) {
                         identifier={entry.identifier}>
                         <TheClass {...entry.panel}
                                   controlled={true}
+                                  selectTab={() => setSelectedTabId(entry.identifier)}
                                   handleCreateViewer={handleCreateViewer}
                                   tab_id={entry.identifier}
                                   selectedTabIdRef={selectedTabIdRef}

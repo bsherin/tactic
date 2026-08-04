@@ -24,6 +24,7 @@ try:
     from qworker_alt import QWorker, task_worthy
     from qworker_alt import simple_uid
     import tile_env
+    from tile_debugger import TileDebugger
     from aws_helpers import resolve_task_identity, get_ssm_parameter
     from tile_env import class_info
     from tile_env import exec_tile_code
@@ -51,6 +52,8 @@ try:
 
     kill_thread = None
     kill_thread_lock = Lock()
+    debug_thread = None
+    debug_thread_lock = Lock()
 
     from pseudo_tile_base import PseudoTileClass
     import pseudo_tile_base
@@ -90,6 +93,45 @@ class KillWorker(QWorker):
                 kill_thread = threading.Thread(target=self.start_background_thread, name=simple_uid())
                 kill_thread.start()
                 log.debug('Background kill_thread started')
+
+
+class DebugControlWorker(QWorker):
+    """Receives commands while the tile's normal consumer is paused in bdb."""
+
+    def __init__(self, tile_worker, debugger):
+        self.tile_worker = tile_worker
+        self.debugger = debugger
+        QWorker.__init__(self, special_id="debug_" + tile_worker.my_id)
+
+    def emit_to_client(self, message, data):
+        self.tile_worker.emit_to_client(message, data)
+
+    def handle_delivery(self, channel, method, props, body):
+        channel.basic_ack(delivery_tag=method.delivery_tag)
+        try:
+            task_packet = json.loads(body)
+            if task_packet.get("task_type") != "debug_command":
+                log.warning("Ignoring debugger task type",
+                            task_type=task_packet.get("task_type"))
+                return
+            data = task_packet.get("task_data") or {}
+            result = self.debugger.submit_command(
+                data.get("session_id"), data.get("command")
+            )
+            if task_packet.get("callback_id") is not None:
+                self.submit_response(task_packet, result)
+        except Exception:
+            log.exception("Error handling debugger command")
+
+    def start(self):
+        global debug_thread
+        with debug_thread_lock:
+            if debug_thread is None:
+                debug_thread = threading.Thread(
+                    target=self.start_background_thread, name=simple_uid()
+                )
+                debug_thread.start()
+                log.debug("Background debugger control thread started")
 
 class HeartbeatGenerator:
     def __init__(self, worker):
@@ -220,6 +262,7 @@ class TileWorker(QWorker):
         widgets.in_pseudo_tile = False
         self.get_megaplex_task_now = False
         self.use_svg = True
+        self.debugger = None
 
         log.info("initialized tileworker", my_id=self.my_id)
 
@@ -255,6 +298,47 @@ class TileWorker(QWorker):
         data["message"] = message
         data["local_id"] = self.tile_instance.sid
         self.ask_host("emit_to_client", data)
+
+    def emit_debug_event(self, event, data):
+        data["message"] = event
+        if "local_id" not in data:
+            tile_sid = getattr(self.tile_instance, "sid", None)
+            data["local_id"] = tile_sid or data.get("room")
+        self.post_task("host", "emit_to_client", data)
+
+    @task_worthy
+    def arm_debugger(self, data):
+        data = data or {}
+        source_info = tile_env.get_loaded_source_info()
+        requested_hash = data.get("source_hash")
+        if requested_hash and source_info and requested_hash != source_info["source_hash"]:
+            return {
+                "success": False,
+                "message": "The tile source changed after these breakpoints were created.",
+                "source_info": source_info,
+            }
+        result = self.debugger.arm(
+            source_info,
+            data.get("breakpoints", []),
+            session_id=data.get("session_id"),
+            room=data.get("debug_room"),
+            pause_on_start=data.get("pause_on_start", False),
+            pause_on_exceptions=data.get("pause_on_exceptions", False),
+        )
+        result["debug_queue"] = "debug_" + self.my_id
+        return result
+
+    @task_worthy
+    def disarm_debugger(self, data):
+        data = data or {}
+        return self.debugger.disarm(data.get("session_id"))
+
+    def handle_event(self, task_packet):
+        if self.debugger and self.debugger.should_trace(task_packet.get("task_type")):
+            return self.debugger.run_event(
+                lambda: super(TileWorker, self).handle_event(task_packet)
+            )
+        return super().handle_event(task_packet)
 
     def send_error_entry(self, title, content, line_number):
         data = {"message": "add-error-drawer-entry",
@@ -385,8 +469,13 @@ class TileWorker(QWorker):
         return reload_attrs
 
     def send_updated_reload_dict(self):
+        def update_cached_sid(result):
+            if result and result.get("success") and result.get("sid"):
+                self.tile_instance.sid = result["sid"]
+
         self.post_to_main("update_reload_dict",
-                       {"tile_id": self.my_id, "reload_dict": self.get_reload_dict()})
+                          {"tile_id": self.my_id, "reload_dict": self.get_reload_dict()},
+                          callback_func=update_cached_sid)
         return
 
     @task_worthy
@@ -523,6 +612,10 @@ if __name__ == "__main__":
         app = Flask(__name__)
         exception_mixin.app = app
         tile_base._tworker = TileWorker()
+        tile_base._tworker.debugger = TileDebugger(
+            event_callback=tile_base._tworker.emit_debug_event,
+            pause_timeout=int(get_ssm_parameter("DEBUG_PAUSE_TIMEOUT_SECS", 300)),
+        )
         document_object._tworker = tile_base._tworker
         library_object._tworker = tile_base._tworker
         settings_object._tworker = tile_base._tworker
@@ -532,6 +625,8 @@ if __name__ == "__main__":
         tile_base._tworker.start()
         kill_worker = KillWorker()
         kill_worker.start()
+        debug_worker = DebugControlWorker(tile_base._tworker, tile_base._tworker.debugger)
+        debug_worker.start()
         heartbeat_generator = HeartbeatGenerator(tile_base._tworker)
         heartbeat_generator.start_heartbeat()
         from service_controls import set_to_redis_log_level

@@ -201254,6 +201254,138 @@ function customLineNumbers() {
     }
   });
 }
+var setDebuggerState = _codemirror_state__WEBPACK_IMPORTED_MODULE_13__.StateEffect.define();
+function buildDebuggerState(doc, value) {
+  var firstLineNumber = value.firstLineNumber || 1;
+  var debugLine = value.debugLine;
+  var decorations = _codemirror_view__WEBPACK_IMPORTED_MODULE_7__.Decoration.none;
+  if (debugLine != null) {
+    var localLine = debugLine - firstLineNumber + 1;
+    if (localLine >= 1 && localLine <= doc.lines) {
+      decorations = _codemirror_view__WEBPACK_IMPORTED_MODULE_7__.Decoration.set([_codemirror_view__WEBPACK_IMPORTED_MODULE_7__.Decoration.line({
+        "class": "cm-debug-current-line"
+      }).range(doc.line(localLine).from)]);
+    }
+  }
+  return {
+    firstLineNumber: firstLineNumber,
+    debugLine: debugLine,
+    breakpoints: new Set(value.breakpoints || []),
+    decorations: decorations
+  };
+}
+var debuggerStateField = _codemirror_state__WEBPACK_IMPORTED_MODULE_13__.StateField.define({
+  create: function create(state) {
+    return buildDebuggerState(state.doc, {});
+  },
+  update: function update(value, transaction) {
+    var nextValue = value;
+    var debuggerEffectSeen = false;
+    var _iterator3 = _createForOfIteratorHelper(transaction.effects),
+      _step3;
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var effect = _step3.value;
+        if (effect.is(setDebuggerState)) {
+          nextValue = effect.value;
+          debuggerEffectSeen = true;
+        }
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
+    if (transaction.docChanged && !debuggerEffectSeen) {
+      var mappedBreakpoints = [];
+      var _iterator4 = _createForOfIteratorHelper(value.breakpoints),
+        _step4;
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var absoluteLine = _step4.value;
+          var localLine = absoluteLine - value.firstLineNumber + 1;
+          if (localLine < 1 || localLine > transaction.startState.doc.lines) continue;
+          var oldPosition = transaction.startState.doc.line(localLine).from;
+          var newPosition = transaction.changes.mapPos(oldPosition, 1);
+          var newLocalLine = transaction.newDoc.lineAt(newPosition).number;
+          mappedBreakpoints.push(value.firstLineNumber + newLocalLine - 1);
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+      nextValue = _objectSpread(_objectSpread({}, value), {}, {
+        breakpoints: mappedBreakpoints
+      });
+    }
+    if (transaction.docChanged || nextValue !== value) {
+      return buildDebuggerState(transaction.newDoc, nextValue);
+    }
+    return value;
+  },
+  provide: function provide(field) {
+    return _codemirror_view__WEBPACK_IMPORTED_MODULE_7__.EditorView.decorations.from(field, function (value) {
+      return value.decorations;
+    });
+  }
+});
+var DebuggerGutterMarker = /*#__PURE__*/function (_GutterMarker2) {
+  function DebuggerGutterMarker(hasBreakpoint, isCurrent) {
+    var _this;
+    _classCallCheck(this, DebuggerGutterMarker);
+    _this = _callSuper(this, DebuggerGutterMarker);
+    _this.hasBreakpoint = hasBreakpoint;
+    _this.isCurrent = isCurrent;
+    return _this;
+  }
+  _inherits(DebuggerGutterMarker, _GutterMarker2);
+  return _createClass(DebuggerGutterMarker, [{
+    key: "eq",
+    value: function eq(other) {
+      return this.hasBreakpoint === other.hasBreakpoint && this.isCurrent === other.isCurrent;
+    }
+  }, {
+    key: "toDOM",
+    value: function toDOM() {
+      var marker = document.createElement("span");
+      marker.className = ["cm-debug-gutter-marker", this.hasBreakpoint ? "cm-debug-breakpoint" : "", this.isCurrent ? "cm-debug-current" : ""].filter(Boolean).join(" ");
+      marker.setAttribute("aria-label", this.hasBreakpoint ? "Breakpoint" : "Current execution line");
+      return marker;
+    }
+  }]);
+}(_codemirror_view__WEBPACK_IMPORTED_MODULE_7__.GutterMarker);
+function debuggerGutter(onBreakpointToggleRef) {
+  return (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_7__.gutter)({
+    "class": "cm-debug-gutter",
+    lineMarkerChange: function lineMarkerChange(update) {
+      return update.transactions.some(function (transaction) {
+        return transaction.effects.some(function (effect) {
+          return effect.is(setDebuggerState);
+        });
+      });
+    },
+    lineMarker: function lineMarker(view, line) {
+      var debugState = view.state.field(debuggerStateField);
+      var absoluteLine = debugState.firstLineNumber + view.state.doc.lineAt(line.from).number - 1;
+      var hasBreakpoint = debugState.breakpoints.has(absoluteLine);
+      var isCurrent = debugState.debugLine === absoluteLine;
+      return hasBreakpoint || isCurrent ? new DebuggerGutterMarker(hasBreakpoint, isCurrent) : null;
+    },
+    domEventHandlers: {
+      mousedown: function mousedown(view, line, event) {
+        if (event.button !== 0) return false;
+        var debugState = view.state.field(debuggerStateField);
+        var absoluteLine = debugState.firstLineNumber + view.state.doc.lineAt(line.from).number - 1;
+        if (onBreakpointToggleRef.current) {
+          onBreakpointToggleRef.current(absoluteLine);
+        }
+        event.preventDefault();
+        return true;
+      }
+    }
+  });
+}
 var enterInsertsNewlineOnly = {
   key: "Enter",
   run: function run(view) {
@@ -201326,21 +201458,21 @@ function highlightEditableRanges(ranges) {
       key: "buildDecorations",
       value: function buildDecorations() {
         var builder = new _codemirror_state__WEBPACK_IMPORTED_MODULE_13__.RangeSetBuilder();
-        var _iterator3 = _createForOfIteratorHelper(ranges),
-          _step3;
+        var _iterator5 = _createForOfIteratorHelper(ranges),
+          _step5;
         try {
-          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-            var _step3$value = _step3.value,
-              from = _step3$value.from,
-              to = _step3$value.to;
+          for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+            var _step5$value = _step5.value,
+              from = _step5$value.from,
+              to = _step5$value.to;
             builder.add(from, to, _codemirror_view__WEBPACK_IMPORTED_MODULE_7__.Decoration.mark({
               "class": "cm-editable"
             }));
           }
         } catch (err) {
-          _iterator3.e(err);
+          _iterator5.e(err);
         } finally {
-          _iterator3.f();
+          _iterator5.f();
         }
         return builder.finish();
       }
@@ -201419,7 +201551,12 @@ function ReactCodemirror6(props) {
     getAIContext: null,
     aiEditorInfo: null,
     hideLeadingChars: null,
-    isLite: false
+    isLite: false,
+    show_debug_gutter: false,
+    debug_breakpoints: [],
+    debug_line: null,
+    onBreakpointToggle: null,
+    onBreakpointsChanged: null
   }, props);
   var localRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var containerNodeRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -201437,6 +201574,10 @@ function ReactCodemirror6(props) {
   var cmUniqueId = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var getAIContextRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.getAIContext);
   getAIContextRef.current = props.getAIContext;
+  var onBreakpointToggleRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.onBreakpointToggle);
+  onBreakpointToggleRef.current = props.onBreakpointToggle;
+  var onBreakpointsChangedRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.onBreakpointsChanged);
+  onBreakpointsChangedRef.current = props.onBreakpointsChanged;
   var lastUserDocRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(props.code_content);
   var changeCounterRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(0);
   var activeStreamChangeCounterRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -201493,6 +201634,12 @@ function ReactCodemirror6(props) {
         });
         var newDoc = update.state.doc.toString();
         (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_14__.closeCompletion)(update.view);
+        if (props.show_debug_gutter && onBreakpointsChangedRef.current) {
+          var debugState = update.state.field(debuggerStateField);
+          onBreakpointsChangedRef.current(_toConsumableArray(debugState.breakpoints).sort(function (a, b) {
+            return a - b;
+          }));
+        }
 
         // Keep range restrictions up to date for *all* changes
         if (props.restrict_edits_to_range) {
@@ -201573,6 +201720,9 @@ function ReactCodemirror6(props) {
       }
       extensions = extensions.concat([(0,_codemirror_language__WEBPACK_IMPORTED_MODULE_16__.foldGutter)()]);
     }
+    if (props.show_debug_gutter) {
+      extensions = extensions.concat([debuggerStateField, debuggerGutter(onBreakpointToggleRef)]);
+    }
     if (props.hideLeadingChars != null) {
       extensions = extensions.concat([hideDefPlugin(props.hideLeadingChars)]);
     }
@@ -201591,10 +201741,29 @@ function ReactCodemirror6(props) {
       state: state,
       parent: localRef.current
     });
+    if (props.show_debug_gutter) {
+      editorView.current.dispatch({
+        effects: setDebuggerState.of({
+          firstLineNumber: props.first_line_number,
+          breakpoints: props.debug_breakpoints,
+          debugLine: props.debug_line
+        })
+      });
+    }
     if (props.setCMObject != null) {
       props.setCMObject(editorView.current);
     }
   }, []);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (!props.show_debug_gutter || !editorView.current) return;
+    editorView.current.dispatch({
+      effects: setDebuggerState.of({
+        firstLineNumber: props.first_line_number,
+        breakpoints: props.debug_breakpoints,
+        debugLine: props.debug_line
+      })
+    });
+  }, [props.show_debug_gutter, props.first_line_number, props.debug_line, JSON.stringify(props.debug_breakpoints)]);
   var handleAutocompleteDelta;
   if (!props.isLite) {
     handleAutocompleteDelta = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (data) {
@@ -202086,6 +202255,7 @@ ReactCodemirror6 = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(Reac
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   HorizontalPanes: () => (/* binding */ HorizontalPanes),
+/* harmony export */   RightDrawerPanes: () => (/* binding */ RightDrawerPanes),
 /* harmony export */   VerticalPanes: () => (/* binding */ VerticalPanes)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -202300,25 +202470,136 @@ function HorizontalPanes(_ref) {
     unSnap: unSnap
   }), right_pane))));
 }
-function VerticalPanes(_ref2) {
-  var top_pane = _ref2.top_pane,
-    bottom_pane = _ref2.bottom_pane,
-    _ref2$initial_height_ = _ref2.initial_height_fraction,
-    initial_height_fraction = _ref2$initial_height_ === void 0 ? 0.5 : _ref2$initial_height_,
-    _ref2$handleSplitUpda = _ref2.handleSplitUpdate,
-    handleSplitUpdate = _ref2$handleSplitUpda === void 0 ? null : _ref2$handleSplitUpda,
-    _ref2$handleResizeEnd = _ref2.handleResizeEnd,
-    handleResizeEnd = _ref2$handleResizeEnd === void 0 ? null : _ref2$handleResizeEnd,
+function RightDrawerPanes(_ref2) {
+  var main_pane = _ref2.main_pane,
+    drawer = _ref2.drawer,
+    open = _ref2.open,
+    _ref2$initial_drawer_ = _ref2.initial_drawer_fraction,
+    initial_drawer_fraction = _ref2$initial_drawer_ === void 0 ? 0.32 : _ref2$initial_drawer_,
+    _ref2$min_main_width = _ref2.min_main_width,
+    min_main_width = _ref2$min_main_width === void 0 ? 360 : _ref2$min_main_width,
+    _ref2$min_drawer_widt = _ref2.min_drawer_width,
+    min_drawer_width = _ref2$min_drawer_widt === void 0 ? 280 : _ref2$min_drawer_widt,
+    _ref2$onDrawerResizeE = _ref2.onDrawerResizeEnd,
+    onDrawerResizeEnd = _ref2$onDrawerResizeE === void 0 ? null : _ref2$onDrawerResizeE,
     _ref2$className = _ref2.className,
-    className = _ref2$className === void 0 ? "" : _ref2$className,
-    _ref2$outer_style = _ref2.outer_style,
-    outer_style = _ref2$outer_style === void 0 ? {} : _ref2$outer_style,
-    _ref2$hide_top = _ref2.hide_top,
-    hide_top = _ref2$hide_top === void 0 ? false : _ref2$hide_top;
+    className = _ref2$className === void 0 ? "" : _ref2$className;
+  var drawerPanelRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var savedDrawerSizeRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(initial_drawer_fraction * 100);
+  var restoringDrawerRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
+  var previousOpenRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(open);
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
     hover = _useState6[0],
     setHover = _useState6[1];
+
+  // Guard layout callbacks from the render that adds/removes the separator,
+  // before child layout effects have a chance to report an interim width.
+  if (previousOpenRef.current !== open) {
+    restoringDrawerRef.current = true;
+    previousOpenRef.current = open;
+  }
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect)(function () {
+    var panel = drawerPanelRef.current;
+    if (!panel) return;
+    if (open) {
+      var _panel$expand;
+      // expand() first restores the panel to its minimum size. Preserve
+      // the user's target across that intermediate layout notification,
+      // then apply it after the panel has expanded.
+      var targetSize = savedDrawerSizeRef.current;
+      restoringDrawerRef.current = true;
+      (_panel$expand = panel.expand) === null || _panel$expand === void 0 || _panel$expand.call(panel);
+      queueMicrotask(function () {
+        var _panel$resize;
+        (_panel$resize = panel.resize) === null || _panel$resize === void 0 || _panel$resize.call(panel, "".concat(targetSize, "%"));
+        restoringDrawerRef.current = false;
+      });
+    } else {
+      var _panel$getSize, _panel$collapse;
+      var currentSize = (_panel$getSize = panel.getSize) === null || _panel$getSize === void 0 ? void 0 : _panel$getSize.call(panel);
+      if (typeof currentSize === "number" && currentSize > 0) {
+        savedDrawerSizeRef.current = currentSize;
+      }
+      restoringDrawerRef.current = true;
+      (_panel$collapse = panel.collapse) === null || _panel$collapse === void 0 || _panel$collapse.call(panel);
+      queueMicrotask(function () {
+        restoringDrawerRef.current = false;
+      });
+    }
+  }, [open]);
+  function handleLayoutChanged(layout) {
+    if (restoringDrawerRef.current) return;
+    var drawerSize = layout["right-drawer"];
+    if (drawerSize == null || drawerSize <= 0) return;
+    savedDrawerSizeRef.current = drawerSize;
+    onDrawerResizeEnd === null || onDrawerResizeEnd === void 0 || onDrawerResizeEnd(drawerSize / 100);
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "right-drawer-panes ".concat(className)
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Group, {
+    orientation: "horizontal",
+    onLayoutChanged: handleLayoutChanged,
+    style: {
+      width: "100%",
+      height: "100%",
+      minHeight: 0,
+      minWidth: 0,
+      overflow: "hidden"
+    },
+    resizeTargetMinimumSize: HANDLE_SIZE
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Panel, {
+    id: "right-drawer-main",
+    order: 1,
+    defaultSize: "".concat((1 - initial_drawer_fraction) * 100, "%"),
+    minSize: "".concat(min_main_width, "px")
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "right-drawer-main-pane"
+  }, main_pane)), open && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Separator, {
+    disableDoubleClick: true,
+    style: horizontalSeparatorStyle,
+    onMouseEnter: function onMouseEnter() {
+      return setHover(true);
+    },
+    onMouseLeave: function onMouseLeave() {
+      return setHover(false);
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: _objectSpread(_objectSpread({}, horizontalSeparatorLineStyle), {}, {
+      width: hover ? 5 : 1
+    }),
+    className: "draggable-pane-separator"
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Panel, {
+    id: "right-drawer",
+    order: 2,
+    defaultSize: open ? "".concat(initial_drawer_fraction * 100, "%") : "0%",
+    minSize: "".concat(min_drawer_width, "px"),
+    collapsible: true,
+    collapsedSize: "0%",
+    panelRef: drawerPanelRef
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "right-drawer-pane"
+  }, drawer))));
+}
+function VerticalPanes(_ref3) {
+  var top_pane = _ref3.top_pane,
+    bottom_pane = _ref3.bottom_pane,
+    _ref3$initial_height_ = _ref3.initial_height_fraction,
+    initial_height_fraction = _ref3$initial_height_ === void 0 ? 0.5 : _ref3$initial_height_,
+    _ref3$handleSplitUpda = _ref3.handleSplitUpdate,
+    handleSplitUpdate = _ref3$handleSplitUpda === void 0 ? null : _ref3$handleSplitUpda,
+    _ref3$handleResizeEnd = _ref3.handleResizeEnd,
+    handleResizeEnd = _ref3$handleResizeEnd === void 0 ? null : _ref3$handleResizeEnd,
+    _ref3$className = _ref3.className,
+    className = _ref3$className === void 0 ? "" : _ref3$className,
+    _ref3$outer_style = _ref3.outer_style,
+    outer_style = _ref3$outer_style === void 0 ? {} : _ref3$outer_style,
+    _ref3$hide_top = _ref3.hide_top,
+    hide_top = _ref3$hide_top === void 0 ? false : _ref3$hide_top;
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    hover = _useState8[0],
+    setHover = _useState8[1];
   var defaultLayout = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
     var top = initial_height_fraction * 100;
     return {

@@ -1,11 +1,15 @@
 
+import hashlib
 import importlib
+import linecache
 from exception_mixin import generic_exception_handler
 
 from tile_base import TileBase
 
 class_info = {"class_name": "",
               "tile_class": None}
+
+loaded_source_info = None
 
 tile_name = ""
 tile_class = None
@@ -56,10 +60,33 @@ def user_tile(tclass):
 
 # noinspection PyRedundantParentheses
 def exec_tile_code(tile_code):
+    global loaded_source_info
     try:
-        exec(tile_code, globals(), globals())
+        source_hash = hashlib.sha256(tile_code.encode("utf-8")).hexdigest()
+        # Use an absolute pseudo-path instead of an angle-bracket name such as
+        # <tactic-tile:...>.  Tracebacks are displayed as HTML in the error
+        # drawer, where angle-bracket filenames are parsed as tags and vanish.
+        filename = f"/tactic/user-code/{source_hash[:16]}.py"
+        source_lines = tile_code.splitlines(keepends=True)
+        if tile_code and not tile_code.endswith(("\n", "\r")):
+            source_lines[-1] += "\n"
+        linecache.cache[filename] = (len(tile_code), None, source_lines, filename)
+        compiled_code = compile(tile_code, filename, "exec")
+        exec(compiled_code, globals(), globals())
     except Exception as ex:
         return generic_exception_handler.get_traceback_exception_dict(ex)
+    loaded_source_info = {
+        "filename": filename,
+        "source_hash": source_hash,
+        "line_count": len(tile_code.splitlines()),
+    }
     ## Note it shouldn't be necessary to return the category anymore
-    return {"success": True, "tile_name": class_info["class_name"], "category": class_info["tile_class"].category}
+    return {"success": True, "tile_name": class_info["class_name"],
+            "category": class_info["tile_class"].category,
+            "source_info": dict(loaded_source_info)}
 
+
+def get_loaded_source_info():
+    if loaded_source_info is None:
+        return None
+    return dict(loaded_source_info)

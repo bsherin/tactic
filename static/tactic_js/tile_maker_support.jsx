@@ -120,9 +120,10 @@ async function creator_props(data, registerDirtyMethod, finalCallback) {
             export_list: parsed_data.export_list,
             additional_save_attrs: parsed_data.additional_save_attrs,
             all_handler_methods: all_handler_methods,
+            tile_type: parsed_data.tile_type,
+            source_info: parsed_data.source_info,
             registerDirtyMethod: registerDirtyMethod,
             interface_state: interface_state,
         }
     );
 }
-

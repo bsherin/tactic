@@ -224,7 +224,11 @@ class TileCreationTasksMixin:
                     "status": "loaded",
                     "tile_id": tile_id
                 })
-                self.mworker.submit_response(local_task_packet, final_result)
+                self.mworker.ask_host(sid, "emit_tile_message", {
+                    "tile_message": "sourceSynchronized",
+                    "tile_id": tile_id
+                })
+                self.mworker.submit_response(local_task_packet, {"success": True})
             else:
                 raise Exception("Tried to recreate from tile_save_dict but wasn't able to.")
 
@@ -259,6 +263,10 @@ class TileCreationTasksMixin:
                     form_info["pipe_dict"] = sess.pipe_dict
                     self.rebuild_other_tile_forms(sid, tile_id, form_info)
                     self.mworker.emit_export_viewer_message(sid, "update_exports_popup", {})
+                    self.mworker.ask_host(sid, "emit_tile_message", {
+                        "tile_message": "sourceSynchronized",
+                        "tile_id": tile_id
+                    })
                     final_result = {"success": True, "form_data": reinst_result["form_data"],
                                     "options_changed": reinst_result["options_changed"]}
                     self.mworker.submit_response(local_task_packet, final_result)

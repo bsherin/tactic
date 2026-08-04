@@ -133,6 +133,111 @@ function customLineNumbers(startLine = 1) {
     });
 }
 
+const setDebuggerState = StateEffect.define();
+
+function buildDebuggerState(doc, value) {
+    const firstLineNumber = value.firstLineNumber || 1;
+    const debugLine = value.debugLine;
+    let decorations = Decoration.none;
+    if (debugLine != null) {
+        const localLine = debugLine - firstLineNumber + 1;
+        if (localLine >= 1 && localLine <= doc.lines) {
+            decorations = Decoration.set([
+                Decoration.line({class: "cm-debug-current-line"}).range(doc.line(localLine).from)
+            ]);
+        }
+    }
+    return {
+        firstLineNumber: firstLineNumber,
+        debugLine: debugLine,
+        breakpoints: new Set(value.breakpoints || []),
+        decorations: decorations,
+    };
+}
+
+const debuggerStateField = StateField.define({
+    create(state) {
+        return buildDebuggerState(state.doc, {});
+    },
+    update(value, transaction) {
+        let nextValue = value;
+        let debuggerEffectSeen = false;
+        for (const effect of transaction.effects) {
+            if (effect.is(setDebuggerState)) {
+                nextValue = effect.value;
+                debuggerEffectSeen = true;
+            }
+        }
+        if (transaction.docChanged && !debuggerEffectSeen) {
+            const mappedBreakpoints = [];
+            for (const absoluteLine of value.breakpoints) {
+                const localLine = absoluteLine - value.firstLineNumber + 1;
+                if (localLine < 1 || localLine > transaction.startState.doc.lines) continue;
+                const oldPosition = transaction.startState.doc.line(localLine).from;
+                const newPosition = transaction.changes.mapPos(oldPosition, 1);
+                const newLocalLine = transaction.newDoc.lineAt(newPosition).number;
+                mappedBreakpoints.push(value.firstLineNumber + newLocalLine - 1);
+            }
+            nextValue = {...value, breakpoints: mappedBreakpoints};
+        }
+        if (transaction.docChanged || nextValue !== value) {
+            return buildDebuggerState(transaction.newDoc, nextValue);
+        }
+        return value;
+    },
+    provide: field => EditorView.decorations.from(field, value => value.decorations),
+});
+
+class DebuggerGutterMarker extends GutterMarker {
+    constructor(hasBreakpoint, isCurrent) {
+        super();
+        this.hasBreakpoint = hasBreakpoint;
+        this.isCurrent = isCurrent;
+    }
+
+    eq(other) {
+        return this.hasBreakpoint === other.hasBreakpoint && this.isCurrent === other.isCurrent;
+    }
+
+    toDOM() {
+        const marker = document.createElement("span");
+        marker.className = [
+            "cm-debug-gutter-marker",
+            this.hasBreakpoint ? "cm-debug-breakpoint" : "",
+            this.isCurrent ? "cm-debug-current" : "",
+        ].filter(Boolean).join(" ");
+        marker.setAttribute("aria-label", this.hasBreakpoint ? "Breakpoint" : "Current execution line");
+        return marker;
+    }
+}
+
+function debuggerGutter(onBreakpointToggleRef) {
+    return gutter({
+        class: "cm-debug-gutter",
+        lineMarkerChange: update => update.transactions.some(transaction =>
+            transaction.effects.some(effect => effect.is(setDebuggerState))),
+        lineMarker: (view, line) => {
+            const debugState = view.state.field(debuggerStateField);
+            const absoluteLine = debugState.firstLineNumber + view.state.doc.lineAt(line.from).number - 1;
+            const hasBreakpoint = debugState.breakpoints.has(absoluteLine);
+            const isCurrent = debugState.debugLine === absoluteLine;
+            return hasBreakpoint || isCurrent ? new DebuggerGutterMarker(hasBreakpoint, isCurrent) : null;
+        },
+        domEventHandlers: {
+            mousedown: (view, line, event) => {
+                if (event.button !== 0) return false;
+                const debugState = view.state.field(debuggerStateField);
+                const absoluteLine = debugState.firstLineNumber + view.state.doc.lineAt(line.from).number - 1;
+                if (onBreakpointToggleRef.current) {
+                    onBreakpointToggleRef.current(absoluteLine);
+                }
+                event.preventDefault();
+                return true;
+            }
+        }
+    });
+}
+
 const enterInsertsNewlineOnly = {
     key: "Enter",
     run: (view) => {
@@ -289,6 +394,11 @@ function ReactCodemirror6(props) {
         aiEditorInfo: null,
         hideLeadingChars: null,
         isLite: false,
+        show_debug_gutter: false,
+        debug_breakpoints: [],
+        debug_line: null,
+        onBreakpointToggle: null,
+        onBreakpointsChanged: null,
         ...props
     };
 
@@ -308,6 +418,10 @@ function ReactCodemirror6(props) {
     const cmUniqueId = useRef(null)
     const getAIContextRef = useRef(props.getAIContext);
     getAIContextRef.current = props.getAIContext;
+    const onBreakpointToggleRef = useRef(props.onBreakpointToggle);
+    onBreakpointToggleRef.current = props.onBreakpointToggle;
+    const onBreakpointsChangedRef = useRef(props.onBreakpointsChanged);
+    onBreakpointsChangedRef.current = props.onBreakpointsChanged;
 
     const lastUserDocRef = useRef(props.code_content);
 
@@ -367,6 +481,13 @@ function ReactCodemirror6(props) {
 
                 const newDoc = update.state.doc.toString();
                 closeCompletion(update.view);
+
+                if (props.show_debug_gutter && onBreakpointsChangedRef.current) {
+                    const debugState = update.state.field(debuggerStateField);
+                    onBreakpointsChangedRef.current(
+                        [...debugState.breakpoints].sort((a, b) => a - b)
+                    );
+                }
 
                 // Keep range restrictions up to date for *all* changes
                 if (props.restrict_edits_to_range) {
@@ -519,6 +640,12 @@ function ReactCodemirror6(props) {
                 foldGutter()
             ]);
         }
+        if (props.show_debug_gutter) {
+            extensions = extensions.concat([
+                debuggerStateField,
+                debuggerGutter(onBreakpointToggleRef),
+            ]);
+        }
         if (props.hideLeadingChars != null) {
             extensions = extensions.concat([
                     hideDefPlugin(props.hideLeadingChars),
@@ -544,10 +671,27 @@ function ReactCodemirror6(props) {
             state,
             parent: localRef.current
         });
+        if (props.show_debug_gutter) {
+            editorView.current.dispatch({effects: setDebuggerState.of({
+                firstLineNumber: props.first_line_number,
+                breakpoints: props.debug_breakpoints,
+                debugLine: props.debug_line,
+            })});
+        }
         if (props.setCMObject != null) {
             props.setCMObject(editorView.current);
         }
     }, []);
+
+    useEffect(() => {
+        if (!props.show_debug_gutter || !editorView.current) return;
+        editorView.current.dispatch({effects: setDebuggerState.of({
+            firstLineNumber: props.first_line_number,
+            breakpoints: props.debug_breakpoints,
+            debugLine: props.debug_line,
+        })});
+    }, [props.show_debug_gutter, props.first_line_number, props.debug_line,
+        JSON.stringify(props.debug_breakpoints)]);
 
     let handleAutocompleteDelta;
     if (!props.isLite) {

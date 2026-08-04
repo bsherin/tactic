@@ -15,7 +15,7 @@ import {createRoot} from 'react-dom/client';
 
 import _ from 'lodash';
 
-import {useHotkeys} from "@blueprintjs/core";
+import {Button, ButtonGroup, Checkbox, useHotkeys} from "@blueprintjs/core";
 
 import {EditorView} from "@codemirror/view";
 import {EditorSelection} from "@codemirror/state";
@@ -23,8 +23,8 @@ import {EditorSelection} from "@codemirror/state";
 import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
 import {sendToRepository} from "./resource_viewer_react_app";
-import {HorizontalPanes} from "./resizing_allotment";
-import {postPromise, handleCallback, postWithCallback} from "./communication_react"
+import {HorizontalPanes, RightDrawerPanes} from "./resizing_allotment";
+import {postPromise, postPromiseMain, handleCallback, postWithCallback} from "./communication_react"
 import {withStatus, doFlash, StatusContext} from "./toaster"
 import {withAssistant} from "./assistant";
 import {ICON_BAR_WIDTH} from "./sizing_tools";
@@ -67,6 +67,7 @@ function CreatorApp(props) {
         refreshTab: null,
         closeTab: null,
         updatePanel: null,
+        selectTab: null,
         ...props
     };
     const top_ref = useRef(null);
@@ -75,6 +76,7 @@ function CreatorApp(props) {
     const rline_number = useRef(props.initial_line_number);
     const pane_scroll_ref = useRef(null);
     const paneListRef = useRef(null);
+    const debugSocketListenersRef = useRef([]);
 
     const  {handleUndo, handleRedo, undoStackRef, redoStackRef} = useContext(UndoContext);
 
@@ -218,6 +220,61 @@ function CreatorApp(props) {
                     search_ref.current.focus();
                     return true
                 }
+            },
+            {
+                combo: "F5",
+                global: false,
+                group: "Debugger",
+                label: "Start or Continue",
+                preventDefault: true,
+                onKeyDown: () => {
+                    startOrContinueDebugger();
+                    return true;
+                }
+            },
+            {
+                combo: "F10",
+                global: false,
+                group: "Debugger",
+                label: "Step Over",
+                preventDefault: true,
+                onKeyDown: () => {
+                    sendDebugCommand("next");
+                    return true;
+                }
+            },
+            {
+                combo: "F11",
+                global: false,
+                group: "Debugger",
+                label: "Step Into",
+                preventDefault: true,
+                onKeyDown: () => {
+                    sendDebugCommand("step");
+                    return true;
+                }
+            },
+            {
+                combo: "Shift+F11",
+                global: false,
+                group: "Debugger",
+                label: "Step Out",
+                preventDefault: true,
+                onKeyDown: () => {
+                    sendDebugCommand("return");
+                    return true;
+                }
+            },
+            {
+                combo: "Shift+F5",
+                global: false,
+                group: "Debugger",
+                label: "Stop Debugging",
+                preventDefault: true,
+                onKeyDown: () => {
+                    stopDebugger();
+                    return true;
+                }
             }
         ], [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]
     );
@@ -226,6 +283,20 @@ function CreatorApp(props) {
     const pushCallback = useCallbackStack();
 
     const [resource_name, set_resource_name] = useState(props.resource_name);
+
+    const [debugTargets, setDebugTargets, debugTargetsRef] = useStateAndRef([]);
+    const [debugTargetId, setDebugTargetId, debugTargetIdRef] = useStateAndRef(null);
+    const [debugSession, setDebugSession, debugSessionRef] = useStateAndRef(null);
+    const [debugStatus, setDebugStatus, debugStatusRef] = useStateAndRef("idle");
+    const [debugPaused, setDebugPaused, debugPausedRef] = useStateAndRef(null);
+    const [debugFrameIndex, setDebugFrameIndex] = useState(0);
+    const [debugDrawerOpen, setDebugDrawerOpen] = useState(false);
+    const [debugInterfaceVisible, setDebugInterfaceVisible] = useState(debuggerInterfaceInitialVisible);
+    const [debugBreakpoints, setDebugBreakpoints, debugBreakpointsRef] = useStateAndRef([]);
+    const [debugPauseOnExceptions, setDebugPauseOnExceptions, debugPauseOnExceptionsRef] = useStateAndRef(false);
+    const [debugMessage, setDebugMessage] = useState("");
+    const debugDrawerInitialFractionRef = useRef(debuggerDrawerInitialFraction());
+    const sourceInfoRef = useRef(props.source_info);
 
     const connection_status = useConnection(props.tsocket, initSocket);
 
@@ -260,6 +331,17 @@ function CreatorApp(props) {
             })
         });
         return (() => {
+            const activeDebugSession = debugSessionRef.current;
+            if (activeDebugSession) {
+                postWithCallback(activeDebugSession.debugQueue, "debug_command", {
+                    session_id: activeDebugSession.sessionId,
+                    command: "abort",
+                }, null, null, props.local_id);
+            }
+            for (const [event, listener] of debugSocketListenersRef.current) {
+                props.tsocket.detachListener(event, listener);
+            }
+            debugSocketListenersRef.current = [];
             for (let listRef of [jsListRef, umListRef, hmListRef]) {
                 destroyCmObjects(listRef);
             }
@@ -354,6 +436,53 @@ function CreatorApp(props) {
             _selectLineNumber(data.line_number)
         });
 
+        const pausedListener = (data) => {
+            const session = debugSessionRef.current;
+            if (!session || data.session_id !== session.sessionId) return;
+            setDebugPaused(data);
+            setDebugFrameIndex(0);
+            setDebugDrawerOpen(true);
+            setDebugStatus("paused");
+            setDebugMessage(data.exception
+                ? `Paused on ${data.exception.type} in ${data.function} at line ${data.line}`
+                : `Paused in ${data.function} at line ${data.line}`);
+            if (props.selectTab) props.selectTab();
+            _revealDebugLine(data.line);
+        };
+
+        const completedListener = (data) => {
+            const session = debugSessionRef.current;
+            if (!session || data.session_id !== session.sessionId) return;
+            setDebugPaused(null);
+            setDebugFrameIndex(0);
+            setDebugSession(null);
+            setDebugStatus("idle");
+            const label = data.status === "aborted"
+                ? "Debug session stopped"
+                : data.status === "exception"
+                    ? "Debug session ended after the exception"
+                    : "Debug session completed";
+            setDebugMessage(`${label} (${data.pause_count} pause${data.pause_count === 1 ? "" : "s"})`);
+        };
+
+        const timeoutListener = (data) => {
+            const session = debugSessionRef.current;
+            if (!session || data.session_id !== session.sessionId) return;
+            setDebugPaused(null);
+            setDebugFrameIndex(0);
+            setDebugStatus("running");
+            setDebugMessage("The pause timed out; the tile event is continuing.");
+        };
+
+        for (const [event, listener] of [
+            ['debug-paused', pausedListener],
+            ['debug-completed', completedListener],
+            ['debug-timeout', timeoutListener],
+        ]) {
+            theSocket.attachListener(event, listener);
+            debugSocketListenersRef.current.push([event, listener]);
+        }
+
         if (!window.in_context) {
             theSocket.attachListener("doFlashUser", function (data) {
                 doFlash(data)
@@ -414,6 +543,59 @@ function CreatorApp(props) {
                 {name_text: "Close All", icon_name: "eye-off", click_handler: hideAllTabs},
                 {name_text: "Collapse All", icon_name: "collapse-all", click_handler: _collapseAll}
             ],
+            Debug: [
+                {
+                    name_text: debugInterfaceVisible ? "Hide Debug Toolbar" : "Show Debug Toolbar",
+                    icon_name: debugInterfaceVisible ? "eye-off" : "eye-open",
+                    click_handler: toggleDebugInterface
+                },
+                {
+                    name_text: debugDrawerOpen ? "Hide Debug Inspector" : "Show Debug Inspector",
+                    icon_name: "properties",
+                    click_handler: () => setDebugDrawerOpen(open => !open)
+                },
+                {
+                    name_text: debugPauseOnExceptions ? "Disable Exception Pausing" : "Enable Exception Pausing",
+                    icon_name: "issue",
+                    click_handler: () => setDebugPauseOnExceptions(enabled => !enabled)
+                },
+                {name_text: "divider-debug-controls"},
+                {
+                    name_text: "Start / Continue",
+                    icon_name: "play",
+                    click_handler: startOrContinueDebugger,
+                    key_bindings: ["F5"]
+                },
+                {
+                    name_text: "Sync & Start",
+                    icon_name: "refresh",
+                    click_handler: syncAndStartDebugger
+                },
+                {
+                    name_text: "Step Over",
+                    icon_name: "chevron-right",
+                    click_handler: () => sendDebugCommand("next"),
+                    key_bindings: ["F10"]
+                },
+                {
+                    name_text: "Step Into",
+                    icon_name: "step-forward",
+                    click_handler: () => sendDebugCommand("step"),
+                    key_bindings: ["F11"]
+                },
+                {
+                    name_text: "Step Out",
+                    icon_name: "chevron-up",
+                    click_handler: () => sendDebugCommand("return"),
+                    key_bindings: ["Shift+F11"]
+                },
+                {
+                    name_text: "Stop Debugging",
+                    icon_name: "stop",
+                    click_handler: stopDebugger,
+                    key_bindings: ["Shift+F5"]
+                }
+            ],
             Load: [{
                 name_text: "Save and Load",
                 icon_name: "upload",
@@ -432,6 +614,24 @@ function CreatorApp(props) {
                 }
             ]
         }
+    }
+
+    function menu_disabled_items() {
+        const disabled = [];
+        if (debugSession != null || debugStatus === "starting") {
+            disabled.push("Sync & Start");
+            disabled.push(debugPauseOnExceptions ? "Disable Exception Pausing" : "Enable Exception Pausing");
+        }
+        if (debugStatus !== "paused") {
+            disabled.push("Step Over", "Step Into", "Step Out");
+        }
+        if (debugSession == null) {
+            disabled.push("Stop Debugging");
+        }
+        if ((debugSession != null && debugStatus !== "paused") || debugStatus === "starting") {
+            disabled.push("Start / Continue");
+        }
+        return disabled;
     }
 
     function _searchNext() {
@@ -541,11 +741,54 @@ function CreatorApp(props) {
     function _dirty() {
         let current_state = _getSaveDict();
         for (let k in current_state) {
-            if (!_.isEqual(current_state[k], last_save.current[k])) {
+            let currentValue = current_state[k];
+            let savedValue = last_save.current[k];
+            if (k === "mdata") {
+                currentValue = {...currentValue};
+                savedValue = {...savedValue};
+                // This nonce is deliberately regenerated for every save.  It
+                // identifies a metadata revision, not an unsaved user edit.
+                delete currentValue.mdata_uid;
+                delete savedValue.mdata_uid;
+            }
+            if (!_.isEqual(currentValue, savedValue)) {
                 return true
             }
         }
         return false
+    }
+
+    function _debuggerSourceState(saveState) {
+        const stripEditorFields = (item) => {
+            const cleanItem = {...item};
+            for (const field of [
+                "pane_height", "identifier", "mode", "show_dot", "helperText",
+                "firstLineNumber", "lastLineNumber", "cmObject", "scrollTop"
+            ]) {
+                delete cleanItem[field];
+            }
+            return cleanItem;
+        };
+        return {
+            module_name: saveState.module_name,
+            couple_save_attrs_and_exports: saveState.mdata?.couple_save_attrs_and_exports,
+            exports: (saveState.exports || []).map(stripEditorFields),
+            globals_info: stripEditorFields(saveState.globals_info || {}),
+            render_content_info: stripEditorFields(saveState.render_content_info || {}),
+            additional_save_attrs: (saveState.additional_save_attrs || []).map(stripEditorFields),
+            options: (saveState.options || []).map(stripEditorFields),
+            widgets: (saveState.widgets || []).map(stripEditorFields),
+            user_methods: (saveState.user_methods || []).map(stripEditorFields),
+            used_handler_methods: (saveState.used_handler_methods || []).map(stripEditorFields),
+            javascript_functions: (saveState.javascript_functions || []).map(stripEditorFields),
+        };
+    }
+
+    function _debuggerSourceDirty() {
+        return !_.isEqual(
+            _debuggerSourceState(_getSaveDict()),
+            _debuggerSourceState(last_save.current || {})
+        );
     }
 
     async function _saveAndLoadModule() {
@@ -665,6 +908,10 @@ function CreatorApp(props) {
         const newItem = {...item};  // shallow copy
         delete newItem.cmObject;
         delete newItem.scrollTop;
+        // These are regenerated from the assembled module on every save.
+        // Treating them as editable state makes a successful save look dirty.
+        delete newItem.firstLineNumber;
+        delete newItem.lastLineNumber;
         return newItem;
     }
 
@@ -756,12 +1003,13 @@ function CreatorApp(props) {
 
     function doSavePromise() {
         return new Promise(async (resolve, reject) => {
-            let result_dict = _getSaveDict();
+            const saved_dict = _getSaveDict();
+            let result_dict = {...saved_dict};
             result_dict["local_id"] = props.local_id;
             let data;
             try {
                 data = await postPromise("module_viewer", "update_module", result_dict, props.local_id);
-                save_success(data);
+                save_success(data, saved_dict);
                 resolve(data)
             } catch (e) {
                 reject(e)
@@ -871,7 +1119,7 @@ function CreatorApp(props) {
         }
     }
 
-    function save_success(data) {
+    function save_success(data, savedDict) {
         let identifier;
         updateRenderContent(data.render_content_line_numbers);
         const umLineNumbers = data["user_methods_line_numbers"];
@@ -884,17 +1132,318 @@ function CreatorApp(props) {
             identifier = getIdentifierFromNameInLIst(hmListRef, name);
             setLineNumbers(hmLineNumbers[name], identifier, hmDispatch);
         }
-        _update_saved_state();
+        if (data.source_info) {
+            sourceInfoRef.current = data.source_info;
+        }
+        // Line-number state updates are scheduled by React, so reconstructing
+        // the save dictionary here can see a mixture of old and new values.
+        // The payload that just succeeded is the authoritative clean state.
+        last_save.current = _.cloneDeep(savedDict);
+    }
+
+    function debuggerErrorMessage(error) {
+        if (error && error.breakpoint_errors && error.breakpoint_errors.length) {
+            return error.breakpoint_errors.map(item => `Line ${item.line}: ${item.message}`).join("; ");
+        }
+        if (error && error.message) return error.message;
+        if (typeof error === "string") return error;
+        return "The debugger request failed.";
+    }
+
+    async function refreshDebugTargets() {
+        if (!window.in_context) {
+            throw {message: "Open this Tile Maker inside a running project to select a tile instance."};
+        }
+        const result = await postPromise(
+            "main_service",
+            "get_tile_debug_targets",
+            {
+                global_id: window.global_id,
+                tile_type: props.tile_type,
+                module_name: _cProp("resource_name"),
+            },
+            props.local_id
+        );
+        const targets = result.targets || [];
+        setDebugTargets(targets);
+        let selected = debugTargetIdRef.current;
+        if (!targets.some(target => target.tile_id === selected)) {
+            selected = targets.length ? targets[0].tile_id : null;
+            setDebugTargetId(selected);
+        }
+        return {targets, selected};
+    }
+
+    function sortBreakpoints(breakpoints) {
+        return [...breakpoints].sort((a, b) =>
+            a.identifier.localeCompare(b.identifier) || a.line - b.line
+        );
+    }
+
+    function toggleBreakpoint(identifier, lineNumber) {
+        if (debugSessionRef.current) {
+            setDebugMessage("Stop the current debug session before changing breakpoints.");
+            return;
+        }
+        setDebugBreakpoints(previous => {
+            const exists = previous.some(breakpoint =>
+                breakpoint.identifier === identifier && breakpoint.line === lineNumber
+            );
+            if (exists) {
+                return previous.filter(breakpoint => !(
+                    breakpoint.identifier === identifier && breakpoint.line === lineNumber
+                ));
+            }
+            return sortBreakpoints([...previous, {identifier: identifier, line: lineNumber}]);
+        });
+        setDebugMessage("");
+    }
+
+    function replaceEditorBreakpoints(identifier, lineNumbers) {
+        if (debugSessionRef.current) return;
+        const uniqueLines = [...new Set(lineNumbers)].sort((a, b) => a - b);
+        setDebugBreakpoints(previous => {
+            const otherEditors = previous.filter(breakpoint => breakpoint.identifier !== identifier);
+            const replacements = uniqueLines.map(line => ({identifier: identifier, line: line}));
+            const next = sortBreakpoints([...otherEditors, ...replacements]);
+            return _.isEqual(previous, next) ? previous : next;
+        });
+    }
+
+    function breakpointFirstLine(breakpoint, savedLineNumbers = null) {
+        if (savedLineNumbers) {
+            if (breakpoint.identifier === "globals") return 1;
+            if (breakpoint.identifier === "render_content") {
+                return savedLineNumbers.render_content_line_numbers.firstLineNumber;
+            }
+            const item = getItemFromIdentifier(breakpoint.identifier);
+            const methodName = item?.name;
+            if (methodName in savedLineNumbers.user_methods_line_numbers) {
+                return savedLineNumbers.user_methods_line_numbers[methodName].firstLineNumber;
+            }
+            if (methodName in savedLineNumbers.used_handler_methods_line_numbers) {
+                return savedLineNumbers.used_handler_methods_line_numbers[methodName].firstLineNumber;
+            }
+        }
+        return getItemFromIdentifier(breakpoint.identifier)?.firstLineNumber;
+    }
+
+    function absoluteDebugBreakpoints(savedLineNumbers = null) {
+        return debugBreakpointsRef.current.map(breakpoint => {
+            const firstLineNumber = breakpointFirstLine(breakpoint, savedLineNumbers);
+            if (firstLineNumber == null) {
+                throw {message: "A breakpoint belongs to a source editor that is no longer available."};
+            }
+            return firstLineNumber + breakpoint.line - 1;
+        });
+    }
+
+    async function selectedDebugTarget(alwaysRefresh = false) {
+        let targets = debugTargetsRef.current;
+        let selected = debugTargetIdRef.current;
+        if (alwaysRefresh || !targets.length || !selected) {
+            const refreshed = await refreshDebugTargets();
+            targets = refreshed.targets;
+            selected = refreshed.selected;
+        }
+        if (!selected) {
+            throw {message: `No running ${props.tile_type || "tile"} instance was found.`};
+        }
+        const target = targets.find(candidate => candidate.tile_id === selected);
+        if (!target) {
+            throw {message: "The selected running tile is no longer available."};
+        }
+        return target;
+    }
+
+    async function armDebugTarget(target, savedLineNumbers = null) {
+        if (!sourceInfoRef.current || !sourceInfoRef.current.source_hash) {
+            throw {message: "Save this tile once before starting the debugger."};
+        }
+        const breakpoints = absoluteDebugBreakpoints(savedLineNumbers);
+        const result = await postPromise(target.tile_id, "arm_debugger", {
+            breakpoints: breakpoints,
+            pause_on_start: breakpoints.length === 0 && !debugPauseOnExceptionsRef.current,
+            pause_on_exceptions: debugPauseOnExceptionsRef.current,
+            source_hash: sourceInfoRef.current.source_hash,
+            debug_room: props.local_id,
+        }, props.local_id);
+        setDebugSession({
+            sessionId: result.session_id,
+            debugQueue: result.debug_queue,
+            targetId: target.tile_id,
+        });
+        setDebugPaused(null);
+        setDebugFrameIndex(0);
+        setDebugStatus("armed");
+        setDebugMessage(breakpoints.length
+            ? "Debugger armed. Trigger a tile event to reach a breakpoint."
+            : debugPauseOnExceptionsRef.current
+                ? "Debugger armed. It will pause when tile code raises an exception."
+                : "Debugger armed. The next tile event will pause on its first user-code line.");
+    }
+
+    async function startDebugger() {
+        if (debugSessionRef.current) return;
+        if (_debuggerSourceDirty()) {
+            setDebugMessage("Save the tile before starting the debugger so its line numbers are current.");
+            return;
+        }
+        setDebugStatus("starting");
+        setDebugMessage("Finding running tile instances...");
+        try {
+            const target = await selectedDebugTarget();
+            await armDebugTarget(target);
+        } catch (error) {
+            setDebugStatus("idle");
+            setDebugMessage(debuggerErrorMessage(error));
+        }
+    }
+
+    async function syncAndStartDebugger() {
+        if (debugSessionRef.current) return;
+        setDebugStatus("starting");
+        try {
+            setDebugMessage("Finding the running tile instance...");
+            const target = await selectedDebugTarget(true);
+            if (!target.main_sid) {
+                throw {message: "The selected tile is missing its owning main session."};
+            }
+
+            let savedLineNumbers = null;
+            if (_debuggerSourceDirty()) {
+                setDebugMessage("Saving tile source...");
+                savedLineNumbers = await doSavePromise();
+            }
+
+            setDebugMessage("Loading the saved module...");
+            await postPromise("host", "load_tile_module_task", {
+                tile_module_name: _cProp("resource_name"),
+                user_id: window.user_id,
+            }, props.local_id);
+
+            setDebugMessage(`Reloading ${target.tile_name}...`);
+            await postPromiseMain(target.main_sid, "reload_tile", {
+                tile_id: target.tile_id,
+                tile_name: target.tile_name,
+            }, props.local_id);
+
+            setDebugMessage("Arming debugger...");
+            await armDebugTarget(target, savedLineNumbers);
+        } catch (error) {
+            setDebugStatus("idle");
+            setDebugMessage(debuggerErrorMessage(error));
+        }
+    }
+
+    async function sendDebugCommand(command) {
+        const session = debugSessionRef.current;
+        const pausedSnapshot = debugPausedRef.current;
+        if (!session || !pausedSnapshot) return;
+        try {
+            setDebugStatus(command === "abort" ? "stopping" : "running");
+            setDebugPaused(null);
+            setDebugFrameIndex(0);
+            setDebugMessage(command === "abort" ? "Stopping debugger..." : "Running...");
+            await postPromise(session.debugQueue, "debug_command", {
+                session_id: session.sessionId,
+                command: command,
+            }, props.local_id);
+        } catch (error) {
+            setDebugStatus("paused");
+            setDebugPaused(pausedSnapshot);
+            setDebugMessage(debuggerErrorMessage(error));
+        }
+    }
+
+    function startOrContinueDebugger() {
+        if (debugPausedRef.current) {
+            return sendDebugCommand("continue");
+        }
+        if (!debugSessionRef.current && debugStatusRef.current !== "starting") {
+            return startDebugger();
+        }
+    }
+
+    async function stopDebugger() {
+        const session = debugSessionRef.current;
+        if (!session) return;
+        try {
+            setDebugStatus("stopping");
+            setDebugMessage("Stopping debugger...");
+            const result = await postPromise(session.debugQueue, "debug_command", {
+                session_id: session.sessionId,
+                command: "abort",
+            }, props.local_id);
+            if (result.state === "disarmed") {
+                setDebugSession(null);
+                setDebugPaused(null);
+                setDebugFrameIndex(0);
+                setDebugStatus("idle");
+                setDebugMessage("Debugger disarmed.");
+            }
+        } catch (error) {
+            setDebugMessage(debuggerErrorMessage(error));
+        }
     }
 
     function _update_saved_state() {
         last_save.current = _getSaveDict();
     }
 
+    function selectDebugFrame(index) {
+        const frame = debugPausedRef.current?.stack?.[index];
+        if (!frame) return;
+        setDebugFrameIndex(index);
+        if (props.selectTab) props.selectTab();
+        _revealDebugLine(frame.line);
+    }
+
+    function debuggerDrawerInitialFraction() {
+        try {
+            const stored = Number(window.localStorage.getItem("tactic.tile-debugger.drawer-fraction"));
+            if (Number.isFinite(stored) && stored >= 0.2 && stored <= 0.6) return stored;
+        } catch (_error) {
+            // Storage can be unavailable in privacy-restricted browser contexts.
+        }
+        return 0.32;
+    }
+
+    function debuggerInterfaceInitialVisible() {
+        try {
+            return window.localStorage.getItem("tactic.tile-debugger.toolbar-visible") !== "false";
+        } catch (_error) {
+            return true;
+        }
+    }
+
+    function toggleDebugInterface() {
+        setDebugInterfaceVisible(visible => {
+            const nextVisible = !visible;
+            try {
+                window.localStorage.setItem(
+                    "tactic.tile-debugger.toolbar-visible",
+                    String(nextVisible)
+                );
+            } catch (_error) {
+                // The toolbar can still be toggled without persistent storage.
+            }
+            return nextVisible;
+        });
+    }
+
+    function rememberDebuggerDrawerFraction(fraction) {
+        try {
+            window.localStorage.setItem("tactic.tile-debugger.drawer-fraction", String(fraction));
+        } catch (_error) {
+            // Resizing should still work when persistent storage is unavailable.
+        }
+    }
+
     function _highlightLine(item, lnumber) {
         try {
             if (item == null || !item.cmObject) {
-                return
+                return false
             }
             rline_number.current = null;
             const cm = item.cmObject;
@@ -905,10 +1454,66 @@ function CreatorApp(props) {
                     y: "center"  // Center the line in the view
                 })
             });
+            cm.focus();
+            return true
         } catch (e) {
             console.log("Error in selectLine", e)
+            return false
         }
 
+    }
+
+    function _highlightLineWhenReady(identifier, lnumber, attemptsRemaining = 30) {
+        const currentItem = getItemFromIdentifier(identifier);
+        if (_highlightLine(currentItem, lnumber) || attemptsRemaining <= 0) {
+            return;
+        }
+        requestAnimationFrame(() => {
+            _highlightLineWhenReady(identifier, lnumber, attemptsRemaining - 1)
+        });
+    }
+
+    function _scrollDebugLine(item, lnumber) {
+        try {
+            if (item == null || !item.cmObject) return false;
+            const cm = item.cmObject;
+            const line = cm.state.doc.line(lnumber + 1 - item.firstLineNumber);
+            cm.dispatch({
+                effects: EditorView.scrollIntoView(line.from, {y: "center"})
+            });
+            return true;
+        } catch (e) {
+            console.log("Error revealing debugger line", e);
+            return false;
+        }
+    }
+
+    function _scrollDebugLineWhenReady(identifier, lnumber, attemptsRemaining = 30) {
+        const currentItem = getItemFromIdentifier(identifier);
+        if (_scrollDebugLine(currentItem, lnumber) || attemptsRemaining <= 0) return;
+        requestAnimationFrame(() => {
+            _scrollDebugLineWhenReady(identifier, lnumber, attemptsRemaining - 1)
+        });
+    }
+
+    function _revealDebugLine(lnumber) {
+        const allItems = [
+            globalsInfoRef.current,
+            renderContentInfoRef.current,
+            ...umListRef.current,
+            ...hmListRef.current,
+        ];
+        const item = allItems.find(candidate =>
+            lnumber >= candidate.firstLineNumber && lnumber <= candidate.lastLineNumber
+        );
+        if (!item) return;
+        showTab(item.identifier);
+        _scrollDebugLineWhenReady(item.identifier, lnumber);
+    }
+
+    function _showAndHighlightLine(item, lnumber) {
+        showTab(item.identifier);
+        _highlightLineWhenReady(item.identifier, lnumber);
     }
 
     function _goToLineNumber() {
@@ -918,17 +1523,15 @@ function CreatorApp(props) {
             errorDrawerFuncs.closeErrorDrawer();
             for (let item of [globalsInfoRef.current, renderContentInfoRef.current]) {
                 if (local_number >= item["firstLineNumber"] && local_number <= item["lastLineNumber"]) {
-                    showTab(item["identifier"]);
-                    _highlightLine(item, local_number);
+                    _showAndHighlightLine(item, local_number);
                     return;
                 }
             }
             for (let listRef of [umListRef, hmListRef]) {
                 for (let item of listRef.current) {
                     if (local_number >= item["firstLineNumber"] && local_number <= item["lastLineNumber"]) {
-                        showTab(item["identifier"]);
-                        _highlightLine(item, local_number);
-                        break;
+                        _showAndHighlightLine(item, local_number);
+                        return;
                     }
                 }
             }
@@ -1680,6 +2283,152 @@ let right_pane = (
     </div>
 );
 
+    const debugStack = debugPaused?.stack?.length
+        ? debugPaused.stack
+        : debugPaused
+            ? [{
+                function: debugPaused.function,
+                line: debugPaused.line,
+                locals: debugPaused.locals || [],
+            }]
+            : [];
+    const selectedDebugFrame = debugStack[debugFrameIndex] || debugStack[0] || null;
+    const selectedDebugLocals = selectedDebugFrame?.locals || [];
+    const debugExceptionMessage = (() => {
+        if (!debugPaused?.exception) return "";
+        const message = debugPaused.exception.message || "";
+        const wrapper = `${debugPaused.exception.type}(`;
+        return message.startsWith(wrapper) && message.endsWith(")")
+            ? message.slice(wrapper.length, -1)
+            : message;
+    })();
+
+    const debugger_panel = (
+        <div className={`tile-debugger-panel tile-debugger-${debugStatus}`}
+             style={{display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight: 25}}>
+            <div className="tile-debugger-toolbar">
+                <span className="tile-debugger-title">Debugger</span>
+                <select className="tile-debugger-target"
+                        aria-label="Running tile instance"
+                        value={debugTargetId || ""}
+                        disabled={debugSession != null}
+                        onChange={event => setDebugTargetId(event.target.value || null)}>
+                    {!debugTargets.length && <option value="">Running tile...</option>}
+                    {debugTargets.map(target => (
+                        <option key={target.tile_id} value={target.tile_id}>
+                            {target.tile_name} ({target.tile_id.slice(-8)})
+                        </option>
+                    ))}
+                </select>
+                <Button variant="minimal" size="small" icon="refresh"
+                        title="Refresh running tile instances"
+                        disabled={debugSession != null}
+                        onClick={() => refreshDebugTargets().catch(error =>
+                            setDebugMessage(debuggerErrorMessage(error)))}/>
+                <Button variant="minimal" size="small" icon="play"
+                        disabled={debugSession != null || debugStatus === "starting"}
+                        onClick={startDebugger}>Start Debug</Button>
+                <Button variant="minimal" size="small" icon="changes"
+                        title="Save source changes, load the module, reload this tile, and arm the debugger"
+                        loading={debugStatus === "starting"}
+                        disabled={debugSession != null || debugStatus === "starting"}
+                        onClick={syncAndStartDebugger}>Sync &amp; Start</Button>
+                <ButtonGroup variant="minimal" className="tile-debugger-step-buttons">
+                    <Button size="small" icon="play" title="Continue"
+                            disabled={debugStatus !== "paused"}
+                            onClick={() => sendDebugCommand("continue")}/>
+                    <Button size="small" icon="chevron-down" title="Step into"
+                            disabled={debugStatus !== "paused"}
+                            onClick={() => sendDebugCommand("step")}/>
+                    <Button size="small" icon="chevron-right" title="Step over"
+                            disabled={debugStatus !== "paused"}
+                            onClick={() => sendDebugCommand("next")}/>
+                    <Button size="small" icon="chevron-up" title="Step out"
+                            disabled={debugStatus !== "paused"}
+                            onClick={() => sendDebugCommand("return")}/>
+                </ButtonGroup>
+                <Button variant="minimal" size="small" icon="stop" intent="danger" title="Stop debugging"
+                        disabled={debugSession == null}
+                        onClick={stopDebugger}/>
+                <span className="tile-debugger-breakpoint-count">
+                    {debugBreakpoints.length} breakpoint{debugBreakpoints.length === 1 ? "" : "s"}
+                </span>
+                <Checkbox className="tile-debugger-exception-toggle"
+                          label="Exceptions"
+                          title="Pause where tile code raises an exception"
+                          checked={debugPauseOnExceptions}
+                          disabled={debugSession != null}
+                          onChange={event => setDebugPauseOnExceptions(event.target.checked)}/>
+                <span className="tile-debugger-message">{debugMessage}</span>
+            </div>
+            <Button variant="minimal" size="small" icon="properties"
+                    active={debugDrawerOpen}
+                    title={debugDrawerOpen ? "Hide debugger drawer" : "Show debugger drawer"}
+                    onClick={() => setDebugDrawerOpen(open => !open)}>
+                Inspector
+            </Button>
+        </div>
+    );
+
+    const debugger_drawer = (
+        <aside className={`tile-debugger-drawer tile-debugger-${debugStatus}`}>
+            <div className="tile-debugger-drawer-header">
+                <div>
+                    <span className="tile-debugger-title">Debugger</span>
+                    <span className="tile-debugger-drawer-status">{debugStatus}</span>
+                </div>
+                <Button variant="minimal" size="small" icon="cross"
+                        title="Close debugger drawer"
+                        onClick={() => setDebugDrawerOpen(false)}/>
+            </div>
+            {debugPaused ? (
+                <div className="tile-debugger-inspector">
+                    {debugPaused.exception && (
+                        <div className="tile-debugger-exception">
+                            <strong>{debugPaused.exception.type}</strong>
+                            <code>{debugExceptionMessage}</code>
+                        </div>
+                    )}
+                    <div className="tile-debugger-location">
+                        {selectedDebugFrame?.function} · line {selectedDebugFrame?.line}
+                    </div>
+                    <div className="tile-debugger-inspector-body">
+                        <div className="tile-debugger-stack" aria-label="Call stack">
+                            <div className="tile-debugger-section-title">Call stack</div>
+                            {debugStack.map((frame, index) => (
+                                <button type="button"
+                                        key={`${frame.function}-${frame.line}-${index}`}
+                                        className={index === debugFrameIndex ? "active" : ""}
+                                        onClick={() => selectDebugFrame(index)}>
+                                    <span>{frame.function}</span>
+                                    <code>line {frame.line}</code>
+                                </button>
+                            ))}
+                        </div>
+                        <div className="tile-debugger-variables">
+                            <div className="tile-debugger-section-title">Local variables</div>
+                            <div className="tile-debugger-locals">
+                                {selectedDebugLocals.length === 0 &&
+                                    <span className="tile-debugger-empty">No local variables</span>}
+                                {selectedDebugLocals.map(variable => (
+                                    <div className="tile-debugger-local" key={variable.name}>
+                                        <span className="tile-debugger-local-name">{variable.name}</span>
+                                        <span className="tile-debugger-local-type">{variable.type}</span>
+                                        <code className="tile-debugger-local-value">{variable.value}</code>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="tile-debugger-drawer-empty">
+                    <span>{debugMessage || "Start debugging to inspect the call stack and local variables."}</span>
+                </div>
+            )}
+        </aside>
+    );
+
     let outer_style = {
         width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
         height: "100%",
@@ -1708,6 +2457,7 @@ let right_pane = (
                               user_name={window.username}/>
             }
             <TacticMenubar menu_specs={menu_specs()}
+                           disabled_items={menu_disabled_items()}
                            connection_status={connection_status}
                            showRefresh={window.in_context}
                            showClose={window.in_context}
@@ -1731,18 +2481,31 @@ let right_pane = (
                     setExpandedSubList: setExpandedSubList,
                     toggleVisibleTab: _handleTabSelect,
                     toggleExpandedSub: _handleSubSectionSelect,
-                    pushCallback: pushCallback
+                    pushCallback: pushCallback,
+                    debugBreakpoints: debugBreakpoints,
+                    debugLine: debugPaused ? debugPaused.line : null,
+                    toggleBreakpoint: toggleBreakpoint,
+                    replaceEditorBreakpoints: replaceEditorBreakpoints,
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
                          tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                        <ErrorBoundary custom_message="Error in HorizontalPanes">
-                            <HorizontalPanes left_pane={left_pane}
-                                             right_pane={right_pane}
-                                             show_handle={true}
-                                             initial_width_fraction={.2}
-                                             handleSplitUpdate={null}
-                            />
-                        </ErrorBoundary>
+                        {debugInterfaceVisible && debugger_panel}
+                        <RightDrawerPanes
+                            open={debugDrawerOpen}
+                            initial_drawer_fraction={debugDrawerInitialFractionRef.current}
+                            onDrawerResizeEnd={rememberDebuggerDrawerFraction}
+                            main_pane={(
+                                <ErrorBoundary custom_message="Error in HorizontalPanes">
+                                    <HorizontalPanes left_pane={left_pane}
+                                                     right_pane={right_pane}
+                                                     show_handle={true}
+                                                     initial_width_fraction={.2}
+                                                     handleSplitUpdate={null}
+                                    />
+                                </ErrorBoundary>
+                            )}
+                            drawer={debugger_drawer}
+                        />
                     </div>
                 </MakerPaneContext.Provider>
             </ErrorBoundary>
