@@ -222182,7 +222182,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
 
 var INITIAL_CODE_PANE_HEIGHT = 330;
-var INITIAL_FORM_PANE_HEIGHT = 125;
+var INITIAL_FORM_PANE_HEIGHT = 250;
 var NAV_ITEM_SPACER_HEIGHT = 10;
 var NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION = 20;
 var pane_type_icons = {
@@ -223307,7 +223307,7 @@ function DividerElement(props) {
       display: "flex",
       flexDirection: "row",
       paddingTop: 25,
-      paddingBottom: 15,
+      paddingBottom: 0,
       position: "relative",
       width: "100%"
     }

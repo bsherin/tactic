@@ -483,9 +483,9 @@ $option-divider-color: #ec9a3c;
         }
 
         .creator-simple-title {
-            position: absolute;
-            left: 40px;
-            top: 13px;
+            //position: absolute;
+            //left: 25px;
+            //top: 7px;
         }
 
         .creator-code-header {
@@ -497,7 +497,7 @@ $option-divider-color: #ec9a3c;
         }
 
         .cm-signature {
-            margin-left: 10px;
+            margin-left: 0;
 
             .cm-content {
                 align-content: end;
@@ -516,7 +516,7 @@ $option-divider-color: #ec9a3c;
             z-index: 5;
 
             &.maker-pane-left-button {
-                left: $small-pane-buttom-offset;
+                left: -10px;
                 top: 17px;
             }
 
@@ -527,7 +527,9 @@ $option-divider-color: #ec9a3c;
         }
 
         .maker-form-container {
-            padding-top: 25px;
+            padding: 10px;
+            margin-top: 10px;
+            border: .5px solid gray;
 
             .code-font {
                 font-family: monospace;
@@ -536,7 +538,7 @@ $option-divider-color: #ec9a3c;
         }
 
         &.form-pane {
-            overflow: auto;
+            //overflow: auto;
         }
     }
 

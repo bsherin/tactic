@@ -48,7 +48,7 @@ export {
 }
 
 const INITIAL_CODE_PANE_HEIGHT = 330;
-const INITIAL_FORM_PANE_HEIGHT = 125;
+const INITIAL_FORM_PANE_HEIGHT = 250;
 
 const NAV_ITEM_SPACER_HEIGHT = 10;
 const NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION = 20;
@@ -1040,7 +1040,7 @@ function DividerElement(props) {
 
     return (
         <div style={{
-            display: "flex", flexDirection: "row", paddingTop: 25, paddingBottom: 15,
+            display: "flex", flexDirection: "row", paddingTop: 25, paddingBottom: 0,
             position: "relative", width: "100%"
         }}>
             <EntityTitle title={props.text} icon={props.icon} heading={H4}/>
