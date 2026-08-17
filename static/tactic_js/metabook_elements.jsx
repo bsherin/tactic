@@ -4,6 +4,7 @@ import {ContextMenu, Menu, EditableText, Icon} from "@blueprintjs/core";
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+import {enableMarkdownCheckboxes, handleMarkdownCheckboxClick} from "./markdown_checkbox";
 
 const mdi = markdownIt({
     html: true,
@@ -19,6 +20,7 @@ const mdi = markdownIt({
         return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
     }
 });
+enableMarkdownCheckboxes(mdi, {interactive: true});
 mdi.use(markdownItLatex);
 
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -117,6 +119,10 @@ function MetabookTextItem(props) {
     const handleChange = useCallback((new_text) => {
         props.setNodeValue(props._id, "node_text", new_text)
     }, []);
+
+    function handleMarkdownClick(event) {
+        handleMarkdownCheckboxClick(event, props.node_text, handleChange);
+    }
 
     function handleSummaryTextChange(value) {
         props.setNodeValue(props._id, "summary_text", value)
@@ -219,6 +225,7 @@ function MetabookTextItem(props) {
                                 }
                                 {really_show_markdown && !hasOnlyWhitespace() &&
                                     <div className="text-panel-output markdown-heading-sizes"
+                                         onClick={handleMarkdownClick}
                                          onDoubleClick={hideMarkdown}
                                          style={{padding: 9}}
                                          dangerouslySetInnerHTML={converted_dict}/>

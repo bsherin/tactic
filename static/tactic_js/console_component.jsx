@@ -27,6 +27,7 @@ hljs.registerLanguage('python', python);
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+import {enableMarkdownCheckboxes, handleMarkdownCheckboxClick} from "./markdown_checkbox";
 
 const mdi = markdownIt({
     html: true,
@@ -42,6 +43,7 @@ const mdi = markdownIt({
         return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
     }
 });
+enableMarkdownCheckboxes(mdi, {interactive: true});
 mdi.use(markdownItLatex);
 
 import {GlyphButton} from "./blueprint_react_widgets";
@@ -2704,6 +2706,10 @@ function ConsoleTextItem(props) {
         props.setConsoleItemValue(props.unique_id, "console_text", new_text)
     }, []);
 
+    function _handleMarkdownClick(event) {
+        handleMarkdownCheckboxClick(event, props.console_text, _handleChange);
+    }
+
     function _handleSummaryTextChange(value) {
         props.setConsoleItemValue(props.unique_id, "summary_text", value)
     }
@@ -2959,6 +2965,7 @@ function ConsoleTextItem(props) {
                                 }
                                 {really_show_markdown && !hasOnlyWhitespace() &&
                                     <div className="text-panel-output markdown-heading-sizes"
+                                         onClick={_handleMarkdownClick}
                                          onDoubleClick={_hideMarkdown}
                                          style={{padding: 9}}
                                          dangerouslySetInnerHTML={converted_dict}/>
@@ -2982,6 +2989,3 @@ function ConsoleTextItem(props) {
 }
 
 ConsoleTextItem = memo(ConsoleTextItem);
-
-
-

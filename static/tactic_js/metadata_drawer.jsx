@@ -5,6 +5,7 @@ import React from "react";
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+import {enableMarkdownCheckboxes} from "./markdown_checkbox";
 
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
@@ -29,6 +30,7 @@ const mdi = markdownIt({
         return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
     }
 });
+enableMarkdownCheckboxes(mdi);
 mdi.use(markdownItLatex);
 
 import { memo, useContext, createContext} from "react";

@@ -23,6 +23,7 @@ hljs.registerLanguage('python', python);
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+import {enableMarkdownCheckboxes, handleMarkdownCheckboxClick} from "./markdown_checkbox";
 
 const mdi = markdownIt({
     html: true,
@@ -39,6 +40,7 @@ const mdi = markdownIt({
     }
 });
 
+enableMarkdownCheckboxes(mdi, {interactive: true});
 mdi.use(markdownItLatex);
 import _ from 'lodash';
 
@@ -205,6 +207,18 @@ function NotesField(props) {
         setShowMarkdown(false);
     }
 
+    function _handleMarkdownClick(event) {
+        const handled = handleMarkdownCheckboxClick(
+            event,
+            props.mStateRef.current.notes,
+            props.handleChange,
+            props.readOnly
+        );
+        if (!handled) {
+            _hideMarkdown();
+        }
+    }
+
     function _handleMyBlur() {
         _showMarkdown();
         if (props.handleBlur != null) {
@@ -238,7 +252,10 @@ function NotesField(props) {
     };
     let converted_markdown;
     if (really_show_markdown) {
-        converted_markdown = mdi.render(props.mStateRef.current.notes)
+        converted_markdown = mdi.render(
+            props.mStateRef.current.notes,
+            {markdownCheckboxesDisabled: props.readOnly}
+        )
     }
 
     let converted_dict = {__html: converted_markdown};
@@ -264,7 +281,7 @@ function NotesField(props) {
             </div>
             <div ref={mdRef}
                  style={md_style}
-                 onClick={_hideMarkdown}
+                 onClick={_handleMarkdownClick}
                  className="notes-field-markdown-output markdown-heading-sizes"
                  dangerouslySetInnerHTML={converted_dict}/>
         </Fragment>

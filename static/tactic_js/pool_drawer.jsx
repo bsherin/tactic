@@ -140,6 +140,7 @@ function PoolDrawer(props) {
                                 select_type={props.select_type}
                                 user_id={window.user_id}
                                 showSecondaryLabel={true}
+                                handleCreateViewer={null}
                                 handleNodeClick={handleNodeClick}
                             />
                         </div>

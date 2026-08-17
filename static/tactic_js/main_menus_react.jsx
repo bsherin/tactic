@@ -4,9 +4,11 @@ import PropTypes from 'prop-types';
 import markdownIt from 'markdown-it'
 import 'markdown-it-latex/dist/index.css'
 import markdownItLatex from 'markdown-it-latex'
+import {enableMarkdownCheckboxes} from "./markdown_checkbox";
 import {renderToString} from 'react-dom/server';
 
 const mdi = markdownIt({html: true});
+enableMarkdownCheckboxes(mdi);
 mdi.use(markdownItLatex);
 
 import {postPromise, postAjaxPromise, postPromiseMain} from "./communication_react"

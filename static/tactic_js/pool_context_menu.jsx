@@ -462,7 +462,6 @@ function PoolTreeWithContextMenu(props) {
         currentRootPath: null,
         selectedNode: null,
         showHidden: false,
-        handleCreateViewer: null,
         getOpenResources: null,
         allow_import_and_download: false,
         select_type: "both",
@@ -472,6 +471,7 @@ function PoolTreeWithContextMenu(props) {
         handleDrop: null,
         showSecondaryLabel: false,
         handleNodeClick: null,
+        handleCreateViewer: null,
         ...props
     }
 
@@ -494,7 +494,7 @@ function PoolTreeWithContextMenu(props) {
                               props._copy_func(lprops.node)
                           }}
                           text="Copy Path"/>
-                {lprops.node && !lprops.node.isDirectory &&
+                {lprops.node && !lprops.node.isDirectory && props.handleCreateViewer &&
                     <Fragment>
                         <MenuItem icon="eye-open"
                                   onClick={async () => {

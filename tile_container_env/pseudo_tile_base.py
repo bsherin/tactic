@@ -35,6 +35,10 @@ def display(txt):
     sys.stdout.overwrite(txt)
     return
 
+def display_html(html):
+    Tile.widget("html", {"value": html}).show()
+    sys.stdout.counter += 1
+
 def tactic_import(code_name):
     the_code = Library.codes[code_name].the_code
     fname = f"{code_name}.py"
@@ -100,7 +104,11 @@ class ConsoleStringIO(StringIO):
         StringIO.write(self, s)
         if not s == "\n":   # The print commmand automatically adds a \n. We don't want to print it.
             self.data["force_open"] = True
-            rw = self.my_tile.widget("html", {"value": s})
+            rw = self.my_tile.widget("text", {
+                "value": s,
+                "ellipsize": False,
+                "style": {"white-space": "pre-wrap"},
+            })
             self.data["result_text"] = rw.render()
             self.data["console_message"] = "consoleCodePrint"
             self.data["counter"] = self.counter
@@ -375,8 +383,13 @@ class PseudoTileClass(TileBase):
                     data.update(table_widget.render())
                     data.update({"success": True})
                 else:
-                    the_html = "<div class='export-header-text'>{}</div>".format(eval_type_info["info_string"])
-                    the_html += str(eval_result)
+                    the_html = (
+                        "<div class='export-header-text'>{}</div>"
+                        "<pre>{}</pre>"
+                    ).format(
+                        eval_type_info["info_string"],
+                        escape_html(repr(eval_result)),
+                    )
                     data.update({"success": True, "is_widget": False, "the_html": the_html})
             except Exception as ex:
                 log.exception("Error in _eval_thread")
@@ -496,7 +509,13 @@ class PseudoTileClass(TileBase):
                         table_widget.show()
                         sys.stdout.counter += 1
                     else:
-                        print(eval_res)
+                        text_widget = self.widget("text", {
+                            "value": repr(eval_res),
+                            "ellipsize": False,
+                            "style": {"white-space": "pre-wrap"},
+                        })
+                        text_widget.show()
+                        sys.stdout.counter += 1
             else:
                 exec(data["the_code"], globals(), globals())
 
