@@ -42,8 +42,12 @@ class {{class_name}}(TileBase):
         ]
 
     {% for um in user_methods -%}
+    {% if um.kind == "divider" -%}
+    # tactic:user-method-divider: {{um.name|safe}}
+    {% else -%}
     def {{um.name}}(self{{ um.arg_string|safe }}):
 {{um.method_body|safe}}
+    {% endif -%}
     {% endfor -%}
     {% for uh in used_handler_methods -%}
     def {{uh.name}}(self{{ uh.arg_string|safe }}):

@@ -222111,7 +222111,7 @@ function makePreview(line, matchIndex, matchLength) {
 }
 function getSearchResultsForItem(item, matcher) {
   var paneName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
-  if (!matcher || !item) {
+  if (!matcher || !item || item.kind === "divider" && !item.preserve_as_method) {
     return [];
   }
   var results = [];
@@ -227903,6 +227903,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/context-menu/contextMenu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/popover/popover.js");
 /* harmony import */ var _dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @dnd-kit/core */ "./node_modules/@dnd-kit/core/dist/core.esm.js");
 /* harmony import */ var _dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @dnd-kit/sortable */ "./node_modules/@dnd-kit/sortable/dist/sortable.esm.js");
 /* harmony import */ var _dnd_kit_utilities__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @dnd-kit/utilities */ "./node_modules/@dnd-kit/utilities/dist/utilities.esm.js");
@@ -229349,6 +229350,7 @@ function MakerNavigator(props) {
         mode: section.mode,
         showSelf: section.showSelf,
         pushCallback: props.pushCallback,
+        allowDividers: section.allowDividers === true,
         createFromList: createFromlist,
         searchStringRef: searchStringRef,
         choiceDict: choiceDict,
@@ -229548,6 +229550,7 @@ function SortableNavSection(props) {
     right_button: null,
     icon_dict: null,
     icon_field: null,
+    allowDividers: false,
     createFromList: false,
     choiceDict: null,
     selectedChoice: null,
@@ -229567,6 +229570,10 @@ function SortableNavSection(props) {
     _React$useState4 = _slicedToArray(_React$useState3, 2),
     activeId = _React$useState4[0],
     setActiveId = _React$useState4[1];
+  var _React$useState5 = react__WEBPACK_IMPORTED_MODULE_0___default().useState(null),
+    _React$useState6 = _slicedToArray(_React$useState5, 2),
+    editingDividerId = _React$useState6[0],
+    setEditingDividerId = _React$useState6[1];
   var sensors = (0,_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.useSensors)((0,_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.useSensor)(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.PointerSensor, {
     activationConstraint: {
       distance: 5
@@ -229609,6 +229616,9 @@ function SortableNavSection(props) {
     try {
       var _loop = function _loop() {
         var sub_item = _step5.value;
+        if (isDividerItem(sub_item)) {
+          return 1; // continue
+        }
         omni_items.push({
           category: props.title,
           display_text: sub_item.name,
@@ -229622,7 +229632,7 @@ function SortableNavSection(props) {
         });
       };
       for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        _loop();
+        if (_loop()) continue;
       }
     } catch (err) {
       _iterator5.e(err);
@@ -229633,6 +229643,16 @@ function SortableNavSection(props) {
   }
   function filterItem(item) {
     return props.searchStringRef.current == null || props.searchStringRef.current === "" || item.name.toLowerCase().includes(props.searchStringRef.current.toLowerCase());
+  }
+  function isDividerItem(item) {
+    if (item.kind === "divider") {
+      return true;
+    }
+    if (props.icon_dict && item[props.icon_field] === "divider") {
+      return true;
+    }
+    // Old Tile Maker data did not have an explicit kind.
+    return !item.kind && typeof item.name === "string" && item.name.includes("divider");
   }
   function createItem() {
     var uid = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_7__.guid)();
@@ -229652,9 +229672,23 @@ function SortableNavSection(props) {
       mpContext.toggleVisibleTab(uid);
     });
   }
+  function createDivider() {
+    var uid = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_7__.guid)();
+    props.dispatch({
+      type: "add_at_end",
+      new_item: {
+        kind: "divider",
+        name: "New section",
+        identifier: uid
+      }
+    });
+    props.setIsOpen(true);
+    mpContext.toggleExpandedSub(uid, true);
+    setEditingDividerId(uid);
+  }
   function findLastSubSection() {
     var sub_index = props.sub_items.findLastIndex(function (item) {
-      return props.icon_dict && item[props.icon_field] === "divider" || item.name.includes("divider");
+      return isDividerItem(item);
     });
     if (sub_index == -1) {
       return -1;
@@ -229668,7 +229702,7 @@ function SortableNavSection(props) {
     // get the part of props.sub_items after current_index
     var rest_items = props.sub_items.slice(current_index + 1);
     var sub_index = rest_items.findIndex(function (item) {
-      return props.icon_dict && item[props.icon_field] === "divider" || item.name.includes("divider");
+      return isDividerItem(item);
     });
     if (sub_index == -1) {
       return -1;
@@ -229704,9 +229738,22 @@ function SortableNavSection(props) {
       icon: "plus",
       onClick: createItem,
       intent: "primary",
-      text: "Create Item"
+      text: props.allowDividers ? "New method" : "Create Item"
+    }), props.allowDividers && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+      icon: "minus",
+      onClick: createDivider,
+      text: "New divider"
     }));
-  }, []);
+  }, [props.allowDividers, props.item_base, props.sub_items]);
+  var createMenu = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    icon: "function",
+    onClick: createItem,
+    text: "New method"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    icon: "minus",
+    onClick: createDivider,
+    text: "New divider"
+  }));
   var inSubSection = false;
   var currentlyExpanded = false;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.ContextMenu, {
@@ -229737,7 +229784,14 @@ function SortableNavSection(props) {
     onClick: function onClick() {
       props.setIsOpen(!props.isOpen);
     }
-  }, props.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }, props.title), props.allowDividers ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Popover, {
+    placement: "bottom-start",
+    content: createMenu
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+    icon: "plus",
+    size: "small",
+    variant: "minimal"
+  })) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     icon: "plus",
     size: "small",
     variant: "minimal",
@@ -229762,7 +229816,7 @@ function SortableNavSection(props) {
       icon: props.icon_dict[item[props.icon_field]],
       size: 12
     }) : null;
-    var isDivider = props.icon_dict && item[props.icon_field] === "divider" || item.name.includes("divider");
+    var isDivider = isDividerItem(item);
     if (isDivider) {
       inSubSection = true;
       currentlyExpanded = mpContext.expandedSubList.includes(item.identifier);
@@ -229785,6 +229839,9 @@ function SortableNavSection(props) {
       argString: item.argString,
       activeId: activeId,
       isDivider: isDivider,
+      isEditingDivider: editingDividerId === item.identifier,
+      setEditingDividerId: setEditingDividerId,
+      preserveAsMethod: item.preserve_as_method === true,
       createItemInSubSection: createItemInSubSection,
       inSubSection: inSubSection,
       expanded: item.expanded ? item.expanded : false,
@@ -229806,6 +229863,9 @@ function SortableNavItem(props) {
     activeId: null,
     isSpacer: false,
     isDivider: false,
+    isEditingDivider: false,
+    setEditingDividerId: function setEditingDividerId() {},
+    preserveAsMethod: false,
     dispatch: null,
     showSignature: false,
     argString: null,
@@ -229844,8 +229904,25 @@ function SortableNavItem(props) {
       identifier: props.identifier
     });
   }
-  function _toggleDividerVisibility() {
-    mpContext.toggleVisibleTab(props.identifier);
+  function _editDivider() {
+    if (props.preserveAsMethod) {
+      mpContext.toggleVisibleTab(props.identifier);
+    } else {
+      props.setEditingDividerId(props.identifier);
+    }
+  }
+  function _convertLegacyDivider() {
+    props.dispatch({
+      type: "update_item",
+      identifier: props.identifier,
+      new_item: {
+        preserve_as_method: false,
+        legacy: false
+      }
+    });
+    if (mpContext.visibleTabList.includes(props.identifier)) {
+      mpContext.toggleVisibleTab(props.identifier);
+    }
   }
   var delete_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
     icon: "delete",
@@ -229860,13 +229937,25 @@ function SortableNavItem(props) {
     size: 12
   });
   var contextMenu = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Menu, null, props.isDivider && !props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+      icon: "edit",
+      onClick: _editDivider,
+      text: "Rename divider"
+    }), props.isDivider && props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+      icon: "code",
+      onClick: _editDivider,
+      text: "Edit legacy method"
+    }), props.isDivider && props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+      icon: "exchange",
+      onClick: _convertLegacyDivider,
+      text: "Convert to comment divider"
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
       icon: "delete",
       onClick: _deleteMe,
       intent: "danger",
       text: "Delete Item"
     }));
-  }, []);
+  }, [props.isDivider, props.preserveAsMethod, props.identifier]);
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.ContextMenu, {
     content: contextMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", _extends({
@@ -229874,7 +229963,14 @@ function SortableNavItem(props) {
     style: style
   }, attributes, listeners, {
     className: "sortable-nav-item"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItem, props), props.isSpacer ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, props.isEditingDivider ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(DividerNameEditor, {
+    title: props.title,
+    identifier: props.identifier,
+    dispatch: props.dispatch,
+    finishEditing: function finishEditing() {
+      return props.setEditingDividerId(null);
+    }
+  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItem, props), props.isSpacer ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     icon: delete_icon,
     size: "small",
     variant: "minimal",
@@ -229887,7 +229983,7 @@ function SortableNavItem(props) {
     variant: "minimal",
     className: "show-on-hover",
     tabIndex: -1,
-    onClick: _toggleDividerVisibility
+    onClick: _editDivider
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     icon: plus_icon,
     size: "small",
@@ -229898,6 +229994,53 @@ function SortableNavItem(props) {
       props.createItemInSubSection(props.identifier);
     }
   })))));
+}
+function DividerNameEditor(props) {
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(props.title),
+    _useState10 = _slicedToArray(_useState1, 2),
+    value = _useState10[0],
+    setValue = _useState10[1];
+  var finishedRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
+  function commit() {
+    if (finishedRef.current) {
+      return;
+    }
+    finishedRef.current = true;
+    var name = value.trim() || "New section";
+    props.dispatch({
+      type: "update_item",
+      identifier: props.identifier,
+      new_item: {
+        name: name
+      }
+    });
+    props.finishEditing();
+  }
+  function handleKeyDown(event) {
+    event.stopPropagation();
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commit();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      finishedRef.current = true;
+      props.finishEditing();
+    }
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.InputGroup, {
+    autoFocus: true,
+    size: "small",
+    value: value,
+    "aria-label": "Divider name",
+    onChange: function onChange(event) {
+      return setValue(event.target.value);
+    },
+    onBlur: commit,
+    onKeyDown: handleKeyDown,
+    onPointerDown: function onPointerDown(event) {
+      return event.stopPropagation();
+    }
+  });
 }
 function NavItem(props) {
   props = _objectSpread({
@@ -230149,6 +230292,9 @@ if (!window.in_context) {
 
 
 
+function isUserMethodDivider(item) {
+  return item && item.kind === "divider";
+}
 function CreatorApp(props) {
   var _codeElemDict$globals, _codeElemDict$render_, _debugPaused$stack;
   props = _objectSpread({
@@ -230636,6 +230782,9 @@ function CreatorApp(props) {
     try {
       for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
         var um = _step6.value;
+        if (isUserMethodDivider(um) && !um.preserve_as_method) {
+          continue;
+        }
         // noinspection JSUnresolvedReference
         extraSelfCompletionsRef.current.push({
           label: um["name"],
@@ -232328,6 +232477,9 @@ function CreatorApp(props) {
   try {
     var _loop3 = function _loop3() {
       var um = _step12.value;
+      if (isUserMethodDivider(um) && !um.preserve_as_method) {
+        return 1; // continue
+      }
       codeElemDict[um["identifier"]] = function () {
         return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.CmElement, {
           cmState: um,
@@ -232356,7 +232508,7 @@ function CreatorApp(props) {
       };
     };
     for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-      _loop3();
+      if (_loop3()) continue;
     }
   } catch (err) {
     _iterator12.e(err);
@@ -232655,12 +232807,14 @@ function CreatorApp(props) {
     showAsCode: true,
     showSignature: true,
     item_base: {
+      kind: "method",
       name: "new_item",
       argString: "",
       codeText: "",
       mode: "python",
       firstLineNumber: 1
     },
+    allowDividers: true,
     sub_items: umListRef.current,
     dispatch: umDispatch
   }, {
@@ -232881,6 +233035,9 @@ function CreatorApp(props) {
   try {
     for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
       var _item10 = _step19.value;
+      if (isUserMethodDivider(_item10) && !_item10.preserve_as_method) {
+        continue;
+      }
       if (visibleTabListRef.current.includes(_item10["identifier"])) {
         right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.DividerElement, {
           text: "User Methods",
@@ -232901,6 +233058,9 @@ function CreatorApp(props) {
     for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
       var _codeElemDict$_item;
       var _item11 = _step20.value;
+      if (isUserMethodDivider(_item11) && !_item11.preserve_as_method) {
+        continue;
+      }
       right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_21__.PaneElement, {
         key: _item11["identifier"],
         el: _item11,

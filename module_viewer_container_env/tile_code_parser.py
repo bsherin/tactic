@@ -1,8 +1,11 @@
 import re
 import ast
+import io
+import tokenize
 from collections import OrderedDict
 
 indent_unit = "    "
+USER_METHOD_DIVIDER_PREFIX = "# tactic:user-method-divider:"
 
 
 def remove_indents(the_str, number_indents):
@@ -17,6 +20,52 @@ def insert_indents(the_str, number_indents):
     result = re.sub(r"\n", r"\n" + total_indent, the_str)
     result = total_indent + result
     return result
+
+
+def prepare_user_methods_for_render(user_methods):
+    """Convert Tile Maker user-method records into template records."""
+    render_entries = []
+    for method in user_methods:
+        if method.get("kind") == "divider" and not method.get("preserve_as_method", False):
+            raw_name = str(method.get("name") or "")
+            divider_name = " ".join(raw_name.splitlines()).strip() or "New section"
+            render_entries.append({"kind": "divider", "name": divider_name})
+            continue
+        arg_string = method.get("argString", "")
+        if arg_string:
+            arg_string = ", " + arg_string
+        render_entries.append({
+            "kind": "method",
+            "name": method["name"],
+            "arg_string": arg_string,
+            "method_body": insert_indents(method.get("codeText", "pass"), 2),
+        })
+    return render_entries
+
+
+def prepare_user_methods_for_tile_maker(user_methods):
+    """Convert parsed source records into Tile Maker user-method records."""
+    tile_maker_entries = []
+    for method in user_methods:
+        if method.get("kind") == "divider" and not method.get("preserve_as_method", False):
+            tile_maker_entries.append({
+                "kind": "divider",
+                "name": method["name"],
+                "legacy": method.get("legacy", False),
+            })
+            continue
+        tile_maker_entries.append({
+            "kind": method.get("kind", "method"),
+            "name": method["name"],
+            "codeText": remove_indents(method["method_body"], 2),
+            "argString": method["arg_string"],
+            "mode": "python",
+            "firstLineNumber": method["body_start"],
+            "lastLineNumber": method["last_line"],
+            "legacy": method.get("legacy", False),
+            "preserve_as_method": method.get("preserve_as_method", False),
+        })
+    return tile_maker_entries
 
 
 # noinspection PyTypeChecker
@@ -65,11 +114,72 @@ class TileParser(object):
         return new_code
 
     def get_user_methods_list(self):
-        method_list = []
+        method_list = self.get_user_method_dividers()
         for k, entry in self.extra_methods.items():
             if k not in self.handler_methods:
-                method_list.append(entry)
-        return method_list
+                method_entry = dict(entry)
+                if "divider" in k:
+                    method_entry["kind"] = "divider"
+                    method_entry["legacy"] = True
+                    method_entry["preserve_as_method"] = not self.is_inert_legacy_divider(entry["node"])
+                else:
+                    method_entry["kind"] = "method"
+                method_list.append(method_entry)
+        return sorted(method_list, key=lambda entry: entry["start_line"])
+
+    def get_user_method_dividers(self):
+        """Return explicit Tile Maker divider comments in class-body order."""
+        dividers = []
+        class_body_indent = min(
+            node.col_offset for node in self.cnode.body
+            if node.col_offset > self.cnode.col_offset
+        )
+        tokens = tokenize.generate_tokens(io.StringIO(self.module_code).readline)
+        for token in tokens:
+            if token.type != tokenize.COMMENT:
+                continue
+            line_number, column = token.start
+            if not self.cnode.lineno < line_number <= self.cnode.end_lineno:
+                continue
+            if column != class_body_indent or not token.string.startswith(USER_METHOD_DIVIDER_PREFIX):
+                continue
+            name = token.string[len(USER_METHOD_DIVIDER_PREFIX):].strip() or "New section"
+            dividers.append({
+                "kind": "divider",
+                "name": name,
+                "start_line": line_number,
+                "last_line": line_number,
+            })
+        return dividers
+
+    @staticmethod
+    def is_inert_legacy_divider(node):
+        """Identify old placeholder methods that are safe to replace with a comment."""
+        positional_args = node.args.posonlyargs + node.args.args
+        if (
+            node.decorator_list
+            or len(positional_args) != 1
+            or positional_args[0].arg != "self"
+            or node.args.vararg
+            or node.args.kwonlyargs
+            or node.args.kwarg
+            or node.returns
+        ):
+            return False
+        if len(node.body) != 1:
+            return False
+        statement = node.body[0]
+        if isinstance(statement, ast.Pass):
+            return True
+        if not isinstance(statement, ast.Expr):
+            return False
+        value = statement.value
+        return (
+            isinstance(value, ast.Name)
+            or isinstance(value, ast.Constant) and (
+                value.value is Ellipsis or isinstance(value.value, str)
+            )
+        )
 
     def get_used_handler_methods_list(self):
         used_handler_methods = []

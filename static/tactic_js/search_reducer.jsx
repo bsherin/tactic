@@ -14,7 +14,7 @@ function makePreview(line, matchIndex, matchLength, context = 45) {
 }
 
 function getSearchResultsForItem(item, matcher, paneName = null) {
-    if (!matcher || !item) {
+    if (!matcher || !item || (item.kind === "divider" && !item.preserve_as_method)) {
         return [];
     }
 

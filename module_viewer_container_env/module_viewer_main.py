@@ -10,7 +10,13 @@ try:
     from qworker import QWorker, task_worthy
     from flask import render_template, Flask
 
-    from tile_code_parser import TileParser, remove_indents, insert_indents
+    from tile_code_parser import (
+        TileParser,
+        remove_indents,
+        insert_indents,
+        prepare_user_methods_for_render,
+        prepare_user_methods_for_tile_maker,
+    )
     from tile_ai_context import prepare_tile_context
     from mongo_accesser import MongoAccess
     from tile_accesser import TileAccess
@@ -119,14 +125,7 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
         couple_save_attrs_and_exports = data_dict["mdata"]["couple_save_attrs_and_exports"]
         export_list_of_dicts = [{"name": exp["name"], "tags": exp["tags"]} for exp in
                                 export_list]  # tactic_todo what does this accomplish?
-        user_methods_list_of_dicts = []
-        for m in data_dict["user_methods"]:
-            arg_string = m["argString"]
-            if len(arg_string) > 0:
-                arg_string = ", " + arg_string
-            user_methods_list_of_dicts.append({"name": m["name"],
-                                               "arg_string": arg_string,
-                                               "method_body": insert_indents(m["codeText"], 2)})
+        user_methods_list_of_dicts = prepare_user_methods_for_render(data_dict["user_methods"])
         used_handler_methods_list_of_dicts = []
         for m in data_dict["used_handler_methods"]:
             arg_string = m["argString"]
@@ -219,7 +218,8 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
             user_methods_list = tp.get_user_methods_list()
             user_methods_line_numbers = {func["name"]: {
                 "firstLineNumber": func["body_start"],
-                "lastLineNumber": func["last_line"]} for func in user_methods_list}
+                "lastLineNumber": func["last_line"]} for func in user_methods_list
+                if func.get("kind") != "divider" or func.get("preserve_as_method", False)}
             used_handler_methods_list = tp.get_used_handler_methods_list()
             used_handler_methods_line_numbers = {func["name"]: {
                 "firstLineNumber": func["body_start"],
@@ -294,13 +294,7 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                         "lastLineNumber": len(globals_code.splitlines())
                         }
         user_methods_list = tp.get_user_methods_list()
-        user_methods_list = [{"name": func["name"],
-                              "codeText": remove_indents(func["method_body"], 2),
-                              "argString": func["arg_string"],
-                              "mode": "python",
-                              "firstLineNumber": func["body_start"],
-                              "lastLineNumber": func["last_line"]
-                              } for func in user_methods_list]
+        user_methods_list = prepare_user_methods_for_tile_maker(user_methods_list)
 
         used_handler_methods_list = tp.get_used_handler_methods_list()
         used_handler_methods_list = [{"name": func["name"],

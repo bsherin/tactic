@@ -57,6 +57,10 @@ import {
 
 export {CreatorApp}
 
+function isUserMethodDivider(item) {
+    return item && item.kind === "divider";
+}
+
 function CreatorApp(props) {
     props = {
         controlled: false,
@@ -419,6 +423,9 @@ function CreatorApp(props) {
             extraSelfCompletionsRef.current.push({label: the_text, type: "variable", section: "Options"});
         }
         for (let um of umListRef.current) {
+            if (isUserMethodDivider(um) && !um.preserve_as_method) {
+                continue;
+            }
             // noinspection JSUnresolvedReference
             extraSelfCompletionsRef.current.push({
                 label: um["name"],
@@ -1703,6 +1710,9 @@ function CreatorApp(props) {
     };
 
     for (let um of umListRef.current) {
+        if (isUserMethodDivider(um) && !um.preserve_as_method) {
+            continue;
+        }
         codeElemDict[um["identifier"]] = () => {
             return (
                 <CmElement cmState={um}
@@ -1948,12 +1958,14 @@ function CreatorApp(props) {
             showAsCode: true,
             showSignature: true,
             item_base: {
+                kind: "method",
                 name: "new_item",
                 argString: "",
                 codeText: "",
                 mode: "python",
                 firstLineNumber: 1,
             },
+            allowDividers: true,
             sub_items: umListRef.current, dispatch: umDispatch
         },
         {
@@ -2149,6 +2161,9 @@ function CreatorApp(props) {
     }
 
     for (let item of umListRef.current) {
+        if (isUserMethodDivider(item) && !item.preserve_as_method) {
+            continue;
+        }
         if (visibleTabListRef.current.includes(item["identifier"])) {
             right_pane_list.push(
                 <DividerElement text="User Methods" key="um-divider" icon={pane_type_icons["user_method"]}/>
@@ -2158,6 +2173,9 @@ function CreatorApp(props) {
     }
 
     for (let item of umListRef.current) {
+        if (isUserMethodDivider(item) && !item.preserve_as_method) {
+            continue;
+        }
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}

@@ -12,7 +12,7 @@ import {
     EntityTitle,
     H4,
     H6,
-    Menu, MenuItem, ContextMenu, Card, FormGroup, InputGroup
+    Menu, MenuItem, ContextMenu, Card, FormGroup, InputGroup, Popover
 } from "@blueprintjs/core";
 import {
     DndContext,
@@ -1260,6 +1260,7 @@ function MakerNavigator(props) {
                                                 mode={section.mode}
                                                 showSelf={section.showSelf}
                                                 pushCallback={props.pushCallback}
+                                                allowDividers={section.allowDividers === true}
                                                 createFromList={createFromlist}
                                                 searchStringRef={searchStringRef}
                                                 choiceDict={choiceDict}
@@ -1461,6 +1462,7 @@ function SortableNavSection(props) {
         right_button: null,
         icon_dict: null,
         icon_field: null,
+        allowDividers: false,
         createFromList: false,
         choiceDict: null,
         selectedChoice: null,
@@ -1482,6 +1484,7 @@ function SortableNavSection(props) {
     };
 
     const [activeId, setActiveId] = React.useState(null);
+    const [editingDividerId, setEditingDividerId] = React.useState(null);
 
     const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 5}}));
 
@@ -1519,6 +1522,9 @@ function SortableNavSection(props) {
     function _getOmniItems() {
         let omni_items = [];;
         for (let sub_item of props.sub_items) {
+            if (isDividerItem(sub_item)) {
+                continue;
+            }
             omni_items.push(
                 {
                     category: props.title,
@@ -1541,6 +1547,17 @@ function SortableNavSection(props) {
     }
 
 
+    function isDividerItem(item) {
+        if (item.kind === "divider") {
+            return true;
+        }
+        if (props.icon_dict && item[props.icon_field] === "divider") {
+            return true;
+        }
+        // Old Tile Maker data did not have an explicit kind.
+        return !item.kind && typeof item.name === "string" && item.name.includes("divider");
+    }
+
     function createItem() {
         const uid = guid();
         const new_entry = {...props.item_base, identifier: uid};
@@ -1555,9 +1572,20 @@ function SortableNavSection(props) {
         });
     }
 
+    function createDivider() {
+        const uid = guid();
+        props.dispatch({
+            type: "add_at_end",
+            new_item: {kind: "divider", name: "New section", identifier: uid}
+        });
+        props.setIsOpen(true);
+        mpContext.toggleExpandedSub(uid, true);
+        setEditingDividerId(uid);
+    }
+
     function findLastSubSection() {
         let sub_index = props.sub_items.findLastIndex(item => {
-            return (props.icon_dict && item[props.icon_field] === "divider") || item.name.includes("divider")
+            return isDividerItem(item)
         });
         if (sub_index == -1) {
             return -1;
@@ -1570,7 +1598,7 @@ function SortableNavSection(props) {
         // get the part of props.sub_items after current_index
         let rest_items = props.sub_items.slice(current_index + 1);
         let sub_index = rest_items.findIndex(item => {
-            return (props.icon_dict && item[props.icon_field] === "divider") || item.name.includes("divider")
+            return isDividerItem(item)
         });
         if (sub_index == -1) {
             return -1;
@@ -1601,10 +1629,19 @@ function SortableNavSection(props) {
                 <MenuItem icon="plus"
                           onClick={createItem}
                           intent="primary"
-                          text="Create Item"/>
+                          text={props.allowDividers ? "New method" : "Create Item"}/>
+                {props.allowDividers &&
+                    <MenuItem icon="minus" onClick={createDivider} text="New divider"/>}
             </Menu>
         );
-    }, []);
+    }, [props.allowDividers, props.item_base, props.sub_items]);
+
+    const createMenu = (
+        <Menu>
+            <MenuItem icon="function" onClick={createItem} text="New method"/>
+            <MenuItem icon="minus" onClick={createDivider} text="New divider"/>
+        </Menu>
+    );
 
     let inSubSection = false;
     let currentlyExpanded = false;
@@ -1636,7 +1673,12 @@ function SortableNavSection(props) {
                                 }}>
                             {props.title}
                         </Button>
-                        <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
+                        {props.allowDividers ?
+                            <Popover placement="bottom-start" content={createMenu}>
+                                <Button icon="plus" size="small" variant="minimal"/>
+                            </Popover> :
+                            <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
+                        }
                     </ButtonGroup>
                 }
                 <Collapse className="nav-section" isOpen={props.isOpen}>
@@ -1651,7 +1693,7 @@ function SortableNavSection(props) {
                                     }
                                     let icon = props.icon_dict ?
                                         <Icon icon={props.icon_dict[item[props.icon_field]]} size={12}/> : null;
-                                    let isDivider = (props.icon_dict && item[props.icon_field] === "divider") || item.name.includes("divider");
+                                    let isDivider = isDividerItem(item);
                                     if (isDivider) {
                                         inSubSection = true;
                                         currentlyExpanded = mpContext.expandedSubList.includes(item.identifier)
@@ -1674,6 +1716,9 @@ function SortableNavSection(props) {
                                                          argString={item.argString}
                                                          activeId={activeId}
                                                          isDivider={isDivider}
+                                                         isEditingDivider={editingDividerId === item.identifier}
+                                                         setEditingDividerId={setEditingDividerId}
+                                                         preserveAsMethod={item.preserve_as_method === true}
                                                          createItemInSubSection={createItemInSubSection}
                                                          inSubSection={inSubSection}
                                                          expanded={item.expanded ? item.expanded : false}
@@ -1703,6 +1748,9 @@ function SortableNavItem(props) {
         activeId: null,
         isSpacer: false,
         isDivider: false,
+        isEditingDivider: false,
+        setEditingDividerId: () => {},
+        preserveAsMethod: false,
         dispatch: null,
         showSignature: false,
         argString: null,
@@ -1745,9 +1793,24 @@ function SortableNavItem(props) {
         props.dispatch({type: "delete_item", identifier: props.identifier})
     }
 
-    function _toggleDividerVisibility() {
-        mpContext.toggleVisibleTab(props.identifier)
+    function _editDivider() {
+        if (props.preserveAsMethod) {
+            mpContext.toggleVisibleTab(props.identifier);
+        }
+        else {
+            props.setEditingDividerId(props.identifier);
+        }
+    }
 
+    function _convertLegacyDivider() {
+        props.dispatch({
+            type: "update_item",
+            identifier: props.identifier,
+            new_item: {preserve_as_method: false, legacy: false}
+        });
+        if (mpContext.visibleTabList.includes(props.identifier)) {
+            mpContext.toggleVisibleTab(props.identifier);
+        }
     }
 
     const delete_icon = <Icon icon="delete" size={12}/>;
@@ -1757,19 +1820,32 @@ function SortableNavItem(props) {
     const contextMenu = useMemo(() => {
         return (
             <Menu>
+                {props.isDivider && !props.preserveAsMethod &&
+                    <MenuItem icon="edit" onClick={_editDivider} text="Rename divider"/>}
+                {props.isDivider && props.preserveAsMethod &&
+                    <MenuItem icon="code" onClick={_editDivider} text="Edit legacy method"/>}
+                {props.isDivider && props.preserveAsMethod &&
+                    <MenuItem icon="exchange" onClick={_convertLegacyDivider}
+                              text="Convert to comment divider"/>}
                 <MenuItem icon="delete"
                           onClick={_deleteMe}
                           intent="danger"
                           text="Delete Item"/>
             </Menu>
         );
-    }, []);
+    }, [props.isDivider, props.preserveAsMethod, props.identifier]);
 
     return (
         <ContextMenu content={contextMenu}>
             <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="sortable-nav-item">
                 <ButtonGroup>
-                    <NavItem {...props} />
+                    {props.isEditingDivider ?
+                        <DividerNameEditor title={props.title}
+                                           identifier={props.identifier}
+                                           dispatch={props.dispatch}
+                                           finishEditing={() => props.setEditingDividerId(null)}/> :
+                        <NavItem {...props} />
+                    }
                     {props.isSpacer ? null :
                         <Button icon={delete_icon} size="small" variant="minimal" className="show-on-hover"
                                 tabIndex={-1} onClick={_deleteMe}/>
@@ -1777,7 +1853,7 @@ function SortableNavItem(props) {
                     {!props.isDivider ? null : (
                         <Fragment>
                              <Button icon={edit_icon} size="small" variant="minimal" className="show-on-hover"
-                                    tabIndex={-1} onClick={_toggleDividerVisibility}/>
+                                    tabIndex={-1} onClick={_editDivider}/>
                             <Button icon={plus_icon} size="small" variant="minimal" className="show-on-hover"
                                     tabIndex={-1} onClick={() => {
                                         props.createItemInSubSection(props.identifier);
@@ -1788,6 +1864,49 @@ function SortableNavItem(props) {
                 </ButtonGroup>
             </div>
         </ContextMenu>
+    );
+}
+
+function DividerNameEditor(props) {
+    const [value, setValue] = useState(props.title);
+    const finishedRef = useRef(false);
+
+    function commit() {
+        if (finishedRef.current) {
+            return;
+        }
+        finishedRef.current = true;
+        const name = value.trim() || "New section";
+        props.dispatch({
+            type: "update_item",
+            identifier: props.identifier,
+            new_item: {name}
+        });
+        props.finishEditing();
+    }
+
+    function handleKeyDown(event) {
+        event.stopPropagation();
+        if (event.key === "Enter") {
+            event.preventDefault();
+            commit();
+        }
+        else if (event.key === "Escape") {
+            event.preventDefault();
+            finishedRef.current = true;
+            props.finishEditing();
+        }
+    }
+
+    return (
+        <InputGroup autoFocus={true}
+                    size="small"
+                    value={value}
+                    aria-label="Divider name"
+                    onChange={(event) => setValue(event.target.value)}
+                    onBlur={commit}
+                    onKeyDown={handleKeyDown}
+                    onPointerDown={(event) => event.stopPropagation()}/>
     );
 }
 
