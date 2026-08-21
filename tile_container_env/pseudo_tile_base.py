@@ -526,7 +526,7 @@ class PseudoTileClass(TileBase):
         except Exception as ex:
             data["execution_count"] = "*"
             data["message"] = self._handle_exception(ex, None, print_to_console=False)
-            print(data["message"])  # necessary so the user sees the error in the notebook
+            display_html(data["message"]) # necessary so the user sees the error in the notebook
             log.exception("Error in exec thread")
             self._restore_base_stdout()
         self.emit_console_message("stopConsoleSpinner", data)
