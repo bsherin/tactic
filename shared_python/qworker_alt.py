@@ -130,6 +130,24 @@ def close_connection():
     del pika_connections[my_thread()]
     return
 
+
+def close_thread_connection(the_thread):
+    """Close and forget the RabbitMQ connection owned by ``the_thread``."""
+    if the_thread is None:
+        return
+
+    thread_name = the_thread.name
+    connection = pika_connections.pop(thread_name, None)
+    pika_channels.pop(thread_name, None)
+    if connection is None:
+        return
+
+    try:
+        if not connection.is_closed:
+            connection.close()
+    except Exception:
+        log.exception("error closing pika connection for thread", thread=thread_name)
+
 # noinspection PyTypeChecker,PyUnusedLocal,PyMissingConstructor
 class QWorker(ExceptionMixin):
     def __init__(self, service_name=None, special_id=None):
@@ -194,13 +212,11 @@ class QWorker(ExceptionMixin):
 
     def interrupt_and_restart(self):
         global thread
-        global thread_lock
-        my_connection().close()
-        stop_thread(thread)
+        interrupted_thread = thread
+        stop_thread(interrupted_thread)
+        close_thread_connection(interrupted_thread)
         log.debug("stopped thread")
         thread = None
-        if thread_lock.locked():
-            thread_lock.release()
         self.start()
         log.debug("restarted thread")
         return
