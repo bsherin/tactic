@@ -196434,7 +196434,7 @@ function FileImportDialog(props) {
   var djsConfig = {
     uploadMultiple: false,
     parallelUploads: 1,
-    maxFilesize: 2000,
+    maxFilesize: 3500,
     timeout: 360000,
     chunking: props.chunking,
     forceChunking: props.forceChunking,
