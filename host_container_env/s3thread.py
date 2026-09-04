@@ -6,9 +6,12 @@ from urllib.parse import urlparse
 from typing import Iterator, List, Tuple, Optional
 from aws_helpers import get_ssm_parameter
 from aws_detection import on_aws
+from tactic_logging import log
+
 import io
 
 MAX_S3_UPLOAD_MB = int(get_ssm_parameter("MAX_S3_UPLOAD_MB", "1000"))
+log.info(f"MAX_S3_UPLOAD_MB {MAX_S3_UPLOAD_MB}", category="s3thread")
 
 def _split_s3_url(url: str) -> Tuple[str, str]:
     # accepts s3://bucket/key or "bucket/key"

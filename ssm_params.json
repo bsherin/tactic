@@ -184,7 +184,7 @@
     },
     {
       "name": "MAX_S3_UPLOAD_MB",
-      "value": "2000",
+      "value": "3500",
       "type": "String"
     },
     {
