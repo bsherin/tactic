@@ -187046,7 +187046,7 @@ function FileImportDialog(props) {
       var _folderInputRef$curre;
       return (_folderInputRef$curre = folderInputRef.current) === null || _folderInputRef$curre === void 0 ? void 0 : _folderInputRef$curre.click();
     }
-  }, "Choose Folder"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
+  }, "Import Folder"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
     ref: folderInputRef,
     type: "file",
     webkitdirectory: "true",
@@ -192270,6 +192270,7 @@ function withPoolMenuFuncs(WrappedComponent) {
         initial_directory = props.currentRootPath;
       }
       dialogFuncs.showModal("FileImportDialog", {
+        title: "Import To Pool",
         res_type: "pool",
         allowed_file_types: null,
         checkboxes: [],
@@ -192538,6 +192539,7 @@ function withPoolMenuFuncs(WrappedComponent) {
                 break;
               }
               dialogFuncs.showModal("FileImportDialog", {
+                title: "Import To Pool",
                 res_type: "pool",
                 allowed_file_types: null,
                 checkboxes: [],

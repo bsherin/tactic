@@ -186117,7 +186117,7 @@ function FileImportDialog(props) {
       var _folderInputRef$curre;
       return (_folderInputRef$curre = folderInputRef.current) === null || _folderInputRef$curre === void 0 ? void 0 : _folderInputRef$curre.click();
     }
-  }, "Choose Folder"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
+  }, "Import Folder"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
     ref: folderInputRef,
     type: "file",
     webkitdirectory: "true",
@@ -188275,6 +188275,7 @@ function LibraryPane(props) {
   }
   function _showJupyterImport() {
     dialogFuncs.showModal("FileImportDialog", {
+      title: "Import Jupyter Notebook",
       res_type: "project",
       allowed_file_types: ".ipynb",
       checkboxes: [],
@@ -188438,6 +188439,7 @@ function LibraryPane(props) {
   }
   function _showCollectionImport() {
     dialogFuncs.showModal("FileImportDialog", {
+      title: "Import Collection",
       res_type: "collection",
       allowed_file_types: ".csv,.tsv,.txt,.xls,.xlsx,.html",
       checkboxes: [{
@@ -188787,6 +188789,7 @@ function LibraryPane(props) {
   }
   function _showListImport() {
     dialogFuncs.showModal("FileImportDialog", {
+      title: "Import List",
       res_type: "list",
       allowed_file_types: "text/*",
       checkboxes: [],
@@ -193990,6 +193993,7 @@ function withPoolMenuFuncs(WrappedComponent) {
         initial_directory = props.currentRootPath;
       }
       dialogFuncs.showModal("FileImportDialog", {
+        title: "Import To Pool",
         res_type: "pool",
         allowed_file_types: null,
         checkboxes: [],
@@ -194258,6 +194262,7 @@ function withPoolMenuFuncs(WrappedComponent) {
                 break;
               }
               dialogFuncs.showModal("FileImportDialog", {
+                title: "Import To Pool",
                 res_type: "pool",
                 allowed_file_types: null,
                 checkboxes: [],

@@ -261,6 +261,7 @@ function withPoolMenuFuncs(WrappedComponent) {
                 initial_directory = props.currentRootPath
             }
             dialogFuncs.showModal("FileImportDialog", {
+                title: "Import To Pool",
                 res_type: "pool",
                 allowed_file_types: null,
                 checkboxes: [],
@@ -402,6 +403,7 @@ function withPoolMenuFuncs(WrappedComponent) {
             const files = e.dataTransfer.files;
             if (files.length != 0) {
                 dialogFuncs.showModal("FileImportDialog", {
+                    title: "Import To Pool",
                     res_type: "pool",
                     allowed_file_types: null,
                     checkboxes: [],

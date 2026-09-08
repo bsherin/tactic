@@ -860,6 +860,7 @@ function LibraryPane(props) {
 
     function _showJupyterImport() {
         dialogFuncs.showModal("FileImportDialog", {
+            title: "Import Jupyter Notebook",
             res_type: "project",
             allowed_file_types: ".ipynb",
             checkboxes: [],
@@ -954,6 +955,7 @@ function LibraryPane(props) {
 
     function _showCollectionImport() {
         dialogFuncs.showModal("FileImportDialog", {
+            title: "Import Collection",
             res_type: "collection",
             allowed_file_types: ".csv,.tsv,.txt,.xls,.xlsx,.html",
             checkboxes: [{"checkname": "import_as_freeform", "checktext": "Import as freeform"}],
@@ -1128,6 +1130,7 @@ function LibraryPane(props) {
 
     function _showListImport() {
         dialogFuncs.showModal("FileImportDialog", {
+            title: "Import List",
             res_type: "list",
             allowed_file_types: "text/*",
             checkboxes: [],

@@ -415,7 +415,7 @@ function FileImportDialog(props) {
                 </FormGroup>
                 {props.allowFolderSelection &&
                     <div>
-                        <Button onClick={() => folderInputRef.current?.click()}>Choose Folder</Button>
+                        <Button onClick={() => folderInputRef.current?.click()}>Import Folder</Button>
                         <input
                             ref={folderInputRef}
                             type="file"
