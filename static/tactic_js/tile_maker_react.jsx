@@ -15,7 +15,7 @@ import {createRoot} from 'react-dom/client';
 
 import _ from 'lodash';
 
-import {Button, ButtonGroup, Checkbox, useHotkeys} from "@blueprintjs/core";
+import {Button, ButtonGroup, Checkbox, useHotkeys, FormGroup, HTMLSelect} from "@blueprintjs/core";
 
 import {EditorView} from "@codemirror/view";
 import {EditorSelection} from "@codemirror/state";
@@ -2321,23 +2321,30 @@ let right_pane = (
             : message;
     })();
 
+    let availableInstances = null;
+    if (!debugTargets.length) {
+        availableInstances = <span className="tile-debugger-message">No running tile instances</span>
+    }
     const debugger_panel = (
         <div className={`tile-debugger-panel tile-debugger-${debugStatus}`}
              style={{display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight: 25}}>
             <div className="tile-debugger-toolbar">
                 <span className="tile-debugger-title">Debugger</span>
-                <select className="tile-debugger-target"
+
+                <FormGroup label="Target Instance">
+                <HTMLSelect className="tile-debugger-target"
                         aria-label="Running tile instance"
                         value={debugTargetId || ""}
                         disabled={debugSession != null}
-                        onChange={event => setDebugTargetId(event.target.value || null)}>
-                    {!debugTargets.length && <option value="">Running tile...</option>}
-                    {debugTargets.map(target => (
-                        <option key={target.tile_id} value={target.tile_id}>
-                            {target.tile_name} ({target.tile_id.slice(-8)})
-                        </option>
-                    ))}
-                </select>
+                        onChange={event => setDebugTargetId(event.target.value || null)}
+                            options={
+                        {!debugTargets.length && <option value="">Running tile...</option>}
+                        {debugTargets.map(target => (
+                            <option key={target.tile_id} value={target.tile_id}>
+                                {target.tile_name} ({target.tile_id.slice(-8)})
+                            </option>
+                        ))}/>
+                     </FormGroup>
                 <Button variant="minimal" size="small" icon="refresh"
                         title="Refresh running tile instances"
                         disabled={debugSession != null}
