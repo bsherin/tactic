@@ -20,27 +20,27 @@ var _library_table_pane = require("./library_table_pane");
 var _library_pane_reducer = require("./library_pane_reducer");
 var _library_widgets = require("./library_widgets");
 var _tactic_socket = require("./tactic_socket");
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t21 in e) "default" !== _t21 && {}.hasOwnProperty.call(e, _t21) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t21)) && (i.get || i.set) ? o(f, _t21, i) : f[_t21] = e[_t21]); return f; })(e, t); }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } // noinspection JSValidateTypes,JSDeprecatedSymbols
 var res_types = exports.res_types = ["collection", "project", "tile", "list", "code", "metabook"];
@@ -145,39 +145,40 @@ function LibraryPane(props) {
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var statusFuncs = (0, _react.useContext)(_toaster.StatusContext);
   var errorDrawerFuncs = (0, _react.useContext)(_error_drawer.ErrorDrawerContext);
-  var _handleArrowKeyPress = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(key) {
+  var _handleArrowKeyPress = (0, _react.useCallback)( /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(key) {
       var the_res, current_index, new_index;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.n) {
+      return _regeneratorRuntime().wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
           case 0:
             if (!pStateRef.current.select_state.multi_select) {
-              _context.n = 1;
+              _context.next = 2;
               break;
             }
-            return _context.a(2);
-          case 1:
+            return _context.abrupt("return");
+          case 2:
             the_res = pStateRef.current.select_state.selected_resource;
             current_index = parseInt((0, _library_pane_reducer.get_index)(the_res.name, the_res.res_type, pStateRef.current.data_dict));
             if (!(key == "ArrowDown")) {
-              _context.n = 2;
+              _context.next = 8;
               break;
             }
             new_index = current_index + 1;
-            _context.n = 3;
+            _context.next = 11;
             break;
-          case 2:
+          case 8:
             new_index = current_index - 1;
             if (!(new_index < 0)) {
-              _context.n = 3;
+              _context.next = 11;
               break;
             }
-            return _context.a(2);
-          case 3:
-            _context.n = 4;
+            return _context.abrupt("return");
+          case 11:
+            _context.next = 13;
             return _selectRow(new_index);
-          case 4:
-            return _context.a(2);
+          case 13:
+          case "end":
+            return _context.stop();
         }
       }, _callee);
     }));
@@ -185,40 +186,40 @@ function LibraryPane(props) {
       return _ref.apply(this, arguments);
     };
   }(), [pStateRef.current.select_state.multi_select, pStateRef.current.select_state.selected_resource, pStateRef.current.data_dict]);
-  var _view_func = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+  var _view_func = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
     var the_view,
       res_type,
       _args2 = arguments;
-    return _regenerator().w(function (_context2) {
-      while (1) switch (_context2.n) {
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
         case 0:
           the_view = _args2.length > 0 && _args2[0] !== undefined ? _args2[0] : null;
           res_type = pStateRef.current.select_state.selected_resource.res_type;
           if (res_type) {
-            _context2.n = 1;
+            _context2.next = 4;
             break;
           }
-          return _context2.a(2);
-        case 1:
+          return _context2.abrupt("return");
+        case 4:
           if (!(res_type == "metabook")) {
-            _context2.n = 3;
+            _context2.next = 9;
             break;
           }
           if (window.in_context) {
-            _context2.n = 2;
+            _context2.next = 7;
             break;
           }
-          return _context2.a(2);
-        case 2:
+          return _context2.abrupt("return");
+        case 7:
           props.setCurrentMetabook(pStateRef.current.select_state.selected_resource._id);
-          return _context2.a(2);
-        case 3:
+          return _context2.abrupt("return");
+        case 9:
           statusFuncs.setStatus({
             show_spinner: true,
             status_message: "Opening ..."
           });
           if (!window.in_context) {
-            _context2.n = 4;
+            _context2.next = 14;
             break;
           }
           try {
@@ -227,22 +228,23 @@ function LibraryPane(props) {
             statusFuncs.clearStatus();
             errorDrawerFuncs.addFromError("Error viewing with view ".concat(the_view), e);
           }
-          _context2.n = 6;
+          _context2.next = 19;
           break;
-        case 4:
+        case 14:
           if (the_view == null) {
             the_view = view_views(props.is_repository)[pStateRef.current.select_state.selected_resource.res_type];
           }
           statusFuncs.clearStatus();
           if (!(the_view == null)) {
-            _context2.n = 5;
+            _context2.next = 18;
             break;
           }
-          return _context2.a(2);
-        case 5:
+          return _context2.abrupt("return");
+        case 18:
           window.open($SCRIPT_ROOT + the_view + pStateRef.current.select_state.selected_resource.name);
-        case 6:
-          return _context2.a(2);
+        case 19:
+        case "end":
+          return _context2.stop();
       }
     }, _callee2);
   })), [pStateRef.current.select_state.selected_resource]);
@@ -250,38 +252,39 @@ function LibraryPane(props) {
     return _unsearch2.apply(this, arguments);
   }
   function _unsearch2() {
-    _unsearch2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-      return _regenerator().w(function (_context8) {
-        while (1) switch (_context8.n) {
+    _unsearch2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+        while (1) switch (_context8.prev = _context8.next) {
           case 0:
             if (!(pStateRef.current.search_state.search_string != "")) {
-              _context8.n = 1;
+              _context8.next = 4;
               break;
             }
             _update_search_state({
               search_string: ""
             });
-            _context8.n = 3;
+            _context8.next = 11;
             break;
-          case 1:
+          case 4:
             if (!(pStateRef.current.search_state.active_tag != "all")) {
-              _context8.n = 2;
+              _context8.next = 8;
               break;
             }
             _update_search_state({
               active_tag: "all"
             });
-            _context8.n = 3;
+            _context8.next = 11;
             break;
-          case 2:
+          case 8:
             if (_.isEqual(pStateRef.current.search_state.filterType, res_types)) {
-              _context8.n = 3;
+              _context8.next = 11;
               break;
             }
-            _context8.n = 3;
+            _context8.next = 11;
             return _setFilterType(res_types);
-          case 3:
-            return _context8.a(2);
+          case 11:
+          case "end":
+            return _context8.stop();
         }
       }, _callee8);
     }));
@@ -294,14 +297,15 @@ function LibraryPane(props) {
       group: "Library",
       label: "Open Selected Resource",
       onKeyDown: function () {
-        var _onKeyDown = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-          return _regenerator().w(function (_context3) {
-            while (1) switch (_context3.n) {
+        var _onKeyDown = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+          return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+            while (1) switch (_context3.prev = _context3.next) {
               case 0:
-                _context3.n = 1;
+                _context3.next = 2;
                 return _view_func();
-              case 1:
-                return _context3.a(2);
+              case 2:
+              case "end":
+                return _context3.stop();
             }
           }, _callee3);
         }));
@@ -316,14 +320,15 @@ function LibraryPane(props) {
       group: "Library",
       label: "Move Selection Down",
       onKeyDown: function () {
-        var _onKeyDown2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-          return _regenerator().w(function (_context4) {
-            while (1) switch (_context4.n) {
+        var _onKeyDown2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+          return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+            while (1) switch (_context4.prev = _context4.next) {
               case 0:
-                _context4.n = 1;
+                _context4.next = 2;
                 return _handleArrowKeyPress("ArrowDown");
-              case 1:
-                return _context4.a(2);
+              case 2:
+              case "end":
+                return _context4.stop();
             }
           }, _callee4);
         }));
@@ -338,14 +343,15 @@ function LibraryPane(props) {
       group: "Library",
       label: "Move Selection Up",
       onKeyDown: function () {
-        var _onKeyDown3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-          return _regenerator().w(function (_context5) {
-            while (1) switch (_context5.n) {
+        var _onKeyDown3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
+          return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+            while (1) switch (_context5.prev = _context5.next) {
               case 0:
-                _context5.n = 1;
+                _context5.next = 2;
                 return _handleArrowKeyPress("ArrowUp");
-              case 1:
-                return _context5.a(2);
+              case 2:
+              case "end":
+                return _context5.stop();
             }
           }, _callee5);
         }));
@@ -409,29 +415,29 @@ function LibraryPane(props) {
     return _setFilterType2.apply(this, arguments);
   }
   function _setFilterType2() {
-    _setFilterType2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(rtypes) {
+    _setFilterType2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee10(rtypes) {
       var sres;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+      return _regeneratorRuntime().wrap(function _callee10$(_context10) {
+        while (1) switch (_context10.prev = _context10.next) {
           case 0:
             if (!_.isEqual(rtypes, pStateRef.current.search_state.filterType)) {
-              _context0.n = 1;
+              _context10.next = 2;
               break;
             }
-            return _context0.a(2);
-          case 1:
+            return _context10.abrupt("return");
+          case 2:
             if (pStateRef.current.search_state.multi_select) {
-              _context0.n = 2;
+              _context10.next = 7;
               break;
             }
             sres = pStateRef.current.select_state.selected_resource;
             if (!(sres.name != "" && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
-              _context0.n = 2;
+              _context10.next = 7;
               break;
             }
-            _context0.n = 2;
+            _context10.next = 7;
             return _saveFromSelectedResource();
-          case 2:
+          case 7:
             pDispatch({
               type: "UPDATE_SEARCH_STATE",
               search_state: {
@@ -439,21 +445,23 @@ function LibraryPane(props) {
               }
             });
             clearSelected();
-            pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-              return _regenerator().w(function (_context9) {
-                while (1) switch (_context9.n) {
+            pushCallback( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee9() {
+              return _regeneratorRuntime().wrap(function _callee9$(_context9) {
+                while (1) switch (_context9.prev = _context9.next) {
                   case 0:
-                    _context9.n = 1;
+                    _context9.next = 2;
                     return _grabNewChunkWithRow(0, true, null, true);
-                  case 1:
-                    return _context9.a(2);
+                  case 2:
+                  case "end":
+                    return _context9.stop();
                 }
               }, _callee9);
             })));
-          case 3:
-            return _context0.a(2);
+          case 10:
+          case "end":
+            return _context10.stop();
         }
-      }, _callee0);
+      }, _callee10);
     }));
     return _setFilterType2.apply(this, arguments);
   }
@@ -496,17 +504,17 @@ function LibraryPane(props) {
     return _onTableSelection2.apply(this, arguments);
   }
   function _onTableSelection2() {
-    _onTableSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(regions) {
+    _onTableSelection2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee11(regions) {
       var selected_rows, selected_row_indices, _iterator3, _step3, region, _region$rows, first_row, last_row, i, sortedIndices, revised_regions;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
+      return _regeneratorRuntime().wrap(function _callee11$(_context11) {
+        while (1) switch (_context11.prev = _context11.next) {
           case 0:
             if (!(regions.length === 0)) {
-              _context1.n = 1;
+              _context11.next = 2;
               break;
             }
-            return _context1.a(2);
-          case 1:
+            return _context11.abrupt("return");
+          case 2:
             selected_rows = [];
             selected_row_indices = new Set();
             _iterator3 = _createForOfIteratorHelper(regions);
@@ -532,19 +540,20 @@ function LibraryPane(props) {
               return a - b;
             });
             revised_regions = compactRowsToRegions(sortedIndices);
-            _context1.n = 2;
+            _context11.next = 10;
             return _handleRowSelection(selected_rows);
-          case 2:
+          case 10:
             pDispatch({
               type: "UPDATE_SELECT_STATE",
               select_state: {
                 selectedRegions: revised_regions
               }
             });
-          case 3:
-            return _context1.a(2);
+          case 11:
+          case "end":
+            return _context11.stop();
         }
-      }, _callee1);
+      }, _callee11);
     }));
     return _onTableSelection2.apply(this, arguments);
   }
@@ -552,7 +561,7 @@ function LibraryPane(props) {
     return _grabNewChunkWithRow2.apply(this, arguments);
   }
   function _grabNewChunkWithRow2() {
-    _grabNewChunkWithRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(row_index) {
+    _grabNewChunkWithRow2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee12(row_index) {
       var flush,
         spec_update,
         select,
@@ -561,16 +570,15 @@ function LibraryPane(props) {
         search_spec,
         args,
         data,
-        _args10 = arguments,
-        _t;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.n) {
+        _args12 = arguments;
+      return _regeneratorRuntime().wrap(function _callee12$(_context12) {
+        while (1) switch (_context12.prev = _context12.next) {
           case 0:
-            flush = _args10.length > 1 && _args10[1] !== undefined ? _args10[1] : false;
-            spec_update = _args10.length > 2 && _args10[2] !== undefined ? _args10[2] : null;
-            select = _args10.length > 3 && _args10[3] !== undefined ? _args10[3] : false;
-            select_by_name = _args10.length > 4 && _args10[4] !== undefined ? _args10[4] : null;
-            callback = _args10.length > 5 && _args10[5] !== undefined ? _args10[5] : null;
+            flush = _args12.length > 1 && _args12[1] !== undefined ? _args12[1] : false;
+            spec_update = _args12.length > 2 && _args12[2] !== undefined ? _args12[2] : null;
+            select = _args12.length > 3 && _args12[3] !== undefined ? _args12[3] : false;
+            select_by_name = _args12.length > 4 && _args12[4] !== undefined ? _args12[4] : null;
+            callback = _args12.length > 5 && _args12[5] !== undefined ? _args12[5] : null;
             search_spec = _objectSpread({}, pStateRef.current.search_state);
             if (search_spec.active_tag == "all") {
               search_spec.active_tag = null;
@@ -589,11 +597,11 @@ function LibraryPane(props) {
               columns: props.columns
             };
             /** @type {{ chunk_dict: object, all_tags: array, num_rows: int }} */
-            _context10.p = 1;
-            _context10.n = 2;
+            _context12.prev = 10;
+            _context12.next = 13;
             return (0, _communication_react.postPromise)("host", "grab_all_list_chunk_task", args);
-          case 2:
-            data = _context10.v;
+          case 13:
+            data = _context12.sent;
             if (flush) {
               pDispatch({
                 type: "INIT_DATA_DICT",
@@ -616,16 +624,17 @@ function LibraryPane(props) {
                 _selectRow(row_index);
               });
             }
-            _context10.n = 4;
+            _context12.next = 23;
             break;
-          case 3:
-            _context10.p = 3;
-            _t = _context10.v;
-            errorDrawerFuncs.addFromError("Error grabbing resource chunk", _t);
-          case 4:
-            return _context10.a(2);
+          case 20:
+            _context12.prev = 20;
+            _context12.t0 = _context12["catch"](10);
+            errorDrawerFuncs.addFromError("Error grabbing resource chunk", _context12.t0);
+          case 23:
+          case "end":
+            return _context12.stop();
         }
-      }, _callee10, null, [[1, 3]]);
+      }, _callee12, null, [[10, 20]]);
     }));
     return _grabNewChunkWithRow2.apply(this, arguments);
   }
@@ -639,18 +648,18 @@ function LibraryPane(props) {
     return _handleRowUpdate2.apply(this, arguments);
   }
   function _handleRowUpdate2() {
-    _handleRowUpdate2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(res_dict) {
-      var res_name, ind, _id, event_type, the_row, selected_ind, new_selected_ind, _t2;
-      return _regenerator().w(function (_context12) {
-        while (1) switch (_context12.n) {
+    _handleRowUpdate2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee14(res_dict) {
+      var res_name, ind, _id, event_type, the_row, selected_ind, new_selected_ind;
+      return _regeneratorRuntime().wrap(function _callee14$(_context14) {
+        while (1) switch (_context14.prev = _context14.next) {
           case 0:
             res_name = res_dict.name;
             event_type = res_dict.event_type;
             delete res_dict.event_type;
-            _t2 = event_type;
-            _context12.n = _t2 === "update" ? 1 : _t2 === "insert" ? 3 : _t2 === "delete" ? 5 : 6;
+            _context14.t0 = event_type;
+            _context14.next = _context14.t0 === "update" ? 6 : _context14.t0 === "insert" ? 12 : _context14.t0 === "delete" ? 15 : 23;
             break;
-          case 1:
+          case 6:
             if ("_id" in res_dict) {
               _id = res_dict._id;
               ind = (0, _library_pane_reducer.get_index_from_id)(res_dict._id, pStateRef.current.data_dict);
@@ -661,11 +670,11 @@ function LibraryPane(props) {
               }
             }
             if (ind) {
-              _context12.n = 2;
+              _context14.next = 9;
               break;
             }
-            return _context12.a(2);
-          case 2:
+            return _context14.abrupt("return");
+          case 9:
             pDispatch({
               type: "UPDATE_ROW",
               index: ind,
@@ -680,13 +689,13 @@ function LibraryPane(props) {
                 }
               });
             }
-            return _context12.a(3, 7);
-          case 3:
-            _context12.n = 4;
+            return _context14.abrupt("break", 24);
+          case 12:
+            _context14.next = 14;
             return _grabNewChunkWithRow(0, true, null, false, res_name);
-          case 4:
-            return _context12.a(3, 7);
-          case 5:
+          case 14:
+            return _context14.abrupt("break", 24);
+          case 15:
             if ("_id" in res_dict) {
               ind = parseInt((0, _library_pane_reducer.get_index_from_id)(res_dict._id, pStateRef.current.data_dict));
             } else {
@@ -704,11 +713,11 @@ function LibraryPane(props) {
               type: "DELETE_ROW",
               index: ind
             });
-            pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-              return _regenerator().w(function (_context11) {
-                while (1) switch (_context11.n) {
+            pushCallback( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee13() {
+              return _regeneratorRuntime().wrap(function _callee13$(_context13) {
+                while (1) switch (_context13.prev = _context13.next) {
                   case 0:
-                    _context11.n = 1;
+                    _context13.next = 2;
                     return _grabNewChunkWithRow(ind, false, null, false, null, function () {
                       if (new_selected_ind) {
                         _selectRow(new_selected_ind);
@@ -716,18 +725,20 @@ function LibraryPane(props) {
                         clearSelected();
                       }
                     });
-                  case 1:
-                    return _context11.a(2);
+                  case 2:
+                  case "end":
+                    return _context13.stop();
                 }
-              }, _callee11);
+              }, _callee13);
             })));
-            return _context12.a(3, 7);
-          case 6:
-            return _context12.a(2);
-          case 7:
-            return _context12.a(2);
+            return _context14.abrupt("break", 24);
+          case 23:
+            return _context14.abrupt("return");
+          case 24:
+          case "end":
+            return _context14.stop();
         }
-      }, _callee12);
+      }, _callee14);
     }));
     return _handleRowUpdate2.apply(this, arguments);
   }
@@ -744,10 +755,10 @@ function LibraryPane(props) {
     return _saveFromSelectedResource2.apply(this, arguments);
   }
   function _saveFromSelectedResource2() {
-    _saveFromSelectedResource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
-      var result_dict, _t3;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
+    _saveFromSelectedResource2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee15() {
+      var result_dict;
+      return _regeneratorRuntime().wrap(function _callee15$(_context15) {
+        while (1) switch (_context15.prev = _context15.next) {
           case 0:
             // This will only be called when there is a single row selected
             result_dict = {
@@ -761,20 +772,21 @@ function LibraryPane(props) {
             if (pStateRef.current.select_state.selected_rows[0].res_type == "tile" && "icon" in pStateRef.current.select_state.selected_resource) {
               result_dict["metadata"]["icon"] = pStateRef.current.select_state.selected_resource["icon"];
             }
-            _context13.p = 1;
-            _context13.n = 2;
+            _context15.prev = 2;
+            _context15.next = 5;
             return (0, _communication_react.postPromise)("host", "save_metadata_task", result_dict);
-          case 2:
-            _context13.n = 4;
+          case 5:
+            _context15.next = 10;
             break;
-          case 3:
-            _context13.p = 3;
-            _t3 = _context13.v;
-            errorDrawerFuncs.addFromError("Error updating resource ".concat(result_dict.res_name), _t3);
-          case 4:
-            return _context13.a(2);
+          case 7:
+            _context15.prev = 7;
+            _context15.t0 = _context15["catch"](2);
+            errorDrawerFuncs.addFromError("Error updating resource ".concat(result_dict.res_name), _context15.t0);
+          case 10:
+          case "end":
+            return _context15.stop();
         }
-      }, _callee13, null, [[1, 3]]);
+      }, _callee15, null, [[2, 7]]);
     }));
     return _saveFromSelectedResource2.apply(this, arguments);
   }
@@ -793,13 +805,13 @@ function LibraryPane(props) {
         selected_rows: [row_dict]
       }
     });
-    pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+    pushCallback( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
       var _view_view;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+        while (1) switch (_context6.prev = _context6.next) {
           case 0:
             if (!window.in_context) {
-              _context6.n = 1;
+              _context6.next = 4;
               break;
             }
             try {
@@ -808,20 +820,21 @@ function LibraryPane(props) {
               statusFuncs.clearStatus();
               errorDrawerFuncs.addFromError("Error handling double click with view ".concat(view_view), e);
             }
-            _context6.n = 3;
+            _context6.next = 9;
             break;
-          case 1:
+          case 4:
             _view_view = view_views(props.is_repository)[row_dict.res_type];
             statusFuncs.clearStatus();
             if (!(_view_view == null)) {
-              _context6.n = 2;
+              _context6.next = 8;
               break;
             }
-            return _context6.a(2);
-          case 2:
+            return _context6.abrupt("return");
+          case 8:
             window.open($SCRIPT_ROOT + _view_view + row_dict.name);
-          case 3:
-            return _context6.a(2);
+          case 9:
+          case "end":
+            return _context6.stop();
         }
       }, _callee6);
     })));
@@ -837,23 +850,23 @@ function LibraryPane(props) {
     return _handleRowSelection2.apply(this, arguments);
   }
   function _handleRowSelection2() {
-    _handleRowSelection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(selected_rows) {
+    _handleRowSelection2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee16(selected_rows) {
       var sres, common_tags, other_rows, _iterator4, _step4, row_dict, new_common_tags, new_tag_list, _iterator5, _step5, tag, multi_select_list, multi_select_types, new_selected_resource, _row_dict;
-      return _regenerator().w(function (_context14) {
-        while (1) switch (_context14.n) {
+      return _regeneratorRuntime().wrap(function _callee16$(_context16) {
+        while (1) switch (_context16.prev = _context16.next) {
           case 0:
             if (pStateRef.current.select_state.multi_select) {
-              _context14.n = 1;
+              _context16.next = 5;
               break;
             }
             sres = pStateRef.current.select_state.selected_resource;
             if (!(sres.name != "" && get_data_dict_entry(sres.name, sres.res_type) && sres.notes != get_data_dict_entry(sres.name, sres.res_type).notes)) {
-              _context14.n = 1;
+              _context16.next = 5;
               break;
             }
-            _context14.n = 1;
+            _context16.next = 5;
             return _saveFromSelectedResource();
-          case 1:
+          case 5:
             if (selected_rows.length > 1) {
               // I think the common_tags stuff doesn't currently do anything
               common_tags = selected_rows[0].tags.split(" ");
@@ -918,10 +931,11 @@ function LibraryPane(props) {
                 }
               });
             }
-          case 2:
-            return _context14.a(2);
+          case 6:
+          case "end":
+            return _context16.stop();
         }
-      }, _callee14);
+      }, _callee16);
     }));
     return _handleRowSelection2.apply(this, arguments);
   }
@@ -930,19 +944,20 @@ function LibraryPane(props) {
       type: "UPDATE_SEARCH_STATE",
       search_state: new_state
     });
-    pushCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.n) {
+    pushCallback( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
+      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+        while (1) switch (_context7.prev = _context7.next) {
           case 0:
             if (!search_spec_changed(new_state)) {
-              _context7.n = 1;
+              _context7.next = 4;
               break;
             }
             clearSelected();
-            _context7.n = 1;
+            _context7.next = 4;
             return _grabNewChunkWithRow(0, true, new_state, true);
-          case 1:
-            return _context7.a(2);
+          case 4:
+          case "end":
+            return _context7.stop();
         }
       }, _callee7);
     })));
@@ -972,22 +987,22 @@ function LibraryPane(props) {
     return _selectRow2.apply(this, arguments);
   }
   function _selectRow2() {
-    _selectRow2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(new_index) {
-      return _regenerator().w(function (_context15) {
-        while (1) switch (_context15.n) {
+    _selectRow2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee17(new_index) {
+      return _regeneratorRuntime().wrap(function _callee17$(_context17) {
+        while (1) switch (_context17.prev = _context17.next) {
           case 0:
             if (Object.keys(pStateRef.current.data_dict).includes(String(new_index))) {
-              _context15.n = 2;
+              _context17.next = 5;
               break;
             }
-            _context15.n = 1;
+            _context17.next = 3;
             return _grabNewChunkWithRow(new_index, false, null, false, null, function () {
               _selectRow(new_index);
             });
-          case 1:
-            _context15.n = 3;
+          case 3:
+            _context17.next = 6;
             break;
-          case 2:
+          case 5:
             pDispatch({
               type: "UPDATE_SELECT_STATE",
               select_state: {
@@ -999,10 +1014,11 @@ function LibraryPane(props) {
                 selectedRegions: [_table.Regions.row(new_index)]
               }
             });
-          case 3:
-            return _context15.a(2);
+          case 6:
+          case "end":
+            return _context17.stop();
         }
-      }, _callee15);
+      }, _callee17);
     }));
     return _selectRow2.apply(this, arguments);
   }
@@ -1010,22 +1026,22 @@ function LibraryPane(props) {
     return _open_raw2.apply(this, arguments);
   }
   function _open_raw2() {
-    _open_raw2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(selected_resource) {
+    _open_raw2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee18(selected_resource) {
       var data, html, blob, url;
-      return _regenerator().w(function (_context16) {
-        while (1) switch (_context16.n) {
+      return _regeneratorRuntime().wrap(function _callee18$(_context18) {
+        while (1) switch (_context18.prev = _context18.next) {
           case 0:
             statusFuncs.clearStatus();
             if (!(selected_resource.type == "freeform")) {
-              _context16.n = 2;
+              _context18.next = 11;
               break;
             }
-            _context16.n = 1;
+            _context18.next = 4;
             return (0, _communication_react.postPromise)("host", "open_raw", {
               collection_name: selected_resource.name
             });
-          case 1:
-            data = _context16.v;
+          case 4:
+            data = _context18.sent;
             html = data["the_html"];
             blob = new Blob([html], {
               type: "text/html"
@@ -1033,14 +1049,15 @@ function LibraryPane(props) {
             url = URL.createObjectURL(blob);
             window.open(url, "_blank");
             // window.open($SCRIPT_ROOT + "/open_raw/" + selected_resource.name)
-            _context16.n = 3;
+            _context18.next = 12;
             break;
-          case 2:
+          case 11:
             statusFuncs.statusMessage("Only Freeform documents can be raw opened", 5);
-          case 3:
-            return _context16.a(2);
+          case 12:
+          case "end":
+            return _context18.stop();
         }
-      }, _callee16);
+      }, _callee18);
     }));
     return _open_raw2.apply(this, arguments);
   }
@@ -1048,23 +1065,23 @@ function LibraryPane(props) {
     return _view_resource2.apply(this, arguments);
   }
   function _view_resource2() {
-    _view_resource2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(selected_resource) {
+    _view_resource2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee19(selected_resource) {
       var the_view,
         force_new_tab,
         resource_name,
-        _args17 = arguments;
-      return _regenerator().w(function (_context17) {
-        while (1) switch (_context17.n) {
+        _args19 = arguments;
+      return _regeneratorRuntime().wrap(function _callee19$(_context19) {
+        while (1) switch (_context19.prev = _context19.next) {
           case 0:
-            the_view = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : null;
-            force_new_tab = _args17.length > 2 && _args17[2] !== undefined ? _args17[2] : false;
+            the_view = _args19.length > 1 && _args19[1] !== undefined ? _args19[1] : null;
+            force_new_tab = _args19.length > 2 && _args19[2] !== undefined ? _args19[2] : false;
             resource_name = selected_resource.name;
             statusFuncs.setStatus({
               show_spinner: true,
               status_message: "Opening ..."
             });
             if (!(window.in_context && !force_new_tab)) {
-              _context17.n = 1;
+              _context19.next = 8;
               break;
             }
             try {
@@ -1073,24 +1090,25 @@ function LibraryPane(props) {
               statusFuncs.clearStatus();
               errorDrawerFuncs.addFromError("Error viewing resource ".concat(resource_name), e);
             }
-            _context17.n = 3;
+            _context19.next = 13;
             break;
-          case 1:
+          case 8:
             if (the_view == null) {
               the_view = view_views(props.is_repository)[selected_resource.res_type];
             }
             statusFuncs.clearStatus();
             if (!(the_view == null)) {
-              _context17.n = 2;
+              _context19.next = 12;
               break;
             }
-            return _context17.a(2);
-          case 2:
+            return _context19.abrupt("return");
+          case 12:
             window.open($SCRIPT_ROOT + the_view + resource_name);
-          case 3:
-            return _context17.a(2);
+          case 13:
+          case "end":
+            return _context19.stop();
         }
-      }, _callee17);
+      }, _callee19);
     }));
     return _view_resource2.apply(this, arguments);
   }
@@ -1098,7 +1116,7 @@ function LibraryPane(props) {
     return _duplicate_func2.apply(this, arguments);
   }
   function _duplicate_func2() {
-    _duplicate_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
+    _duplicate_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee20() {
       var row,
         the_row,
         res_name,
@@ -1106,23 +1124,22 @@ function LibraryPane(props) {
         data,
         new_name,
         result_dict,
-        _args18 = arguments,
-        _t4;
-      return _regenerator().w(function (_context18) {
-        while (1) switch (_context18.n) {
+        _args20 = arguments;
+      return _regeneratorRuntime().wrap(function _callee20$(_context20) {
+        while (1) switch (_context20.prev = _context20.next) {
           case 0:
-            row = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
+            row = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : null;
             the_row = row ? row : pStateRef.current.select_state.selected_resource;
             res_name = the_row.name;
             res_type = the_row.res_type;
-            _context18.p = 1;
-            _context18.n = 2;
+            _context20.prev = 4;
+            _context20.next = 7;
             return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
               res_type: res_type
             });
-          case 2:
-            data = _context18.v;
-            _context18.n = 3;
+          case 7:
+            data = _context20.sent;
+            _context20.next = 10;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Duplicate ".concat(res_type),
               field_title: "New Name",
@@ -1131,40 +1148,41 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 3:
-            new_name = _context18.v;
+          case 10:
+            new_name = _context20.sent;
             result_dict = {
               "new_res_name": new_name,
               "res_to_copy": res_name,
               "is_repository": false,
               "res_type": res_type
             };
-            _context18.n = 4;
+            _context20.next = 14;
             return (0, _communication_react.postPromise)("host", "create_duplicate_resource_task", result_dict);
-          case 4:
-            _context18.n = 6;
+          case 14:
+            _context20.next = 19;
             break;
-          case 5:
-            _context18.p = 5;
-            _t4 = _context18.v;
-            if (_t4 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _t4);
+          case 16:
+            _context20.prev = 16;
+            _context20.t0 = _context20["catch"](4);
+            if (_context20.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context20.t0);
             }
-          case 6:
-            return _context18.a(2);
+          case 19:
+          case "end":
+            return _context20.stop();
         }
-      }, _callee18, null, [[1, 5]]);
+      }, _callee20, null, [[4, 16]]);
     }));
     return _duplicate_func2.apply(this, arguments);
   }
-  function _delete_func(_x0) {
+  function _delete_func(_x10) {
     return _delete_func2.apply(this, arguments);
   }
   function _delete_func2() {
-    _delete_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19(resource) {
-      var res_list, confirm_text, _res_name, first_index, _iterator6, _step6, row, ind, _t5;
-      return _regenerator().w(function (_context19) {
-        while (1) switch (_context19.n) {
+    _delete_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee21(resource) {
+      var res_list, confirm_text, _res_name, first_index, _iterator6, _step6, row, ind;
+      return _regeneratorRuntime().wrap(function _callee21$(_context21) {
+        while (1) switch (_context21.prev = _context21.next) {
           case 0:
             res_list = resource ? [resource] : pStateRef.current.select_state.selected_rows;
             if (res_list.length == 1) {
@@ -1188,8 +1206,8 @@ function LibraryPane(props) {
             } finally {
               _iterator6.f();
             }
-            _context19.p = 1;
-            _context19.n = 2;
+            _context21.prev = 5;
+            _context21.next = 8;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Delete resources",
               text_body: confirm_text,
@@ -1197,24 +1215,25 @@ function LibraryPane(props) {
               submit_text: "delete",
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            _context19.n = 3;
+          case 8:
+            _context21.next = 10;
             return (0, _communication_react.postPromise)("host", "delete_resource_list_task", {
               "resource_list": res_list
             });
-          case 3:
-            _context19.n = 5;
+          case 10:
+            _context21.next = 15;
             break;
-          case 4:
-            _context19.p = 4;
-            _t5 = _context19.v;
-            if (_t5 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _t5);
+          case 12:
+            _context21.prev = 12;
+            _context21.t0 = _context21["catch"](5);
+            if (_context21.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating resource ".concat(res_name), _context21.t0);
             }
-          case 5:
-            return _context19.a(2);
+          case 15:
+          case "end":
+            return _context21.stop();
         }
-      }, _callee19, null, [[1, 4]]);
+      }, _callee21, null, [[5, 12]]);
     }));
     return _delete_func2.apply(this, arguments);
   }
@@ -1222,7 +1241,7 @@ function LibraryPane(props) {
     return _rename_func2.apply(this, arguments);
   }
   function _rename_func2() {
-    _rename_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
+    _rename_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee22() {
       var row,
         res_type,
         res_name,
@@ -1230,12 +1249,11 @@ function LibraryPane(props) {
         res_names,
         index,
         new_name,
-        _args20 = arguments,
-        _t6;
-      return _regenerator().w(function (_context20) {
-        while (1) switch (_context20.n) {
+        _args22 = arguments;
+      return _regeneratorRuntime().wrap(function _callee22$(_context22) {
+        while (1) switch (_context22.prev = _context22.next) {
           case 0:
-            row = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : null;
+            row = _args22.length > 0 && _args22[0] !== undefined ? _args22[0] : null;
             if (!row) {
               res_type = pStateRef.current.select_state.selected_resource.res_type;
               res_name = pStateRef.current.select_state.selected_resource.name;
@@ -1243,19 +1261,19 @@ function LibraryPane(props) {
               res_type = row.res_type;
               res_name = row.name;
             }
-            _context20.p = 1;
-            _context20.n = 2;
+            _context22.prev = 2;
+            _context22.next = 5;
             return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
               res_type: res_type
             });
-          case 2:
-            data = _context20.v;
+          case 5:
+            data = _context22.sent;
             res_names = data["res_names"];
             index = res_names.indexOf(res_name);
             if (index >= 0) {
               res_names.splice(index, 1);
             }
-            _context20.n = 3;
+            _context22.next = 11;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Rename ".concat(res_type),
               field_title: "New Name",
@@ -1264,27 +1282,28 @@ function LibraryPane(props) {
               existing_names: res_names,
               checkboxes: []
             });
-          case 3:
-            new_name = _context20.v;
-            _context20.n = 4;
+          case 11:
+            new_name = _context22.sent;
+            _context22.next = 14;
             return (0, _communication_react.postPromise)("host", "rename_resource_task", {
               old_name: res_name,
               res_type: res_type,
               new_name: new_name
             });
-          case 4:
-            _context20.n = 6;
+          case 14:
+            _context22.next = 19;
             break;
-          case 5:
-            _context20.p = 5;
-            _t6 = _context20.v;
-            if (_t6 != "canceled") {
-              errorDrawerFuncs.addFromError("Error renaming resource ".concat(res_name), _t6);
+          case 16:
+            _context22.prev = 16;
+            _context22.t0 = _context22["catch"](2);
+            if (_context22.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error renaming resource ".concat(res_name), _context22.t0);
             }
-          case 6:
-            return _context20.a(2);
+          case 19:
+          case "end":
+            return _context22.stop();
         }
-      }, _callee20, null, [[1, 5]]);
+      }, _callee22, null, [[2, 16]]);
     }));
     return _rename_func2.apply(this, arguments);
   }
@@ -1292,25 +1311,25 @@ function LibraryPane(props) {
     return _repository_copy_func2.apply(this, arguments);
   }
   function _repository_copy_func2() {
-    _repository_copy_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
-      var res_type, res_name, data, new_name, result_dict, _result_dict, _t7, _t8;
-      return _regenerator().w(function (_context21) {
-        while (1) switch (_context21.n) {
+    _repository_copy_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee23() {
+      var res_type, res_name, data, new_name, result_dict, _result_dict;
+      return _regeneratorRuntime().wrap(function _callee23$(_context23) {
+        while (1) switch (_context23.prev = _context23.next) {
           case 0:
             if (pStateRef.current.select_state.multi_select) {
-              _context21.n = 6;
+              _context23.next = 22;
               break;
             }
             res_type = pStateRef.current.select_state.selected_resource.res_type;
             res_name = pStateRef.current.select_state.selected_resource.name;
-            _context21.p = 1;
-            _context21.n = 2;
+            _context23.prev = 3;
+            _context23.next = 6;
             return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
               res_type: res_type
             });
-          case 2:
-            data = _context21.v;
-            _context21.n = 3;
+          case 6:
+            data = _context23.sent;
+            _context23.next = 9;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Import ".concat(res_type),
               field_title: "New Name",
@@ -1319,47 +1338,49 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 3:
-            new_name = _context21.v;
+          case 9:
+            new_name = _context23.sent;
             result_dict = {
               "res_type": res_type,
               "res_name": res_name,
               "new_res_name": new_name
             };
-            _context21.n = 4;
+            _context23.next = 13;
             return (0, _communication_react.postPromise)("host", "copy_from_repository_task", result_dict);
-          case 4:
+          case 13:
             statusFuncs.statusMessage("Imported Resource ".concat(res_name));
-            return _context21.a(2, res_name);
-          case 5:
-            _context21.p = 5;
-            _t7 = _context21.v;
-            if (_t7 != "canceled") {
-              errorDrawerFuncs.addFromError("Error getting resources names", _t7);
+            return _context23.abrupt("return", res_name);
+          case 17:
+            _context23.prev = 17;
+            _context23.t0 = _context23["catch"](3);
+            if (_context23.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error getting resources names", _context23.t0);
             }
-            _context21.n = 11;
+          case 20:
+            _context23.next = 33;
             break;
-          case 6:
+          case 22:
             _result_dict = {
               "selected_rows": pStateRef.current.select_state.selected_rows
             };
-            _context21.p = 7;
-            _context21.n = 8;
+            _context23.prev = 23;
+            _context23.next = 26;
             return (0, _communication_react.postPromise)("host", "copy_from_repository_task", _result_dict);
-          case 8:
+          case 26:
             statusFuncs.statusMessage("Imported Resources");
-            _context21.n = 10;
+            _context23.next = 32;
             break;
-          case 9:
-            _context21.p = 9;
-            _t8 = _context21.v;
-            errorDrawerFuncs.addFromError("Error importing resources", _t8);
-          case 10:
-            return _context21.a(2, "");
-          case 11:
-            return _context21.a(2);
+          case 29:
+            _context23.prev = 29;
+            _context23.t1 = _context23["catch"](23);
+            errorDrawerFuncs.addFromError("Error importing resources", _context23.t1);
+          case 32:
+            return _context23.abrupt("return", "");
+          case 33:
+          case "end":
+            return _context23.stop();
         }
-      }, _callee21, null, [[7, 9], [1, 5]]);
+      }, _callee23, null, [[3, 17], [23, 29]]);
     }));
     return _repository_copy_func2.apply(this, arguments);
   }
@@ -1367,26 +1388,26 @@ function LibraryPane(props) {
     return _send_repository_func2.apply(this, arguments);
   }
   function _send_repository_func2() {
-    _send_repository_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee22() {
-      var res_type, res_name, data, new_name, result_dict, _result_dict2, _t9, _t0;
-      return _regenerator().w(function (_context22) {
-        while (1) switch (_context22.n) {
+    _send_repository_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee24() {
+      var res_type, res_name, data, new_name, result_dict, _result_dict2;
+      return _regeneratorRuntime().wrap(function _callee24$(_context24) {
+        while (1) switch (_context24.prev = _context24.next) {
           case 0:
             if (pStateRef.current.select_state.multi_select) {
-              _context22.n = 7;
+              _context24.next = 21;
               break;
             }
             res_type = pStateRef.current.select_state.selected_resource.res_type;
             res_name = pStateRef.current.select_state.selected_resource.name;
-            _context22.p = 1;
-            _context22.n = 2;
+            _context24.prev = 3;
+            _context24.next = 6;
             return (0, _communication_react.postPromise)("host", "get_resource_names_task", {
               res_type: res_type,
               is_repository: true
             });
-          case 2:
-            data = _context22.v;
-            _context22.n = 3;
+          case 6:
+            data = _context24.sent;
+            _context24.next = 9;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Share ".concat(res_type),
               field_title: "New ".concat(res_type, " Name"),
@@ -1395,49 +1416,50 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 3:
-            new_name = _context22.v;
+          case 9:
+            new_name = _context24.sent;
             result_dict = {
               "res_type": res_type,
               "res_name": res_name,
               "new_res_name": new_name
             };
-            _context22.n = 4;
+            _context24.next = 13;
             return (0, _communication_react.postPromise)("host", 'send_to_repository_task', result_dict);
-          case 4:
+          case 13:
             statusFuncs.statusMessage("Shared resource ".concat(res_name));
-            _context22.n = 6;
+            _context24.next = 19;
             break;
-          case 5:
-            _context22.p = 5;
-            _t9 = _context22.v;
-            if (_t9 != "canceled") {
-              errorDrawerFuncs.addFromError("Error sharing resource ".concat(res_name), _t9);
+          case 16:
+            _context24.prev = 16;
+            _context24.t0 = _context24["catch"](3);
+            if (_context24.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error sharing resource ".concat(res_name), _context24.t0);
             }
-          case 6:
-            _context22.n = 12;
+          case 19:
+            _context24.next = 32;
             break;
-          case 7:
+          case 21:
             _result_dict2 = {
               "selected_rows": pStateRef.current.select_state.selected_rows
             };
-            _context22.p = 8;
-            _context22.n = 9;
+            _context24.prev = 22;
+            _context24.next = 25;
             return (0, _communication_react.postPromise)("host", 'send_to_repository_task', _result_dict2);
-          case 9:
+          case 25:
             statusFuncs.statusMessage("Shared resources");
-            _context22.n = 11;
+            _context24.next = 31;
             break;
-          case 10:
-            _context22.p = 10;
-            _t0 = _context22.v;
-            errorDrawerFuncs.addFromError("Error sharing resources", _t0);
-          case 11:
-            return _context22.a(2, "");
-          case 12:
-            return _context22.a(2);
+          case 28:
+            _context24.prev = 28;
+            _context24.t1 = _context24["catch"](22);
+            errorDrawerFuncs.addFromError("Error sharing resources", _context24.t1);
+          case 31:
+            return _context24.abrupt("return", "");
+          case 32:
+          case "end":
+            return _context24.stop();
         }
-      }, _callee22, null, [[8, 10], [1, 5]]);
+      }, _callee24, null, [[3, 16], [22, 28]]);
     }));
     return _send_repository_func2.apply(this, arguments);
   }
@@ -1445,19 +1467,20 @@ function LibraryPane(props) {
     return _refresh_func2.apply(this, arguments);
   }
   function _refresh_func2() {
-    _refresh_func2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee23() {
+    _refresh_func2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee25() {
       var callback,
-        _args23 = arguments;
-      return _regenerator().w(function (_context23) {
-        while (1) switch (_context23.n) {
+        _args25 = arguments;
+      return _regeneratorRuntime().wrap(function _callee25$(_context25) {
+        while (1) switch (_context25.prev = _context25.next) {
           case 0:
-            callback = _args23.length > 0 && _args23[0] !== undefined ? _args23[0] : null;
-            _context23.n = 1;
+            callback = _args25.length > 0 && _args25[0] !== undefined ? _args25[0] : null;
+            _context25.next = 3;
             return _grabNewChunkWithRow(0, true, null, true, callback);
-          case 1:
-            return _context23.a(2);
+          case 3:
+          case "end":
+            return _context25.stop();
         }
-      }, _callee23);
+      }, _callee25);
     }));
     return _refresh_func2.apply(this, arguments);
   }
@@ -1465,9 +1488,9 @@ function LibraryPane(props) {
     return _new_notebook2.apply(this, arguments);
   }
   function _new_notebook2() {
-    _new_notebook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee24() {
-      return _regenerator().w(function (_context24) {
-        while (1) switch (_context24.n) {
+    _new_notebook2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee26() {
+      return _regeneratorRuntime().wrap(function _callee26$(_context26) {
+        while (1) switch (_context26.prev = _context26.next) {
           case 0:
             if (window.in_context) {
               try {
@@ -1479,9 +1502,10 @@ function LibraryPane(props) {
               window.open("".concat($SCRIPT_ROOT, "/new_notebook"));
             }
           case 1:
-            return _context24.a(2);
+          case "end":
+            return _context26.stop();
         }
-      }, _callee24);
+      }, _callee26);
     }));
     return _new_notebook2.apply(this, arguments);
   }
@@ -1489,9 +1513,9 @@ function LibraryPane(props) {
     return _new_project2.apply(this, arguments);
   }
   function _new_project2() {
-    _new_project2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee25() {
-      return _regenerator().w(function (_context25) {
-        while (1) switch (_context25.n) {
+    _new_project2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee27() {
+      return _regeneratorRuntime().wrap(function _callee27$(_context27) {
+        while (1) switch (_context27.prev = _context27.next) {
           case 0:
             if (window.in_context) {
               try {
@@ -1503,9 +1527,10 @@ function LibraryPane(props) {
               window.open("".concat($SCRIPT_ROOT, "/new_project"));
             }
           case 1:
-            return _context25.a(2);
+          case "end":
+            return _context27.stop();
         }
-      }, _callee25);
+      }, _callee27);
     }));
     return _new_project2.apply(this, arguments);
   }
@@ -1513,14 +1538,14 @@ function LibraryPane(props) {
     return _downloadJupyter2.apply(this, arguments);
   }
   function _downloadJupyter2() {
-    _downloadJupyter2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee26() {
-      var res_name, new_name, _t1;
-      return _regenerator().w(function (_context26) {
-        while (1) switch (_context26.n) {
+    _downloadJupyter2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee28() {
+      var res_name, new_name;
+      return _regeneratorRuntime().wrap(function _callee28$(_context28) {
+        while (1) switch (_context28.prev = _context28.next) {
           case 0:
             res_name = pStateRef.current.select_state.selected_resource.name;
-            _context26.p = 1;
-            _context26.n = 2;
+            _context28.prev = 1;
+            _context28.next = 4;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download Notebook as Jupyter Notebook",
               field_title: "New File Name",
@@ -1529,24 +1554,26 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            new_name = _context26.v;
-            window.open("".concat($SCRIPT_ROOT, "/download_jupyter/") + res_name + "/" + new_name);
-            _context26.n = 4;
-            break;
-          case 3:
-            _context26.p = 3;
-            _t1 = _context26.v;
-            errorDrawerFuncs.addFromError("Error downloading jupyter notebook", _t1);
           case 4:
-            return _context26.a(2);
+            new_name = _context28.sent;
+            window.open("".concat($SCRIPT_ROOT, "/download_jupyter/") + res_name + "/" + new_name);
+            _context28.next = 11;
+            break;
+          case 8:
+            _context28.prev = 8;
+            _context28.t0 = _context28["catch"](1);
+            errorDrawerFuncs.addFromError("Error downloading jupyter notebook", _context28.t0);
+          case 11:
+          case "end":
+            return _context28.stop();
         }
-      }, _callee26, null, [[1, 3]]);
+      }, _callee28, null, [[1, 8]]);
     }));
     return _downloadJupyter2.apply(this, arguments);
   }
   function _showJupyterImport() {
     dialogFuncs.showModal("FileImportDialog", {
+      title: "Import Jupyter Notebook",
       res_type: "project",
       allowed_file_types: ".ipynb",
       checkboxes: [],
@@ -1574,24 +1601,24 @@ function LibraryPane(props) {
     return _combineCollections2.apply(this, arguments);
   }
   function _combineCollections2() {
-    _combineCollections2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee27() {
-      var res_name, data, other_name, _data, new_name, _t10, _t11;
-      return _regenerator().w(function (_context27) {
-        while (1) switch (_context27.n) {
+    _combineCollections2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee29() {
+      var res_name, data, other_name, _data, new_name;
+      return _regeneratorRuntime().wrap(function _callee29$(_context29) {
+        while (1) switch (_context29.prev = _context29.next) {
           case 0:
             res_name = pStateRef.current.select_state.selected_resource.name;
             if (pStateRef.current.select_state.multi_select) {
-              _context27.n = 7;
+              _context29.next = 22;
               break;
             }
-            _context27.p = 1;
-            _context27.n = 2;
+            _context29.prev = 2;
+            _context29.next = 5;
             return (0, _communication_react.postPromise)("host", "get_resource_names_tasks", {
               res_type: "collection"
             });
-          case 2:
-            data = _context27.v;
-            _context27.n = 3;
+          case 5:
+            data = _context29.sent;
+            _context29.next = 8;
             return dialogFuncs.showModalPromise("SelectDialog", {
               title: "Select a new collection to combine with " + res_name,
               select_label: "Collection to Combine",
@@ -1600,39 +1627,39 @@ function LibraryPane(props) {
               option_list: data.res_names,
               handleClose: dialogFuncs.hideModal
             });
-          case 3:
-            other_name = _context27.v;
+          case 8:
+            other_name = _context29.sent;
             statusFuncs.startSpinner();
             // const target = `combine_collections/${res_name}/${other_name}`;
-            _context27.n = 4;
+            _context29.next = 12;
             return (0, _communication_react.postPromise)("host", "combine_collections_task", {
               base_collection_name: res_name,
               collection_to_add: other_name
             });
-          case 4:
+          case 12:
             statusFuncs.stopSpinner();
             statusFuncs.statusMessage("Combined Collections");
-            _context27.n = 6;
+            _context29.next = 20;
             break;
-          case 5:
-            _context27.p = 5;
-            _t10 = _context27.v;
-            if (_t10 != "canceled") {
-              errorDrawerFuncs.addFromError("Error combining collections", _t10);
+          case 16:
+            _context29.prev = 16;
+            _context29.t0 = _context29["catch"](2);
+            if (_context29.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error combining collections", _context29.t0);
             }
             statusFuncs.stopSpinner();
-          case 6:
-            _context27.n = 12;
+          case 20:
+            _context29.next = 37;
             break;
-          case 7:
-            _context27.p = 7;
-            _context27.n = 8;
+          case 22:
+            _context29.prev = 22;
+            _context29.next = 25;
             return (0, _communication_react.postPromise)("host", "get_resource_names_tasks", {
               res_type: "collection"
             });
-          case 8:
-            _data = _context27.v;
-            _context27.n = 9;
+          case 25:
+            _data = _context29.sent;
+            _context29.next = 28;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Combine Collections",
               field_title: "Name for combined collection",
@@ -1641,27 +1668,28 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 9:
-            new_name = _context27.v;
-            _context27.n = 10;
+          case 28:
+            new_name = _context29.sent;
+            _context29.next = 31;
             return (0, _communication_react.postPromise)("host", "combine_to_new_collection", {
               "original_collections": pStateRef.current.select_state.list_of_selected,
               "new_name": new_name
             });
-          case 10:
-            _context27.n = 12;
+          case 31:
+            _context29.next = 37;
             break;
-          case 11:
-            _context27.p = 11;
-            _t11 = _context27.v;
-            if (_t11 != "canceled") {
-              errorDrawerFuncs.addFromError("Error combining collections", _t11);
+          case 33:
+            _context29.prev = 33;
+            _context29.t1 = _context29["catch"](22);
+            if (_context29.t1 != "canceled") {
+              errorDrawerFuncs.addFromError("Error combining collections", _context29.t1);
             }
             statusFuncs.stopSpinner();
-          case 12:
-            return _context27.a(2);
+          case 37:
+          case "end":
+            return _context29.stop();
         }
-      }, _callee27, null, [[7, 11], [1, 5]]);
+      }, _callee29, null, [[2, 16], [22, 33]]);
     }));
     return _combineCollections2.apply(this, arguments);
   }
@@ -1669,19 +1697,18 @@ function LibraryPane(props) {
     return _downloadCollection2.apply(this, arguments);
   }
   function _downloadCollection2() {
-    _downloadCollection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee28() {
+    _downloadCollection2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee30() {
       var resource_name,
         res_name,
         new_name,
-        _args28 = arguments,
-        _t12;
-      return _regenerator().w(function (_context28) {
-        while (1) switch (_context28.n) {
+        _args30 = arguments;
+      return _regeneratorRuntime().wrap(function _callee30$(_context30) {
+        while (1) switch (_context30.prev = _context30.next) {
           case 0:
-            resource_name = _args28.length > 0 && _args28[0] !== undefined ? _args28[0] : null;
+            resource_name = _args30.length > 0 && _args30[0] !== undefined ? _args30[0] : null;
             res_name = resource_name ? resource_name : pStateRef.current.select_state.selected_resource.name;
-            _context28.p = 1;
-            _context28.n = 2;
+            _context30.prev = 2;
+            _context30.next = 5;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "Download Collection",
               field_title: "New File Name",
@@ -1690,26 +1717,28 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            new_name = _context28.v;
+          case 5:
+            new_name = _context30.sent;
             window.open("".concat($SCRIPT_ROOT, "/download_collection/") + res_name + "/" + new_name);
-            _context28.n = 4;
+            _context30.next = 12;
             break;
-          case 3:
-            _context28.p = 3;
-            _t12 = _context28.v;
-            if (_t12 != "canceled") {
-              errorDrawerFuncs.addFromError("Error combing collections", _t12);
+          case 9:
+            _context30.prev = 9;
+            _context30.t0 = _context30["catch"](2);
+            if (_context30.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error combing collections", _context30.t0);
             }
-          case 4:
-            return _context28.a(2);
+          case 12:
+          case "end":
+            return _context30.stop();
         }
-      }, _callee28, null, [[1, 3]]);
+      }, _callee30, null, [[2, 9]]);
     }));
     return _downloadCollection2.apply(this, arguments);
   }
   function _showCollectionImport() {
     dialogFuncs.showModal("FileImportDialog", {
+      title: "Import Collection",
       res_type: "collection",
       allowed_file_types: ".csv,.tsv,.txt,.xls,.xlsx,.html",
       checkboxes: [{
@@ -1730,56 +1759,56 @@ function LibraryPane(props) {
       handleCancel: null
     });
   }
-  function _import_collection(_x1, _x10, _x11, _x12) {
+  function _import_collection(_x11, _x12, _x13, _x14) {
     return _import_collection2.apply(this, arguments);
   }
   function _import_collection2() {
-    _import_collection2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee29(myDropZone, setCurrentUrl, new_name, check_results) {
+    _import_collection2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee31(myDropZone, setCurrentUrl, new_name, check_results) {
       var csv_options,
         doc_type,
         data,
         new_url,
-        _args29 = arguments,
-        _t13;
-      return _regenerator().w(function (_context29) {
-        while (1) switch (_context29.n) {
+        _args31 = arguments;
+      return _regeneratorRuntime().wrap(function _callee31$(_context31) {
+        while (1) switch (_context31.prev = _context31.next) {
           case 0:
-            csv_options = _args29.length > 4 && _args29[4] !== undefined ? _args29[4] : null;
+            csv_options = _args31.length > 4 && _args31[4] !== undefined ? _args31[4] : null;
             doc_type = check_results["import_as_freeform"] ? "freeform" : "table";
-            _context29.p = 1;
-            _context29.n = 2;
+            _context31.prev = 2;
+            _context31.next = 5;
             return (0, _communication_react.postPromise)("host", "create_empty_collection_task", {
               "collection_name": new_name,
               "doc_type": doc_type,
               "library_id": props.library_id,
               "csv_options": csv_options
             });
-          case 2:
-            data = _context29.v;
+          case 5:
+            data = _context31.sent;
             if (data.success) {
-              _context29.n = 3;
+              _context31.next = 9;
               break;
             }
             errorDrawerFuncs.addErrorDrawerEntry({
               title: "Error creating collection",
               content: data.message
             });
-            return _context29.a(2);
-          case 3:
+            return _context31.abrupt("return");
+          case 9:
             new_url = "append_documents_to_collection/".concat(new_name, "/").concat(doc_type, "/").concat(props.library_id);
             myDropZone.options.url = new_url;
             setCurrentUrl(new_url);
             myDropZone.processQueue();
-            _context29.n = 5;
+            _context31.next = 18;
             break;
-          case 4:
-            _context29.p = 4;
-            _t13 = _context29.v;
-            errorDrawerFuncs.addFromError("Error importing document", _t13);
-          case 5:
-            return _context29.a(2);
+          case 15:
+            _context31.prev = 15;
+            _context31.t0 = _context31["catch"](2);
+            errorDrawerFuncs.addFromError("Error importing document", _context31.t0);
+          case 18:
+          case "end":
+            return _context31.stop();
         }
-      }, _callee29, null, [[1, 4]]);
+      }, _callee31, null, [[2, 15]]);
     }));
     return _import_collection2.apply(this, arguments);
   }
@@ -1804,34 +1833,34 @@ function LibraryPane(props) {
     return _load_tile2.apply(this, arguments);
   }
   function _load_tile2() {
-    _load_tile2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee30() {
+    _load_tile2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee32() {
       var resource,
         res_name,
-        _args30 = arguments,
-        _t14;
-      return _regenerator().w(function (_context30) {
-        while (1) switch (_context30.n) {
+        _args32 = arguments;
+      return _regeneratorRuntime().wrap(function _callee32$(_context32) {
+        while (1) switch (_context32.prev = _context32.next) {
           case 0:
-            resource = _args30.length > 0 && _args30[0] !== undefined ? _args30[0] : null;
+            resource = _args32.length > 0 && _args32[0] !== undefined ? _args32[0] : null;
             res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
-            _context30.p = 1;
-            _context30.n = 2;
+            _context32.prev = 2;
+            _context32.next = 5;
             return (0, _communication_react.postPromise)("host", "load_tile_module_task", {
               "tile_module_name": res_name,
               "user_id": window.user_id
             });
-          case 2:
+          case 5:
             statusFuncs.statusMessage("Loaded tile ".concat(res_name));
-            _context30.n = 4;
+            _context32.next = 11;
             break;
-          case 3:
-            _context30.p = 3;
-            _t14 = _context30.v;
-            errorDrawerFuncs.addFromError("Error loading tile", _t14);
-          case 4:
-            return _context30.a(2);
+          case 8:
+            _context32.prev = 8;
+            _context32.t0 = _context32["catch"](2);
+            errorDrawerFuncs.addFromError("Error loading tile", _context32.t0);
+          case 11:
+          case "end":
+            return _context32.stop();
         }
-      }, _callee30, null, [[1, 3]]);
+      }, _callee32, null, [[2, 8]]);
     }));
     return _load_tile2.apply(this, arguments);
   }
@@ -1839,33 +1868,33 @@ function LibraryPane(props) {
     return _unload_module2.apply(this, arguments);
   }
   function _unload_module2() {
-    _unload_module2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee31() {
+    _unload_module2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee33() {
       var resource,
         res_name,
-        _args31 = arguments,
-        _t15;
-      return _regenerator().w(function (_context31) {
-        while (1) switch (_context31.n) {
+        _args33 = arguments;
+      return _regeneratorRuntime().wrap(function _callee33$(_context33) {
+        while (1) switch (_context33.prev = _context33.next) {
           case 0:
-            resource = _args31.length > 0 && _args31[0] !== undefined ? _args31[0] : null;
+            resource = _args33.length > 0 && _args33[0] !== undefined ? _args33[0] : null;
             res_name = resource ? resource.name : pStateRef.current.select_state.selected_resource.name;
-            _context31.p = 1;
-            _context31.n = 2;
+            _context33.prev = 2;
+            _context33.next = 5;
             return (0, _communication_react.postPromise)("host", "unload_one_module_task", {
               "tile_module_name": res_name
             });
-          case 2:
+          case 5:
             statusFuncs.statusMessage("Tile unloaded");
-            _context31.n = 4;
+            _context33.next = 11;
             break;
-          case 3:
-            _context31.p = 3;
-            _t15 = _context31.v;
-            errorDrawerFuncs.addFromError("Error unloading tile", _t15);
-          case 4:
-            return _context31.a(2);
+          case 8:
+            _context33.prev = 8;
+            _context33.t0 = _context33["catch"](2);
+            errorDrawerFuncs.addFromError("Error unloading tile", _context33.t0);
+          case 11:
+          case "end":
+            return _context33.stop();
         }
-      }, _callee31, null, [[1, 3]]);
+      }, _callee33, null, [[2, 8]]);
     }));
     return _unload_module2.apply(this, arguments);
   }
@@ -1873,44 +1902,44 @@ function LibraryPane(props) {
     return _unload_all_tiles2.apply(this, arguments);
   }
   function _unload_all_tiles2() {
-    _unload_all_tiles2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee32() {
-      var _t16;
-      return _regenerator().w(function (_context32) {
-        while (1) switch (_context32.n) {
+    _unload_all_tiles2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee34() {
+      return _regeneratorRuntime().wrap(function _callee34$(_context34) {
+        while (1) switch (_context34.prev = _context34.next) {
           case 0:
-            _context32.p = 0;
-            _context32.n = 1;
+            _context34.prev = 0;
+            _context34.next = 3;
             return (0, _communication_react.postPromise)("host", "unload_all_tiles_task", {});
-          case 1:
-            statusFuncs.statusMessage("Unloaded all tiles");
-            _context32.n = 3;
-            break;
-          case 2:
-            _context32.p = 2;
-            _t16 = _context32.v;
-            errorDrawerFuncs.addFromError("Error unloading tiles", _t16);
           case 3:
-            return _context32.a(2);
+            statusFuncs.statusMessage("Unloaded all tiles");
+            _context34.next = 9;
+            break;
+          case 6:
+            _context34.prev = 6;
+            _context34.t0 = _context34["catch"](0);
+            errorDrawerFuncs.addFromError("Error unloading tiles", _context34.t0);
+          case 9:
+          case "end":
+            return _context34.stop();
         }
-      }, _callee32, null, [[0, 2]]);
+      }, _callee34, null, [[0, 6]]);
     }));
     return _unload_all_tiles2.apply(this, arguments);
   }
-  function _new_in_creator(_x13) {
+  function _new_in_creator(_x15) {
     return _new_in_creator2.apply(this, arguments);
   }
   function _new_in_creator2() {
-    _new_in_creator2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee33(template_name) {
-      var data, new_name, result_dict, _t17;
-      return _regenerator().w(function (_context33) {
-        while (1) switch (_context33.n) {
+    _new_in_creator2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee35(template_name) {
+      var data, new_name, result_dict;
+      return _regeneratorRuntime().wrap(function _callee35$(_context35) {
+        while (1) switch (_context35.prev = _context35.next) {
           case 0:
-            _context33.p = 0;
-            _context33.n = 1;
+            _context35.prev = 0;
+            _context35.next = 3;
             return (0, _communication_react.postPromise)("host", "get_tile_names_task", {});
-          case 1:
-            data = _context33.v;
-            _context33.n = 2;
+          case 3:
+            data = _context35.sent;
+            _context35.next = 6;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New Tile",
               field_title: "New Tile Name",
@@ -1919,34 +1948,35 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            new_name = _context33.v;
+          case 6:
+            new_name = _context35.sent;
             result_dict = {
               "template_name": template_name,
               "new_tile_name": new_name,
               "last_saved": "creator"
             };
-            _context33.n = 3;
+            _context35.next = 10;
             return (0, _communication_react.postPromise)("host", "create_tile_from_repository_template", result_dict);
-          case 3:
-            _context33.n = 4;
+          case 10:
+            _context35.next = 12;
             return _view_resource({
               name: String(new_name),
               res_type: "tile"
             });
-          case 4:
-            _context33.n = 6;
+          case 12:
+            _context35.next = 17;
             break;
-          case 5:
-            _context33.p = 5;
-            _t17 = _context33.v;
-            if (_t17 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating tile module", _t17);
+          case 14:
+            _context35.prev = 14;
+            _context35.t0 = _context35["catch"](0);
+            if (_context35.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error creating tile module", _context35.t0);
             }
-          case 6:
-            return _context33.a(2);
+          case 17:
+          case "end":
+            return _context35.stop();
         }
-      }, _callee33, null, [[0, 5]]);
+      }, _callee35, null, [[0, 14]]);
     }));
     return _new_in_creator2.apply(this, arguments);
   }
@@ -1954,17 +1984,17 @@ function LibraryPane(props) {
     return _new_metabook2.apply(this, arguments);
   }
   function _new_metabook2() {
-    _new_metabook2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee34() {
-      var data, new_name, result_dict, new_metabook_data, _t18;
-      return _regenerator().w(function (_context34) {
-        while (1) switch (_context34.n) {
+    _new_metabook2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee36() {
+      var data, new_name, result_dict, new_metabook_data;
+      return _regeneratorRuntime().wrap(function _callee36$(_context36) {
+        while (1) switch (_context36.prev = _context36.next) {
           case 0:
-            _context34.p = 0;
-            _context34.n = 1;
+            _context36.prev = 0;
+            _context36.next = 3;
             return (0, _communication_react.postPromise)("host", "get_metabook_names_task", {});
-          case 1:
-            data = _context34.v;
-            _context34.n = 2;
+          case 3:
+            data = _context36.sent;
+            _context36.next = 6;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New Metabook Resource",
               field_title: "New Metabook Name",
@@ -1973,46 +2003,47 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            new_name = _context34.v;
+          case 6:
+            new_name = _context36.sent;
             result_dict = {
               "metabook_name": new_name
             };
-            _context34.n = 3;
+            _context36.next = 10;
             return (0, _communication_react.postPromise)("host", "create_empty_metabook", result_dict);
-          case 3:
-            new_metabook_data = _context34.v;
+          case 10:
+            new_metabook_data = _context36.sent;
             props.setCurrentMetabook(new_metabook_data._id);
-            _context34.n = 5;
+            _context36.next = 17;
             break;
-          case 4:
-            _context34.p = 4;
-            _t18 = _context34.v;
-            if (_t18 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating metabook resource", _t18);
+          case 14:
+            _context36.prev = 14;
+            _context36.t0 = _context36["catch"](0);
+            if (_context36.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error creating metabook resource", _context36.t0);
             }
-          case 5:
-            return _context34.a(2);
+          case 17:
+          case "end":
+            return _context36.stop();
         }
-      }, _callee34, null, [[0, 4]]);
+      }, _callee36, null, [[0, 14]]);
     }));
     return _new_metabook2.apply(this, arguments);
   }
-  function _new_list(_x14) {
+  function _new_list(_x16) {
     return _new_list2.apply(this, arguments);
   }
   function _new_list2() {
-    _new_list2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee35(template_name) {
-      var data, new_name, result_dict, _t19;
-      return _regenerator().w(function (_context35) {
-        while (1) switch (_context35.n) {
+    _new_list2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee37(template_name) {
+      var data, new_name, result_dict;
+      return _regeneratorRuntime().wrap(function _callee37$(_context37) {
+        while (1) switch (_context37.prev = _context37.next) {
           case 0:
-            _context35.p = 0;
-            _context35.n = 1;
+            _context37.prev = 0;
+            _context37.next = 3;
             return (0, _communication_react.postPromise)("host", "get_list_names_task", {});
-          case 1:
-            data = _context35.v;
-            _context35.n = 2;
+          case 3:
+            data = _context37.sent;
+            _context37.next = 6;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New List Resource",
               field_title: "New List Name",
@@ -2021,33 +2052,34 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            new_name = _context35.v;
+          case 6:
+            new_name = _context37.sent;
             result_dict = {
               "template_name": template_name,
               "new_list_name": new_name
             };
-            _context35.n = 3;
+            _context37.next = 10;
             return (0, _communication_react.postPromise)("host", "create_list_from_repository_template", result_dict);
-          case 3:
-            _context35.n = 4;
+          case 10:
+            _context37.next = 12;
             return _view_resource({
               name: String(new_name),
               res_type: "list"
             }, "/view_list/");
-          case 4:
-            _context35.n = 6;
+          case 12:
+            _context37.next = 17;
             break;
-          case 5:
-            _context35.p = 5;
-            _t19 = _context35.v;
-            if (_t19 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating list resource", _t19);
+          case 14:
+            _context37.prev = 14;
+            _context37.t0 = _context37["catch"](0);
+            if (_context37.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error creating list resource", _context37.t0);
             }
-          case 6:
-            return _context35.a(2);
+          case 17:
+          case "end":
+            return _context37.stop();
         }
-      }, _callee35, null, [[0, 5]]);
+      }, _callee37, null, [[0, 14]]);
     }));
     return _new_list2.apply(this, arguments);
   }
@@ -2059,6 +2091,7 @@ function LibraryPane(props) {
   }
   function _showListImport() {
     dialogFuncs.showModal("FileImportDialog", {
+      title: "Import List",
       res_type: "list",
       allowed_file_types: "text/*",
       checkboxes: [],
@@ -2076,21 +2109,21 @@ function LibraryPane(props) {
       handleCancel: null
     });
   }
-  function _new_code(_x15) {
+  function _new_code(_x17) {
     return _new_code2.apply(this, arguments);
   }
   function _new_code2() {
-    _new_code2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee36(template_name) {
-      var data, new_name, result_dict, _t20;
-      return _regenerator().w(function (_context36) {
-        while (1) switch (_context36.n) {
+    _new_code2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee38(template_name) {
+      var data, new_name, result_dict;
+      return _regeneratorRuntime().wrap(function _callee38$(_context38) {
+        while (1) switch (_context38.prev = _context38.next) {
           case 0:
-            _context36.p = 0;
-            _context36.n = 1;
+            _context38.prev = 0;
+            _context38.next = 3;
             return (0, _communication_react.postPromise)("host", "get_code_names_task", {});
-          case 1:
-            data = _context36.v;
-            _context36.n = 2;
+          case 3:
+            data = _context38.sent;
+            _context38.next = 6;
             return dialogFuncs.showModalPromise("ModalDialog", {
               title: "New code Resource",
               field_title: "New Code Resource Name",
@@ -2099,33 +2132,34 @@ function LibraryPane(props) {
               checkboxes: [],
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
-            new_name = _context36.v;
+          case 6:
+            new_name = _context38.sent;
             result_dict = {
               "template_name": template_name,
               "new_code_name": new_name
             };
-            _context36.n = 3;
+            _context38.next = 10;
             return (0, _communication_react.postPromise)("host", "create_code_from_repository_template", result_dict);
-          case 3:
-            _context36.n = 4;
+          case 10:
+            _context38.next = 12;
             return _view_resource({
               name: String(new_name),
               res_type: "code"
             }, "/view_code/");
-          case 4:
-            _context36.n = 6;
+          case 12:
+            _context38.next = 17;
             break;
-          case 5:
-            _context36.p = 5;
-            _t20 = _context36.v;
-            if (_t20 != "canceled") {
-              errorDrawerFuncs.addFromError("Error creating code resource", _t20);
+          case 14:
+            _context38.prev = 14;
+            _context38.t0 = _context38["catch"](0);
+            if (_context38.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error creating code resource", _context38.t0);
             }
-          case 6:
-            return _context36.a(2);
+          case 17:
+          case "end":
+            return _context38.stop();
         }
-      }, _callee36, null, [[0, 5]]);
+      }, _callee38, null, [[0, 14]]);
     }));
     return _new_code2.apply(this, arguments);
   }

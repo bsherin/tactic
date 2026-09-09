@@ -1,11 +1,11 @@
 "use strict";
 (self["webpackChunktactic"] = self["webpackChunktactic"] || []).push([["blueprint-icons-split-paths-by-size-loader"],{
 
-/***/ "./node_modules/@blueprintjs/icons/lib/esm/paths-loaders/splitPathsBySizeLoader.js":
+/***/ "./node_modules/@blueprintjs/icons/lib/esm/paths-loaders/splitPathsBySizeLoader.js"
 /*!*****************************************************************************************!*\
   !*** ./node_modules/@blueprintjs/icons/lib/esm/paths-loaders/splitPathsBySizeLoader.js ***!
   \*****************************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -46,7 +46,7 @@ const splitPathsBySizeLoader = async (name, size) => {
 };
 //# sourceMappingURL=splitPathsBySizeLoader.js.map
 
-/***/ })
+/***/ }
 
 }]);
 //# sourceMappingURL=blueprint-icons-split-paths-by-size-loader.bundle.js.map

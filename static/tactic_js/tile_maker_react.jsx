@@ -2323,28 +2323,26 @@ let right_pane = (
 
     let availableInstances = null;
     if (!debugTargets.length) {
-        availableInstances = <span className="tile-debugger-message">No running tile instances</span>
+        availableInstances = [{"label": "Select tile instance...", "value": ""}]
+    }
+    else {
+        availableInstances = debugTargets.map(target => (
+            {"label": `${target.tile_name} (${target.tile_id.slice(-8)})`, "value": target.tile_id}
+        ));
     }
     const debugger_panel = (
         <div className={`tile-debugger-panel tile-debugger-${debugStatus}`}
              style={{display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight: 25}}>
             <div className="tile-debugger-toolbar">
                 <span className="tile-debugger-title">Debugger</span>
-
                 <FormGroup label="Target Instance">
-                <HTMLSelect className="tile-debugger-target"
-                        aria-label="Running tile instance"
-                        value={debugTargetId || ""}
-                        disabled={debugSession != null}
-                        onChange={event => setDebugTargetId(event.target.value || null)}
-                            options={
-                        {!debugTargets.length && <option value="">Running tile...</option>}
-                        {debugTargets.map(target => (
-                            <option key={target.tile_id} value={target.tile_id}>
-                                {target.tile_name} ({target.tile_id.slice(-8)})
-                            </option>
-                        ))}/>
-                     </FormGroup>
+                    <HTMLSelect className="tile-debugger-target"
+                            aria-label="Running tile instance"
+                            value={debugTargetId || ""}
+                            disabled={debugSession != null}
+                            onChange={event => setDebugTargetId(event.target.value || null)}
+                            options={availableInstances}/>
+                 </FormGroup>
                 <Button variant="minimal" size="small" icon="refresh"
                         title="Refresh running tile instances"
                         disabled={debugSession != null}

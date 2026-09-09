@@ -1,5 +1,6 @@
 "use strict";
 
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -10,6 +11,8 @@ var _error_boundary = require("./error_boundary");
 var _utilities_react = require("./utilities_react");
 var _tactic_socket = require("./tactic_socket");
 var _widgets = require("./widgets");
+var _tile_maker_search_form = require("./tile_maker_search_form");
+var _searchable_console = require("./searchable_console");
 var _lodash = _interopRequireDefault(require("lodash"));
 var _core2 = _interopRequireDefault(require("highlight.js/lib/core"));
 var _javascript = _interopRequireDefault(require("highlight.js/lib/languages/javascript"));
@@ -17,6 +20,7 @@ var _python = _interopRequireDefault(require("highlight.js/lib/languages/python"
 var _markdownIt = _interopRequireDefault(require("markdown-it"));
 require("markdown-it-latex/dist/index.css");
 var _markdownItLatex = _interopRequireDefault(require("markdown-it-latex"));
+var _markdown_checkbox = require("./markdown_checkbox");
 var _blueprint_react_widgets = require("./blueprint_react_widgets");
 var _reactCodemirror = require("./react-codemirror6");
 var _sortable_container = require("./sortable_container");
@@ -25,38 +29,38 @@ var _combined_metadata = require("./combined_metadata");
 var _library_pane = require("./library_pane");
 var _menu_utilities = require("./menu_utilities");
 var _search_form = require("./search_form");
-var _searchable_console = require("./searchable_console");
 var _settings = require("./settings");
 var _modal_react = require("./modal_react");
 var _error_drawer = require("./error_drawer");
 var _assistant = require("./assistant");
 var _memory_utilities = require("./memory_utilities");
 var _undo = require("./undo");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t10 in e) "default" !== _t10 && {}.hasOwnProperty.call(e, _t10) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t10)) && (i.get || i.set) ? o(f, _t10, i) : f[_t10] = e[_t10]); return f; })(e, t); }
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+var _excluded = ["index"];
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != _typeof(e) && "function" != typeof e) return { "default": e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n["default"] = e, t && t.set(e, n), n; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } // noinspection JSConstructorReturnsPrimitive,JSUnusedAssignment
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
+function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; } // noinspection JSConstructorReturnsPrimitive,JSUnusedAssignment
 _core2["default"].registerLanguage('javascript', _javascript["default"]);
 _core2["default"].registerLanguage('python', _python["default"]);
 var mdi = (0, _markdownIt["default"])({
@@ -72,6 +76,9 @@ var mdi = (0, _markdownIt["default"])({
     }
     return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
   }
+});
+(0, _markdown_checkbox.enableMarkdownCheckboxes)(mdi, {
+  interactive: true
 });
 mdi.use(_markdownItLatex["default"]);
 var trash_icon = /*#__PURE__*/_react["default"].createElement(_core.Icon, {
@@ -116,7 +123,66 @@ var sHandleStyle = {
   marginRight: 6
 };
 var FILTER_SEARCH_RIGHT_MARGIN = 20;
+var MAX_NOTEBOOK_AI_SOURCE_CHARS = 30000;
 var empty_style = {};
+function getPrecedingNotebookCodeCells(consoleItems, activeIdentifier) {
+  var activeIndex = consoleItems.findIndex(function (entry) {
+    return entry.unique_id === activeIdentifier;
+  });
+  if (activeIndex < 0) return [];
+  var candidates = consoleItems.slice(0, activeIndex).map(function (entry, index) {
+    return {
+      entry: entry,
+      index: index
+    };
+  }).filter(function (_ref) {
+    var entry = _ref.entry;
+    return entry.type === "code" && typeof entry.console_text === "string" && entry.console_text.trim();
+  });
+
+  // Prefer recently executed cells when the request budget is tight. Once
+  // selected, restore notebook order so definitions retain their chronology.
+  candidates.sort(function (left, right) {
+    var leftExecuted = Number(left.entry.execution_count) > 0;
+    var rightExecuted = Number(right.entry.execution_count) > 0;
+    if (leftExecuted !== rightExecuted) return leftExecuted ? -1 : 1;
+    return right.index - left.index;
+  });
+  var remaining = MAX_NOTEBOOK_AI_SOURCE_CHARS;
+  var selected = [];
+  var _iterator = _createForOfIteratorHelper(candidates),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var candidate = _step.value;
+      var code = candidate.entry.console_text;
+      if (code.length > remaining) {
+        if (selected.length > 0 || remaining === 0) continue;
+        code = code.slice(-remaining);
+      }
+      selected.push({
+        index: candidate.index,
+        identifier: candidate.entry.unique_id,
+        execution_count: candidate.entry.execution_count,
+        code: code
+      });
+      remaining -= code.length;
+      if (remaining === 0) break;
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  selected.sort(function (left, right) {
+    return left.index - right.index;
+  });
+  return selected.map(function (_ref2) {
+    var index = _ref2.index,
+      cell = _objectWithoutProperties(_ref2, _excluded);
+    return cell;
+  });
+}
 function ConsoleComponent(props) {
   props = _objectSpread({
     style: {},
@@ -145,24 +211,24 @@ function ConsoleComponent(props) {
     search_helper_text = _useState8[0],
     set_search_helper_text = _useState8[1];
   var _useState9 = (0, _react.useState)(0),
-    _useState0 = _slicedToArray(_useState9, 2),
-    memory_usage = _useState0[0],
-    set_memory_usage = _useState0[1];
-  var _useState1 = (0, _react.useState)(null),
-    _useState10 = _slicedToArray(_useState1, 2),
-    memory_limit = _useState10[0],
-    set_memory_limit = _useState10[1];
-  var _useState11 = (0, _react.useState)(false),
-    _useState12 = _slicedToArray(_useState11, 1),
-    show_main_log = _useState12[0];
+    _useState10 = _slicedToArray(_useState9, 2),
+    memory_usage = _useState10[0],
+    set_memory_usage = _useState10[1];
+  var _useState11 = (0, _react.useState)(null),
+    _useState12 = _slicedToArray(_useState11, 2),
+    memory_limit = _useState12[0],
+    set_memory_limit = _useState12[1];
   var _useState13 = (0, _react.useState)(false),
-    _useState14 = _slicedToArray(_useState13, 2),
-    show_pseudo_log = _useState14[0],
-    set_show_pseudo_log = _useState14[1];
-  var _useState15 = (0, _react.useState)(null),
+    _useState14 = _slicedToArray(_useState13, 1),
+    show_main_log = _useState14[0];
+  var _useState15 = (0, _react.useState)(false),
     _useState16 = _slicedToArray(_useState15, 2),
-    pseudo_tile_id = _useState16[0],
-    set_pseudo_tile_id = _useState16[1];
+    show_pseudo_log = _useState16[0],
+    set_show_pseudo_log = _useState16[1];
+  var _useState17 = (0, _react.useState)(null),
+    _useState18 = _slicedToArray(_useState17, 2),
+    pseudo_tile_id = _useState18[0],
+    set_pseudo_tile_id = _useState18[1];
   var settingsContext = (0, _react.useContext)(_settings.SettingsContext);
   var dialogFuncs = (0, _react.useContext)(_modal_react.DialogContext);
   var pushCallback = (0, _utilities_react.useCallbackStack)();
@@ -191,36 +257,38 @@ function ConsoleComponent(props) {
   (0, _react.useEffect)(function () {
     //console.log("theme changed")  // This is to force re-rendering because of highlight.js theme change
   }, [settingsContext.settings.theme]);
-  var _addBlankCode = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-    return _regenerator().w(function (_context) {
-      while (1) switch (_context.n) {
+  var _addBlankCode = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
         case 0:
           if (!(window.in_context && !am_selected())) {
-            _context.n = 1;
+            _context.next = 2;
             break;
           }
-          return _context.a(2);
-        case 1:
-          _addCodeArea("");
+          return _context.abrupt("return");
         case 2:
-          return _context.a(2);
+          _addCodeArea("");
+        case 3:
+        case "end":
+          return _context.stop();
       }
     }, _callee);
   })), []);
-  var _addBlankText = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-    return _regenerator().w(function (_context2) {
-      while (1) switch (_context2.n) {
+  var _addBlankText = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
         case 0:
           if (!(window.in_context && !am_selected())) {
-            _context2.n = 1;
+            _context2.next = 2;
             break;
           }
-          return _context2.a(2);
-        case 1:
-          _context2.n = 2;
-          return _addConsoleText("");
+          return _context2.abrupt("return");
         case 2:
-          return _context2.a(2);
+          _context2.next = 4;
+          return _addConsoleText("");
+        case 4:
+        case "end":
+          return _context2.stop();
       }
     }, _callee2);
   })), []);
@@ -297,17 +365,18 @@ function ConsoleComponent(props) {
           return _addConsoleEntries(data.message, data.force_open, true);
         },
         createLink: function () {
-          var _createLink = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(data) {
+          var _createLink = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(data) {
             var unique_id;
-            return _regenerator().w(function (_context3) {
-              while (1) switch (_context3.n) {
+            return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+              while (1) switch (_context3.prev = _context3.next) {
                 case 0:
                   unique_id = data.message.unique_id;
                   _addConsoleEntry(data.message, data.force_open, false, null, function () {
                     _insertLinkInItem(unique_id);
                   });
-                case 1:
-                  return _context3.a(2);
+                case 2:
+                case "end":
+                  return _context3.stop();
               }
             }, _callee3);
           }));
@@ -363,34 +432,35 @@ function ConsoleComponent(props) {
     return _pasteImage2.apply(this, arguments);
   }
   function _pasteImage2() {
-    _pasteImage2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
-      var clipboardContents, blob, _iterator1, _step1, item, gotBlob, _gotBlob, _t5;
-      return _regenerator().w(function (_context15) {
-        while (1) switch (_context15.n) {
+    _pasteImage2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee16() {
+      var clipboardContents, blob, _iterator12, _step12, item, gotBlob, _gotBlob;
+      return _regeneratorRuntime().wrap(function _callee16$(_context17) {
+        while (1) switch (_context17.prev = _context17.next) {
           case 0:
             _gotBlob = function _gotBlob3() {
-              _gotBlob = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(blob) {
-                var formData, _t4;
-                return _regenerator().w(function (_context14) {
-                  while (1) switch (_context14.n) {
+              _gotBlob = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee15(blob) {
+                var formData;
+                return _regeneratorRuntime().wrap(function _callee15$(_context16) {
+                  while (1) switch (_context16.prev = _context16.next) {
                     case 0:
                       formData = new FormData();
                       formData.append('image', blob, 'image.png');
                       formData.append("local_id", props.local_id);
-                      _context14.p = 1;
-                      _context14.n = 2;
+                      _context16.prev = 3;
+                      _context16.next = 6;
                       return (0, _communication_react.postFormDataPromise)("print_blob_area_to_console", formData);
-                    case 2:
-                      _context14.n = 4;
+                    case 6:
+                      _context16.next = 11;
                       break;
-                    case 3:
-                      _context14.p = 3;
-                      _t4 = _context14.v;
-                      console.log(_t4);
-                    case 4:
-                      return _context14.a(2);
+                    case 8:
+                      _context16.prev = 8;
+                      _context16.t0 = _context16["catch"](3);
+                      console.log(_context16.t0);
+                    case 11:
+                    case "end":
+                      return _context16.stop();
                   }
-                }, _callee13, null, [[1, 3]]);
+                }, _callee15, null, [[3, 8]]);
               }));
               return _gotBlob.apply(this, arguments);
             };
@@ -398,55 +468,56 @@ function ConsoleComponent(props) {
               return _gotBlob.apply(this, arguments);
             };
             blob = null;
-            _context15.n = 1;
+            _context17.next = 5;
             return navigator.clipboard.read();
-          case 1:
-            clipboardContents = _context15.v;
-            _iterator1 = _createForOfIteratorHelper(clipboardContents);
-            _context15.p = 2;
-            _iterator1.s();
-          case 3:
-            if ((_step1 = _iterator1.n()).done) {
-              _context15.n = 8;
-              break;
-            }
-            item = _step1.value;
-            if (!item.types.includes("image/png")) {
-              _context15.n = 7;
-              break;
-            }
-            _context15.n = 4;
-            return item.getType("image/png");
-          case 4:
-            blob = _context15.v;
-            if (!(blob == null)) {
-              _context15.n = 5;
-              break;
-            }
-            return _context15.a(2);
           case 5:
-            _context15.n = 6;
-            return gotBlob(blob);
-          case 6:
-            return _context15.a(3, 8);
-          case 7:
-            _context15.n = 3;
-            break;
-          case 8:
-            _context15.n = 10;
-            break;
+            clipboardContents = _context17.sent;
+            _iterator12 = _createForOfIteratorHelper(clipboardContents);
+            _context17.prev = 7;
+            _iterator12.s();
           case 9:
-            _context15.p = 9;
-            _t5 = _context15.v;
-            _iterator1.e(_t5);
-          case 10:
-            _context15.p = 10;
-            _iterator1.f();
-            return _context15.f(10);
-          case 11:
-            return _context15.a(2);
+            if ((_step12 = _iterator12.n()).done) {
+              _context17.next = 22;
+              break;
+            }
+            item = _step12.value;
+            if (!item.types.includes("image/png")) {
+              _context17.next = 20;
+              break;
+            }
+            _context17.next = 14;
+            return item.getType("image/png");
+          case 14:
+            blob = _context17.sent;
+            if (!(blob == null)) {
+              _context17.next = 17;
+              break;
+            }
+            return _context17.abrupt("return");
+          case 17:
+            _context17.next = 19;
+            return gotBlob(blob);
+          case 19:
+            return _context17.abrupt("break", 22);
+          case 20:
+            _context17.next = 9;
+            break;
+          case 22:
+            _context17.next = 27;
+            break;
+          case 24:
+            _context17.prev = 24;
+            _context17.t0 = _context17["catch"](7);
+            _iterator12.e(_context17.t0);
+          case 27:
+            _context17.prev = 27;
+            _iterator12.f();
+            return _context17.finish(27);
+          case 30:
+          case "end":
+            return _context17.stop();
         }
-      }, _callee14, null, [[2, 9, 10, 11]]);
+      }, _callee16, null, [[7, 24, 27, 30]]);
     }));
     return _pasteImage2.apply(this, arguments);
   }
@@ -454,35 +525,35 @@ function ConsoleComponent(props) {
     return _addConsoleText2.apply(this, arguments);
   }
   function _addConsoleText2() {
-    _addConsoleText2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(the_text) {
+    _addConsoleText2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee17(the_text) {
       var callback,
-        _args16 = arguments,
-        _t6;
-      return _regenerator().w(function (_context16) {
-        while (1) switch (_context16.n) {
+        _args18 = arguments;
+      return _regeneratorRuntime().wrap(function _callee17$(_context18) {
+        while (1) switch (_context18.prev = _context18.next) {
           case 0:
-            callback = _args16.length > 1 && _args16[1] !== undefined ? _args16[1] : null;
-            _context16.p = 1;
-            _context16.n = 2;
+            callback = _args18.length > 1 && _args18[1] !== undefined ? _args18[1] : null;
+            _context18.prev = 1;
+            _context18.next = 4;
             return (0, _communication_react.postPromise)("host", "print_text_area_to_console", {
               "console_text": the_text,
               "user_id": window.user_id,
               "local_id": props.local_id
             }, props.local_id);
-          case 2:
+          case 4:
             if (callback != null) {
               callback();
             }
-            _context16.n = 4;
+            _context18.next = 10;
             break;
-          case 3:
-            _context16.p = 3;
-            _t6 = _context16.v;
-            errorDrawerFuncs.addFromError("Error creating text area", _t6);
-          case 4:
-            return _context16.a(2);
+          case 7:
+            _context18.prev = 7;
+            _context18.t0 = _context18["catch"](1);
+            errorDrawerFuncs.addFromError("Error creating text area", _context18.t0);
+          case 10:
+          case "end":
+            return _context18.stop();
         }
-      }, _callee15, null, [[1, 3]]);
+      }, _callee17, null, [[1, 7]]);
     }));
     return _addConsoleText2.apply(this, arguments);
   }
@@ -493,52 +564,53 @@ function ConsoleComponent(props) {
     return _addConsoleDivider2.apply(this, arguments);
   }
   function _addConsoleDivider2() {
-    _addConsoleDivider2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(header_text) {
+    _addConsoleDivider2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee18(header_text) {
       var callback,
-        _args17 = arguments,
-        _t7;
-      return _regenerator().w(function (_context17) {
-        while (1) switch (_context17.n) {
+        _args19 = arguments;
+      return _regeneratorRuntime().wrap(function _callee18$(_context19) {
+        while (1) switch (_context19.prev = _context19.next) {
           case 0:
-            callback = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : null;
-            _context17.p = 1;
-            _context17.n = 2;
+            callback = _args19.length > 1 && _args19[1] !== undefined ? _args19[1] : null;
+            _context19.prev = 1;
+            _context19.next = 4;
             return (0, _communication_react.postPromise)("host", "print_divider_area_to_console", {
               "header_text": header_text,
               "user_id": window.user_id,
               "local_id": props.local_id
             }, props.local_id);
-          case 2:
+          case 4:
             if (callback != null) {
               callback();
             }
-            _context17.n = 4;
+            _context19.next = 10;
             break;
-          case 3:
-            _context17.p = 3;
-            _t7 = _context17.v;
-            errorDrawerFuncs.addFromError("Error creating divider", _t7);
-          case 4:
-            return _context17.a(2);
+          case 7:
+            _context19.prev = 7;
+            _context19.t0 = _context19["catch"](1);
+            errorDrawerFuncs.addFromError("Error creating divider", _context19.t0);
+          case 10:
+          case "end":
+            return _context19.stop();
         }
-      }, _callee16, null, [[1, 3]]);
+      }, _callee18, null, [[1, 7]]);
     }));
     return _addConsoleDivider2.apply(this, arguments);
   }
-  var _addBlankDivider = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-    return _regenerator().w(function (_context4) {
-      while (1) switch (_context4.n) {
+  var _addBlankDivider = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
         case 0:
           if (!(window.in_context && !am_selected())) {
-            _context4.n = 1;
+            _context4.next = 2;
             break;
           }
-          return _context4.a(2);
-        case 1:
-          _context4.n = 2;
-          return _addConsoleDivider("");
+          return _context4.abrupt("return");
         case 2:
-          return _context4.a(2);
+          _context4.next = 4;
+          return _addConsoleDivider("");
+        case 4:
+        case "end":
+          return _context4.stop();
       }
     }, _callee4);
   })), []);
@@ -554,16 +626,16 @@ function ConsoleComponent(props) {
     }
     return id_list;
   }
-  var _deleteSection = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(unique_id) {
-      var centry, confirm_text, id_list, cindex, new_console_items, _t;
-      return _regenerator().w(function (_context5) {
-        while (1) switch (_context5.n) {
+  var _deleteSection = (0, _react.useCallback)( /*#__PURE__*/function () {
+    var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(unique_id) {
+      var centry, confirm_text, id_list, cindex, new_console_items;
+      return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+        while (1) switch (_context5.prev = _context5.next) {
           case 0:
             centry = get_console_item_entry(unique_id);
             confirm_text = "Delete section ".concat(centry.header_text, "?");
-            _context5.p = 1;
-            _context5.n = 2;
+            _context5.prev = 2;
+            _context5.next = 5;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Delete Section",
               text_body: confirm_text,
@@ -571,7 +643,7 @@ function ConsoleComponent(props) {
               submit_text: "delete",
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
+          case 5:
             id_list = _getSectionIds(unique_id);
             cindex = _consoleItemIndex(unique_id);
             new_console_items = _toConsumableArray(props.console_items.current);
@@ -581,21 +653,22 @@ function ConsoleComponent(props) {
               type: "delete_items",
               id_list: id_list
             });
-            _context5.n = 4;
+            _context5.next = 16;
             break;
-          case 3:
-            _context5.p = 3;
-            _t = _context5.v;
-            if (_t != "canceled") {
-              errorDrawerFuncs.addFromError("Error deleting section", _t);
+          case 13:
+            _context5.prev = 13;
+            _context5.t0 = _context5["catch"](2);
+            if (_context5.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error deleting section", _context5.t0);
             }
-          case 4:
-            return _context5.a(2);
+          case 16:
+          case "end":
+            return _context5.stop();
         }
-      }, _callee5, null, [[1, 3]]);
+      }, _callee5, null, [[2, 13]]);
     }));
     return function (_x4) {
-      return _ref4.apply(this, arguments);
+      return _ref6.apply(this, arguments);
     };
   }(), []);
   var _copySection = (0, _react.useCallback)(function () {
@@ -637,11 +710,11 @@ function ConsoleComponent(props) {
   function _copyItems(id_list) {
     var entry_list = [];
     var in_section = false;
-    var _iterator = _createForOfIteratorHelper(props.console_items.current),
-      _step;
+    var _iterator2 = _createForOfIteratorHelper(props.console_items.current),
+      _step2;
     try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var entry = _step.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var entry = _step2.value;
         if (in_section) {
           entry.am_selected = false;
           entry_list.push(entry);
@@ -657,9 +730,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator.f();
+      _iterator2.f();
     }
     var result_dict = {
       "local_id": props.local_id,
@@ -668,66 +741,66 @@ function ConsoleComponent(props) {
     };
     (0, _communication_react.postWithCallback)("host", "copy_console_cells", result_dict, null, null, props.local_id);
   }
-  var _pasteCell = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+  var _pasteCell = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
     var unique_id,
       data,
-      _args6 = arguments,
-      _t2;
-    return _regenerator().w(function (_context6) {
-      while (1) switch (_context6.n) {
+      _args6 = arguments;
+    return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+      while (1) switch (_context6.prev = _context6.next) {
         case 0:
           unique_id = _args6.length > 0 && _args6[0] !== undefined ? _args6[0] : null;
-          _context6.p = 1;
-          _context6.n = 2;
+          _context6.prev = 1;
+          _context6.next = 4;
           return (0, _communication_react.postPromise)("host", "get_copied_console_cells", {
             user_id: window.user_id
           }, props.local_id);
-        case 2:
-          data = _context6.v;
-          _addConsoleEntries(data.console_items, true, false, unique_id);
-          _context6.n = 4;
-          break;
-        case 3:
-          _context6.p = 3;
-          _t2 = _context6.v;
-          errorDrawerFuncs.addFromError("Error getting copied cells", _t2);
         case 4:
-          return _context6.a(2);
+          data = _context6.sent;
+          _addConsoleEntries(data.console_items, true, false, unique_id);
+          _context6.next = 11;
+          break;
+        case 8:
+          _context6.prev = 8;
+          _context6.t0 = _context6["catch"](1);
+          errorDrawerFuncs.addFromError("Error getting copied cells", _context6.t0);
+        case 11:
+        case "end":
+          return _context6.stop();
       }
-    }, _callee6, null, [[1, 3]]);
+    }, _callee6, null, [[1, 8]]);
   })), []);
   function _addConsoleTextLink() {
     return _addConsoleTextLink2.apply(this, arguments);
   }
   function _addConsoleTextLink2() {
-    _addConsoleTextLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
+    _addConsoleTextLink2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee19() {
       var callback,
-        _args18 = arguments,
-        _t8;
-      return _regenerator().w(function (_context18) {
-        while (1) switch (_context18.n) {
+        _args20 = arguments;
+      return _regeneratorRuntime().wrap(function _callee19$(_context20) {
+        while (1) switch (_context20.prev = _context20.next) {
           case 0:
-            callback = _args18.length > 0 && _args18[0] !== undefined ? _args18[0] : null;
-            _context18.p = 1;
-            _context18.n = 2;
+            callback = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : null;
+            _context20.prev = 1;
+            _context20.next = 4;
             return (0, _communication_react.postPromise)("host", "print_link_area_to_console", {
               "user_id": window.user_id,
               "local_id": props.local_id
             }, props.local_id);
-          case 2:
+          case 4:
             if (callback) {
               callback();
             }
-            _context18.n = 4;
+            _context20.next = 10;
             break;
-          case 3:
-            _context18.p = 3;
-            _t8 = _context18.v;
-            errorDrawerFuncs.addFromError("Error creating link", _t8);
-          case 4:
-            return _context18.a(2);
+          case 7:
+            _context20.prev = 7;
+            _context20.t0 = _context20["catch"](1);
+            errorDrawerFuncs.addFromError("Error creating link", _context20.t0);
+          case 10:
+          case "end":
+            return _context20.stop();
         }
-      }, _callee17, null, [[1, 3]]);
+      }, _callee19, null, [[1, 7]]);
     }));
     return _addConsoleTextLink2.apply(this, arguments);
   }
@@ -738,34 +811,35 @@ function ConsoleComponent(props) {
       return _lodash["default"].last(props.console_selected_items_ref.current);
     }
   }
-  var _insertResourceLink = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+  var _insertResourceLink = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
     var entry;
-    return _regenerator().w(function (_context7) {
-      while (1) switch (_context7.n) {
+    return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+      while (1) switch (_context7.prev = _context7.next) {
         case 0:
           if (_currently_selected()) {
-            _context7.n = 2;
+            _context7.next = 4;
             break;
           }
-          _context7.n = 1;
-          return _addConsoleTextLink();
-        case 1:
-          return _context7.a(2);
-        case 2:
-          entry = get_console_item_entry(_currently_selected());
-          if (!(!entry || entry.type != "text")) {
-            _context7.n = 4;
-            break;
-          }
-          _context7.n = 3;
+          _context7.next = 3;
           return _addConsoleTextLink();
         case 3:
-          return _context7.a(2);
+          return _context7.abrupt("return");
         case 4:
-          _context7.n = 5;
+          entry = get_console_item_entry(_currently_selected());
+          if (!(!entry || entry.type != "text")) {
+            _context7.next = 9;
+            break;
+          }
+          _context7.next = 8;
+          return _addConsoleTextLink();
+        case 8:
+          return _context7.abrupt("return");
+        case 9:
+          _context7.next = 11;
           return _insertLinkInItem(_currently_selected());
-        case 5:
-          return _context7.a(2);
+        case 11:
+        case "end":
+          return _context7.stop();
       }
     }, _callee7);
   })), []);
@@ -773,37 +847,38 @@ function ConsoleComponent(props) {
     return _insertLinkInItem2.apply(this, arguments);
   }
   function _insertLinkInItem2() {
-    _insertLinkInItem2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18(unique_id) {
-      var entry, result, new_links, _t9;
-      return _regenerator().w(function (_context19) {
-        while (1) switch (_context19.n) {
+    _insertLinkInItem2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee20(unique_id) {
+      var entry, result, new_links;
+      return _regeneratorRuntime().wrap(function _callee20$(_context21) {
+        while (1) switch (_context21.prev = _context21.next) {
           case 0:
-            _context19.p = 0;
+            _context21.prev = 0;
             entry = get_console_item_entry(unique_id);
-            _context19.n = 1;
+            _context21.next = 4;
             return dialogFuncs.showModalPromise("SelectResourceDialog", {
               cancel_text: "cancel",
               submit_text: "insert link",
               handleClose: dialogFuncs.hideModal
             });
-          case 1:
-            result = _context19.v;
+          case 4:
+            result = _context21.sent;
             new_links = "links" in entry ? _toConsumableArray(entry.links) : [];
             new_links.push({
               res_type: result.type,
               res_name: result.selected_resource
             });
             _setConsoleItemValue(entry.unique_id, "links", new_links);
-            _context19.n = 3;
+            _context21.next = 13;
             break;
-          case 2:
-            _context19.p = 2;
-            _t9 = _context19.v;
-            errorDrawerFuncs.addFromError("Error inserting link", _t9);
-          case 3:
-            return _context19.a(2);
+          case 10:
+            _context21.prev = 10;
+            _context21.t0 = _context21["catch"](0);
+            errorDrawerFuncs.addFromError("Error inserting link", _context21.t0);
+          case 13:
+          case "end":
+            return _context21.stop();
         }
-      }, _callee18, null, [[0, 2]]);
+      }, _callee20, null, [[0, 10]]);
     }));
     return _insertLinkInItem2.apply(this, arguments);
   }
@@ -833,14 +908,14 @@ function ConsoleComponent(props) {
       local_id: props.local_id
     }, null, null, props.local_id);
   }
-  var _clearConsole = (0, _react.useCallback)(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-    var confirm_text, _t3;
-    return _regenerator().w(function (_context8) {
-      while (1) switch (_context8.n) {
+  var _clearConsole = (0, _react.useCallback)( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+    var confirm_text;
+    return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+      while (1) switch (_context8.prev = _context8.next) {
         case 0:
-          _context8.p = 0;
+          _context8.prev = 0;
           confirm_text = "Are you sure that you want to erase everything in this log?";
-          _context8.n = 1;
+          _context8.next = 4;
           return dialogFuncs.showModalPromise("ConfirmDialog", {
             title: "Clear entire log",
             text_body: confirm_text,
@@ -848,25 +923,26 @@ function ConsoleComponent(props) {
             submit_text: "clear",
             handleClose: dialogFuncs.hideModal
           });
-        case 1:
+        case 4:
           props.set_console_selected_items([]);
           pushCallback(function () {
             props.dispatch({
               type: "delete_all_items"
             });
           });
-          _context8.n = 3;
+          _context8.next = 11;
           break;
-        case 2:
-          _context8.p = 2;
-          _t3 = _context8.v;
-          if (_t3 != "canceled") {
-            errorDrawerFuncs.addFromError("Error clearing console", _t3);
+        case 8:
+          _context8.prev = 8;
+          _context8.t0 = _context8["catch"](0);
+          if (_context8.t0 != "canceled") {
+            errorDrawerFuncs.addFromError("Error clearing console", _context8.t0);
           }
-        case 3:
-          return _context8.a(2);
+        case 11:
+        case "end":
+          return _context8.stop();
       }
-    }, _callee8, null, [[0, 2]]);
+    }, _callee8, null, [[0, 8]]);
   })), []);
   function _togglePseudoLog() {
     set_show_pseudo_log(!show_pseudo_log);
@@ -956,11 +1032,11 @@ function ConsoleComponent(props) {
     var updates = {};
     var shift_down = event != null && event.shiftKey;
     if (!shift_down) {
-      var _iterator2 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-        _step2;
+      var _iterator3 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+        _step3;
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var uid = _step2.value;
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var uid = _step3.value;
           if (uid != unique_id) {
             updates[uid] = {
               am_selected: false,
@@ -969,9 +1045,9 @@ function ConsoleComponent(props) {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
       updates[unique_id] = {
         am_selected: true,
@@ -1011,26 +1087,26 @@ function ConsoleComponent(props) {
     if (console_items == null) {
       console_items = props.console_items.current;
     }
-    var _iterator3 = _createForOfIteratorHelper(console_items),
-      _step3;
+    var _iterator4 = _createForOfIteratorHelper(console_items),
+      _step4;
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var entry = _step3.value;
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        var entry = _step4.value;
         if (entry.unique_id == unique_id) {
           return counter;
         }
         ++counter;
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator4.e(err);
     } finally {
-      _iterator3.f();
+      _iterator4.f();
     }
     return -1;
   }
-  function _moveSection(_ref8, filtered_items) {
-    var oldIndex = _ref8.oldIndex,
-      newIndex = _ref8.newIndex;
+  function _moveSection(_ref10, filtered_items) {
+    var oldIndex = _ref10.oldIndex,
+      newIndex = _ref10.newIndex;
     var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
     if (newIndex > oldIndex) {
       newIndex += 1;
@@ -1130,22 +1206,22 @@ function ConsoleComponent(props) {
     var target_id = above_entry == null ? null : above_entry.unique_id;
     _moveEntryAfterEntry(move_entry.unique_id, target_id, callback);
   }, []);
-  var _goToNextCell = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref9 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(unique_id) {
+  var _goToNextCell = (0, _react.useCallback)( /*#__PURE__*/function () {
+    var _ref11 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee9(unique_id) {
       var next_index, _loop, _ret;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+      return _regeneratorRuntime().wrap(function _callee9$(_context10) {
+        while (1) switch (_context10.prev = _context10.next) {
           case 0:
             next_index = _consoleItemIndex(unique_id) + 1;
-            _loop = /*#__PURE__*/_regenerator().m(function _loop() {
+            _loop = /*#__PURE__*/_regeneratorRuntime().mark(function _loop() {
               var next_id, next_item;
-              return _regenerator().w(function (_context9) {
-                while (1) switch (_context9.n) {
+              return _regeneratorRuntime().wrap(function _loop$(_context9) {
+                while (1) switch (_context9.prev = _context9.next) {
                   case 0:
                     next_id = props.console_items.current[next_index].unique_id;
                     next_item = props.console_items.current[next_index];
                     if (!(!next_item.am_shrunk && (next_item.type == "code" || next_item.type == "text" && !next_item["show_markdown"]))) {
-                      _context9.n = 1;
+                      _context9.next = 5;
                       break;
                     }
                     if (!next_item.show_on_filtered) {
@@ -1156,69 +1232,71 @@ function ConsoleComponent(props) {
                     } else {
                       _setConsoleItemValue(next_id, "set_focus", true, null, true);
                     }
-                    return _context9.a(2, {
+                    return _context9.abrupt("return", {
                       v: void 0
                     });
-                  case 1:
+                  case 5:
                     next_index += 1;
-                  case 2:
-                    return _context9.a(2);
+                  case 6:
+                  case "end":
+                    return _context9.stop();
                 }
               }, _loop);
             });
-          case 1:
-            if (!(next_index < props.console_items.current.length)) {
-              _context0.n = 4;
-              break;
-            }
-            return _context0.d(_regeneratorValues(_loop()), 2);
           case 2:
-            _ret = _context0.v;
-            if (!_ret) {
-              _context0.n = 3;
+            if (!(next_index < props.console_items.current.length)) {
+              _context10.next = 9;
               break;
             }
-            return _context0.a(2, _ret.v);
-          case 3:
-            _context0.n = 1;
-            break;
+            return _context10.delegateYield(_loop(), "t0", 4);
           case 4:
+            _ret = _context10.t0;
+            if (!_ret) {
+              _context10.next = 7;
+              break;
+            }
+            return _context10.abrupt("return", _ret.v);
+          case 7:
+            _context10.next = 2;
+            break;
+          case 9:
             _addCodeArea("");
-          case 5:
-            return _context0.a(2);
+          case 10:
+          case "end":
+            return _context10.stop();
         }
       }, _callee9);
     }));
     return function (_x6) {
-      return _ref9.apply(this, arguments);
+      return _ref11.apply(this, arguments);
     };
   }(), []);
   function _isDividerSelected() {
-    var _iterator4 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-      _step4;
+    var _iterator5 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+      _step5;
     try {
-      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var uid = _step4.value;
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var uid = _step5.value;
         var centry = get_console_item_entry(uid);
         if (centry.type == "divider") {
           return true;
         }
       }
     } catch (err) {
-      _iterator4.e(err);
+      _iterator5.e(err);
     } finally {
-      _iterator4.f();
+      _iterator5.f();
     }
     return false;
   }
   function _doDeleteSelected() {
     var in_section = false;
     var to_delete = [];
-    var _iterator5 = _createForOfIteratorHelper(props.console_items.current),
-      _step5;
+    var _iterator6 = _createForOfIteratorHelper(props.console_items.current),
+      _step6;
     try {
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var entry = _step5.value;
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        var entry = _step6.value;
         if (in_section) {
           to_delete.push(entry.unique_id);
           in_section = entry.type != "section-end";
@@ -1232,9 +1310,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator6.e(err);
     } finally {
-      _iterator5.f();
+      _iterator6.f();
     }
     _clear_all_selected_items(function () {
       props.dispatch({
@@ -1247,22 +1325,22 @@ function ConsoleComponent(props) {
     return _deleteSelected2.apply(this, arguments);
   }
   function _deleteSelected2() {
-    _deleteSelected2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
-      var confirm_text, _t0;
-      return _regenerator().w(function (_context20) {
-        while (1) switch (_context20.n) {
+    _deleteSelected2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee21() {
+      var confirm_text;
+      return _regeneratorRuntime().wrap(function _callee21$(_context22) {
+        while (1) switch (_context22.prev = _context22.next) {
           case 0:
             if (!_are_selected()) {
-              _context20.n = 4;
+              _context22.next = 12;
               break;
             }
-            _context20.p = 1;
+            _context22.prev = 1;
             if (!_isDividerSelected()) {
-              _context20.n = 2;
+              _context22.next = 6;
               break;
             }
             confirm_text = "The selection includes section dividers. " + "The sections will be completed in their entirety. Do you want to continue";
-            _context20.n = 2;
+            _context22.next = 6;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Do Delete",
               text_body: confirm_text,
@@ -1270,80 +1348,82 @@ function ConsoleComponent(props) {
               submit_text: "delete",
               handleClose: dialogFuncs.hideModal
             });
-          case 2:
+          case 6:
             _doDeleteSelected();
-            _context20.n = 4;
+            _context22.next = 12;
             break;
-          case 3:
-            _context20.p = 3;
-            _t0 = _context20.v;
-            if (_t0 != "canceled") {
-              errorDrawerFuncs.addFromError("Error duplicating resource", _t0);
+          case 9:
+            _context22.prev = 9;
+            _context22.t0 = _context22["catch"](1);
+            if (_context22.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error duplicating resource", _context22.t0);
             }
-          case 4:
-            return _context20.a(2);
+          case 12:
+          case "end":
+            return _context22.stop();
         }
-      }, _callee19, null, [[1, 3]]);
+      }, _callee21, null, [[1, 9]]);
     }));
     return _deleteSelected2.apply(this, arguments);
   }
-  var _closeConsoleItem = (0, _react.useCallback)(/*#__PURE__*/function () {
-    var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(unique_id) {
+  var _closeConsoleItem = (0, _react.useCallback)( /*#__PURE__*/function () {
+    var _ref12 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee10(unique_id) {
       var centry;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
+      return _regeneratorRuntime().wrap(function _callee10$(_context11) {
+        while (1) switch (_context11.prev = _context11.next) {
           case 0:
             centry = get_console_item_entry(unique_id);
             if (!(centry.type == "divider")) {
-              _context1.n = 2;
+              _context11.next = 6;
               break;
             }
-            _context1.n = 1;
+            _context11.next = 4;
             return _deleteSection(unique_id);
-          case 1:
-            _context1.n = 3;
+          case 4:
+            _context11.next = 7;
             break;
-          case 2:
+          case 6:
             _dselectOneItem(unique_id, function () {
               props.dispatch({
                 type: "delete_item",
                 unique_id: unique_id
               });
             });
-          case 3:
-            return _context1.a(2);
+          case 7:
+          case "end":
+            return _context11.stop();
         }
-      }, _callee0);
+      }, _callee10);
     }));
     return function (_x7) {
-      return _ref0.apply(this, arguments);
+      return _ref12.apply(this, arguments);
     };
   }(), []);
   function _getNextEndIndex(start_id) {
     var start_index = _consoleItemIndex(start_id);
-    var _iterator6 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
-      _step6;
+    var _iterator7 = _createForOfIteratorHelper(props.console_items.current.slice(start_index)),
+      _step7;
     try {
-      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        var entry = _step6.value;
+      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+        var entry = _step7.value;
         if (entry.type == "section-end") {
           return _consoleItemIndex(entry.unique_id);
         }
       }
     } catch (err) {
-      _iterator6.e(err);
+      _iterator7.e(err);
     } finally {
-      _iterator6.f();
+      _iterator7.f();
     }
     return props.console_items.current.length;
   }
   function _isInSection(unique_id) {
     var idx = _consoleItemIndex(unique_id);
-    var _iterator7 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
-      _step7;
+    var _iterator8 = _createForOfIteratorHelper(props.console_items.current.slice(idx + 1)),
+      _step8;
     try {
-      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-        var entry = _step7.value;
+      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+        var entry = _step8.value;
         if (entry.type == "divider") {
           return false;
         } else {
@@ -1353,9 +1433,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator7.e(err);
+      _iterator8.e(err);
     } finally {
-      _iterator7.f();
+      _iterator8.f();
     }
     return false;
   }
@@ -1366,19 +1446,19 @@ function ConsoleComponent(props) {
     var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
     _lodash["default"].last(new_entries).set_focus = set_focus;
     var inserting_divider = false;
-    var _iterator8 = _createForOfIteratorHelper(new_entries),
-      _step8;
+    var _iterator9 = _createForOfIteratorHelper(new_entries),
+      _step9;
     try {
-      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-        var entry = _step8.value;
+      for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+        var entry = _step9.value;
         if (entry.type == "divider") {
           inserting_divider = true;
         }
       }
     } catch (err) {
-      _iterator8.e(err);
+      _iterator9.e(err);
     } finally {
-      _iterator8.f();
+      _iterator9.f();
     }
     var last_id = _lodash["default"].last(new_entries).unique_id;
     var insert_index;
@@ -1532,19 +1612,19 @@ function ConsoleComponent(props) {
     set_search_string(nval);
     pushCallback(function () {
       if (_are_selected()) {
-        var _iterator9 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
-          _step9;
+        var _iterator10 = _createForOfIteratorHelper(props.console_selected_items_ref.current),
+          _step10;
         try {
-          for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-            var uid = _step9.value;
+          for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+            var uid = _step10.value;
             updates[uid] = {
               search_string: search_string_ref.current
             };
           }
         } catch (err) {
-          _iterator9.e(err);
+          _iterator10.e(err);
         } finally {
-          _iterator9.f();
+          _iterator10.f();
         }
         _multiple_console_item_updates(updates);
       }
@@ -1559,11 +1639,11 @@ function ConsoleComponent(props) {
   }
   function _handleFilter() {
     var updates = {};
-    var _iterator0 = _createForOfIteratorHelper(props.console_items.current),
-      _step0;
+    var _iterator11 = _createForOfIteratorHelper(props.console_items.current),
+      _step11;
     try {
-      for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-        var entry = _step0.value;
+      for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+        var entry = _step11.value;
         if (entry.type == "code" || entry.type == "text") {
           updates[entry.unique_id] = {
             show_on_filtered: entry.console_text.toLowerCase().includes(search_string_ref.current.toLowerCase())
@@ -1575,9 +1655,9 @@ function ConsoleComponent(props) {
         }
       }
     } catch (err) {
-      _iterator0.e(err);
+      _iterator11.e(err);
     } finally {
-      _iterator0.f();
+      _iterator11.f();
     }
     _multiple_console_item_updates(updates, function () {
       set_filter_console_items(true);
@@ -1708,16 +1788,17 @@ function ConsoleComponent(props) {
         name_text: "Paste Cells",
         icon_name: "clipboard",
         click_handler: function () {
-          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-            return _regenerator().w(function (_context10) {
-              while (1) switch (_context10.n) {
+          var _click_handler = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee11() {
+            return _regeneratorRuntime().wrap(function _callee11$(_context12) {
+              while (1) switch (_context12.prev = _context12.next) {
                 case 0:
-                  _context10.n = 1;
+                  _context12.next = 2;
                   return _pasteCell();
-                case 1:
-                  return _context10.a(2);
+                case 2:
+                case "end":
+                  return _context12.stop();
               }
-            }, _callee1);
+            }, _callee11);
           }));
           function click_handler() {
             return _click_handler.apply(this, arguments);
@@ -1728,16 +1809,17 @@ function ConsoleComponent(props) {
         name_text: "Paste Image",
         icon_name: "clipboard",
         click_handler: function () {
-          var _click_handler2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-            return _regenerator().w(function (_context11) {
-              while (1) switch (_context11.n) {
+          var _click_handler2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee12() {
+            return _regeneratorRuntime().wrap(function _callee12$(_context13) {
+              while (1) switch (_context13.prev = _context13.next) {
                 case 0:
-                  _context11.n = 1;
+                  _context13.next = 2;
                   return _pasteImage();
-                case 1:
-                  return _context11.a(2);
+                case 2:
+                case "end":
+                  return _context13.stop();
               }
-            }, _callee10);
+            }, _callee12);
           }));
           function click_handler() {
             return _click_handler2.apply(this, arguments);
@@ -1748,16 +1830,17 @@ function ConsoleComponent(props) {
         name_text: "Delete Selected",
         icon_name: "trash",
         click_handler: function () {
-          var _click_handler3 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-            return _regenerator().w(function (_context12) {
-              while (1) switch (_context12.n) {
+          var _click_handler3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee13() {
+            return _regeneratorRuntime().wrap(function _callee13$(_context14) {
+              while (1) switch (_context14.prev = _context14.next) {
                 case 0:
-                  _context12.n = 1;
+                  _context14.next = 2;
                   return _deleteSelected();
-                case 1:
-                  return _context12.a(2);
+                case 2:
+                case "end":
+                  return _context14.stop();
               }
-            }, _callee11);
+            }, _callee13);
           }));
           function click_handler() {
             return _click_handler3.apply(this, arguments);
@@ -1846,30 +1929,31 @@ function ConsoleComponent(props) {
   }
   var _runCodeItem = (0, _react.useCallback)(function (unique_id) {
     var go_to_next = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    _clearCodeOutput(unique_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+    _clearCodeOutput(unique_id, /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee14() {
       var entry;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
+      return _regeneratorRuntime().wrap(function _callee14$(_context15) {
+        while (1) switch (_context15.prev = _context15.next) {
           case 0:
             _startSpinner(unique_id);
             entry = get_console_item_entry(unique_id);
-            _context13.n = 1;
+            _context15.next = 4;
             return (0, _communication_react.postPromise)("main_service", "exec_console_code", {
               "the_code": entry.console_text,
               "local_id": props.local_id,
               "console_id": unique_id
             }, props.local_id);
-          case 1:
+          case 4:
             if (!go_to_next) {
-              _context13.n = 2;
+              _context15.next = 7;
               break;
             }
-            _context13.n = 2;
+            _context15.next = 7;
             return _goToNextCell(unique_id);
-          case 2:
-            return _context13.a(2);
+          case 7:
+          case "end":
+            return _context15.stop();
         }
-      }, _callee12);
+      }, _callee14);
     })));
   }, []);
   function _showTextItemMarkdown(unique_id) {
@@ -1885,13 +1969,25 @@ function ConsoleComponent(props) {
       opacity: "100%"
     });
   }
-  var _sortStart = (0, _react.useCallback)(function (_ref10) {
-    var draggableId = _ref10.draggableId;
+  var _sortStart = (0, _react.useCallback)(function (_ref14) {
+    var draggableId = _ref14.draggableId;
     var idx = _consoleItemIndex(draggableId);
     var entry = props.console_items.current[idx];
     if (entry.type == "divider") {
       _hideNonDividers();
     }
+  }, []);
+  var getNotebookAIContext = (0, _react.useCallback)(function (activeEditor) {
+    var contextSetting = settingsContext.settingsRef.current["ai_code_suggestion_context"];
+    if (!["full tile", "full workspace"].includes(contextSetting)) return null;
+    return {
+      kind: "notebook",
+      cells: getPrecedingNotebookCodeCells(props.console_items.current, activeEditor.identifier),
+      active_editor: {
+        identifier: activeEditor.identifier,
+        mode: activeEditor.mode
+      }
+    };
   }, []);
   function superItemMaker(passDowns) {
     return /*#__PURE__*/(0, _react.memo)(function (item_props) {
@@ -1917,7 +2013,8 @@ function ConsoleComponent(props) {
       pseudo_tile_id: pseudo_tile_id,
       widgetHomesRef: widgetHomesRef,
       dispatch: props.dispatch,
-      handleCreateViewer: props.handleCreateViewer
+      handleCreateViewer: props.handleCreateViewer,
+      getAIContext: getNotebookAIContext
     });
   }, []);
   var console_class = props.mState.console_is_shrunk ? "am-shrunk" : "not-shrunk";
@@ -2043,21 +2140,29 @@ function ConsoleComponent(props) {
   }), props.mState.console_is_zoomed && props.zoomable && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
     handleClick: _unzoomConsole,
     icon: "minimize"
-  })))), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
-    search_string: search_string_ref.current,
-    handleSearchFieldChange: _handleSearchFieldChange,
-    handleFilter: _handleFilter,
-    handleUnFilter: _handleUnFilter,
-    searchNext: _searchNext,
-    searchPrevious: _searchPrevious,
-    outer_style: {
-      marginRight: 50,
-      marginTop: 10,
-      justifyContent: 'flex-end'
-    },
-    marginLeft: 0,
-    marginRight: FILTER_SEARCH_RIGHT_MARGIN,
-    search_helper_text: search_helper_text
+  })))), !props.mState.console_is_shrunk && !show_pseudo_log && !show_main_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.ResponsiveFlex, {
+    leftContent: /*#__PURE__*/_react["default"].createElement(_tile_maker_search_form.TileMakerLocalSettings, {
+      style: {
+        marginLeft: 82,
+        marginTop: 15
+      }
+    }),
+    rightContent: /*#__PURE__*/_react["default"].createElement(_search_form.FilterSearchForm, {
+      search_string: search_string_ref.current,
+      handleSearchFieldChange: _handleSearchFieldChange,
+      handleFilter: _handleFilter,
+      handleUnFilter: _handleUnFilter,
+      searchNext: _searchNext,
+      searchPrevious: _searchPrevious,
+      outer_style: {
+        marginRight: 50,
+        marginTop: 10,
+        justifyContent: 'flex-end'
+      },
+      marginLeft: 0,
+      marginRight: FILTER_SEARCH_RIGHT_MARGIN,
+      search_helper_text: search_helper_text
+    })
   }), !props.mState.console_is_shrunk && show_pseudo_log && /*#__PURE__*/_react["default"].createElement(_searchable_console.SearchableConsole, {
     local_id: props.local_id,
     tsocket: props.tsocket,
@@ -2336,19 +2441,19 @@ function LogItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator10 = _createForOfIteratorHelper(scripts),
-        _step10;
+      var _iterator13 = _createForOfIteratorHelper(scripts),
+        _step13;
       try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var script = _step10.value;
+        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+          var script = _step13.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator13.e(err);
       } finally {
-        _iterator10.f();
+        _iterator13.f();
       }
     }
   }
@@ -2540,19 +2645,19 @@ function BlobItem(props) {
       // to avoid doubles of bokeh images
       last_output_text.current = props.output_text;
       var scripts = $("#" + props.unique_id + " .log-code-output script").toArray();
-      var _iterator11 = _createForOfIteratorHelper(scripts),
-        _step11;
+      var _iterator14 = _createForOfIteratorHelper(scripts),
+        _step14;
       try {
-        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-          var script = _step11.value;
+        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+          var script = _step14.value;
           try {
             window.eval(script.text);
           } catch (e) {}
         }
       } catch (err) {
-        _iterator11.e(err);
+        _iterator14.e(err);
       } finally {
-        _iterator11.f();
+        _iterator14.f();
       }
     }
   }
@@ -3068,6 +3173,10 @@ function ConsoleCodeItem(props) {
     tsocket: props.tsocket,
     local_id: props.local_id,
     parentService: "main_service",
+    getAIContext: props.getAIContext,
+    aiEditorInfo: {
+      identifier: props.unique_id
+    },
     saveMe: null
   }), /*#__PURE__*/_react["default"].createElement("div", {
     className: "button-div float-buttons d-flex flex-row"
@@ -3110,9 +3219,9 @@ function ResourceLinkButton(props) {
     return _goToLink2.apply(this, arguments);
   }
   function _goToLink2() {
-    _goToLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
-      return _regenerator().w(function (_context21) {
-        while (1) switch (_context21.n) {
+    _goToLink2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee22() {
+      return _regeneratorRuntime().wrap(function _callee22$(_context23) {
+        while (1) switch (_context23.prev = _context23.next) {
           case 0:
             if (window.in_context) {
               try {
@@ -3124,9 +3233,10 @@ function ResourceLinkButton(props) {
               window.open($SCRIPT_ROOT + my_view.current + props.res_name);
             }
           case 1:
-            return _context21.a(2);
+          case "end":
+            return _context23.stop();
         }
-      }, _callee20);
+      }, _callee22);
     }));
     return _goToLink2.apply(this, arguments);
   }
@@ -3215,6 +3325,9 @@ function ConsoleTextItem(props) {
     }
     props.setConsoleItemValue(props.unique_id, "console_text", new_text);
   }, []);
+  function _handleMarkdownClick(event) {
+    (0, _markdown_checkbox.handleMarkdownCheckboxClick)(event, props.console_text, _handleChange);
+  }
   function _handleSummaryTextChange(value) {
     props.setConsoleItemValue(props.unique_id, "summary_text", value);
   }
@@ -3251,38 +3364,39 @@ function ConsoleTextItem(props) {
     return _insertResourceLink2.apply(this, arguments);
   }
   function _insertResourceLink2() {
-    _insertResourceLink2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee21() {
-      var result, new_links, _t1;
-      return _regenerator().w(function (_context22) {
-        while (1) switch (_context22.n) {
+    _insertResourceLink2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee23() {
+      var result, new_links;
+      return _regeneratorRuntime().wrap(function _callee23$(_context24) {
+        while (1) switch (_context24.prev = _context24.next) {
           case 0:
-            _context22.p = 0;
-            _context22.n = 1;
+            _context24.prev = 0;
+            _context24.next = 3;
             return dialogFuncs.showModalPromise("SelectResourceDialog", {
               cancel_text: "cancel",
               submit_text: "insert link",
               handleClose: dialogFuncs.hideModal
             });
-          case 1:
-            result = _context22.v;
+          case 3:
+            result = _context24.sent;
             new_links = _toConsumableArray(props.links);
             new_links.push({
               res_type: result.type,
               res_name: result.selected_resource
             });
             props.setConsoleItemValue(props.unique_id, "links", new_links);
-            _context22.n = 3;
+            _context24.next = 12;
             break;
-          case 2:
-            _context22.p = 2;
-            _t1 = _context22.v;
-            if (_t1 != "canceled") {
-              errorDrawerFuncs.addFromError("Error inserting resource", _t1);
+          case 9:
+            _context24.prev = 9;
+            _context24.t0 = _context24["catch"](0);
+            if (_context24.t0 != "canceled") {
+              errorDrawerFuncs.addFromError("Error inserting resource", _context24.t0);
             }
-          case 3:
-            return _context22.a(2);
+          case 12:
+          case "end":
+            return _context24.stop();
         }
-      }, _callee21, null, [[0, 2]]);
+      }, _callee23, null, [[0, 9]]);
     }));
     return _insertResourceLink2.apply(this, arguments);
   }
@@ -3503,6 +3617,7 @@ function ConsoleTextItem(props) {
     saveMe: null
   })), really_show_markdown && !hasOnlyWhitespace() && /*#__PURE__*/_react["default"].createElement("div", {
     className: "text-panel-output markdown-heading-sizes",
+    onClick: _handleMarkdownClick,
     onDoubleClick: _hideMarkdown,
     style: {
       padding: 9

@@ -1,22 +1,22 @@
 "use strict";
 (self["webpackChunktactic"] = self["webpackChunktactic"] || []).push([["blueprint-icons-all-paths"],{
 
-/***/ "./node_modules/@blueprintjs/icons/lib/esm/allPaths.js":
+/***/ "./node_modules/@blueprintjs/icons/lib/esm/allPaths.js"
 /*!*************************************************************!*\
   !*** ./node_modules/@blueprintjs/icons/lib/esm/allPaths.js ***!
   \*************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   IconSvgPaths16: () => (/* reexport module object */ _generated_16px_paths__WEBPACK_IMPORTED_MODULE_0__),
-/* harmony export */   IconSvgPaths20: () => (/* reexport module object */ _generated_20px_paths__WEBPACK_IMPORTED_MODULE_1__),
+/* harmony export */   IconSvgPaths16: () => (/* reexport module object */ _generated_16px_paths__WEBPACK_IMPORTED_MODULE_1__),
+/* harmony export */   IconSvgPaths20: () => (/* reexport module object */ _generated_20px_paths__WEBPACK_IMPORTED_MODULE_2__),
 /* harmony export */   getIconPaths: () => (/* binding */ getIconPaths),
 /* harmony export */   iconNameToPathsRecordKey: () => (/* binding */ iconNameToPathsRecordKey)
 /* harmony export */ });
-/* harmony import */ var change_case__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! change-case */ "./node_modules/pascal-case/dist.es2015/index.js");
-/* harmony import */ var _generated_16px_paths__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./generated/16px/paths */ "./node_modules/@blueprintjs/icons/lib/esm/generated/16px/paths/index.js");
-/* harmony import */ var _generated_20px_paths__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./generated/20px/paths */ "./node_modules/@blueprintjs/icons/lib/esm/generated/20px/paths/index.js");
+/* harmony import */ var change_case__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! change-case */ "./node_modules/pascal-case/dist.es2015/index.js");
+/* harmony import */ var _generated_16px_paths__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./generated/16px/paths */ "./node_modules/@blueprintjs/icons/lib/esm/generated/16px/paths/index.js");
+/* harmony import */ var _generated_20px_paths__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./generated/20px/paths */ "./node_modules/@blueprintjs/icons/lib/esm/generated/20px/paths/index.js");
 /* harmony import */ var _iconTypes__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./iconTypes */ "./node_modules/@blueprintjs/icons/lib/esm/iconTypes.js");
 /*
  * Copyright 2021 Palantir Technologies, Inc. All rights reserved.
@@ -48,8 +48,8 @@ __webpack_require__.r(__webpack_exports__);
  * dynamic icon loader which loads icon definitions on-demand, use `{ Icons } from "@blueprintjs/icons"` instead.
  */
 function getIconPaths(name, size) {
-    const key = (0,change_case__WEBPACK_IMPORTED_MODULE_2__.pascalCase)(name);
-    return size === _iconTypes__WEBPACK_IMPORTED_MODULE_3__.IconSize.STANDARD ? _generated_16px_paths__WEBPACK_IMPORTED_MODULE_0__[key] : _generated_20px_paths__WEBPACK_IMPORTED_MODULE_1__[key];
+    const key = (0,change_case__WEBPACK_IMPORTED_MODULE_0__.pascalCase)(name);
+    return size === _iconTypes__WEBPACK_IMPORTED_MODULE_3__.IconSize.STANDARD ? _generated_16px_paths__WEBPACK_IMPORTED_MODULE_1__[key] : _generated_20px_paths__WEBPACK_IMPORTED_MODULE_2__[key];
 }
 /**
  * Type safe string literal conversion of snake-case icon names to PascalCase icon names.
@@ -58,11 +58,11 @@ function getIconPaths(name, size) {
  * @deprecated use `getIconPaths` instead
  */
 function iconNameToPathsRecordKey(name) {
-    return (0,change_case__WEBPACK_IMPORTED_MODULE_2__.pascalCase)(name);
+    return (0,change_case__WEBPACK_IMPORTED_MODULE_0__.pascalCase)(name);
 }
 //# sourceMappingURL=allPaths.js.map
 
-/***/ })
+/***/ }
 
 }]);
 //# sourceMappingURL=blueprint-icons-all-paths.bundle.js.map

@@ -1,11 +1,11 @@
 "use strict";
 (self["webpackChunktactic"] = self["webpackChunktactic"] || []).push([["blueprint-icons-all-paths-loader"],{
 
-/***/ "./node_modules/@blueprintjs/icons/lib/esm/paths-loaders/allPathsLoader.js":
+/***/ "./node_modules/@blueprintjs/icons/lib/esm/paths-loaders/allPathsLoader.js"
 /*!*********************************************************************************!*\
   !*** ./node_modules/@blueprintjs/icons/lib/esm/paths-loaders/allPathsLoader.js ***!
   \*********************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -35,7 +35,7 @@ const allPathsLoader = async (name, size) => {
 };
 //# sourceMappingURL=allPathsLoader.js.map
 
-/***/ })
+/***/ }
 
 }]);
 //# sourceMappingURL=blueprint-icons-all-paths-loader.bundle.js.map
