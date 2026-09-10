@@ -203293,9 +203293,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controlGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controlGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/context-menu/contextMenu.js");
@@ -204487,15 +204487,6 @@ function DividerElement(props) {
     title: props.text,
     icon: props.icon,
     heading: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.H4
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Divider, {
-    style: {
-      flex: "1 1 0",
-      marginLeft: 10,
-      minHeight: 0,
-      minWidth: 0,
-      marginRight: 10,
-      borderRight: "0px"
-    }
   }));
 }
 function CmElement(props) {
@@ -204799,7 +204790,7 @@ function NavSection(props) {
     onClick: function onClick() {
       setIsOpen(!isOpen);
     }
-  }, props.title), props.right_button != null && props.right_button), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.Collapse, {
+  }, props.title), props.right_button != null && props.right_button), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Collapse, {
     key: "collapse",
     isOpen: isOpen
   }, props.sub_items.filter(filterItem).map(function (item) {
@@ -204850,7 +204841,7 @@ function DirectNavSection(props) {
     });
     return omni_items;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     className: className,
     icon: props.icon,
     intent: mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none",
@@ -204927,7 +204918,7 @@ function NavDivider(props) {
   props = _objectSpread({
     name: "divider"
   }, props);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Divider, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.Divider, {
     key: name,
     style: {
       width: '90%',
@@ -205156,7 +205147,7 @@ function SortableNavSection(props) {
     content: contextMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "sortable-nav-section"
-  }, props.createFromList && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.ControlGroup, {
+  }, props.createFromList && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, {
     vertical: true,
     style: {
       alignItems: "self-start"
@@ -205192,7 +205183,7 @@ function SortableNavSection(props) {
     size: "small",
     variant: "minimal",
     onClick: createItem
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.Collapse, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Collapse, {
     className: "nav-section",
     isOpen: props.isOpen
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.DndContext, {
@@ -205456,7 +205447,7 @@ function NavItem(props) {
   }, props);
   var mpContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_tile_maker_support__WEBPACK_IMPORTED_MODULE_8__.MakerPaneContext);
   if (props.isSpacer) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
       className: "spacer-nav-item maker-nav-item",
       icon: null,
       intent: "none",
@@ -205561,7 +205552,7 @@ function NavItem(props) {
       verticalAlign: "middle"
     }
   }), buttonText);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     className: className,
     icon: props.icon,
     size: "medium",
@@ -209035,9 +209026,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/hooks/hotkeys/useHotkeys.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html-select/htmlSelect.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
 /* harmony import */ var _codemirror_view__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @codemirror/view */ "./node_modules/@codemirror/view/dist/index.js");
 /* harmony import */ var _codemirror_state__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @codemirror/state */ "./node_modules/@codemirror/state/dist/index.js");
 /* harmony import */ var _tile_maker_support__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./tile_maker_support */ "./static/tactic_js/tile_maker_support.jsx");
@@ -209655,8 +209649,7 @@ function CreatorApp(props) {
       setDebugFrameIndex(0);
       setDebugSession(null);
       setDebugStatus("idle");
-      var label = data.status === "aborted" ? "Debug session stopped" : data.status === "exception" ? "Debug session ended after the exception" : "Debug session completed";
-      setDebugMessage("".concat(label, " (").concat(data.pause_count, " pause").concat(data.pause_count === 1 ? "" : "s", ")"));
+      setDebugMessage("");
     };
     var timeoutListener = function timeoutListener(data) {
       var session = debugSessionRef.current;
@@ -210773,7 +210766,7 @@ function CreatorApp(props) {
             setDebugPaused(null);
             setDebugFrameIndex(0);
             setDebugStatus("armed");
-            setDebugMessage(breakpoints.length ? "Debugger armed. Trigger a tile event to reach a breakpoint." : debugPauseOnExceptionsRef.current ? "Debugger armed. It will pause when tile code raises an exception." : "Debugger armed. The next tile event will pause on its first user-code line.");
+            setDebugMessage(breakpoints.length ? "Debugger enabled." : debugPauseOnExceptionsRef.current ? "Debugger enabled." : "Debugger enabled.");
           case 3:
             return _context1.a(2);
         }
@@ -210800,7 +210793,7 @@ function CreatorApp(props) {
               _context10.n = 2;
               break;
             }
-            setDebugMessage("Save the tile before starting the debugger so its line numbers are current.");
+            setDebugMessage("Save the tile before starting the debugger.");
             return _context10.a(2);
           case 2:
             setDebugStatus("starting");
@@ -210882,7 +210875,7 @@ function CreatorApp(props) {
               tile_name: target.tile_name
             }, props.local_id);
           case 8:
-            setDebugMessage("Arming debugger...");
+            setDebugMessage("Enabling debugger...");
             _context11.n = 9;
             return armDebugTarget(target, savedLineNumbers);
           case 9:
@@ -210921,7 +210914,7 @@ function CreatorApp(props) {
             setDebugStatus(command === "abort" ? "stopping" : "running");
             setDebugPaused(null);
             setDebugFrameIndex(0);
-            setDebugMessage(command === "abort" ? "Stopping debugger..." : "Running...");
+            setDebugMessage(command === "abort" ? "Stopping debugger." : "Running...");
             _context12.n = 2;
             return (0,_communication_react__WEBPACK_IMPORTED_MODULE_8__.postPromise)(session.debugQueue, "debug_command", {
               session_id: session.sessionId,
@@ -210982,7 +210975,7 @@ function CreatorApp(props) {
               setDebugPaused(null);
               setDebugFrameIndex(0);
               setDebugStatus("idle");
-              setDebugMessage("Debugger disarmed.");
+              setDebugMessage("");
             }
             _context13.n = 4;
             break;
@@ -211180,24 +211173,9 @@ function CreatorApp(props) {
     }
     setExpandedSubList(new_tab_list);
   }
-  function _collapseAllSubSections() {
-    setExpandedSubList([]);
-  }
   function _collapseAll() {
     setExpandedSubList([]);
     setExpandedSectionList([]);
-  }
-  function _handleSectionSelect(newSectionIdentifier) {
-    var forceVisible = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-    var new_section_list = _toConsumableArray(expandedSectionListRef.current);
-    if (!new_section_list.includes(newSectionIdentifier)) {
-      new_section_list.push(newSectionIdentifier);
-    } else if (!forceVisible) {
-      new_section_list = new_section_list.filter(function (tab) {
-        return tab !== newSectionIdentifier;
-      });
-    }
-    setExpandedSectionList(new_section_list);
   }
   function _setSectionOpen(sectionIdentifier, isOpen) {
     var new_section_list = _toConsumableArray(expandedSectionListRef.current);
@@ -211211,9 +211189,6 @@ function CreatorApp(props) {
       });
     }
     setExpandedSectionList(new_section_list);
-  }
-  function _collapseAllSections() {
-    setExpandedSectionList([]);
   }
   function showTab(newTabIdentifier) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -212005,7 +211980,7 @@ function CreatorApp(props) {
       flex: "1 1 0",
       minHeight: 0,
       minWidth: 0,
-      paddingBottom: 250
+      paddingBottom: 200
     },
     className: "creator-pane-list"
   }, right_pane_list);
@@ -212032,7 +212007,7 @@ function CreatorApp(props) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      padding: "4px 8px"
+      padding: "0px 8px"
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_24__.TileMakerSearchForm, {
     regex: false,
@@ -212075,6 +212050,20 @@ function CreatorApp(props) {
     var wrapper = "".concat(debugPaused.exception.type, "(");
     return message.startsWith(wrapper) && message.endsWith(")") ? message.slice(wrapper.length, -1) : message;
   }();
+  var availableInstances = null;
+  if (!debugTargets.length) {
+    availableInstances = [{
+      label: "No running tile instances",
+      value: ""
+    }];
+  } else {
+    availableInstances = debugTargets.map(function (target) {
+      return {
+        label: "".concat(target.tile_name, " (").concat(target.tile_id.slice(-8), ")"),
+        value: target.tile_id
+      };
+    });
+  }
   var debugger_panel = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     className: "tile-debugger-panel tile-debugger-".concat(debugStatus),
     style: {
@@ -212085,24 +212074,19 @@ function CreatorApp(props) {
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     className: "tile-debugger-toolbar"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", {
-    className: "tile-debugger-title"
-  }, "Debugger"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("select", {
-    className: "tile-debugger-target",
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.FormGroup, {
+    label: "Configure",
+    helperText: "".concat(debugBreakpoints.length, " breakpoint").concat(debugBreakpoints.length === 1 ? "" : "s"),
+    className: "tile-debugger-panel-section"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.HTMLSelect, {
     "aria-label": "Running tile instance",
     value: debugTargetId || "",
     disabled: debugSession != null,
     onChange: function onChange(event) {
       return setDebugTargetId(event.target.value || null);
-    }
-  }, !debugTargets.length && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("option", {
-    value: ""
-  }, "Running tile..."), debugTargets.map(function (target) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("option", {
-      key: target.tile_id,
-      value: target.tile_id
-    }, target.tile_name, " (", target.tile_id.slice(-8), ")");
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
+    },
+    options: availableInstances
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
     variant: "minimal",
     size: "small",
     icon: "refresh",
@@ -212113,80 +212097,92 @@ function CreatorApp(props) {
         return setDebugMessage(debuggerErrorMessage(error));
       });
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
-    variant: "minimal",
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Switch, {
+    className: "tile-debugger-exception-toggle",
+    label: "Exceptions",
+    title: "Pause where tile code raises an exception",
+    checked: debugPauseOnExceptions,
+    disabled: debugSession != null,
+    align: true,
+    style: {
+      marginLeft: 10,
+      display: "inline"
+    },
+    onChange: function onChange(event) {
+      return setDebugPauseOnExceptions(event.target.checked);
+    }
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Divider, {
+    className: "tile-debugger-panel-divider "
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.FormGroup, {
+    label: "Enable",
+    helperText: debugMessage,
+    className: "tile-debugger-panel-section"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ButtonGroup, {
+    variant: "minimal"
+  }, debugSession != null && debugStatus != "starting" ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
     size: "small",
-    icon: "play",
-    disabled: debugSession != null || debugStatus === "starting",
+    icon: "stop",
+    intent: "danger",
+    title: "Stop debugging",
+    disabled: false,
+    onClick: stopDebugger
+  }, "Stop Debug") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+    size: "small",
+    icon: "sensor",
+    disabled: false,
     onClick: startDebugger
-  }, "Start Debug"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
-    variant: "minimal",
+  }, "Enable Debug"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
     size: "small",
     icon: "changes",
     title: "Save source changes, load the module, reload this tile, and arm the debugger",
     loading: debugStatus === "starting",
     disabled: debugSession != null || debugStatus === "starting",
     onClick: syncAndStartDebugger
-  }, "Sync & Start"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.ButtonGroup, {
-    variant: "minimal",
+  }, "Sync & Enable"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Divider, {
+    className: "tile-debugger-panel-divider "
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.FormGroup, {
+    label: "Step",
+    className: "tile-debugger-panel-section"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ButtonGroup, {
     className: "tile-debugger-step-buttons"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
-    size: "small",
-    icon: "play",
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+    size: "medium",
+    icon: "double-chevron-right",
     title: "Continue",
     disabled: debugStatus !== "paused",
     onClick: function onClick() {
       return sendDebugCommand("continue");
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
-    size: "small",
-    icon: "chevron-down",
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+    size: "medium",
+    icon: "arrow-down",
     title: "Step into",
     disabled: debugStatus !== "paused",
     onClick: function onClick() {
       return sendDebugCommand("step");
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
-    size: "small",
-    icon: "chevron-right",
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+    size: "medium",
+    icon: "arrow-right",
     title: "Step over",
     disabled: debugStatus !== "paused",
     onClick: function onClick() {
       return sendDebugCommand("next");
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
-    size: "small",
-    icon: "chevron-up",
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+    size: "medium",
+    icon: "arrow-up",
     title: "Step out",
     disabled: debugStatus !== "paused",
     onClick: function onClick() {
       return sendDebugCommand("return");
     }
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
+  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
     variant: "minimal",
-    size: "small",
-    icon: "stop",
-    intent: "danger",
-    title: "Stop debugging",
-    disabled: debugSession == null,
-    onClick: stopDebugger
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", {
-    className: "tile-debugger-breakpoint-count"
-  }, debugBreakpoints.length, " breakpoint", debugBreakpoints.length === 1 ? "" : "s"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Checkbox, {
-    className: "tile-debugger-exception-toggle",
-    label: "Exceptions",
-    title: "Pause where tile code raises an exception",
-    checked: debugPauseOnExceptions,
-    disabled: debugSession != null,
-    onChange: function onChange(event) {
-      return setDebugPauseOnExceptions(event.target.checked);
-    }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", {
-    className: "tile-debugger-message"
-  }, debugMessage)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
-    variant: "minimal",
-    size: "small",
     icon: "properties",
+    style: {
+      alignSelf: "center"
+    },
     active: debugDrawerOpen,
     title: debugDrawerOpen ? "Hide debugger drawer" : "Show debugger drawer",
     onClick: function onClick() {
@@ -212203,7 +212199,7 @@ function CreatorApp(props) {
     className: "tile-debugger-title"
   }, "Debugger"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", {
     className: "tile-debugger-drawer-status"
-  }, debugStatus)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Button, {
+  }, debugStatus)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
     variant: "minimal",
     size: "small",
     icon: "cross",
@@ -212254,7 +212250,7 @@ function CreatorApp(props) {
     }, variable.value));
   }))))) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     className: "tile-debugger-drawer-empty"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", null, debugMessage || "Start debugging to inspect the call stack and local variables.")));
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", null, debugMessage || "Enable debugging to inspect the call stack and local variables.")));
   var outer_style = {
     width: "calc(100% - ".concat(_sizing_tools__WEBPACK_IMPORTED_MODULE_11__.ICON_BAR_WIDTH, "px)"),
     height: "100%",
@@ -212263,9 +212259,10 @@ function CreatorApp(props) {
     minHeight: 0,
     minWidth: 0,
     flexDirection: 'column',
-    position: "relative"
+    position: "relative",
+    paddingTop: 15
   };
-  var outer_class = "resource-viewer-holder pane-holder resource-viewer-left-pane-holder top-padded";
+  var outer_class = "resource-viewer-holder pane-holder resource-viewer-left-pane-holder";
   if (!window.in_context) {
     if (settingsContext.isDark()) {
       outer_class = outer_class + " bp6-dark";

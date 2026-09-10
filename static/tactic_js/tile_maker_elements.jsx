@@ -1044,7 +1044,7 @@ function DividerElement(props) {
             position: "relative", width: "100%"
         }}>
             <EntityTitle title={props.text} icon={props.icon} heading={H4}/>
-            <Divider style={{flex: "1 1 0", marginLeft: 10, minHeight: 0, minWidth: 0, marginRight: 10, borderRight: "0px"}}/>
+            {/*<Divider style={{flex: "1 1 0", marginLeft: 10, minHeight: 0, minWidth: 0, marginRight: 10, borderRight: "0px"}}/>*/}
         </div>
     )
 }

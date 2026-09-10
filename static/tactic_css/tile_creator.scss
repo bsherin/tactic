@@ -36,13 +36,27 @@ $option-divider-color: #ec9a3c;
     min-height: 34px;
     padding: 4px 8px;
     display: flex;
-    align-items: center;
+    //align-items: center;
     gap: 6px;
+    .bp6-form-group {
+        margin-bottom: 0;
+    }
 }
 
 .tile-debugger-title {
     font-weight: 600;
     margin-right: 2px;
+}
+
+.tile-debugger-panel-section {
+    //.bp6-form-content {
+    //    display: flex;
+    //    flex-direction: row;
+    //}
+}
+
+.tile-debugger-panel-divider {
+    height: 45px;
 }
 
 .tile-debugger-target {
@@ -266,6 +280,10 @@ $option-divider-color: #ec9a3c;
     color: #ffb7b7;
 }
 
+.creator-simple-title {
+    margin-top: 5px;
+}
+
 .cm-debug-gutter {
     width: 15px;
     cursor: pointer;
@@ -482,6 +500,10 @@ $option-divider-color: #ec9a3c;
             padding-top: 25px;
         }
 
+        &.bp6-card {
+            padding-top: 10px;
+        }
+
         .creator-simple-title {
             //position: absolute;
             //left: 25px;
@@ -517,12 +539,12 @@ $option-divider-color: #ec9a3c;
 
             &.maker-pane-left-button {
                 left: -10px;
-                top: 17px;
+                top: 12px;
             }
 
             &.maker-pane-right-button {
                 right: 22px;
-                top: 17px;
+                top: 10px;
             }
         }
 

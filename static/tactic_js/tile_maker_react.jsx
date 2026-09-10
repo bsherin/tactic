@@ -15,7 +15,7 @@ import {createRoot} from 'react-dom/client';
 
 import _ from 'lodash';
 
-import {Button, ButtonGroup, Checkbox, useHotkeys, FormGroup, HTMLSelect} from "@blueprintjs/core";
+import {Button, ButtonGroup, Switch, useHotkeys, FormGroup, HTMLSelect, Divider} from "@blueprintjs/core";
 
 import {EditorView} from "@codemirror/view";
 import {EditorSelection} from "@codemirror/state";
@@ -44,8 +44,18 @@ import {useStateAndRefWithUndo, withUndo, UndoContext} from "./undo";
 import {useSearch} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {
-    CmElement, PaneElement, MakerNavigator, OptionModuleForm, WidgetModuleForm, ExportModuleForm, MetadataModule, DividerElement,
-    option_icons, INITIAL_CODE_PANE_HEIGHT, INITIAL_FORM_PANE_HEIGHT, pane_type_icons
+    CmElement,
+    PaneElement,
+    MakerNavigator,
+    OptionModuleForm,
+    WidgetModuleForm,
+    ExportModuleForm,
+    MetadataModule,
+    DividerElement,
+    option_icons,
+    INITIAL_CODE_PANE_HEIGHT,
+    INITIAL_FORM_PANE_HEIGHT,
+    pane_type_icons
 } from "./tile_maker_elements";
 import {widgetIcons} from "./widget_info"
 import {useMetadata} from "./metadata_reducer";
@@ -82,7 +92,7 @@ function CreatorApp(props) {
     const paneListRef = useRef(null);
     const debugSocketListenersRef = useRef([]);
 
-    const  {handleUndo, handleRedo, undoStackRef, redoStackRef} = useContext(UndoContext);
+    const {handleUndo, handleRedo, undoStackRef, redoStackRef} = useContext(UndoContext);
 
 
     const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
@@ -94,7 +104,7 @@ function CreatorApp(props) {
 
     const [, optionDispatch, option_list_ref] = usePropertyList(props.option_list, INITIAL_FORM_PANE_HEIGHT, {special_list: []});
     const [, widgetDispatch, widget_list_ref] = usePropertyList(props.widget_list, INITIAL_FORM_PANE_HEIGHT, {});
-    const [, exportDispatch, export_list_ref] = usePropertyList(props.export_list,  INITIAL_FORM_PANE_HEIGHT, {tags: ""});
+    const [, exportDispatch, export_list_ref] = usePropertyList(props.export_list, INITIAL_FORM_PANE_HEIGHT, {tags: ""});
     const [, saveDispatch, save_list_ref] = usePropertyList(props.additional_save_attrs ? props.additional_save_attrs : [], INITIAL_FORM_PANE_HEIGHT);
     const [, umDispatch, umListRef] = usePropertyList(props.user_methods_list, INITIAL_CODE_PANE_HEIGHT);
     const [, hmDispatch, hmListRef] = usePropertyList(props.used_handler_methods_list, INITIAL_CODE_PANE_HEIGHT);
@@ -102,7 +112,7 @@ function CreatorApp(props) {
 
     const [showSearchResultsPane, setShowSearchResultsPane] = useState(false);
 
-    function _selectSearchResult(result, isCurrent=false) {
+    function _selectSearchResult(result, isCurrent = false) {
         if (isCurrent) {
             _handleTabSelect(result.identifier);
             return;
@@ -119,7 +129,7 @@ function CreatorApp(props) {
             showTab(result.identifier);
         });
     }
-    
+
     const otherCmObjects = useRef(new Set());
 
     const [, setRenderContentInfo, renderContentInfoRef] = useStateAndRefWithUndo({
@@ -400,8 +410,7 @@ function CreatorApp(props) {
     useEffect(() => {
         if (searchStateRef.current.search_string === "") {
             setShowSearchResultsPane(false);
-        }
-        else {
+        } else {
             setShowSearchResultsPane(true);
         }
     }, [searchStateRef.current.search_string]);
@@ -464,12 +473,7 @@ function CreatorApp(props) {
             setDebugFrameIndex(0);
             setDebugSession(null);
             setDebugStatus("idle");
-            const label = data.status === "aborted"
-                ? "Debug session stopped"
-                : data.status === "exception"
-                    ? "Debug session ended after the exception"
-                    : "Debug session completed";
-            setDebugMessage(`${label} (${data.pause_count} pause${data.pause_count === 1 ? "" : "s"})`);
+            setDebugMessage("");
         };
 
         const timeoutListener = (data) => {
@@ -524,6 +528,7 @@ function CreatorApp(props) {
             otherCmObjects.current.add(cmObject);
         }
     }
+
     function menu_specs() {
         return {
             Save: [{name_text: "Save", icon_name: "saved", click_handler: _saveMe, key_bindings: ['Ctrl+S']},
@@ -677,7 +682,7 @@ function CreatorApp(props) {
                 }, preventDefault: true
             },
             {
-                key: 'Ctrl-Space', run: ()=>{
+                key: 'Ctrl-Space', run: () => {
                     selectedPane.showOmnibar();
                     return true
                 }, preventDefault: true
@@ -1284,16 +1289,16 @@ function CreatorApp(props) {
         setDebugFrameIndex(0);
         setDebugStatus("armed");
         setDebugMessage(breakpoints.length
-            ? "Debugger armed. Trigger a tile event to reach a breakpoint."
+            ? "Debugger enabled."
             : debugPauseOnExceptionsRef.current
-                ? "Debugger armed. It will pause when tile code raises an exception."
-                : "Debugger armed. The next tile event will pause on its first user-code line.");
+                ? "Debugger enabled."
+                : "Debugger enabled.");
     }
 
     async function startDebugger() {
         if (debugSessionRef.current) return;
         if (_debuggerSourceDirty()) {
-            setDebugMessage("Save the tile before starting the debugger so its line numbers are current.");
+            setDebugMessage("Save the tile before starting the debugger.");
             return;
         }
         setDebugStatus("starting");
@@ -1335,7 +1340,7 @@ function CreatorApp(props) {
                 tile_name: target.tile_name,
             }, props.local_id);
 
-            setDebugMessage("Arming debugger...");
+            setDebugMessage("Enabling debugger...");
             await armDebugTarget(target, savedLineNumbers);
         } catch (error) {
             setDebugStatus("idle");
@@ -1351,7 +1356,7 @@ function CreatorApp(props) {
             setDebugStatus(command === "abort" ? "stopping" : "running");
             setDebugPaused(null);
             setDebugFrameIndex(0);
-            setDebugMessage(command === "abort" ? "Stopping debugger..." : "Running...");
+            setDebugMessage(command === "abort" ? "Stopping debugger." : "Running...");
             await postPromise(session.debugQueue, "debug_command", {
                 session_id: session.sessionId,
                 command: command,
@@ -1387,7 +1392,7 @@ function CreatorApp(props) {
                 setDebugPaused(null);
                 setDebugFrameIndex(0);
                 setDebugStatus("idle");
-                setDebugMessage("Debugger disarmed.");
+                setDebugMessage("");
             }
         } catch (error) {
             setDebugMessage(debuggerErrorMessage(error));
@@ -1571,7 +1576,7 @@ function CreatorApp(props) {
         setVisibleTabList(new_tab_list)
     }
 
-    function _handleSubSectionSelect(newTabIdentifier, forceVisible=false) {
+    function _handleSubSectionSelect(newTabIdentifier, forceVisible = false) {
         let new_tab_list = [...expandedSubListRef.current];
         if (!new_tab_list.includes(newTabIdentifier)) {
             new_tab_list.push(newTabIdentifier);
@@ -1581,23 +1586,9 @@ function CreatorApp(props) {
         setExpandedSubList(new_tab_list)
     }
 
-    function _collapseAllSubSections() {
-        setExpandedSubList([]);
-    }
-
     function _collapseAll() {
         setExpandedSubList([]);
         setExpandedSectionList([]);
-    }
-
-    function _handleSectionSelect(newSectionIdentifier, forceVisible=false) {
-        let new_section_list = [...expandedSectionListRef.current];
-        if (!new_section_list.includes(newSectionIdentifier)) {
-            new_section_list.push(newSectionIdentifier);
-        } else if (!forceVisible) {
-            new_section_list = new_section_list.filter(tab => tab !== newSectionIdentifier);
-        }
-        setExpandedSectionList(new_section_list)
     }
 
     function _setSectionOpen(sectionIdentifier, isOpen) {
@@ -1606,18 +1597,13 @@ function CreatorApp(props) {
             if (!new_section_list.includes(sectionIdentifier)) {
                 new_section_list.push(sectionIdentifier);
             }
-        }
-        else {
+        } else {
             new_section_list = new_section_list.filter(tab => tab !== sectionIdentifier);
         }
         setExpandedSectionList(new_section_list)
     }
 
-    function _collapseAllSections() {
-        setExpandedSectionList([]);
-    }
-
-    function showTab(newTabIdentifier, callback=null) {
+    function showTab(newTabIdentifier, callback = null) {
         if (!visibleTabListRef.current.includes(newTabIdentifier)) {
             let new_tab_list = [...visibleTabListRef.current];
             new_tab_list.push(newTabIdentifier);
@@ -1942,7 +1928,7 @@ function CreatorApp(props) {
             identifier: "save_attrs",
             kind: "section",
             visible: !metadataRef.current.couple_save_attrs_and_exports,
-             item_base: {
+            item_base: {
                 name: "new_item",
                 tags: "",
             },
@@ -2053,7 +2039,7 @@ function CreatorApp(props) {
                      icon={pane_type_icons["globals"]}
                      updateItem={updateGlobals}
                      visible={visibleTabListRef.current.includes("globals")}
-                      paneListRef={paneListRef}
+                     paneListRef={paneListRef}
                      identifier="globals" pushCallback={pushCallback}>
             {codeElemDict["globals"]?.()}
         </PaneElement>
@@ -2067,7 +2053,7 @@ function CreatorApp(props) {
                      pane_scroll_ref={pane_scroll_ref}
                      icon={pane_type_icons["render_content"]}
                      updateItem={updateRenderContent}
-                      paneListRef={paneListRef}
+                     paneListRef={paneListRef}
                      visible={visibleTabListRef.current.includes("render_content")}
                      identifier={"render_content"} pushCallback={pushCallback}>
             {codeElemDict["render_content"]?.()}
@@ -2088,7 +2074,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement identifier={key} key={key} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
-                          paneListRef={paneListRef}
+                         paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={optionDispatch} pushCallback={pushCallback}>
                 {optionElemDict[key]?.()}
@@ -2109,7 +2095,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement identifier={key} key={key} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
-                          paneListRef={paneListRef}
+                         paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={widgetDispatch} pushCallback={pushCallback}>
                 {widgetElemDict[key]?.()}
@@ -2130,7 +2116,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement identifier={key} key={key} el={item} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
-                          paneListRef={paneListRef}
+                         paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={exportDispatch} pushCallback={pushCallback}>
                 {exportElemDict[key]?.()}
@@ -2152,7 +2138,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={key} identifier={key} el={item} pane_height={item.pane_height}
                          pane_scroll_ref={pane_scroll_ref}
-                          paneListRef={paneListRef}
+                         paneListRef={paneListRef}
                          className="form-pane" visible={visibleTabListRef.current.includes(key)}
                          allowDelete={true} dispatch={saveDispatch} pushCallback={pushCallback}>
                 {saveElemDict[key]?.()}
@@ -2179,7 +2165,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}
-                          paneListRef={paneListRef}
+                         paneListRef={paneListRef}
                          visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} allowDelete={true} dispatch={umDispatch}
                          pushCallback={pushCallback}>
@@ -2200,7 +2186,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} dispatch={hmDispatch} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}
-                          paneListRef={paneListRef}
+                         paneListRef={paneListRef}
                          allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
@@ -2219,7 +2205,7 @@ function CreatorApp(props) {
         right_pane_list.push(
             <PaneElement key={item["identifier"]} el={item} dispatch={jsDispatch} pane_height={item["pane_height"]}
                          pane_scroll_ref={pane_scroll_ref}
-                          paneListRef={paneListRef}
+                         paneListRef={paneListRef}
                          allowDelete={true} visible={visibleTabListRef.current.includes(item["identifier"])}
                          identifier={item["identifier"]} pushCallback={pushCallback}>
                 {codeElemDict[item["identifier"]]?.()}
@@ -2228,78 +2214,80 @@ function CreatorApp(props) {
     }
 
     let editor_pane = (
-    <div
-        ref={paneListRef}
-        style={{
-            overflow: "auto",
-            flex: "1 1 0",
-            minHeight: 0,
-            minWidth: 0,
-            paddingBottom: 250,
-        }}
-        className="creator-pane-list"
-    >
-        {right_pane_list}
-    </div>
-);
-
-let search_results_pane = showSearchResultsPane ? (
-    <TileMakerSearchResultsPane
-        searchStateRef={searchStateRef}
-        onSelectResult={_selectSearchResult}
-        onClose={() => setShowSearchResultsPane(false)}
-    />
-) : null;
-
-let right_pane = (
-    <div
-        style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            minHeight: 0,
-            minWidth: 0,
-            flexDirection: "column",
-        }}
-        className="creator-right-pane"
-    >
-        <div style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-            padding: "4px 8px"}}>
-        <TileMakerSearchForm
-            regex={false}
-            allow_regex={true}
-            field_width={200}
-            include_search_jumper={true}
-            searchDispatch={searchDispatch}
-            searchStateRef={searchStateRef}
-            searchNext={_searchNext}
-            searchPrev={_searchPrev}
-            searchState={searchStateRef.current}
-            search_ref={search_ref}
-            showSearchResultsPane={() => setShowSearchResultsPane(true)}
-            showSearchResult={(identifier) => {
-                showTab(identifier);
-            }}
-        />
-            <TileMakerLocalSettings/>
-        </div>
-
         <div
-            className="creator-search-and-editor-row"
+            ref={paneListRef}
             style={{
-                display: "flex",
-                flexDirection: "row",
+                overflow: "auto",
                 flex: "1 1 0",
                 minHeight: 0,
                 minWidth: 0,
-                width: "100%",
+                paddingBottom: 200,
             }}
+            className="creator-pane-list"
         >
-            {editor_pane}
-            {search_results_pane}
+            {right_pane_list}
         </div>
-    </div>
-);
+    );
+
+    let search_results_pane = showSearchResultsPane ? (
+        <TileMakerSearchResultsPane
+            searchStateRef={searchStateRef}
+            onSelectResult={_selectSearchResult}
+            onClose={() => setShowSearchResultsPane(false)}
+        />
+    ) : null;
+
+    let right_pane = (
+        <div
+            style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                minHeight: 0,
+                minWidth: 0,
+                flexDirection: "column",
+            }}
+            className="creator-right-pane"
+        >
+            <div style={{
+                display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+                padding: "0px 8px"
+            }}>
+                <TileMakerSearchForm
+                    regex={false}
+                    allow_regex={true}
+                    field_width={200}
+                    include_search_jumper={true}
+                    searchDispatch={searchDispatch}
+                    searchStateRef={searchStateRef}
+                    searchNext={_searchNext}
+                    searchPrev={_searchPrev}
+                    searchState={searchStateRef.current}
+                    search_ref={search_ref}
+                    showSearchResultsPane={() => setShowSearchResultsPane(true)}
+                    showSearchResult={(identifier) => {
+                        showTab(identifier);
+                    }}
+                />
+                <TileMakerLocalSettings/>
+            </div>
+
+            <div
+                className="creator-search-and-editor-row"
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    flex: "1 1 0",
+                    minHeight: 0,
+                    minWidth: 0,
+                    width: "100%",
+                }}
+            >
+                {editor_pane}
+                {search_results_pane}
+            </div>
+        </div>
+    );
 
     const debugStack = debugPaused?.stack?.length
         ? debugPaused.stack
@@ -2323,70 +2311,90 @@ let right_pane = (
 
     let availableInstances = null;
     if (!debugTargets.length) {
-        availableInstances = <span className="tile-debugger-message">No running tile instances</span>
+        availableInstances = [{label: "No running tile instances", value: ""}];
+    } else {
+        availableInstances = debugTargets.map(target => ({
+            label: `${target.tile_name} (${target.tile_id.slice(-8)})`,
+            value: target.tile_id,
+        }));
     }
+
+
     const debugger_panel = (
         <div className={`tile-debugger-panel tile-debugger-${debugStatus}`}
              style={{display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight: 25}}>
             <div className="tile-debugger-toolbar">
-                <span className="tile-debugger-title">Debugger</span>
-
-                <FormGroup label="Target Instance">
-                <HTMLSelect className="tile-debugger-target"
+                <FormGroup label="Configure"
+                           helperText={`${debugBreakpoints.length} breakpoint${debugBreakpoints.length === 1 ? "" : "s"}`}
+                           className="tile-debugger-panel-section">
+                    <HTMLSelect
                         aria-label="Running tile instance"
                         value={debugTargetId || ""}
                         disabled={debugSession != null}
                         onChange={event => setDebugTargetId(event.target.value || null)}
-                            options={
-                        {!debugTargets.length && <option value="">Running tile...</option>}
-                        {debugTargets.map(target => (
-                            <option key={target.tile_id} value={target.tile_id}>
-                                {target.tile_name} ({target.tile_id.slice(-8)})
-                            </option>
-                        ))}/>
-                     </FormGroup>
-                <Button variant="minimal" size="small" icon="refresh"
-                        title="Refresh running tile instances"
-                        disabled={debugSession != null}
-                        onClick={() => refreshDebugTargets().catch(error =>
-                            setDebugMessage(debuggerErrorMessage(error)))}/>
-                <Button variant="minimal" size="small" icon="play"
-                        disabled={debugSession != null || debugStatus === "starting"}
-                        onClick={startDebugger}>Start Debug</Button>
-                <Button variant="minimal" size="small" icon="changes"
-                        title="Save source changes, load the module, reload this tile, and arm the debugger"
-                        loading={debugStatus === "starting"}
-                        disabled={debugSession != null || debugStatus === "starting"}
-                        onClick={syncAndStartDebugger}>Sync &amp; Start</Button>
-                <ButtonGroup variant="minimal" className="tile-debugger-step-buttons">
-                    <Button size="small" icon="play" title="Continue"
-                            disabled={debugStatus !== "paused"}
-                            onClick={() => sendDebugCommand("continue")}/>
-                    <Button size="small" icon="chevron-down" title="Step into"
-                            disabled={debugStatus !== "paused"}
-                            onClick={() => sendDebugCommand("step")}/>
-                    <Button size="small" icon="chevron-right" title="Step over"
-                            disabled={debugStatus !== "paused"}
-                            onClick={() => sendDebugCommand("next")}/>
-                    <Button size="small" icon="chevron-up" title="Step out"
-                            disabled={debugStatus !== "paused"}
-                            onClick={() => sendDebugCommand("return")}/>
-                </ButtonGroup>
-                <Button variant="minimal" size="small" icon="stop" intent="danger" title="Stop debugging"
-                        disabled={debugSession == null}
-                        onClick={stopDebugger}/>
-                <span className="tile-debugger-breakpoint-count">
-                    {debugBreakpoints.length} breakpoint{debugBreakpoints.length === 1 ? "" : "s"}
-                </span>
-                <Checkbox className="tile-debugger-exception-toggle"
-                          label="Exceptions"
-                          title="Pause where tile code raises an exception"
-                          checked={debugPauseOnExceptions}
-                          disabled={debugSession != null}
-                          onChange={event => setDebugPauseOnExceptions(event.target.checked)}/>
-                <span className="tile-debugger-message">{debugMessage}</span>
+                        options={availableInstances}/>
+                    <Button variant="minimal" size="small" icon="refresh"
+                            title="Refresh running tile instances"
+                            disabled={debugSession != null}
+                            onClick={() => refreshDebugTargets().catch(error =>
+                                setDebugMessage(debuggerErrorMessage(error)))}/>
+                    <Switch className="tile-debugger-exception-toggle"
+                            label="Exceptions"
+                            title="Pause where tile code raises an exception"
+                            checked={debugPauseOnExceptions}
+                            disabled={debugSession != null}
+                            align={true}
+                            style={{marginLeft: 10, display: "inline"}}
+                            onChange={event => setDebugPauseOnExceptions(event.target.checked)}/>
+                </FormGroup>
+                <Divider className="tile-debugger-panel-divider "/>
+
+                <FormGroup label="Enable"
+                           helperText={debugMessage}
+                           className="tile-debugger-panel-section">
+                    <ButtonGroup variant="minimal">
+                        {debugSession != null && debugStatus != "starting" ? (
+                              <Button size="small" icon="stop" intent="danger" title="Stop debugging"
+                                    disabled={false}
+                                    onClick={stopDebugger}>Stop Debug</Button>)
+                        : (
+                            <Button size="small" icon="sensor"
+                                    disabled={false}
+                                    onClick={startDebugger}>Enable Debug</Button>
+                        )}
+                        <Button size="small" icon="changes"
+                                title="Save source changes, load the module, reload this tile, and arm the debugger"
+                                loading={debugStatus === "starting"}
+                                disabled={debugSession != null || debugStatus === "starting"}
+                                onClick={syncAndStartDebugger}>Sync &amp; Enable</Button>
+                    </ButtonGroup>
+                </FormGroup>
+                <Divider className="tile-debugger-panel-divider "/>
+                <FormGroup label="Step" className="tile-debugger-panel-section">
+                    <ButtonGroup className="tile-debugger-step-buttons">
+                        <Button size="medium" icon="double-chevron-right" title="Continue"
+                                disabled={debugStatus !== "paused"}
+                                onClick={() => sendDebugCommand("continue")}/>
+                        <Button size="medium" icon="arrow-down" title="Step into"
+                                disabled={debugStatus !== "paused"}
+                                onClick={() => sendDebugCommand("step")}/>
+                        <Button size="medium" icon="arrow-right" title="Step over"
+                                disabled={debugStatus !== "paused"}
+                                onClick={() => sendDebugCommand("next")}/>
+                        <Button size="medium" icon="arrow-up" title="Step out"
+                                disabled={debugStatus !== "paused"}
+                                onClick={() => sendDebugCommand("return")}/>
+                    </ButtonGroup>
+                </FormGroup>
+
+                {/*<span className="tile-debugger-breakpoint-count">*/}
+                {/*    {debugBreakpoints.length} breakpoint{debugBreakpoints.length === 1 ? "" : "s"}*/}
+                {/*</span>*/}
+
+                {/*<span className="tile-debugger-message">{debugMessage}</span>*/}
             </div>
-            <Button variant="minimal" size="small" icon="properties"
+            <Button variant="minimal"  icon="properties"
+                    style={{alignSelf: "center"}}
                     active={debugDrawerOpen}
                     title={debugDrawerOpen ? "Hide debugger drawer" : "Show debugger drawer"}
                     onClick={() => setDebugDrawerOpen(open => !open)}>
@@ -2448,7 +2456,7 @@ let right_pane = (
                 </div>
             ) : (
                 <div className="tile-debugger-drawer-empty">
-                    <span>{debugMessage || "Start debugging to inspect the call stack and local variables."}</span>
+                    <span>{debugMessage || "Enable debugging to inspect the call stack and local variables."}</span>
                 </div>
             )}
         </aside>
@@ -2462,9 +2470,10 @@ let right_pane = (
         minHeight: 0,
         minWidth: 0,
         flexDirection: 'column',
-        position: "relative"
+        position: "relative",
+        paddingTop: 15
     };
-    let outer_class = "resource-viewer-holder pane-holder resource-viewer-left-pane-holder top-padded";
+    let outer_class = "resource-viewer-holder pane-holder resource-viewer-left-pane-holder";
     if (!window.in_context) {
         if (settingsContext.isDark()) {
             outer_class = outer_class + " bp6-dark";
@@ -2573,8 +2582,10 @@ function tile_creator_main() {
             handleCallback(task_packet, local_id)
         });
 
-        postPromise("host", "initiate_creator_in_context", {tile_module_name: window.module_name,
-            global_id: window.global_id, local_id}, local_id)
+        postPromise("host", "initiate_creator_in_context", {
+            tile_module_name: window.module_name,
+            global_id: window.global_id, local_id
+        }, local_id)
             .then((data) => {
                 data.tsocket = tsocket;
                 data.local_id = local_id;
