@@ -123,6 +123,8 @@ function FileImportDialog(props) {
         const files = myDropzone.current.getQueuedFiles();
         if (!files || files.length === 0) return;
 
+        let succeeded = 0;
+
         for (const file of files) {
             myDropzone.current.removeFile(file);
 
@@ -148,12 +150,16 @@ function FileImportDialog(props) {
             const {url, fields, key, bucket, content_type} = resp.upload_info;
 
             // Hand off to manager (persists across unmount)
-            await uploadManager.startPresignedPostUpload({
+            const result = await uploadManager.startPresignedPostUpload({
                 file,
                 url,
                 fields,
                 meta: {bucket, key, content_type, dest_path: current_value_ref.current}
             });
+            if (result.success) succeeded += 1;
+        }
+        if (succeeded > 0 && props.after_upload) {
+            await props.after_upload()
         }
     }
 

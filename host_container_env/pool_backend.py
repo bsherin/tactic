@@ -177,12 +177,21 @@ class PoolBackend(ExceptionMixin):
 
     def delete_resource(self, src, hw, user_obj):
         true_path = hw.user_to_true(src, user_obj)
+        if self.is_pool_root(src, hw, user_obj):
+            return {"success": False, "message": "The pool root cannot be deleted."}
         if not os.path.exists(true_path):
             raise FileNotFoundError
         if os.path.isdir(true_path):
             shutil.rmtree(true_path)
         else:
             os.remove(true_path)
+        return {"success": True}
+
+    @staticmethod
+    def is_pool_root(src, hw, user_obj):
+        true_path = hw.user_to_true(src, user_obj)
+        user_pool_dir = os.path.normpath(f"/pool/{user_obj.username}")
+        return os.path.normpath(true_path) == user_pool_dir
 
     def download_resource(self, full_path, hw, user_obj):
         true_path = hw.user_to_true(full_path, user_obj)

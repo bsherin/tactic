@@ -6,7 +6,7 @@ import {getBlobPromise, postPromise} from "./communication_react";
 import {LibraryMenubar} from "./library_menubars"
 import {DialogContext} from "./modal_react";
 import {ErrorDrawerContext} from "./error_drawer";
-import {doFlash} from "./toaster";
+import {doFlash, StatusContext} from "./toaster";
 import {icon_dict} from "./combined_metadata";
 
 export {PoolTreeWithContextMenu, PoolMenubar}
@@ -15,11 +15,56 @@ function withPoolMenuFuncs(WrappedComponent) {
     function WithPoolMenuComponent(props) {
         const dialogFuncs = useContext(DialogContext);
         const errorDrawerFuncs = useContext(ErrorDrawerContext);
+        const statusFuncs = useContext(StatusContext);
+
+        function selectedTargets(node = null) {
+            const selected = props.list_of_selected || [];
+            if (node) {
+                return selected.some(item => item.fullpath === node.fullpath) ? selected : [node]
+            }
+            if (selected.length > 0) return selected;
+            return props.selectedNode ? [props.selectedNode] : []
+        }
+
+        function pathWithin(path, parent) {
+            return path === parent || path.startsWith(`${parent}/`)
+        }
+
+        async function runPoolOperation(statusMessage, successMessage, operation, refresh = true) {
+            if (statusFuncs) {
+                statusFuncs.setStatus({show_spinner: true, status_message: statusMessage})
+            }
+            try {
+                const result = await operation();
+                if (result && result.success === false) {
+                    throw new Error(result.message || "The pool operation failed")
+                }
+                if (refresh && props.refreshFunc) {
+                    await props.refreshFunc()
+                }
+                if (statusFuncs) {
+                    statusFuncs.stopSpinner();
+                    statusFuncs.statusMessage(successMessage)
+                }
+                return result
+            } catch (e) {
+                if (refresh && props.refreshFunc) {
+                    try {
+                        await props.refreshFunc()
+                    } catch (_) {
+                        // Preserve the original operation error.
+                    }
+                }
+                if (statusFuncs) statusFuncs.clearStatus();
+                throw e
+            }
+        }
 
         function _copy_func(node = null) {
             if (!props.value && !node) return;
-            const path = node && "isDirectory" in node ? node.fullpath : props.value;
-            copyToClipboard(path);
+            const targets = selectedTargets(node);
+            const paths = targets.length > 0 ? targets.map(item => item.fullpath) : [props.value];
+            copyToClipboard(paths.join("\n"));
         }
 
         async function _rename_func(node = null) {
@@ -35,7 +80,16 @@ function withPoolMenuFuncs(WrappedComponent) {
                     handleClose: dialogFuncs.hideModal,
                 });
                 const the_data = {new_name: new_name, old_path: path};
-                await postPromise("host", "rename_pool_resource_task", the_data);
+                await runPoolOperation(
+                    `Renaming ${getBasename(path)} …`,
+                    `Renamed ${getBasename(path)}`,
+                    () => postPromise("host", "rename_pool_resource_task", the_data)
+                );
+                const newPath = `${getFileParentPath(path)}/${new_name}`;
+                if (props.currentRootPath && pathWithin(props.currentRootPath, path) && props.setRoot) {
+                    props.setRoot({fullpath: newPath + props.currentRootPath.slice(path.length)})
+                }
+                if (props.handleSelectionChange) props.handleSelectionChange([])
             } catch (e) {
                 if (e != "canceled") {
                     errorDrawerFuncs.addFromError(`Error renaming`, e)
@@ -131,7 +185,16 @@ function withPoolMenuFuncs(WrappedComponent) {
             if (src == dst) return;
             try {
                 const the_data = {dst: dst, src: src};
-                await postPromise("host", "move_pool_resource_task", the_data);
+                await runPoolOperation(
+                    `Moving ${getBasename(src)} …`,
+                    `Moved ${getBasename(src)}`,
+                    () => postPromise("host", "move_pool_resource_task", the_data)
+                );
+                const newPath = `${dst.replace(/\/$/, "")}/${getBasename(src)}`;
+                if (props.currentRootPath && pathWithin(props.currentRootPath, src) && props.setRoot) {
+                    props.setRoot({fullpath: newPath + props.currentRootPath.slice(src.length)})
+                }
+                if (props.handleSelectionChange) props.handleSelectionChange([])
             } catch (e) {
                 errorDrawerFuncs.addFromError("Error moving resource", e)
             }
@@ -184,7 +247,11 @@ function withPoolMenuFuncs(WrappedComponent) {
                     handleClose: dialogFuncs.hideModal,
                 });
                 const the_data = {dst, src};
-                await postPromise("host", "duplicate_pool_file_task", the_data);
+                await runPoolOperation(
+                    `Duplicating ${getBasename(src)} …`,
+                    `Duplicated ${getBasename(src)}`,
+                    () => postPromise("host", "duplicate_pool_file_task", the_data)
+                );
             } catch (e) {
                 if (e != "canceled") {
                     errorDrawerFuncs.addFromError(`Error duplicating file`, e)
@@ -212,7 +279,11 @@ function withPoolMenuFuncs(WrappedComponent) {
                     handleClose: dialogFuncs.hideModal,
                 });
                 const the_data = {full_path: full_path};
-                await postPromise("host", "create_pool_directory_task", the_data);
+                await runPoolOperation(
+                    "Creating directory …",
+                    `Created ${getBasename(full_path)}`,
+                    () => postPromise("host", "create_pool_directory_task", the_data)
+                );
             } catch (e) {
                 if (e != "canceled") {
                     errorDrawerFuncs.addFromError(`Error adding directory`, e)
@@ -223,15 +294,21 @@ function withPoolMenuFuncs(WrappedComponent) {
         async function _delete_func(node = null) {
             if (!props.value && !node) return;
             try {
-                const path = node && "isDirectory" in node ? node.fullpath : props.value;
-                const sNode = node && "isDirectory" in node ? node : props.selectedNode;
-
-                const basename = getBasename(path);
+                const targets = selectedTargets(node);
+                if (targets.length === 0) return;
                 let confirm_text;
-                if (sNode.isDirectory && sNode.childNodes.length > 0) {
-                    confirm_text = `Are you sure that you want to delete the non-empty directory ${basename}?`;
+                if (targets.length > 1) {
+                    const directoryCount = targets.filter(item => item.isDirectory).length;
+                    confirm_text = `Delete ${targets.length} selected items?`;
+                    if (directoryCount > 0) {
+                        confirm_text += ` This includes ${directoryCount} director${directoryCount === 1 ? "y" : "ies"} and everything inside.`
+                    }
                 } else {
-                    confirm_text = `Are you sure that you want to delete ${basename}?`;
+                    const target = targets[0];
+                    const basename = getBasename(target.fullpath);
+                    confirm_text = target.isDirectory
+                        ? `Delete the directory ${basename} and everything inside it?`
+                        : `Are you sure that you want to delete ${basename}?`;
                 }
 
                 await dialogFuncs.showModalPromise("ConfirmDialog", {
@@ -241,10 +318,16 @@ function withPoolMenuFuncs(WrappedComponent) {
                     submit_text: "delete",
                     handleClose: dialogFuncs.hideModal,
                 });
-                await postPromise("host", "delete_pool_resource_task", {
-                    full_path: path,
-                    is_directory: sNode.isDirectory
-                })
+                const resources = targets.map(target => ({
+                    full_path: target.fullpath,
+                    is_directory: target.isDirectory
+                }));
+                await runPoolOperation(
+                    `Deleting ${targets.length === 1 ? getBasename(targets[0].fullpath) : `${targets.length} items`} …`,
+                    `Deleted ${targets.length === 1 ? getBasename(targets[0].fullpath) : `${targets.length} items`}`,
+                    () => postPromise("host", "delete_pool_resources_task", {resources})
+                );
+                if (props.handleSelectionChange) props.handleSelectionChange([])
             } catch (e) {
                 if (e != "canceled") {
                     errorDrawerFuncs.addFromError(`Error deleting`, e)
@@ -272,7 +355,7 @@ function withPoolMenuFuncs(WrappedComponent) {
                 tsocket: props.tsocket,
                 combine: false,
                 show_csv_options: false,
-                after_upload: null,
+                after_upload: props.refreshFunc,
                 show_address_selector: true,
                 allowFolderSelection: true,
                 initial_address: initial_directory,
@@ -302,7 +385,12 @@ function withPoolMenuFuncs(WrappedComponent) {
                     handleClose: dialogFuncs.hideModal,
                 });
                 const the_data = {src};
-                let [data, , xhr] = await getBlobPromise("download_pool_file", the_data);
+                let [data, , xhr] = await runPoolOperation(
+                    `Downloading ${getBasename(src)} …`,
+                    `Downloaded ${new_name}`,
+                    () => getBlobPromise("download_pool_file", the_data),
+                    false
+                );
                 if (xhr.status === 200) {
                     // Create a download link and trigger the download
                     let url = window.URL.createObjectURL(data);
@@ -414,7 +502,7 @@ function withPoolMenuFuncs(WrappedComponent) {
                     tsocket: props.tsocket,
                     combine: false,
                     show_csv_options: false,
-                    after_upload: null,
+                    after_upload: props.refreshFunc,
                     show_address_selector: true,
                     allowFolderSelection: true,
                     initial_address: dst,
@@ -478,6 +566,10 @@ function PoolTreeWithContextMenu(props) {
     }
 
     function renderContextMenu(lprops) {
+        const selected = props.list_of_selected || [];
+        const appliesToSelection = lprops.node && selected.some(item => item.fullpath === lprops.node.fullpath);
+        const selectionCount = appliesToSelection ? selected.length : 1;
+        const isMultiSelection = selectionCount > 1;
         return (
             <Menu>
                 {lprops.node && lprops.node.isDirectory &&
@@ -495,7 +587,7 @@ function PoolTreeWithContextMenu(props) {
                           onClick={async () => {
                               props._copy_func(lprops.node)
                           }}
-                          text="Copy Path"/>
+                          text={isMultiSelection ? `Copy ${selectionCount} Paths` : "Copy Path"}/>
                 {lprops.node && !lprops.node.isDirectory && props.handleCreateViewer &&
                     <Fragment>
                         <MenuItem icon="eye-open"
@@ -513,16 +605,19 @@ function PoolTreeWithContextMenu(props) {
                 }
                 <MenuDivider/>
                 <MenuItem icon="edit"
+                          disabled={isMultiSelection}
                           onClick={async () => {
                               await props._rename_func(lprops.node)
                           }}
                           text="Rename Resource"/>
                 <MenuItem icon="inheritance"
+                          disabled={isMultiSelection}
                           onClick={async () => {
                               await props._move_resource(lprops.node)
                           }}
                           text="Move Resource"/>
                 <MenuItem icon="duplicate"
+                          disabled={isMultiSelection}
                           onClick={async () => {
                               await props._duplicate_file(lprops.node)
                           }}
@@ -537,7 +632,7 @@ function PoolTreeWithContextMenu(props) {
                               await props._delete_func(lprops.node)
                           }}
                           intent="danger"
-                          text="Delete Resource"/>
+                          text={isMultiSelection ? `Delete ${selectionCount} Selected Items` : "Delete Resource"}/>
                 {props.allow_import_and_download &&
                     <Fragment>
                         <MenuDivider/>
@@ -594,6 +689,16 @@ function PoolMenubar(props) {
     }
 
     function menu_specs() {
+        if (props.multi_select) {
+            return {
+                Inspect: [
+                    {name_text: `Copy ${props.list_of_selected.length} Paths`, icon_name: "clipboard", click_handler: noArg(props._copy_func)}
+                ],
+                Edit: [
+                    {name_text: `Delete ${props.list_of_selected.length} Selected Items`, icon_name: "trash", click_handler: noArg(props._delete_func)}
+                ]
+            }
+        }
         return {
             Inspect: [
                 {name_text: "Copy Path", icon_name: "clipboard", click_handler: noArg(props._copy_func)},

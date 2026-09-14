@@ -32,15 +32,14 @@ function PoolBrowser(props) {
     const [, setCurrentRootPath, currentRootPathRef] = useStateAndRef("/mydisk");
     const [value, setValue, valueRef] = useStateAndRef(null);
     const [, setSelectedNode, selectedNodeRef] = useStateAndRef(null);
-    const [, , multi_select_ref] = useStateAndRef(false);
-    const [, , list_of_selected_ref] = useStateAndRef([]);
+    const [selectedNodes, setSelectedNodes] = useState([]);
     const [, setContextMenuItems] = useState([]);
     const [have_activated, set_have_activated] = useState(false);
     const [showHidden, setShowHidden] = useState(false);
 
     const settingsContext = useContext(SettingsContext);
 
-    const treeRefreshFunc = useRef(null);
+    const [treeRefreshFunc, setTreeRefreshFunc] = useState(null);
     // Important note: The first mounting of the pool tree must happen after the pool pane
     // is first activated. Otherwise, I do GetPoolTree before everything is ready and I don't
     // get the callback for the post.
@@ -72,10 +71,22 @@ function PoolBrowser(props) {
         }
     }, [value]);
 
-    function handleNodeClick(node) {
+    function handleNodeClick(node, nodes, selection = [node]) {
         setValue(node.fullpath);
         setSelectedNode(node);
+        setSelectedNodes(selection);
         return true
+    }
+
+    function handleSelectionChange(selection) {
+        setSelectedNodes(selection);
+        if (selection.length === 0) {
+            setValue(null);
+            setSelectedNode(null)
+        } else if (!selection.some(node => node.fullpath === valueRef.current)) {
+            setValue(selection[0].fullpath);
+            setSelectedNode(selection[0])
+        }
     }
 
     function setRoot(node = null) {
@@ -90,7 +101,7 @@ function PoolBrowser(props) {
     }
 
     function registerTreeRefreshFunc(func) {
-        treeRefreshFunc.current = func
+        setTreeRefreshFunc(() => func)
     }
 
     let fixed_data = {
@@ -132,10 +143,13 @@ function PoolBrowser(props) {
                                                  allow_import_and_download={true}
                                                  select_type="both"
                                                  registerTreeRefreshFunc={registerTreeRefreshFunc}
+                                                 refreshFunc={treeRefreshFunc}
+                                                 list_of_selected={selectedNodes}
                                                  user_id={window.user_id}
                                                  tsocket={props.tsocket}
                                                  showSecondaryLabel={true}
-                                                 handleNodeClick={handleNodeClick}/>
+                                                 handleNodeClick={handleNodeClick}
+                                                 handleSelectionChange={handleSelectionChange}/>
                     </PoolContext.Provider>
                 }
             </div>
@@ -156,13 +170,14 @@ function PoolBrowser(props) {
                          value={valueRef.current}
                          selectedNode={selectedNodeRef.current}
                          connection_status={null}
-                         multi_select={multi_select_ref.current}
-                         list_of_selected={list_of_selected_ref.current}
+                         multi_select={selectedNodes.length > 1}
+                         list_of_selected={selectedNodes}
+                         handleSelectionChange={handleSelectionChange}
                          sendContextMenuItems={setContextMenuItems}
                          setRootToBase={setRootToBase}
                          setRoot={setRoot}
                          getOpenResources={props.getOpenResources}
-                         refreshFunc={treeRefreshFunc.current}
+                         refreshFunc={treeRefreshFunc}
                          handleCreateViewer={props.handleCreateViewer}
                          {...props.errorDrawerFuncs}
                          controlled={props.controlled}
@@ -289,4 +304,3 @@ function PoolBreadcrumbs(props) {
         </div>
     )
 }
-

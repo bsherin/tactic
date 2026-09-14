@@ -68,6 +68,18 @@ $pool-width-hide-secondary-below: 425px;
     }
 }
 
+.drop-zone {
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.drop-zone.drag-over {
+    background: rgba(45, 114, 210, .16);
+    border-color: #2d72d2;
+    box-shadow: inset 0 0 0 1px #2d72d2;
+}
+
     .tree-sort-select select {
         font-size: $pool-sort-font-size
     }

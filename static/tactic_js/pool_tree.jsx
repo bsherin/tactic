@@ -43,7 +43,7 @@ function searchToLimit(parentNode, fullpath) {
         if (!node.isDirectory) {
             continue
         }
-        if (fullpath.startsWith(node.fullpath)) {
+        if (isSameOrDescendantPath(fullpath, node.fullpath)) {
             limit_node = searchToLimit(node, fullpath);
             if (limit_node) {
                 return limit_node
@@ -61,7 +61,7 @@ function addDirectoriesToPath(path, nodes) {
     if (node.fullpath == path) {
         return nodes
     }
-    let dir_str = path.replace(new RegExp('^' + node.fullpath), "")
+    let dir_str = path.slice(node.fullpath.length)
     if (dir_str.startsWith("/")) {
         dir_str = dir_str.slice(1);
 
@@ -72,7 +72,12 @@ function addDirectoriesToPath(path, nodes) {
     let exploreNode = node;
     for (let dirname of dir_list) {
         accumulated_path = `${accumulated_path}/${dirname}`;
-        node.childNodes.push({
+        let existingNode = (exploreNode.childNodes || []).find(child => child.fullpath === accumulated_path);
+        if (existingNode) {
+            exploreNode = existingNode;
+            continue
+        }
+        exploreNode.childNodes.push({
             id: accumulated_path,
             icon: "folder-close",
             fullpath: accumulated_path,
@@ -83,8 +88,8 @@ function addDirectoriesToPath(path, nodes) {
             isSelected: false,
             explored: false,
             childNodes: []
-        })
-        exploreNode = node.childNodes[node.childNodes.length - 1];
+        });
+        exploreNode = exploreNode.childNodes[exploreNode.childNodes.length - 1];
     }
 }
 
@@ -170,6 +175,13 @@ function treeNodesReducer(nodes, action) {
             });
             return newState4;
 
+        case "SET_SELECTED_PATHS":
+            const newStateSelectedPaths = _.cloneDeep(nodes);
+            forEachNode(newStateSelectedPaths, (node) => {
+                node.isSelected = action.fullpaths.includes(node.fullpath)
+            });
+            return newStateSelectedPaths;
+
         case "SET_IS_SELECTED_FROM_FULLPATH":
             const newState5 = _.cloneDeep(nodes);
             forEachNode(newState5, (node) => {
@@ -245,6 +257,9 @@ function treeNodesReducer(nodes, action) {
             return newState9;
         case "ADD_FILE":
             const newState10 = _.cloneDeep(nodes);
+            if (newState10.length > 0 && nodeFromPath(action.fileDict.fullpath, newState10[0])) {
+                return newState10;
+            }
             const [path,] = splitFilePath(action.fileDict.fullpath);
             forEachNode(newState10, (node) => {
                 if (node.isDirectory) {
@@ -256,6 +271,9 @@ function treeNodesReducer(nodes, action) {
             return newState10;
         case "ADD_DIRECTORY":
             const newState11 = _.cloneDeep(nodes);
+            if (newState11.length > 0 && nodeFromPath(action.folderDict.fullpath, newState11[0])) {
+                return newState11;
+            }
             const [fpath,] = splitFilePath(action.folderDict.fullpath);
             forEachNode(newState11, (node) => {
                 if (node.isDirectory) {
@@ -305,9 +323,7 @@ function treeNodesReducer(nodes, action) {
                             action.folderDict.childNodes = cnode.childNodes;
                             action.folderDict.isExpanded = cnode.isExpanded;
                             const newpath = `${action.dst}/${action.folderDict.basename}`;
-                            for (let ccnode of action.folderDict.childNodes) {
-                                ccnode.fullpath = `${newpath}/${ccnode.basename}`
-                            }
+                            updateDescendantPaths(action.folderDict, action.src, newpath)
                         }
                     }
                     node.childNodes = new_children
@@ -329,6 +345,20 @@ function treeNodesReducer(nodes, action) {
 function updateNode(node, newDict) {
     for (let key in newDict) {
         node[key] = newDict[key]
+    }
+}
+
+function isSameOrDescendantPath(path, parentPath) {
+    return path === parentPath || path.startsWith(`${parentPath}/`)
+}
+
+function updateDescendantPaths(node, oldRoot, newRoot) {
+    if (isSameOrDescendantPath(node.fullpath, oldRoot)) {
+        node.fullpath = newRoot + node.fullpath.slice(oldRoot.length);
+        node.id = node.fullpath
+    }
+    for (const child of node.childNodes || []) {
+        updateDescendantPaths(child, oldRoot, newRoot)
     }
 }
 
@@ -387,6 +417,10 @@ function PoolTree(props) {
     const [, setSearchString, searchStringRef] = useStateAndRef("");
     const [sortBy, setSortBy] = useState("updated");
     const [sortDirection, setSortDirection] = useState("descending");
+    const selectionAnchorRef = useRef(null);
+    const selectedPathsRef = useRef([]);
+    const refreshTimerRef = useRef(null);
+    const treeRequestRef = useRef(0);
     const settingsContext = useContext(SettingsContext);
 
     const pushCallback = useCallbackStack();
@@ -399,13 +433,24 @@ function PoolTree(props) {
         if (props.registerTreeRefreshFunc) {
             props.registerTreeRefreshFunc(getTree)
         }
+    }, [props.showHidden, props.currentRootPath, props.value]);
+
+    useEffect(() => {
+        return () => {
+            if (refreshTimerRef.current) {
+                clearTimeout(refreshTimerRef.current)
+            }
+        }
     }, []);
 
     useEffect(() => {
         if (props.currentRootPath && nodes_ref.current.length > 0) {
             let node = nodeFromPath(props.currentRootPath, nodes_ref.current[0]);
-            handleNodeExpand(node).then(() => {
-            });
+            if (node) {
+                handleNodeExpand(node).then(() => {});
+            } else {
+                expandToNode(props.currentRootPath).then(() => {})
+            }
         }
     },[props.currentRootPath, nodes_ref.current.length])
 
@@ -416,6 +461,13 @@ function PoolTree(props) {
     }, [props.value, nodes_ref.current.length]);
 
     useEffect(() => {
+        if (!Array.isArray(props.list_of_selected)) return;
+        const selectedPaths = props.list_of_selected.map(node => node.fullpath);
+        selectedPathsRef.current = selectedPaths;
+        dispatch({type: "SET_SELECTED_PATHS", fullpaths: selectedPaths})
+    }, [props.list_of_selected]);
+
+    useEffect(() => {
         getTree().then(() => {
             if (!props.value && pool_context.workingPath) {
                 exposeNode(pool_context.workingPath, false)
@@ -424,6 +476,7 @@ function PoolTree(props) {
     }, [props.showHidden]);
 
     async function getTree() {
+        const requestId = ++treeRequestRef.current;
         try {
             let data = await postPromise("host", "GetPoolTree",
                 {user_id: props.user_id, show_hidden: props.showHidden}
@@ -432,21 +485,62 @@ function PoolTree(props) {
                 doFlash("Error getting pool Tree");
                 return
             }
+            const expandedPaths = [];
+            forEachNode(nodes_ref.current, node => {
+                if (node.isDirectory && node.isExpanded) expandedPaths.push(node.fullpath)
+            });
+
+            // Refresh every open directory so the new snapshot is authoritative
+            // without collapsing the part of the tree the user is working in.
+            const rootPath = data["dtree"][0]?.fullpath;
+            const subtreeResults = await Promise.all(expandedPaths
+                .filter(path => path !== rootPath)
+                .map(async path => {
+                    try {
+                        const subtree = await postPromise("host", "GetPoolTree", {
+                            user_id: props.user_id,
+                            show_hidden: props.showHidden,
+                            base_path: path
+                        });
+                        return {path, subtree}
+                    } catch (_) {
+                        // The directory may have been renamed or deleted by the
+                        // operation that triggered this refresh.
+                        return {path, subtree: null}
+                    }
+                }));
+
+            // A slower, older request must never overwrite a newer snapshot.
+            if (requestId !== treeRequestRef.current) return;
+            const refreshedNodes = _.cloneDeep(data["dtree"]);
+            if (expandedPaths.includes(rootPath)) {
+                refreshedNodes[0].isExpanded = true
+            }
+            subtreeResults.sort((a, b) => a.path.split("/").length - b.path.split("/").length);
+            for (const {path, subtree} of subtreeResults) {
+                if (!subtree || !subtree["dtree"] || refreshedNodes.length === 0) continue;
+                const node = nodeFromPath(path, refreshedNodes[0]);
+                if (!node) continue;
+                node.childNodes = subtree["dtree"][0].childNodes;
+                node.explored = true;
+                node.isExpanded = true
+            }
+            forEachNode(refreshedNodes, node => {
+                node.isSelected = selectedPathsRef.current.includes(node.fullpath)
+            });
             dispatch({
                 type: "REPLACE_ALL",
-                new_nodes: data["dtree"],
+                new_nodes: refreshedNodes,
             });
-            if (props.value) {
+            const rehydratePath = props.currentRootPath || props.value;
+            const rehydratedNode = refreshedNodes.length > 0 && rehydratePath
+                ? nodeFromPath(rehydratePath, refreshedNodes[0])
+                : null;
+            if (rehydratePath && !rehydratedNode) {
                 pushCallback(() => {
-                    dispatch({
-                        type: "SET_IS_SELECTED_FROM_FULLPATH",
-                        fullpath: props.value
-                    })
+                    expandToNode(rehydratePath).then(() => {})
                 });
-                pushCallback(() => {
-                    exposeNode(props.value)
-                });
-            } else {
+            } else if (!rehydratePath) {
                 pushCallback(exposeBaseNode)
             }
         } catch (e) {
@@ -454,8 +548,20 @@ function PoolTree(props) {
         }
     }
 
+    function scheduleAuthoritativeRefresh() {
+        if (refreshTimerRef.current) {
+            clearTimeout(refreshTimerRef.current)
+        }
+        // S3 can emit hundreds of object events for a single folder operation.
+        // Coalesce that burst and finish from one authoritative listing.
+        refreshTimerRef.current = setTimeout(() => {
+            refreshTimerRef.current = null;
+            getTree().then(() => {});
+        }, 750)
+    }
+
     function focusNode(fullpath, nodes) {
-        if (props.handleNodeClick) {
+        if (props.handleNodeClick && nodes.length > 0) {
             let dnode = nodeFromPath(fullpath, nodes[0]);
             if (dnode) {
                 props.handleNodeClick(dnode, nodes);
@@ -465,6 +571,7 @@ function PoolTree(props) {
             type: "SET_IS_SELECTED_FROM_FULLPATH",
             fullpath: fullpath
         });
+        selectedPathsRef.current = [fullpath];
         exposeNode(fullpath)
     }
 
@@ -506,6 +613,7 @@ function PoolTree(props) {
             default:
                 break;
         }
+        scheduleAuthoritativeRefresh();
     })
 
     useSocketListener(props.tsocket, "pool-file-event", (data) => {
@@ -546,6 +654,7 @@ function PoolTree(props) {
             default:
                 break;
         }
+        scheduleAuthoritativeRefresh();
     })
 
     function exposeBaseNode() {
@@ -604,7 +713,7 @@ function PoolTree(props) {
                     return current_path
                 }
             } else {
-                if ("childNodes" in node && fullpath.startsWith(node.fullpath)) {
+                if ("childNodes" in node && isSameOrDescendantPath(fullpath, node.fullpath)) {
                     let the_path = searchDown(node.childNodes, fullpath, current_path.concat([node.id]));
                     if (the_path) {
                         return the_path
@@ -646,8 +755,10 @@ function PoolTree(props) {
             });
             pushCallback(() => {
                 dispatch({
-                    type: "SET_IS_SELECTED_FROM_FULLPATH",
-                    fullpath: fullpath
+                    type: "SET_SELECTED_PATHS",
+                    fullpaths: selectedPathsRef.current.length > 0
+                        ? selectedPathsRef.current
+                        : [fullpath]
                 })
             });
 
@@ -656,10 +767,11 @@ function PoolTree(props) {
 
     async function addMissingNodes(fullpath) {
         let current_node = nodes_ref.current[0];
+        if (!current_node) return false;
         while (true) {
             let found_child = false;
             for (let child of current_node.childNodes) {
-                if (fullpath.startsWith(child.fullpath)) {
+                if (isSameOrDescendantPath(fullpath, child.fullpath)) {
                     current_node = child;
                     found_child = true;
                     break;
@@ -692,6 +804,7 @@ function PoolTree(props) {
     }
 
     async function handleNodeExpand(node, nodePath, e, returnUpdaters=false) {
+        if (!node) return null;
         const expandUpdater = {
             type: "SET_IS_EXPANDED",
             node_id: node.id,
@@ -703,11 +816,16 @@ function PoolTree(props) {
             if (statusFuncs) {
                 statusFuncs.setStatus({show_spinner: true, status_message: "Opening folder"});
             }
-            let data = await postPromise("host", "GetPoolTree",
-                {user_id: props.user_id, show_hidden: props.showHidden, base_path: node.fullpath}
-            );
-            if (statusFuncs) {
-                statusFuncs.clearStatus();
+            let data;
+            try {
+                data = await postPromise("host", "GetPoolTree",
+                    {user_id: props.user_id, show_hidden: props.showHidden, base_path: node.fullpath}
+                );
+            } catch (e) {
+                errorDrawerFuncs.addFromError("Error opening pool folder", e);
+                return null
+            } finally {
+                if (statusFuncs) statusFuncs.clearStatus()
             }
             if (!data["dtree"]) {
                 doFlash("Error getting file tree.");
@@ -730,15 +848,82 @@ function PoolTree(props) {
         return children_to_add
     }
 
-    function handleNodeClick(node) {
+    function selectedNodesFromPaths(paths) {
+        if (nodes_ref.current.length === 0) return [];
+        return paths.map(path => nodeFromPath(path, nodes_ref.current[0])).filter(Boolean)
+    }
+
+    function visibleNodePaths() {
+        const result = [];
+        const searchString = searchStringRef.current;
+
+        function containsSearchMatch(node) {
+            if (node.basename.includes(searchString)) return true;
+            return node.isDirectory && (node.childNodes || []).some(containsSearchMatch)
+        }
+
+        function sortedVisibleNodes(nodes) {
+            let visible = [...(nodes || [])];
+            visible.sort((a, b) => {
+                if (sortBy === "name") return a.basename.localeCompare(b.basename);
+                if (sortBy === "size") return a["size_for_sort"] - b["size_for_sort"];
+                return a["updated_for_sort"] - b["updated_for_sort"]
+            });
+            if (sortDirection === "descending") visible.reverse();
+            if (searchString !== "") visible = visible.filter(containsSearchMatch);
+            return visible
+        }
+
+        function walk(nodes) {
+            for (const node of sortedVisibleNodes(nodes)) {
+                result.push(node.fullpath);
+                if (node.isDirectory && node.isExpanded) {
+                    walk(node.childNodes)
+                }
+            }
+        }
+        if (nodes_ref.current.length > 0) {
+            const root = nodeFromPath(props.currentRootPath, nodes_ref.current[0]);
+            walk(root ? [root] : nodes_ref.current)
+        }
+        return result
+    }
+
+    function handleNodeClick(node, nodePath, event) {
         if (props.select_type == "file" && node.isDirectory) return;
         if (props.select_type == "folder" && !node.isDirectory) return;
+        const currentPaths = [];
+        forEachNode(nodes_ref.current, candidate => {
+            if (candidate.isSelected) currentPaths.push(candidate.fullpath)
+        });
+
+        let nextPaths;
+        if (event && event.shiftKey && selectionAnchorRef.current) {
+            const visiblePaths = visibleNodePaths();
+            const anchorIndex = visiblePaths.indexOf(selectionAnchorRef.current);
+            const nodeIndex = visiblePaths.indexOf(node.fullpath);
+            if (anchorIndex !== -1 && nodeIndex !== -1) {
+                const start = Math.min(anchorIndex, nodeIndex);
+                const end = Math.max(anchorIndex, nodeIndex);
+                nextPaths = visiblePaths.slice(start, end + 1)
+            }
+        }
+        if (!nextPaths && event && (event.ctrlKey || event.metaKey)) {
+            nextPaths = currentPaths.includes(node.fullpath)
+                ? currentPaths.filter(path => path !== node.fullpath)
+                : currentPaths.concat([node.fullpath])
+        }
+        if (!nextPaths) {
+            nextPaths = [node.fullpath]
+        }
+        selectionAnchorRef.current = node.fullpath;
+        selectedPathsRef.current = nextPaths;
+        dispatch({type: "SET_SELECTED_PATHS", fullpaths: nextPaths});
         if (props.handleNodeClick) {
-            props.handleNodeClick(node, nodes_ref.current);
-            dispatch({
-                type: "SET_IS_SELECTED",
-                id: node.id
-            })
+            props.handleNodeClick(node, nodes_ref.current, selectedNodesFromPaths(nextPaths));
+        }
+        if (props.handleSelectionChange) {
+            props.handleSelectionChange(selectedNodesFromPaths(nextPaths));
         }
     }
 
@@ -1110,22 +1295,36 @@ CustomTree = memo(CustomTree);
 
 function FileDropWrapper(props) {
     const [isDragging, setIsDragging] = useState(false);
+    const dragDepthRef = useRef(0);
+
+    const isSuppressed = () => Boolean(props.suppress && props.suppress.current);
 
     const handleDragOver = (e) => {
-        if (props.suppress.current) return;
+        if (isSuppressed()) return;
         e.preventDefault();
         e.stopPropagation();  // So that containing folders don't also get event;
         setIsDragging(true);
     };
 
-    const handleDragLeave = () => {
-        setIsDragging(false);
+    const handleDragEnter = (e) => {
+        if (isSuppressed()) return;
+        e.preventDefault();
+        e.stopPropagation();
+        dragDepthRef.current += 1;
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.stopPropagation();
+        dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+        if (dragDepthRef.current === 0) setIsDragging(false);
     };
 
     const handleDrop = (e) => {
-        if (props.suppress.current) return;
+        if (isSuppressed()) return;
         e.preventDefault();
         e.stopPropagation();  // So that containing folders don't also get event;
+        dragDepthRef.current = 0;
         setIsDragging(false);
         if (props.handleDrop) {
             props.handleDrop(e, props.fullpath)
@@ -1135,12 +1334,12 @@ function FileDropWrapper(props) {
     return (
         <div
             className={`drop-zone ${isDragging ? 'drag-over' : ''}`}
-            onDragOver={props.suppress.current ? null : handleDragOver}
-            onDragLeave={props.suppress.current ? null : handleDragLeave}
-            onDrop={props.suppress.current ? null : handleDrop}
+            onDragEnter={isSuppressed() ? null : handleDragEnter}
+            onDragOver={isSuppressed() ? null : handleDragOver}
+            onDragLeave={isSuppressed() ? null : handleDragLeave}
+            onDrop={isSuppressed() ? null : handleDrop}
         >
             {props.children}
         </div>
     );
 }
-

@@ -61,7 +61,9 @@ function PoolDrawer(props) {
     };
 
     const [, setValue, valueRef] = useStateAndRef(null);
-    const [, setSelectedNode,] = useStateAndRef(null);
+    const [, setSelectedNode, selectedNodeRef] = useStateAndRef(null);
+    const [selectedNodes, setSelectedNodes] = useState([]);
+    const [treeRefreshFunc, setTreeRefreshFunc] = useState(null);
     const [, setCurrentRootPath, currentRootPathRef] = useStateAndRef("");
 
     const settingsContext = useContext(SettingsContext);
@@ -76,10 +78,26 @@ function PoolDrawer(props) {
         setCurrentRootPath(node.fullpath);
     }
 
-    function handleNodeClick(node) {
+    function handleNodeClick(node, nodes, selection = [node]) {
         setValue(node.fullpath);
         setSelectedNode(node);
+        setSelectedNodes(selection);
         return true;
+    }
+
+    function handleSelectionChange(selection) {
+        setSelectedNodes(selection);
+        if (selection.length === 0) {
+            setValue(null);
+            setSelectedNode(null)
+        } else if (!selection.some(node => node.fullpath === valueRef.current)) {
+            setValue(selection[0].fullpath);
+            setSelectedNode(selection[0])
+        }
+    }
+
+    function registerTreeRefreshFunc(func) {
+        setTreeRefreshFunc(() => func)
     }
 
     const isRight = props.position === "right";
@@ -131,6 +149,8 @@ function PoolDrawer(props) {
                         <div style={{overflowY: "auto", flex: "1 1 0", minHeight: 0}}>
                             <PoolTreeWithContextMenu
                                 value={valueRef.current}
+                                selectedNode={selectedNodeRef.current}
+                                list_of_selected={selectedNodes}
                                 showHidden={false}
                                 currentRootPath={currentRootPathRef.current}
                                 setRoot={setRoot}
@@ -139,9 +159,12 @@ function PoolDrawer(props) {
                                 tsocket={props.tsocket}
                                 select_type={props.select_type}
                                 user_id={window.user_id}
+                                registerTreeRefreshFunc={registerTreeRefreshFunc}
+                                refreshFunc={treeRefreshFunc}
                                 showSecondaryLabel={true}
                                 handleCreateViewer={null}
                                 handleNodeClick={handleNodeClick}
+                                handleSelectionChange={handleSelectionChange}
                             />
                         </div>
                     </div>

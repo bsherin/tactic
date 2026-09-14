@@ -74,6 +74,28 @@ class PoolTasksMixin:
         return self.pool_backend.delete_resource(full_path, self, the_user)
 
     @task_worthy
+    def delete_pool_resources_task(self, data):
+        """Delete a selection as one user operation, including non-empty directories."""
+        the_user = self.get_user_from_data(data)
+        resources = data.get("resources", [])
+        if any(self.pool_backend.is_pool_root(item["full_path"], self, the_user) for item in resources):
+            return {"success": False, "message": "The pool root cannot be deleted."}
+
+        # If both a directory and one of its descendants were selected, deleting
+        # the directory covers both. Collapse overlaps before touching storage.
+        unique_resources = {item["full_path"].rstrip("/"): item for item in resources}
+        resources = []
+        for path, resource in sorted(unique_resources.items(), key=lambda item: item[0].count("/")):
+            if any(path.startswith(parent["full_path"].rstrip("/") + "/") for parent in resources):
+                continue
+            resources.append(resource)
+        for resource in resources:
+            result = self.pool_backend.delete_resource(resource["full_path"], self, the_user)
+            if isinstance(result, dict) and not result.get("success", True):
+                return result
+        return {"success": True, "deleted": len(resources)}
+
+    @task_worthy
     def save_text_file_task(self, data):
         the_user = self.get_user_from_data(data)
         file_path = data["file_path"]

@@ -192,10 +192,12 @@ class PoolBackendECS(PoolBackend):
         return
 
     def delete_resource(self, src, hw, user_obj):
+        if self.is_pool_root(src, hw, user_obj):
+            return {"success": False, "message": "The pool root cannot be deleted."}
         if not boto_s3.lexists(src):
             return {"success": True}
         if boto_s3.isdir(src):
-            return boto_s3.rmdir(src)
+            return boto_s3.rmdir(src, recursive=True)
         else:
             result = boto_s3.rm(src)
             path, _ = os.path.split(src)
@@ -207,6 +209,11 @@ class PoolBackendECS(PoolBackend):
                     "is_directory": True
                 })
             return result
+
+    @staticmethod
+    def is_pool_root(src, hw, user_obj):
+        user_pool_dir = f"s3://{BUCKET}/users/{user_obj.username}"
+        return src.rstrip("/") == user_pool_dir.rstrip("/")
 
     def download_resource(self, src, hw, user_obj):
         if not boto_s3.lexists(src):
