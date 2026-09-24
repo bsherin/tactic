@@ -657,6 +657,10 @@ function PoolTree(props) {
         scheduleAuthoritativeRefresh();
     })
 
+    useSocketListener(props.tsocket, "pool-refresh-event", () => {
+        scheduleAuthoritativeRefresh();
+    })
+
     function exposeBaseNode() {
         if (nodes_ref.current.length == 0) return;
         dispatch({

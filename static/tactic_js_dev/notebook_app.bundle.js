@@ -206452,6 +206452,9 @@ function PoolTree(props) {
     }
     scheduleAuthoritativeRefresh();
   });
+  (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_8__.useSocketListener)(props.tsocket, "pool-refresh-event", function () {
+    scheduleAuthoritativeRefresh();
+  });
   function exposeBaseNode() {
     if (nodes_ref.current.length == 0) return;
     dispatch({

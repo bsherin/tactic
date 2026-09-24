@@ -1,7 +1,9 @@
 
 import os
 from qworker import task_worthy
-from users import load_user
+from tactic_app import socketio
+from tactic_logging import log
+from users import load_user, User
 
 class PoolTasksMixin:
 
@@ -55,6 +57,23 @@ class PoolTasksMixin:
         is_directory = data["is_directory"]
         self.pool_backend.process_pool_event(
             event_type, path, dest_path, is_directory)
+        return {"success": True}
+
+    @task_worthy
+    def pool_refresh_event(self, data):
+        user_obj = User.get_user_by_username(data["username"])
+        if user_obj is None:
+            log.warning(
+                "Ignoring pool refresh for unknown user",
+                username=data["username"],
+            )
+            return {"success": True}
+        socketio.emit(
+            "pool-refresh-event",
+            {"event_count": data.get("event_count", 1)},
+            namespace="/main",
+            room=user_obj.get_id(),
+        )
         return {"success": True}
 
     @task_worthy

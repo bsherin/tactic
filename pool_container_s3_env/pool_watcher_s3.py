@@ -7,6 +7,7 @@ log.debug("starting", extra_flag=True)
 
 try:
     import json, collections
+    import os
     import boto3
     import pika
     import traceback
@@ -15,17 +16,17 @@ try:
     from rabbit_manage import get_pika_connection_with_retries
     from aws_helpers import get_ssm_parameter
     from aws_detection import on_aws
+    from pool_event_coalescer import PoolEventCoalescer, username_from_s3_key
 
-    S3_BUCKET = get_ssm_parameter("BUCKET")
     SQS_QUEUE_URL = get_ssm_parameter("SQS_QUEUE_URL")
     queue_name = "tactic-user-storage-events"
     AWS_REGION = get_ssm_parameter("MY_AWS_REGION", "us-east-2")
+    POOL_EVENT_QUIET_SECONDS = float(os.getenv("POOL_EVENT_QUIET_SECONDS", "2"))
+    POOL_EVENT_MAX_DELAY_SECONDS = float(os.getenv("POOL_EVENT_MAX_DELAY_SECONDS", "10"))
 
     RECENT = collections.deque(maxlen=5000)
     SEEN  = {}
 
-    def is_dir_key(key: str) -> bool:
-        return key.endswith('/')
 except Exception:
     log.exception("*** fatal error during imports in pool_watcher_s3 ***")
     log.critical("*** exiting pool_watcher_s3 due to fatal error ***")
@@ -58,18 +59,35 @@ class Handler:
             self.queue_url = self.sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
             self.queue_url = normalize_sqs_queue_url(self.queue_url, "http://host.docker.internal:4566")
         log.debug("connected to SQS", region_name=self.sqs.meta.region_name)
-
-    def post_pool_event(self, event_type, key, is_dir, dest_key=None):
-        self.ask_host("pool_event", {
-            "event_type": event_type,
-            "is_directory": is_dir,
-            "path": f"s3://{S3_BUCKET}/{key}",
-            "dest_path": f"s3://{S3_BUCKET}/{dest_key}" if dest_key else None
-        })
+        self.pool_event_coalescer = PoolEventCoalescer(
+            quiet_seconds=POOL_EVENT_QUIET_SECONDS,
+            max_delay_seconds=POOL_EVENT_MAX_DELAY_SECONDS,
+        )
 
     def ask_host(self, msg_type, task_data=None):
-        self.post_task("host", msg_type, task_data)
-        return
+        return self.post_task("host", msg_type, task_data)
+
+    def post_pool_refresh(self, username, event_count):
+        return self.ask_host("pool_refresh_event", {
+            "username": username,
+            "event_count": event_count,
+        })
+
+    def flush_pool_refreshes(self, force=False):
+        for refresh in self.pool_event_coalescer.pop_due(force=force):
+            result = self.post_pool_refresh(refresh.username, refresh.event_count)
+            if not result.get("success"):
+                # Retry after the normal quiet interval if RabbitMQ was unavailable.
+                self.pool_event_coalescer.mark(
+                    refresh.username,
+                    event_count=refresh.event_count,
+                )
+                continue
+            log.info(
+                "Posted coalesced pool refresh",
+                username=refresh.username,
+                event_count=refresh.event_count,
+            )
 
     def post_task(self, dest_id, task_type, task_data=None, expiration=None):
         new_id = new_task_id()
@@ -89,8 +107,8 @@ class Handler:
                               "response_data": None,
                               "reply_to": reply_to,
                               "expiration": expiration}
-                self.post_packet(dest_id, new_packet, reply_to, callback_id)
-                result = {"success": True}
+                published = self.post_packet(dest_id, new_packet, reply_to, callback_id)
+                result = {"success": published}
 
             except Exception as ex:
                 log.exception("Error handling task", task_type=task_type, my_id=self.my_id)
@@ -119,30 +137,44 @@ class Handler:
                                           delivery_mode=2
                                       ),
                                       body=json.dumps(task_packet))
+            return True
         except Exception:
             if attempt == 0:
                 log.exception("Error posting packet, retrying", dest_id=dest_id, my_id=self.my_id)
                 connection, channel = get_pika_connection_with_retries(0)
                 if connection is not None:
                     self.channel = channel
-                    self.post_packet(dest_id, task_packet,
-                                     reply_to, callback_id, attempt=1)
+                    return self.post_packet(dest_id, task_packet,
+                                            reply_to, callback_id, attempt=1)
             else:
                 log.exception("Error posting packet, giving up", dest_id=dest_id, my_id=self.my_id)
-        return
+        return False
+
+    @staticmethod
+    def remember_event(sig):
+        if sig in SEEN:
+            return False
+        if len(RECENT) == RECENT.maxlen:
+            expired = RECENT.popleft()
+            SEEN.pop(expired, None)
+        RECENT.append(sig)
+        SEEN[sig] = True
+        return True
 
     def main(self):
         while True:
+            self.flush_pool_refreshes()
             task_id = new_task_id()
             with bind_request(task_id, "ad_hoc", "sqs_poll"):
                 resp = self.sqs.receive_message(
                     QueueUrl=self.queue_url,
                     MaxNumberOfMessages=10,
-                    WaitTimeSeconds=20,
+                    WaitTimeSeconds=self.pool_event_coalescer.next_wait_seconds(20),
                     MessageAttributeNames=['All']
                 )
                 msgs = resp.get("Messages", [])
                 if not msgs:
+                    self.flush_pool_refreshes()
                     continue
 
                 for m in msgs:
@@ -153,22 +185,20 @@ class Handler:
                         for r in recs:
                             ev = r["eventName"]                 # e.g. "ObjectCreated:Put", "ObjectRemoved:Delete"
                             log.debug("Got eventName", event_name=ev)
-                            b  = r["s3"]["bucket"]["name"]
                             k  = unquote_plus(r["s3"]["object"]["key"])
                             etag = r["s3"]["object"].get("eTag")
 
                             # basic de-dupe (S3 can retry)
                             sig = (ev, k, etag, r.get("eventTime"))
-                            if sig in SEEN:
+                            if not self.remember_event(sig):
                                 continue
-                            SEEN[sig] = True
-                            RECENT.append(sig)
 
-                            if ev.startswith("ObjectCreated:"):
-                                self.post_pool_event("modify", k, is_dir_key(k))
-
-                            elif ev.startswith("ObjectRemoved:"):
-                                self.post_pool_event("delete", k, is_dir_key(k))
+                            if ev.startswith("ObjectCreated:") or ev.startswith("ObjectRemoved:"):
+                                username = username_from_s3_key(k)
+                                if username is None:
+                                    log.warning("Ignoring S3 event outside a user pool", key=k)
+                                    continue
+                                self.pool_event_coalescer.mark(username)
 
                             # Optional: move synthesis logic could be added here if you want to correlate
                             # a recent copy+delete with same ETag and infer (src->dest).
@@ -179,6 +209,8 @@ class Handler:
                     except Exception:
                         log.exception("Error processing SQS message")
                         pass
+
+                self.flush_pool_refreshes()
 
 if __name__ == "__main__":
     from service_controls import set_to_redis_log_level
