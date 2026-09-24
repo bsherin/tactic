@@ -776,6 +776,7 @@ function ContextApp(props) {
             );
         } else {
             let TheClass = classDict[entry.kind];
+            const isSelected = selectedTabIdRef.current === entry.identifier;
             let the_panel = (
                 <SelectedPaneContext.Provider value={{
                         tab_id: entry.identifier,
@@ -789,7 +790,9 @@ function ContextApp(props) {
                         identifier={entry.identifier}>
                         <TheClass {...entry.panel}
                                   controlled={true}
-                                  selectTab={() => setSelectedTabId(entry.identifier)}
+                                  selectTab={(callback = null) => {
+                                      _handleTabSelect(entry.identifier, callback)
+                                  }}
                                   handleCreateViewer={handleCreateViewer}
                                   tab_id={entry.identifier}
                                   selectedTabIdRef={selectedTabIdRef}
@@ -816,11 +819,12 @@ function ContextApp(props) {
                 <Fragment key={entry.identifier}>
                     <ErrorBoundary>
                         <div id={`${entry.identifier}-holder`}
-                             style={{display: "flex", flexDirection: "column",
+                             style={{display: isSelected ? "flex" : "none", flexDirection: "column",
                                 position: "relative",
-                                height: selectedTabIdRef.current == entry.identifier ? "100%" : 0,
+                                height: isSelected ? "100%" : 0,
                                  minWidth: 0,
                                  minHeight: 0,
+                                overflow: "hidden",
                                 width: "100%"}}
                                 className={panelRootDict[entry.kind]}>
                             {the_panel}

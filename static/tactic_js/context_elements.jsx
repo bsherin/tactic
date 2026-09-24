@@ -50,13 +50,16 @@ function ContextPaneElement(props) {
         return selectedPane.amSelected(selectedPane.tab_id, selectedPane.selectedTabIdRef)
     }
 
+    const isSelected = am_selected();
+
     return (
         <div style={{
             width: "100%",
-            opacity: am_selected() ? 1 : 0,
-            height: am_selected() ? "100%" : 0,
+            opacity: isSelected ? 1 : 0,
+            height: isSelected ? "100%" : 0,
             position: "relative",
-            display: "flex",
+            display: isSelected ? "flex" : "none",
+            overflow: "hidden",
             minHeight: 0, minWidth: 0,
             flexDirection: "column",
         }}>
@@ -271,5 +274,4 @@ function ContextNavigatorItem(props) {
     );
 
 }
-
 

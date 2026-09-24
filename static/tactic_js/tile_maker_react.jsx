@@ -17,8 +17,8 @@ import _ from 'lodash';
 
 import {Button, ButtonGroup, Switch, useHotkeys, FormGroup, HTMLSelect, Divider} from "@blueprintjs/core";
 
-import {EditorView} from "@codemirror/view";
 import {EditorSelection} from "@codemirror/state";
+import {scrollEditorPositionToCenter} from "./react-codemirror6";
 
 import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
@@ -448,8 +448,15 @@ function CreatorApp(props) {
 
     function initSocket(theSocket) {
         theSocket.attachListener('focus-me', (data) => {
-            window.focus();
-            _selectLineNumber(data.line_number)
+            const focusLine = () => {
+                window.focus();
+                _selectLineNumber(data.line_number)
+            };
+            if (props.selectTab) {
+                props.selectTab(focusLine);
+            } else {
+                focusLine();
+            }
         });
 
         const pausedListener = (data) => {
@@ -462,8 +469,11 @@ function CreatorApp(props) {
             setDebugMessage(data.exception
                 ? `Paused on ${data.exception.type} in ${data.function} at line ${data.line}`
                 : `Paused in ${data.function} at line ${data.line}`);
-            if (props.selectTab) props.selectTab();
-            _revealDebugLine(data.line);
+            if (props.selectTab) {
+                props.selectTab(() => _revealDebugLine(data.line));
+            } else {
+                _revealDebugLine(data.line);
+            }
         };
 
         const completedListener = (data) => {
@@ -1407,8 +1417,11 @@ function CreatorApp(props) {
         const frame = debugPausedRef.current?.stack?.[index];
         if (!frame) return;
         setDebugFrameIndex(index);
-        if (props.selectTab) props.selectTab();
-        _revealDebugLine(frame.line);
+        if (props.selectTab) {
+            props.selectTab(() => _revealDebugLine(frame.line));
+        } else {
+            _revealDebugLine(frame.line);
+        }
     }
 
     function debuggerDrawerInitialFraction() {
@@ -1461,11 +1474,9 @@ function CreatorApp(props) {
             const cm = item.cmObject;
             const line = cm.state.doc.line(lnumber + 1 - item.firstLineNumber);
             cm.dispatch({
-                selection: EditorSelection.single(line.from, line.to),
-                effects: EditorView.scrollIntoView(line.from, {
-                    y: "center"  // Center the line in the view
-                })
+                selection: EditorSelection.single(line.from, line.to)
             });
+            scrollEditorPositionToCenter(cm, line.from);
             cm.focus();
             return true
         } catch (e) {
@@ -1490,9 +1501,7 @@ function CreatorApp(props) {
             if (item == null || !item.cmObject) return false;
             const cm = item.cmObject;
             const line = cm.state.doc.line(lnumber + 1 - item.firstLineNumber);
-            cm.dispatch({
-                effects: EditorView.scrollIntoView(line.from, {y: "center"})
-            });
+            scrollEditorPositionToCenter(cm, line.from);
             return true;
         } catch (e) {
             console.log("Error revealing debugger line", e);

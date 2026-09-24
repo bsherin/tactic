@@ -53,10 +53,29 @@ import {startCompletion} from "@codemirror/autocomplete";
 import {themeList, importTheme} from "./theme_support";
 import {postPromise} from "./communication_react";
 
-export {ReactCodemirror6};
+export {ReactCodemirror6, scrollEditorPositionToCenter};
 
 const SEARCH_HEIGHT = 55;
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+
+// CodeMirror's EditorView.scrollIntoView walks every scrollable ancestor of
+// the editor. That is useful on a conventional document page, but the TACTIC
+// context keeps inactive viewers mounted in collapsed containers. Scrolling
+// those ancestors can leave an entire viewer offset outside its viewport.
+// Keep programmatic navigation confined to the editor's own scroll element.
+function scrollEditorPositionToCenter(view, position) {
+    if (!view || !view.scrollDOM) {
+        return;
+    }
+
+    const lineBlock = view.lineBlockAt(position);
+    const scroller = view.scrollDOM;
+    const targetScrollTop =
+        lineBlock.top - (scroller.clientHeight - lineBlock.height) / 2;
+    const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+
+    scroller.scrollTop = Math.min(maxScrollTop, Math.max(0, targetScrollTop));
+}
 
 function emptyExtension() {
     return []
@@ -1118,11 +1137,9 @@ function ReactCodemirror6(props) {
         try {
             const line = editorView.current.state.doc.line(lineNumber);
             editorView.current.dispatch({
-                selection: EditorSelection.single(line.from, line.to),
-                effects: EditorView.scrollIntoView(line.from, {
-                    y: "center"
-                })
+                selection: EditorSelection.single(line.from, line.to)
             });
+            scrollEditorPositionToCenter(editorView.current, line.from);
         } catch (e) {
             console.log("Error in selectLine", e)
         }

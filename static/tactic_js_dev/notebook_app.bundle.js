@@ -207345,7 +207345,8 @@ function FileDropWrapper(props) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   EditorView: () => (/* reexport safe */ _codemirror_view__WEBPACK_IMPORTED_MODULE_7__.EditorView),
-/* harmony export */   ReactCodemirror6: () => (/* binding */ ReactCodemirror6)
+/* harmony export */   ReactCodemirror6: () => (/* binding */ ReactCodemirror6),
+/* harmony export */   scrollEditorPositionToCenter: () => (/* binding */ scrollEditorPositionToCenter)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
@@ -207424,6 +207425,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
 var SEARCH_HEIGHT = 55;
 var REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
+
+// CodeMirror's EditorView.scrollIntoView walks every scrollable ancestor of
+// the editor. That is useful on a conventional document page, but the TACTIC
+// context keeps inactive viewers mounted in collapsed containers. Scrolling
+// those ancestors can leave an entire viewer offset outside its viewport.
+// Keep programmatic navigation confined to the editor's own scroll element.
+function scrollEditorPositionToCenter(view, position) {
+  if (!view || !view.scrollDOM) {
+    return;
+  }
+  var lineBlock = view.lineBlockAt(position);
+  var scroller = view.scrollDOM;
+  var targetScrollTop = lineBlock.top - (scroller.clientHeight - lineBlock.height) / 2;
+  var maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+  scroller.scrollTop = Math.min(maxScrollTop, Math.max(0, targetScrollTop));
+}
 function emptyExtension() {
   return [];
 }
@@ -208422,11 +208439,9 @@ function ReactCodemirror6(props) {
     try {
       var line = editorView.current.state.doc.line(lineNumber);
       editorView.current.dispatch({
-        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_13__.EditorSelection.single(line.from, line.to),
-        effects: _codemirror_view__WEBPACK_IMPORTED_MODULE_7__.EditorView.scrollIntoView(line.from, {
-          y: "center"
-        })
+        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_13__.EditorSelection.single(line.from, line.to)
       });
+      scrollEditorPositionToCenter(editorView.current, line.from);
     } catch (e) {
       console.log("Error in selectLine", e);
     }
