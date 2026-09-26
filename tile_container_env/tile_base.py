@@ -3,7 +3,6 @@ import re
 import subprocess
 from bson.binary import Binary
 import os
-import traceback
 import pickle
 from tactic_logging import log
 from communication_utils import is_jsonizable, make_python_object_jsonizable, debinarize_python_object
@@ -920,8 +919,17 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
     def _handle_exception(self, ex, special_string=None, print_to_console=True):
         error_string = self.get_traceback_message(ex, special_string)
         summary = "Exception of type {}".format(type(ex).__name__)
-        tb = ex.__traceback__
-        line_number = traceback.extract_tb(tb)[-1].lineno
+        # The innermost traceback frame is commonly inside pandas, matplotlib,
+        # or another library. Prefer the innermost frame from this tile's
+        # generated source so Show returns to the user's call site.
+        from tile_env import get_loaded_source_info
+        source_info = get_loaded_source_info()
+        preferred_filename = source_info.get("filename") if source_info else None
+        line_number = self.get_exception_line_number(
+            ex,
+            preferred_filename,
+            preferred_filename_prefix="/tactic/user-code/",
+        )
         if print_to_console:
             self._tworker.send_error_entry(summary, error_string, line_number)
         return error_string

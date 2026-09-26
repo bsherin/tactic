@@ -596,12 +596,12 @@ function ContextApp(props) {
         });
     }
 
-    async function _goToModule(module_name, line_number) {
+    async function _goToModule(module_name, line_number, editor_location = null) {
         for (let pdict of tabPanelListRef.current) {
             if (pdict.kind === "creator-viewer" && pdict.panel.resource_name === module_name) {
                 _handleTabSelect(pdict.identifier, () => {
                     if ("line_setter" in pdict) {
-                        pdict.line_setter(line_number)
+                        pdict.line_setter(line_number, editor_location)
                     }
                 });
                 return
@@ -617,6 +617,8 @@ function ContextApp(props) {
             await _addPanelPromise(new_id, data.kind, data.res_type, data.resource_name, "spinner");
             propDict[data.kind](data, drmethod, (new_panel) => {
                 new_panel.original_res_type = "tile";
+                new_panel.initial_line_number = line_number;
+                new_panel.initial_error_location = editor_location;
                 _updatePanel(new_id, {panel: new_panel});
             });
         } catch (e) {

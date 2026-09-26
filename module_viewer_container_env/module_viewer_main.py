@@ -18,6 +18,7 @@ try:
         prepare_user_methods_for_tile_maker,
     )
     from tile_ai_context import prepare_tile_context
+    from source_location import find_editor_location
     from mongo_accesser import MongoAccess
     from tile_accesser import TileAccess
     from mongo_db_fs import get_dbs
@@ -199,6 +200,7 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
 
     @task_worthy
     def update_module(self, data_dict):
+        module_code = None
         try:
             module_name = data_dict["module_name"]
             module_code = self.build_code(data_dict)
@@ -235,7 +237,13 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                     "source_info": self.source_info(module_code)}
         except Exception as ex:
             log.exception("error updating module")
-            return self.get_traceback_exception_dict(ex, "Error updating module: ")
+            result = self.get_traceback_exception_dict(ex, "Error updating module: ")
+            location = None
+            if isinstance(ex, SyntaxError):
+                location = find_editor_location(data_dict, module_code, result.get("line_number"))
+            if location:
+                result.update(location)
+            return result
 
     @staticmethod
     def assemble_parse_information(tp):

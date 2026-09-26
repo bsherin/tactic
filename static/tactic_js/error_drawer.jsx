@@ -162,6 +162,8 @@ function ErrorItem(props) {
         line_number: null,
         goToLineNumberfunc: null,
         tile_type: null,
+        editor_identifier: null,
+        editor_line_number: null,
         ...props
     };
 
@@ -172,7 +174,9 @@ function ErrorItem(props) {
                 {
                     user_id: window.user_id,
                     tile_type: props.tile_type,
-                    line_number: props.line_number
+                    line_number: props.line_number,
+                    editor_identifier: props.editor_identifier,
+                    editor_line_number: props.editor_line_number,
                 }, (data) => {
                     if (!data.success) {
                         window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
@@ -182,7 +186,10 @@ function ErrorItem(props) {
                 }, null, props.local_id)
         } else {
             props.closeErrorDrawer();
-            props.goToModule.current(props.tile_type, props.line_number)
+            props.goToModule.current(props.tile_type, props.line_number, {
+                editor_identifier: props.editor_identifier,
+                editor_line_number: props.editor_line_number,
+            })
         }
     }
 
@@ -232,7 +239,8 @@ function ErrorDrawer(props) {
     let items = sorted_keys.map((ukey) => {
         let entry = props.contents.current[ukey];
         let has_link = false;
-        if (entry.hasOwnProperty("line_number")) {
+        if ((entry.hasOwnProperty("line_number") && entry.line_number != null) ||
+            (entry.editor_identifier && entry.editor_line_number != null)) {
             has_link = true;
         }
         return (
@@ -245,6 +253,8 @@ function ErrorDrawer(props) {
                        goToLineNumberFunc={props.goToLineNumberFunc}
                        goToModule={props.goToModule}
                        line_number={entry.line_number}
+                       editor_identifier={entry.editor_identifier}
+                       editor_line_number={entry.editor_line_number}
                        tile_type={entry.tile_type}/>
         )
     });

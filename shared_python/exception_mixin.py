@@ -45,15 +45,34 @@ class ExceptionMixin(object):
         msg = self.extract_short_error_message(e, special_string)
         return {"success": False, "message": msg, "alert_type": "alert-warning"}
 
-    def get_traceback_exception_dict(self, e, special_string=None):
+    @staticmethod
+    def get_exception_line_number(e, preferred_filename=None, preferred_filename_prefix=None):
+        """Return the most useful source line represented by an exception.
+
+        Syntax errors do not necessarily have a traceback, but do carry their
+        source line directly.  For runtime errors, callers may identify the
+        generated user-code file so a deeper library frame does not hide the
+        line in the user's tile that called it.
+        """
+        if getattr(e, "lineno", None) is not None:
+            return e.lineno
+
+        extracted = traceback.extract_tb(e.__traceback__)
+        if preferred_filename:
+            for frame in reversed(extracted):
+                if frame.filename == preferred_filename:
+                    return frame.lineno
+        if preferred_filename_prefix:
+            for frame in reversed(extracted):
+                if frame.filename.startswith(preferred_filename_prefix):
+                    return frame.lineno
+        if extracted:
+            return extracted[-1].lineno
+        return None
+
+    def get_traceback_exception_dict(self, e, special_string=None, preferred_filename=None):
         msg = self.get_traceback_message(e, special_string)
-        # The traceback object doesn't seem to have the line number
-        # If it's a syntax error at least, then it has it as an attribute of
-        # the exception object
-        if hasattr(e, "lineno"):
-            line_number = e.lineno
-        else:
-            line_number = None
+        line_number = self.get_exception_line_number(e, preferred_filename)
 
         return {"success": False, "message": msg, "alert_type": "alert-warning", "line_number": line_number}
 

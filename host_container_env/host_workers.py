@@ -395,7 +395,11 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
         if len(matching_ids) == 0:
             return {"success": False}
         else:
-            socketio.emit("focus-me", {"line_number": data["line_number"]}, namespace='/main', room=matching_ids[0])
+            socketio.emit("focus-me", {
+                "line_number": data.get("line_number"),
+                "editor_identifier": data.get("editor_identifier"),
+                "editor_line_number": data.get("editor_line_number"),
+            }, namespace='/main', room=matching_ids[0])
             return {"success": True, "window_name": matching_ids[0]}
 
     @task_worthy_manual_submit

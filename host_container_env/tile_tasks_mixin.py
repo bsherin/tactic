@@ -198,8 +198,11 @@ class TileTasksMixin:
                 if "local_id" not in task_packet:
                     task_packet["room"] = user_id
                 if not task_packet["callback_type"] == "no_callback":
-                    self.submit_response(task_packet, {"success": False, "message": res_dict["message"],
-                                                       "alert_type": "alert-warning"})
+                    error_result = {"success": False, "message": res_dict["message"],
+                                    "alert_type": "alert-warning"}
+                    if res_dict.get("line_number") is not None:
+                        error_result["line_number"] = res_dict["line_number"]
+                    self.submit_response(task_packet, error_result)
                 return
             mdata = the_user.get_tile_metadata(res_dict["tile_name"])
             category = mdata["category"] if "category" in mdata else "basic"
@@ -243,7 +246,10 @@ class TileTasksMixin:
             else:
                 pattern = re.compile(r'.*?(@user_tile.*)', re.DOTALL)
                 result = pattern.match(tile_module)
-                tile_module_no_globals = result.groups()[0]
+                # Keep blank lines in place of globals. Globals are deliberately
+                # not executed here, but traceback line numbers must continue to
+                # match the complete source shown in Tile Maker.
+                tile_module_no_globals = "\n" * tile_module[:result.start(1)].count("\n") + result.groups()[0]
                 self.post_task("tile_test_container", "load_source",
                                {"tile_code": tile_module_no_globals}, loaded_source)
         except Exception as ex:

@@ -198952,7 +198952,9 @@ function ErrorItem(props) {
     has_link: false,
     line_number: null,
     goToLineNumberfunc: null,
-    tile_type: null
+    tile_type: null,
+    editor_identifier: null,
+    editor_line_number: null
   }, props);
   function _openError() {
     if (!window.in_context) {
@@ -198960,7 +198962,9 @@ function ErrorItem(props) {
       (0,_communication_react__WEBPACK_IMPORTED_MODULE_1__.postWithCallback)("host", "go_to_module_viewer_if_exists", {
         user_id: window.user_id,
         tile_type: props.tile_type,
-        line_number: props.line_number
+        line_number: props.line_number,
+        editor_identifier: props.editor_identifier,
+        editor_line_number: props.editor_line_number
       }, function (data) {
         if (!data.success) {
           window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
@@ -198970,7 +198974,10 @@ function ErrorItem(props) {
       }, null, props.local_id);
     } else {
       props.closeErrorDrawer();
-      props.goToModule.current(props.tile_type, props.line_number);
+      props.goToModule.current(props.tile_type, props.line_number, {
+        editor_identifier: props.editor_identifier,
+        editor_line_number: props.editor_line_number
+      });
     }
   }
   var content_dict = {
@@ -199036,7 +199043,7 @@ function ErrorDrawer(props) {
   var items = sorted_keys.map(function (ukey) {
     var entry = props.contents.current[ukey];
     var has_link = false;
-    if (entry.hasOwnProperty("line_number")) {
+    if (entry.hasOwnProperty("line_number") && entry.line_number != null || entry.editor_identifier && entry.editor_line_number != null) {
       has_link = true;
     }
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(ErrorItem, {
@@ -199052,6 +199059,8 @@ function ErrorDrawer(props) {
       goToLineNumberFunc: props.goToLineNumberFunc,
       goToModule: props.goToModule,
       line_number: entry.line_number,
+      editor_identifier: entry.editor_identifier,
+      editor_line_number: entry.editor_line_number,
       tile_type: entry.tile_type
     });
   });
@@ -230837,6 +230846,7 @@ function CreatorApp(props) {
   var search_ref = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var last_save = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)({});
   var rline_number = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(props.initial_line_number);
+  var rerror_location = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(props.initial_error_location);
   var pane_scroll_ref = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var paneListRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var debugSocketListenersRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
@@ -231328,7 +231338,10 @@ function CreatorApp(props) {
     theSocket.attachListener('focus-me', function (data) {
       var focusLine = function focusLine() {
         window.focus();
-        _selectLineNumber(data.line_number);
+        _selectLineNumber(data.line_number, {
+          editor_identifier: data.editor_identifier,
+          editor_line_number: data.editor_line_number
+        });
       };
       if (props.selectTab) {
         props.selectTab(focusLine);
@@ -231657,7 +231670,9 @@ function CreatorApp(props) {
     window.open("".concat($SCRIPT_ROOT, "/show_tile_differ/").concat(_cProp("resource_name")));
   }
   function _selectLineNumber(lnumber) {
+    var editor_location = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
     rline_number.current = lnumber;
+    rerror_location.current = editor_location;
     _goToLineNumber();
   }
   function _logErrorStopSpinner(title, data) {
@@ -231669,6 +231684,10 @@ function CreatorApp(props) {
     };
     if ("line_number" in data) {
       entry.line_number = data.line_number;
+    }
+    if (data.editor_identifier && data.editor_line_number != null) {
+      entry.editor_identifier = data.editor_identifier;
+      entry.editor_line_number = data.editor_line_number;
     }
     errorDrawerFuncs.addErrorDrawerEntry(entry, true);
     errorDrawerFuncs.openErrorDrawer();
@@ -232779,6 +232798,24 @@ function CreatorApp(props) {
       _highlightLineWhenReady(identifier, lnumber, attemptsRemaining - 1);
     });
   }
+  function _highlightLocalLine(item, editorLineNumber) {
+    try {
+      if (item == null || !item.cmObject) {
+        return false;
+      }
+      var cm = item.cmObject;
+      var line = cm.state.doc.line(editorLineNumber);
+      cm.dispatch({
+        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_27__.EditorSelection.single(line.from, line.to)
+      });
+      (0,_react_codemirror6__WEBPACK_IMPORTED_MODULE_4__.scrollEditorPositionToCenter)(cm, line.from);
+      cm.focus();
+      return true;
+    } catch (e) {
+      console.log("Error highlighting editor line", e);
+      return false;
+    }
+  }
   function _scrollDebugLine(item, lnumber) {
     try {
       if (item == null || !item.cmObject) return false;
@@ -232812,7 +232849,26 @@ function CreatorApp(props) {
     showTab(item.identifier);
     _highlightLineWhenReady(item.identifier, lnumber);
   }
+  function _highlightEditorLineWhenReady(identifier, editorLineNumber) {
+    var attemptsRemaining = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 30;
+    var currentItem = getItemFromIdentifier(identifier);
+    if (_highlightLocalLine(currentItem, editorLineNumber) || attemptsRemaining <= 0) {
+      return;
+    }
+    requestAnimationFrame(function () {
+      _highlightEditorLineWhenReady(identifier, editorLineNumber, attemptsRemaining - 1);
+    });
+  }
   function _goToLineNumber() {
+    if (rerror_location.current && rerror_location.current.editor_identifier && rerror_location.current.editor_line_number != null) {
+      var location = rerror_location.current;
+      rerror_location.current = null;
+      rline_number.current = null;
+      errorDrawerFuncs.closeErrorDrawer();
+      showTab(location.editor_identifier);
+      _highlightEditorLineWhenReady(location.editor_identifier, location.editor_line_number);
+      return;
+    }
     if (rline_number.current) {
       var local_number = rline_number.current;
       rline_number.current = null;
@@ -238437,10 +238493,21 @@ function ContextApp(props) {
   }
   function _goToModule2() {
     _goToModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(module_name, line_number) {
-      var _iterator5, _step5, _loop, _ret, data, _new_id, drmethod, _t5, _t6;
+      var editor_location,
+        _iterator5,
+        _step5,
+        _loop,
+        _ret,
+        data,
+        _new_id,
+        drmethod,
+        _args9 = arguments,
+        _t5,
+        _t6;
       return _regenerator().w(function (_context9) {
         while (1) switch (_context9.n) {
           case 0:
+            editor_location = _args9.length > 2 && _args9[2] !== undefined ? _args9[2] : null;
             _iterator5 = _createForOfIteratorHelper(tabPanelListRef.current);
             _context9.p = 1;
             _loop = /*#__PURE__*/_regenerator().m(function _loop() {
@@ -238455,7 +238522,7 @@ function ContextApp(props) {
                     }
                     _handleTabSelect(pdict.identifier, function () {
                       if ("line_setter" in pdict) {
-                        pdict.line_setter(line_number);
+                        pdict.line_setter(line_number, editor_location);
                       }
                     });
                     return _context8.a(2, {
@@ -238509,6 +238576,8 @@ function ContextApp(props) {
           case 10:
             propDict[data.kind](data, drmethod, function (new_panel) {
               new_panel.original_res_type = "tile";
+              new_panel.initial_line_number = line_number;
+              new_panel.initial_error_location = editor_location;
               _updatePanel(_new_id, {
                 panel: new_panel
               });

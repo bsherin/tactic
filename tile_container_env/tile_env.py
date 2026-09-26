@@ -74,7 +74,10 @@ def exec_tile_code(tile_code):
         compiled_code = compile(tile_code, filename, "exec")
         exec(compiled_code, globals(), globals())
     except Exception as ex:
-        return generic_exception_handler.get_traceback_exception_dict(ex)
+        return generic_exception_handler.get_traceback_exception_dict(
+            ex,
+            preferred_filename=filename,
+        )
     loaded_source_info = {
         "filename": filename,
         "source_hash": source_hash,

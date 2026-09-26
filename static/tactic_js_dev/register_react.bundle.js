@@ -180891,7 +180891,9 @@ function ErrorItem(props) {
     has_link: false,
     line_number: null,
     goToLineNumberfunc: null,
-    tile_type: null
+    tile_type: null,
+    editor_identifier: null,
+    editor_line_number: null
   }, props);
   function _openError() {
     if (!window.in_context) {
@@ -180899,7 +180901,9 @@ function ErrorItem(props) {
       (0,_communication_react__WEBPACK_IMPORTED_MODULE_1__.postWithCallback)("host", "go_to_module_viewer_if_exists", {
         user_id: window.user_id,
         tile_type: props.tile_type,
-        line_number: props.line_number
+        line_number: props.line_number,
+        editor_identifier: props.editor_identifier,
+        editor_line_number: props.editor_line_number
       }, function (data) {
         if (!data.success) {
           window.open($SCRIPT_ROOT + "/view_location_in_creator/" + props.tile_type + "/" + props.line_number);
@@ -180909,7 +180913,10 @@ function ErrorItem(props) {
       }, null, props.local_id);
     } else {
       props.closeErrorDrawer();
-      props.goToModule.current(props.tile_type, props.line_number);
+      props.goToModule.current(props.tile_type, props.line_number, {
+        editor_identifier: props.editor_identifier,
+        editor_line_number: props.editor_line_number
+      });
     }
   }
   var content_dict = {
@@ -180975,7 +180982,7 @@ function ErrorDrawer(props) {
   var items = sorted_keys.map(function (ukey) {
     var entry = props.contents.current[ukey];
     var has_link = false;
-    if (entry.hasOwnProperty("line_number")) {
+    if (entry.hasOwnProperty("line_number") && entry.line_number != null || entry.editor_identifier && entry.editor_line_number != null) {
       has_link = true;
     }
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(ErrorItem, {
@@ -180991,6 +180998,8 @@ function ErrorDrawer(props) {
       goToLineNumberFunc: props.goToLineNumberFunc,
       goToModule: props.goToModule,
       line_number: entry.line_number,
+      editor_identifier: entry.editor_identifier,
+      editor_line_number: entry.editor_line_number,
       tile_type: entry.tile_type
     });
   });

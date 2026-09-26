@@ -88,6 +88,7 @@ function CreatorApp(props) {
     const search_ref = useRef(null);
     const last_save = useRef({});
     const rline_number = useRef(props.initial_line_number);
+    const rerror_location = useRef(props.initial_error_location);
     const pane_scroll_ref = useRef(null);
     const paneListRef = useRef(null);
     const debugSocketListenersRef = useRef([]);
@@ -450,7 +451,10 @@ function CreatorApp(props) {
         theSocket.attachListener('focus-me', (data) => {
             const focusLine = () => {
                 window.focus();
-                _selectLineNumber(data.line_number)
+                _selectLineNumber(data.line_number, {
+                    editor_identifier: data.editor_identifier,
+                    editor_line_number: data.editor_line_number,
+                })
             };
             if (props.selectTab) {
                 props.selectTab(focusLine);
@@ -745,8 +749,9 @@ function CreatorApp(props) {
         window.open(`${$SCRIPT_ROOT}/show_tile_differ/${_cProp("resource_name")}`)
     }
 
-    function _selectLineNumber(lnumber) {
+    function _selectLineNumber(lnumber, editor_location = null) {
         rline_number.current = lnumber;
+        rerror_location.current = editor_location;
         _goToLineNumber()
     }
 
@@ -755,6 +760,10 @@ function CreatorApp(props) {
         let entry = {title: title, content: data.message, tile_type: resource_name};
         if ("line_number" in data) {
             entry.line_number = data.line_number
+        }
+        if (data.editor_identifier && data.editor_line_number != null) {
+            entry.editor_identifier = data.editor_identifier;
+            entry.editor_line_number = data.editor_line_number;
         }
         errorDrawerFuncs.addErrorDrawerEntry(entry, true);
         errorDrawerFuncs.openErrorDrawer();
@@ -1496,6 +1505,25 @@ function CreatorApp(props) {
         });
     }
 
+    function _highlightLocalLine(item, editorLineNumber) {
+        try {
+            if (item == null || !item.cmObject) {
+                return false;
+            }
+            const cm = item.cmObject;
+            const line = cm.state.doc.line(editorLineNumber);
+            cm.dispatch({
+                selection: EditorSelection.single(line.from, line.to)
+            });
+            scrollEditorPositionToCenter(cm, line.from);
+            cm.focus();
+            return true;
+        } catch (e) {
+            console.log("Error highlighting editor line", e);
+            return false;
+        }
+    }
+
     function _scrollDebugLine(item, lnumber) {
         try {
             if (item == null || !item.cmObject) return false;
@@ -1537,7 +1565,27 @@ function CreatorApp(props) {
         _highlightLineWhenReady(item.identifier, lnumber);
     }
 
+    function _highlightEditorLineWhenReady(identifier, editorLineNumber, attemptsRemaining = 30) {
+        const currentItem = getItemFromIdentifier(identifier);
+        if (_highlightLocalLine(currentItem, editorLineNumber) || attemptsRemaining <= 0) {
+            return;
+        }
+        requestAnimationFrame(() => {
+            _highlightEditorLineWhenReady(identifier, editorLineNumber, attemptsRemaining - 1)
+        });
+    }
+
     function _goToLineNumber() {
+        if (rerror_location.current && rerror_location.current.editor_identifier &&
+            rerror_location.current.editor_line_number != null) {
+            const location = rerror_location.current;
+            rerror_location.current = null;
+            rline_number.current = null;
+            errorDrawerFuncs.closeErrorDrawer();
+            showTab(location.editor_identifier);
+            _highlightEditorLineWhenReady(location.editor_identifier, location.editor_line_number);
+            return;
+        }
         if (rline_number.current) {
             const local_number = rline_number.current;
             rline_number.current = null;
