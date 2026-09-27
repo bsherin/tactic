@@ -1181,6 +1181,20 @@ function CreatorApp(props) {
         return "The debugger request failed.";
     }
 
+    function debuggerSessionIsGone(error) {
+        const message = debuggerErrorMessage(error);
+        return message === "Unknown debug session." ||
+            message === "The debugger is not active.";
+    }
+
+    function clearDebugSession(message = "") {
+        setDebugSession(null);
+        setDebugPaused(null);
+        setDebugFrameIndex(0);
+        setDebugStatus("idle");
+        setDebugMessage(message);
+    }
+
     async function refreshDebugTargets() {
         if (!window.in_context) {
             throw {message: "Open this Tile Maker inside a running project to select a tile instance."};
@@ -1227,6 +1241,15 @@ function CreatorApp(props) {
             }
             return sortBreakpoints([...previous, {identifier: identifier, line: lineNumber}]);
         });
+        setDebugMessage("");
+    }
+
+    function clearAllBreakpoints() {
+        if (debugSessionRef.current) {
+            setDebugMessage("Stop the current debug session before changing breakpoints.");
+            return;
+        }
+        setDebugBreakpoints([]);
         setDebugMessage("");
     }
 
@@ -1381,6 +1404,10 @@ function CreatorApp(props) {
                 command: command,
             }, props.local_id);
         } catch (error) {
+            if (debuggerSessionIsGone(error)) {
+                clearDebugSession();
+                return;
+            }
             setDebugStatus("paused");
             setDebugPaused(pausedSnapshot);
             setDebugMessage(debuggerErrorMessage(error));
@@ -1407,13 +1434,13 @@ function CreatorApp(props) {
                 command: "abort",
             }, props.local_id);
             if (result.state === "disarmed") {
-                setDebugSession(null);
-                setDebugPaused(null);
-                setDebugFrameIndex(0);
-                setDebugStatus("idle");
-                setDebugMessage("");
+                clearDebugSession();
             }
         } catch (error) {
+            if (debuggerSessionIsGone(error)) {
+                clearDebugSession();
+                return;
+            }
             setDebugMessage(debuggerErrorMessage(error));
         }
     }
@@ -2395,13 +2422,20 @@ function CreatorApp(props) {
                             disabled={debugSession != null}
                             onClick={() => refreshDebugTargets().catch(error =>
                                 setDebugMessage(debuggerErrorMessage(error)))}/>
+                    <Button size="small" icon="clean"
+                            variant="minimal"
+                            title="Clear all breakpoints"
+                            text="Clear"
+                            disabled={debugSession != null || debugBreakpoints.length === 0}
+                            style={{marginLeft: 10}}
+                            onClick={() => clearAllBreakpoints()}/>
                     <Switch className="tile-debugger-exception-toggle"
                             label="Exceptions"
                             title="Pause where tile code raises an exception"
                             checked={debugPauseOnExceptions}
                             disabled={debugSession != null}
                             align={true}
-                            style={{marginLeft: 10, display: "inline"}}
+                            style={{marginLeft: 5, display: "inline"}}
                             onChange={event => setDebugPauseOnExceptions(event.target.checked)}/>
                 </FormGroup>
                 <Divider className="tile-debugger-panel-divider "/>

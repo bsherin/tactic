@@ -148,6 +148,33 @@ class TileDebuggerTests(unittest.TestCase):
         self.assertEqual(result["state"], "disarmed")
         self.assertFalse(self.debugger.is_armed)
 
+    def test_abort_for_stale_session_is_idempotent_when_runtime_is_idle(self):
+        result = self.debugger.submit_command("session-before-reload", "abort")
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["state"], "disarmed")
+        self.assertTrue(result["stale_session"])
+
+    def test_disarm_for_stale_session_is_idempotent_when_runtime_is_idle(self):
+        result = self.debugger.disarm("session-before-reload")
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["state"], "disarmed")
+        self.assertTrue(result["stale_session"])
+
+    def test_abort_does_not_disarm_a_different_active_session(self):
+        source = "def target():\n    return 1\n"
+        _namespace, source_info = compile_test_source(source)
+        self.assertTrue(self.debugger.arm(
+            source_info, [2], session_id="active-session"
+        )["success"])
+
+        result = self.debugger.submit_command("stale-session", "abort")
+
+        self.assertFalse(result["success"])
+        self.assertEqual(result["message"], "Unknown debug session.")
+        self.assertTrue(self.debugger.is_armed)
+
     def test_rejects_breakpoint_on_non_executable_line(self):
         source = "def target():\n\n    return 1\n"
         _namespace, source_info = compile_test_source(source)

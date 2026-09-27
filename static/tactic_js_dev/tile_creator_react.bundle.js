@@ -211109,6 +211109,18 @@ function CreatorApp(props) {
     if (typeof error === "string") return error;
     return "The debugger request failed.";
   }
+  function debuggerSessionIsGone(error) {
+    var message = debuggerErrorMessage(error);
+    return message === "Unknown debug session." || message === "The debugger is not active.";
+  }
+  function clearDebugSession() {
+    var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+    setDebugSession(null);
+    setDebugPaused(null);
+    setDebugFrameIndex(0);
+    setDebugStatus("idle");
+    setDebugMessage(message);
+  }
   function refreshDebugTargets() {
     return _refreshDebugTargets.apply(this, arguments);
   }
@@ -211176,6 +211188,14 @@ function CreatorApp(props) {
         line: lineNumber
       }]));
     });
+    setDebugMessage("");
+  }
+  function clearAllBreakpoints() {
+    if (debugSessionRef.current) {
+      setDebugMessage("Stop the current debug session before changing breakpoints.");
+      return;
+    }
+    setDebugBreakpoints([]);
     setDebugMessage("");
   }
   function replaceEditorBreakpoints(identifier, lineNumbers) {
@@ -211476,15 +211496,22 @@ function CreatorApp(props) {
               command: command
             }, props.local_id);
           case 2:
-            _context12.n = 4;
+            _context12.n = 5;
             break;
           case 3:
             _context12.p = 3;
             _t0 = _context12.v;
+            if (!debuggerSessionIsGone(_t0)) {
+              _context12.n = 4;
+              break;
+            }
+            clearDebugSession();
+            return _context12.a(2);
+          case 4:
             setDebugStatus("paused");
             setDebugPaused(pausedSnapshot);
             setDebugMessage(debuggerErrorMessage(_t0));
-          case 4:
+          case 5:
             return _context12.a(2);
         }
       }, _callee12, null, [[1, 3]]);
@@ -211526,19 +211553,22 @@ function CreatorApp(props) {
           case 2:
             result = _context13.v;
             if (result.state === "disarmed") {
-              setDebugSession(null);
-              setDebugPaused(null);
-              setDebugFrameIndex(0);
-              setDebugStatus("idle");
-              setDebugMessage("");
+              clearDebugSession();
             }
-            _context13.n = 4;
+            _context13.n = 5;
             break;
           case 3:
             _context13.p = 3;
             _t1 = _context13.v;
-            setDebugMessage(debuggerErrorMessage(_t1));
+            if (!debuggerSessionIsGone(_t1)) {
+              _context13.n = 4;
+              break;
+            }
+            clearDebugSession();
+            return _context13.a(2);
           case 4:
+            setDebugMessage(debuggerErrorMessage(_t1));
+          case 5:
             return _context13.a(2);
         }
       }, _callee13, null, [[1, 3]]);
@@ -212688,6 +212718,19 @@ function CreatorApp(props) {
         return setDebugMessage(debuggerErrorMessage(error));
       });
     }
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+    size: "small",
+    icon: "clean",
+    variant: "minimal",
+    title: "Clear all breakpoints",
+    text: "Clear",
+    disabled: debugSession != null || debugBreakpoints.length === 0,
+    style: {
+      marginLeft: 10
+    },
+    onClick: function onClick() {
+      return clearAllBreakpoints();
+    }
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Switch, {
     className: "tile-debugger-exception-toggle",
     label: "Exceptions",
@@ -212696,7 +212739,7 @@ function CreatorApp(props) {
     disabled: debugSession != null,
     align: true,
     style: {
-      marginLeft: 10,
+      marginLeft: 5,
       display: "inline"
     },
     onChange: function onChange(event) {

@@ -137,12 +137,23 @@ class TileDebugger(bdb.Bdb):
     def disarm(self, session_id=None):
         with self._condition:
             if session_id and session_id != self._session_id:
+                if not (self._armed or self._running or self._paused):
+                    return {
+                        "success": True,
+                        "session_id": session_id,
+                        "state": "disarmed",
+                        "stale_session": True,
+                    }
                 return {"success": False, "message": "Unknown debug session."}
             if self._paused:
                 self._command = "continue"
                 self._condition.notify_all()
             self._armed = False
-            return {"success": True, "session_id": self._session_id}
+            return {
+                "success": True,
+                "session_id": self._session_id,
+                "state": "disarmed",
+            }
 
     def should_trace(self, task_type):
         excluded_tasks = {
@@ -218,6 +229,19 @@ class TileDebugger(bdb.Bdb):
 
         with self._condition:
             if session_id != self._session_id:
+                # Reloading a tile replaces its process and therefore its
+                # TileDebugger instance. An abort for the browser's former
+                # session is already satisfied when this runtime is idle.
+                if command == "abort" and not (
+                    self._armed or self._running or self._paused
+                ):
+                    return {
+                        "success": True,
+                        "session_id": session_id,
+                        "command": command,
+                        "state": "disarmed",
+                        "stale_session": True,
+                    }
                 return {"success": False, "message": "Unknown debug session."}
             if command == "abort":
                 if self._paused:
@@ -232,7 +256,7 @@ class TileDebugger(bdb.Bdb):
                     self.clear_all_breaks()
                     state = "disarmed"
                 else:
-                    return {"success": False, "message": "The debugger is not active."}
+                    state = "disarmed"
                 return {
                     "success": True,
                     "session_id": session_id,
