@@ -18,6 +18,7 @@ try:
         prepare_user_methods_for_tile_maker,
     )
     from tile_ai_context import prepare_tile_context
+    from tile_history_comparison import build_tile_history_comparison
     from source_location import find_editor_location
     from mongo_accesser import MongoAccess
     from tile_accesser import TileAccess
@@ -115,6 +116,19 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
         result = {"success": True, "the_content": self.assemble_parse_information(tp),
                   "all_handler_methods": self.handler_methods}
         return result
+
+    @task_worthy
+    def parse_tile_history_versions(self, data_dict):
+        """Parse two saved tile sources into a structured history comparison."""
+        handler_methods = self.handler_methods or []
+        current_parser = TileParser(data_dict["current_code"], handler_methods)
+        historical_parser = TileParser(data_dict["historical_code"], handler_methods)
+        current = self.assemble_parse_information(current_parser)
+        historical = self.assemble_parse_information(historical_parser)
+        return {
+            "success": True,
+            "comparison": build_tile_history_comparison(current, historical),
+        }
 
     @staticmethod
     def build_code(data_dict):

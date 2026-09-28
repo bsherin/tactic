@@ -208376,23 +208376,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/hooks/hotkeys/useHotkeys.js");
 /* harmony import */ var _codemirror_view__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @codemirror/view */ "./node_modules/@codemirror/view/dist/index.js");
-/* harmony import */ var _codemirror_language__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @codemirror/language */ "./node_modules/@codemirror/language/dist/index.js");
-/* harmony import */ var _codemirror_merge__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @codemirror/merge */ "./node_modules/@codemirror/merge/dist/index.js");
+/* harmony import */ var _codemirror_language__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @codemirror/language */ "./node_modules/@codemirror/language/dist/index.js");
+/* harmony import */ var _codemirror_merge__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @codemirror/merge */ "./node_modules/@codemirror/merge/dist/index.js");
 /* harmony import */ var _codemirror_state__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @codemirror/state */ "./node_modules/@codemirror/state/dist/index.js");
 /* harmony import */ var _codemirror_lang_python__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @codemirror/lang-python */ "./node_modules/@codemirror/lang-python/dist/index.js");
-/* harmony import */ var _codemirror_commands__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @codemirror/commands */ "./node_modules/@codemirror/commands/dist/index.js");
-/* harmony import */ var _codemirror_search__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @codemirror/search */ "./node_modules/@codemirror/search/dist/index.js");
-/* harmony import */ var _codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @codemirror/autocomplete */ "./node_modules/@codemirror/autocomplete/dist/index.js");
-/* harmony import */ var _codemirror_lint__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @codemirror/lint */ "./node_modules/@codemirror/lint/dist/index.js");
+/* harmony import */ var _codemirror_lang_javascript__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @codemirror/lang-javascript */ "./node_modules/@codemirror/lang-javascript/dist/index.js");
+/* harmony import */ var _codemirror_commands__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @codemirror/commands */ "./node_modules/@codemirror/commands/dist/index.js");
+/* harmony import */ var _codemirror_search__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @codemirror/search */ "./node_modules/@codemirror/search/dist/index.js");
+/* harmony import */ var _codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @codemirror/autocomplete */ "./node_modules/@codemirror/autocomplete/dist/index.js");
+/* harmony import */ var _codemirror_lint__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @codemirror/lint */ "./node_modules/@codemirror/lint/dist/index.js");
 /* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
 /* harmony import */ var _theme_support__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./theme_support */ "./static/tactic_js/theme_support.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+
 
 
 
@@ -208441,6 +208449,12 @@ var highlightField = _codemirror_state__WEBPACK_IMPORTED_MODULE_3__.StateField.d
   }
 });
 function ReactCodemirrorMergeView6(props) {
+  props = _objectSpread({
+    readOnly: false,
+    mode: "python",
+    handleEditChange: function handleEditChange() {},
+    saveMe: function saveMe() {}
+  }, props);
   var code_container_ref = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var cmobject = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var themeCompartmenta = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -208464,6 +208478,12 @@ function ReactCodemirrorMergeView6(props) {
     themeCompartmenta.current = new _codemirror_state__WEBPACK_IMPORTED_MODULE_3__.Compartment();
     themeCompartmentb.current = new _codemirror_state__WEBPACK_IMPORTED_MODULE_3__.Compartment();
     cmobject.current = createMergeArea(code_container_ref.current);
+    return function () {
+      if (cmobject.current) {
+        cmobject.current.destroy();
+        cmobject.current = null;
+      }
+    };
   }, []);
   function changeRightDocument(newDoc) {
     if (!cmobject.current) {
@@ -208478,6 +208498,22 @@ function ReactCodemirrorMergeView6(props) {
     });
     cmobject.current.b.dispatch(transaction);
   }
+  function changeLeftDocument(newDoc) {
+    if (!cmobject.current || cmobject.current.a.state.doc.toString() === newDoc) {
+      return;
+    }
+    var transaction = cmobject.current.a.state.update({
+      changes: {
+        from: 0,
+        to: cmobject.current.a.state.doc.length,
+        insert: newDoc
+      }
+    });
+    cmobject.current.a.dispatch(transaction);
+  }
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    changeLeftDocument(props.editor_content);
+  }, [props.editor_content]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (!cmobject.current) {
       return;
@@ -208491,21 +208527,23 @@ function ReactCodemirrorMergeView6(props) {
     return isDark() ? settingsContext.settingsRef.current.preferred_dark_theme : settingsContext.settingsRef.current.preferred_light_theme;
   }
   function createMergeArea(codearea) {
-    return new _codemirror_merge__WEBPACK_IMPORTED_MODULE_6__.MergeView({
+    var language = props.mode === "javascript" ? (0,_codemirror_lang_javascript__WEBPACK_IMPORTED_MODULE_6__.javascript)() : (0,_codemirror_lang_python__WEBPACK_IMPORTED_MODULE_7__.python)();
+    var readOnlyExtensions = props.readOnly ? [_codemirror_state__WEBPACK_IMPORTED_MODULE_3__.EditorState.readOnly.of(true), _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.EditorView.editable.of(false)] : [];
+    return new _codemirror_merge__WEBPACK_IMPORTED_MODULE_8__.MergeView({
       a: {
         doc: props.editor_content,
-        extensions: [(0,_codemirror_lang_python__WEBPACK_IMPORTED_MODULE_7__.python)(), themeCompartmenta.current.of([]), (0,_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.history)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.lineNumbers)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightActiveLineGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightSpecialChars)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.foldGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.drawSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.dropCursor)(), _codemirror_state__WEBPACK_IMPORTED_MODULE_3__.EditorState.allowMultipleSelections.of(true), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.indentOnInput)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.bracketMatching)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.closeBrackets)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.autocompletion)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.rectangularSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.crosshairCursor)(), (0,_codemirror_search__WEBPACK_IMPORTED_MODULE_11__.highlightSelectionMatches)(), _codemirror_language__WEBPACK_IMPORTED_MODULE_9__.indentUnit.of("    "), highlightField.init(), _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.keymap.of([].concat(_toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.closeBracketsKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.defaultKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.historyKeymap), _toConsumableArray(_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.foldKeymap), _toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.completionKeymap), [_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.indentWithTab])), _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.EditorView.updateListener.of(function (update) {
+        extensions: [language].concat(readOnlyExtensions, [themeCompartmenta.current.of([]), (0,_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.history)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.lineNumbers)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightActiveLineGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightSpecialChars)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.foldGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.drawSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.dropCursor)(), _codemirror_state__WEBPACK_IMPORTED_MODULE_3__.EditorState.allowMultipleSelections.of(true), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.indentOnInput)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.bracketMatching)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.closeBrackets)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.autocompletion)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.rectangularSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.crosshairCursor)(), (0,_codemirror_search__WEBPACK_IMPORTED_MODULE_12__.highlightSelectionMatches)(), _codemirror_language__WEBPACK_IMPORTED_MODULE_10__.indentUnit.of("    "), highlightField.init(), _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.keymap.of([].concat(_toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.closeBracketsKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.defaultKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.historyKeymap), _toConsumableArray(_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.foldKeymap), _toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.completionKeymap), [_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.indentWithTab])), _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.EditorView.updateListener.of(function (update) {
           if (update.docChanged) {
             handleChange(update.state.doc.toString());
           }
-        })]
+        })])
       },
       b: {
         doc: props.right_content,
-        extensions: [(0,_codemirror_lang_python__WEBPACK_IMPORTED_MODULE_7__.python)(), themeCompartmentb.current.of([]), (0,_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.history)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.lineNumbers)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightActiveLineGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightSpecialChars)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.foldGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.drawSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.dropCursor)(), _codemirror_state__WEBPACK_IMPORTED_MODULE_3__.EditorState.allowMultipleSelections.of(true), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.indentOnInput)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.bracketMatching)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.closeBrackets)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.autocompletion)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.rectangularSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.crosshairCursor)(), (0,_codemirror_search__WEBPACK_IMPORTED_MODULE_11__.highlightSelectionMatches)(), _codemirror_language__WEBPACK_IMPORTED_MODULE_9__.indentUnit.of("    "), highlightField.init(), _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.keymap.of([].concat(_toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.closeBracketsKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.defaultKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.historyKeymap), _toConsumableArray(_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.foldKeymap), _toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_10__.completionKeymap), _toConsumableArray(_codemirror_lint__WEBPACK_IMPORTED_MODULE_12__.lintKeymap), [_codemirror_commands__WEBPACK_IMPORTED_MODULE_8__.indentWithTab]))]
+        extensions: [props.mode === "javascript" ? (0,_codemirror_lang_javascript__WEBPACK_IMPORTED_MODULE_6__.javascript)() : (0,_codemirror_lang_python__WEBPACK_IMPORTED_MODULE_7__.python)()].concat(readOnlyExtensions, [themeCompartmentb.current.of([]), (0,_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.history)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.lineNumbers)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightActiveLineGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.highlightSpecialChars)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.foldGutter)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.drawSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.dropCursor)(), _codemirror_state__WEBPACK_IMPORTED_MODULE_3__.EditorState.allowMultipleSelections.of(true), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.indentOnInput)(), (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.bracketMatching)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.closeBrackets)(), (0,_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.autocompletion)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.rectangularSelection)(), (0,_codemirror_view__WEBPACK_IMPORTED_MODULE_4__.crosshairCursor)(), (0,_codemirror_search__WEBPACK_IMPORTED_MODULE_12__.highlightSelectionMatches)(), _codemirror_language__WEBPACK_IMPORTED_MODULE_10__.indentUnit.of("    "), highlightField.init(), _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.keymap.of([].concat(_toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.closeBracketsKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.defaultKeymap), _toConsumableArray(_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.historyKeymap), _toConsumableArray(_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.foldKeymap), _toConsumableArray(_codemirror_autocomplete__WEBPACK_IMPORTED_MODULE_11__.completionKeymap), _toConsumableArray(_codemirror_lint__WEBPACK_IMPORTED_MODULE_13__.lintKeymap), [_codemirror_commands__WEBPACK_IMPORTED_MODULE_9__.indentWithTab]))])
       },
       parent: codearea,
-      revertControls: "b-to-a"
+      revertControls: props.readOnly ? undefined : "b-to-a"
     });
   }
   var switchTheme = function switchTheme(themeName) {
@@ -208514,15 +208552,15 @@ function ReactCodemirrorMergeView6(props) {
     }
     (0,_theme_support__WEBPACK_IMPORTED_MODULE_2__.importTheme)(themeName, settingsContext.settingsRef.current.theme).then(function (theTheme) {
       theme.current = _codemirror_view__WEBPACK_IMPORTED_MODULE_4__.EditorView.theme(theTheme[0]);
-      highlightStyle.current = _codemirror_language__WEBPACK_IMPORTED_MODULE_9__.HighlightStyle.define(theTheme[1]);
+      highlightStyle.current = _codemirror_language__WEBPACK_IMPORTED_MODULE_10__.HighlightStyle.define(theTheme[1]);
       if (cmobject.current.a) {
         cmobject.current.a.dispatch({
-          effects: themeCompartmenta.current.reconfigure([theme.current, (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.syntaxHighlighting)(highlightStyle.current)])
+          effects: themeCompartmenta.current.reconfigure([theme.current, (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.syntaxHighlighting)(highlightStyle.current)])
         });
       }
       if (cmobject.current.b) {
         cmobject.current.b.dispatch({
-          effects: themeCompartmentb.current.reconfigure([theme.current, (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_9__.syntaxHighlighting)(highlightStyle.current)])
+          effects: themeCompartmentb.current.reconfigure([theme.current, (0,_codemirror_language__WEBPACK_IMPORTED_MODULE_10__.syntaxHighlighting)(highlightStyle.current)])
         });
       }
     })["catch"](function (error) {
@@ -208534,7 +208572,9 @@ function ReactCodemirrorMergeView6(props) {
     switchTheme(_current_codemirror_theme());
   }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
   function handleChange(value) {
-    props.handleEditChange(value);
+    if (!props.readOnly) {
+      props.handleEditChange(value);
+    }
   }
   var ccstyle = {
     flex: "1 1 0",

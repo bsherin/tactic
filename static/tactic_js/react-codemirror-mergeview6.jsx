@@ -14,6 +14,7 @@ import {MergeView} from "@codemirror/merge";
 import {EditorView, Decoration, lineNumbers} from "@codemirror/view";
 import {EditorState, Compartment} from "@codemirror/state";
 import {python} from "@codemirror/lang-python";
+import {javascript} from "@codemirror/lang-javascript";
 import {foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap} from '@codemirror/language';
 import {history, defaultKeymap, historyKeymap} from '@codemirror/commands';
 import {highlightSelectionMatches} from '@codemirror/search';
@@ -50,6 +51,14 @@ const highlightField = StateField.define({
 
 function ReactCodemirrorMergeView6(props) {
 
+    props = {
+        readOnly: false,
+        mode: "python",
+        handleEditChange: () => {},
+        saveMe: () => {},
+        ...props
+    };
+
     const code_container_ref = useRef(null);
     const cmobject = useRef(null);
     const themeCompartmenta = useRef(null);
@@ -77,6 +86,12 @@ function ReactCodemirrorMergeView6(props) {
         themeCompartmenta.current = new Compartment();
         themeCompartmentb.current = new Compartment();
         cmobject.current = createMergeArea(code_container_ref.current);
+        return () => {
+            if (cmobject.current) {
+                cmobject.current.destroy();
+                cmobject.current = null;
+            }
+        }
     }, []);
 
     function changeRightDocument(newDoc) {
@@ -88,6 +103,21 @@ function ReactCodemirrorMergeView6(props) {
         });
         cmobject.current.b.dispatch(transaction);
     }
+
+    function changeLeftDocument(newDoc) {
+        if (!cmobject.current || cmobject.current.a.state.doc.toString() === newDoc) {
+            return
+        }
+        const transaction = cmobject.current.a.state.update({
+            changes: {from: 0, to: cmobject.current.a.state.doc.length, insert: newDoc}
+        });
+        cmobject.current.a.dispatch(transaction);
+    }
+
+    useEffect(()=>{
+        changeLeftDocument(props.editor_content);
+    }, [props.editor_content]);
+
     useEffect(()=>{
         if (!cmobject.current) {
             return
@@ -108,11 +138,17 @@ function ReactCodemirrorMergeView6(props) {
 
 
     function createMergeArea(codearea) {
+        const language = props.mode === "javascript" ? javascript() : python();
+        const readOnlyExtensions = props.readOnly ? [
+            EditorState.readOnly.of(true),
+            EditorView.editable.of(false),
+        ] : [];
         return new MergeView({
           a: {
             doc: props.editor_content,
             extensions: [
-                python(),
+                language,
+                ...readOnlyExtensions,
                 themeCompartmenta.current.of([]),
                 history(),
                 lineNumbers(),
@@ -148,7 +184,8 @@ function ReactCodemirrorMergeView6(props) {
           b: {
             doc: props.right_content,
             extensions: [
-              python(),
+                props.mode === "javascript" ? javascript() : python(),
+                ...readOnlyExtensions,
                 themeCompartmentb.current.of([]),
                 history(),
                 lineNumbers(),
@@ -178,9 +215,9 @@ function ReactCodemirrorMergeView6(props) {
                     indentWithTab
                 ])
                 ]
-            },
+          },
           parent: codearea,
-            revertControls: "b-to-a"
+            revertControls: props.readOnly ? undefined : "b-to-a"
         });
     }
 
@@ -218,7 +255,9 @@ function ReactCodemirrorMergeView6(props) {
 
 
     function handleChange(value) {
-        props.handleEditChange(value);
+        if (!props.readOnly) {
+            props.handleEditChange(value);
+        }
     }
 
     let ccstyle = {

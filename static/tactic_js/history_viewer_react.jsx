@@ -1,261 +1,475 @@
 /**
- * Created by bls910
+ * Tile history viewer. Historical source is parsed into the same logical
+ * sections used by Tilemaker, with raw source retained as a fallback.
  */
 
 import "../tactic_css/tactic.scss";
 import "../tactic_css/themeable.scss";
 
-import React from "react";
-import {Fragment, useState, useEffect, memo, useRef, useContext} from "react";
-import { createRoot } from 'react-dom/client';
+import React, {Fragment, memo, useContext, useEffect, useMemo, useRef, useState} from "react";
+import {createRoot} from "react-dom/client";
+import {Button, ButtonGroup, Callout, Collapse, Icon, Tag} from "@blueprintjs/core";
 
-import {MergeViewerApp} from "./merge_viewer_app";
-import {doFlash, StatusContext} from "./toaster"
-import {handleCallback, postPromise, postWithCallback} from "./communication_react"
-import {withErrorDrawer, ErrorDrawerContext} from "./error_drawer";
-import {withStatus} from "./toaster";
-
-import {guid} from "./utilities_react";
+import {ReactCodemirrorMergeView6} from "./react-codemirror-mergeview6";
+import {BpSelect} from "./selector_advanced";
+import {ErrorDrawerContext, withErrorDrawer} from "./error_drawer";
+import {doFlash, StatusContext, withStatus} from "./toaster";
+import {handleCallback, postPromise, postWithCallback} from "./communication_react";
+import {guid, withRegisterActivity} from "./utilities_react";
 import {TacticNavbar} from "./blueprint_navbar";
+import {TacticMenubar} from "./menu_utilities";
 import {TacticSocket, useConnection} from "./tactic_socket";
-import {useCallbackStack, useStateAndRef, withRegisterActivity} from "./utilities_react";
-import {withSettings} from "./settings";
-import {withDialogs, DialogContext} from "./modal_react";
+import {SettingsContext, withSettings} from "./settings";
+import {DialogContext, withDialogs} from "./modal_react";
+import {ICON_BAR_WIDTH} from "./sizing_tools";
+
 
 window.global_id = "a" + guid();
 
-async function history_viewer_main ()  {
+const STATUS_PRESENTATION = {
+    changed: {intent: "warning", label: "changed"},
+    added: {intent: "success", label: "added"},
+    removed: {intent: "danger", label: "removed"},
+    unchanged: {intent: "none", label: "unchanged"},
+};
+
+
+async function history_viewer_main() {
     function gotProps(the_props) {
-        let HistoryViewerAppPlus = withRegisterActivity(withSettings(withDialogs(withErrorDrawer(withStatus(HistoryViewerApp)))));
-        let the_element = <HistoryViewerAppPlus {...the_props}
-                                             controlled={false}
-                                             changeName={null}/>;
-        const domContainer = document.querySelector('#root');
+        const HistoryViewerAppPlus = withRegisterActivity(
+            withSettings(withDialogs(withErrorDrawer(withStatus(HistoryViewerApp))))
+        );
+        const domContainer = document.querySelector("#root");
         const root = createRoot(domContainer);
         root.render(
-            <div style={{display: "flex", flexDirection: "column",
+            <div style={{
+                display: "flex",
+                flexDirection: "column",
                 position: "relative",
-                minHeight: 0, minWidth: 0,
+                minHeight: 0,
+                minWidth: 0,
                 height: "100%",
-                width: "100%"}}>
-                {the_element}
+                width: "100%",
+            }}>
+                <HistoryViewerAppPlus {...the_props} controlled={false}/>
             </div>
-        )
+        );
     }
 
     try {
         history_viewer_props({}, null, gotProps);
-    }
-    catch (e) {
-        let fallback = "History viewer failed to load";
-        if ("message" in e) {
-            fallback = fallback + " " + e.message
-        }
-        const domContainer = document.querySelector('#root');
-        const root = createRoot(domContainer);
-        let the_element = <pre>{fallback}</pre>;
-        root.render(the_element);
+    } catch (error) {
+        const fallback = `History viewer failed to load${error.message ? `: ${error.message}` : ""}`;
+        createRoot(document.querySelector("#root")).render(<pre>{fallback}</pre>);
     }
 }
 
+
 function history_viewer_props(data, registerDirtyMethod, finalCallback) {
-    let tsocket = new TacticSocket("main", 5000, "history_viewer", window.global_id, ()=> {
-        tsocket.attachListener('handle-callback', (task_packet) => {
-            handleCallback(task_packet, window.global_id)
+    const tsocket = new TacticSocket("main", 5000, "history_viewer", window.global_id, () => {
+        tsocket.attachListener("handle-callback", task_packet => {
+            handleCallback(task_packet, window.global_id);
         });
         finalCallback({
             local_id: window.global_id,
-            tsocket: tsocket,
+            tsocket,
             history_list: [],
             resource_name: window.resource_name,
-            edit_content: "",
-            is_repository: false,
-            registerDirtyMethod: registerDirtyMethod
-        })
-    })
+            registerDirtyMethod,
+        });
+    });
 }
 
+
+function statusTag(status) {
+    const presentation = STATUS_PRESENTATION[status] || STATUS_PRESENTATION.unchanged;
+    return <Tag minimal={true} intent={presentation.intent}>{presentation.label}</Tag>;
+}
+
+
+function HistoryNavigator({sections, selectedItemKey, onSelect}) {
+    const [openSections, setOpenSections] = useState(() => {
+        const initialState = {};
+        for (const section of sections) initialState[section.id] = true;
+        return initialState;
+    });
+
+    function toggleSection(sectionId) {
+        setOpenSections(previous => ({
+            ...previous,
+            [sectionId]: !previous[sectionId],
+        }));
+    }
+
+    return (
+        <div className="maker-navigator" style={{height: "100%", overflow: "auto", padding: "8px 6px 16px"}}>
+            {sections.map(section => {
+                const isOpen = openSections[section.id] !== false;
+                return (
+                    <div key={section.id} className="nav-section" style={{marginBottom: 5}}>
+                        <Button variant="minimal"
+                                className="nav-section-button"
+                                icon={section.icon}
+                                fill={true}
+                                alignText="left"
+                                aria-expanded={isOpen}
+                                onClick={() => toggleSection(section.id)}>
+                            <span style={{
+                                alignItems: "center",
+                                display: "flex",
+                                fontWeight: 600,
+                                gap: 7,
+                                minWidth: 0,
+                                width: "100%",
+                            }}>
+                                <span style={{flexGrow: 1}}>{section.title}</span>
+                                <span style={{opacity: 0.65, fontSize: 11}}>{section.items.length}</span>
+                                <Icon icon={isOpen ? "chevron-down" : "chevron-right"} size={12}/>
+                            </span>
+                        </Button>
+                        <Collapse isOpen={isOpen}>
+                            {section.items.map(item => (
+                                <Button key={item.key}
+                                        variant="minimal"
+                                        intent={selectedItemKey === item.key ? "primary" : "none"}
+                                        fill={true}
+                                        alignText="left"
+                                        onClick={() => onSelect(item.key)}
+                                        style={{minHeight: 30, paddingLeft: 20}}>
+                                    <span style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 6,
+                                        minWidth: 0,
+                                        width: "100%",
+                                    }}>
+                                        <span style={{overflow: "hidden", textOverflow: "ellipsis", flexGrow: 1}}>
+                                            {item.name}
+                                        </span>
+                                        {statusTag(item.status)}
+                                    </span>
+                                </Button>
+                            ))}
+                            {section.items.length === 0 &&
+                                <div style={{opacity: 0.5, fontSize: 12, padding: "2px 20px"}}>None</div>}
+                        </Collapse>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+
 function HistoryViewerApp(props) {
-
-    const [edit_content, set_edit_content, edit_content_ref] = useStateAndRef();
-    const [right_content, set_right_content] = useState("");
-    const [history_popup_val, set_history_popup_val] = useState("");
-    const [history_list, set_history_list] = useState(props.history_list);
+    const [historyList, setHistoryList] = useState(props.history_list);
+    const [selectedDate, setSelectedDate] = useState("");
+    const [comparison, setComparison] = useState(null);
+    const [selectedItemKey, setSelectedItemKey] = useState(null);
+    const [currentSource, setCurrentSource] = useState("");
+    const [historicalSource, setHistoricalSource] = useState("");
+    const [showRaw, setShowRaw] = useState(false);
     const [initialized, setInitialized] = useState(false);
+    const [loadMessage, setLoadMessage] = useState("");
+    const requestCounter = useRef(0);
 
-    const [resource_name, ] = useState(props.resource_name);
-    const connection_status = useConnection(props.tsocket, initSocket);
-
-    const savedContent = useRef("");
-
+    const connectionStatus = useConnection(props.tsocket, initSocket);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
-    const dialogFuncs = useContext(DialogContext)
-
-    const pushCallback = useCallbackStack();
-
-    useEffect(()=>{
-        function beforeUnloadFunc(e) {
-            if (_dirty()) {
-                e.preventDefault();
-                e.returnValue = ''
-            }
-            postWithCallback("host", "end_client_session_task", {global_id: window.global_id, force_forward: true})
-        }
-        window.addEventListener("beforeunload", beforeUnloadFunc);
-        return (() => {
-            window.removeEventListener("beforeunload", beforeUnloadFunc)
-        })
-    }, []);
+    const dialogFuncs = useContext(DialogContext);
+    const settingsContext = useContext(SettingsContext);
 
     useEffect(() => {
-        postPromise("host", "get_tile_content_task", {"tile_module_name": window.resource_name})
-            .then((data) => {
-                postPromise("host", "get_checkpoint_dates_task", {"module_name": window.resource_name})
-                    .then((data2) => {
-                        set_history_list(data2.checkpoints);
-                        set_edit_content(data.tile_content);
-                        savedContent.current = data.tile_content;
-                        pushCallback(() => {
-                            setInitialized(true);
-                            set_history_popup_val(data2.checkpoints[0]["update_string"]);
-                            getCheckpointCode(data2.checkpoints[0]["updatestring_for_sort"]);
-                        })
-                    })
-        });
-
+        function beforeUnloadFunc() {
+            postWithCallback("host", "end_client_session_task", {
+                global_id: window.global_id,
+                force_forward: true,
+            });
+        }
+        window.addEventListener("beforeunload", beforeUnloadFunc);
+        initialize().then();
+        return () => window.removeEventListener("beforeunload", beforeUnloadFunc);
     }, []);
 
     function initSocket(theSocket) {
-        theSocket.attachListener("window-open", (data) => window.open(`${$SCRIPT_ROOT}/load_temp_page/${data["the_id"]}`));
-        theSocket.attachListener('close-user-windows', (data) => {
-            if (!(data["originator"] == window.global_id)) {
-                window.close()
-            }
+        theSocket.attachListener("window-open", data => {
+            window.open(`${$SCRIPT_ROOT}/load_temp_page/${data.the_id}`);
         });
-        theSocket.attachListener('doflashUser', doFlash);
-        theSocket.attachListener("endSession", function () {
-            dialogFuncs.showModal("EndSessionDialog", {})
-        })
+        theSocket.attachListener("close-user-windows", data => {
+            if (data.originator !== window.global_id) window.close();
+        });
+        theSocket.attachListener("doflashUser", doFlash);
+        theSocket.attachListener("endSession", () => dialogFuncs.showModal("EndSessionDialog", {}));
     }
 
-    function getCheckpointCode(updatestring_for_sort) {
-        postPromise("host", "get_checkpoint_code_task", {"module_name": resource_name, "updatestring_for_sort": updatestring_for_sort})
-            .then((data) => {
-                    set_right_content(data.module_code);
-                })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error getting checkpoint code",
-                    content: "message" in data ? data.message : ""
-                });
-            });
+    function reportError(title, error) {
+        errorDrawerFuncs.addErrorDrawerEntry({
+            title,
+            content: error && error.message ? error.message : "",
+        });
     }
 
-    function handleSelectChange(new_value) {
-        if (!new_value) return;
-        set_history_popup_val(new_value);
-        for (let item of history_list) {
-            if (item["updatestring"] == new_value){
-                let updatestring_for_sort = item["updatestring_for_sort"];
-                getCheckpointCode(updatestring_for_sort);
-                return
+    async function initialize() {
+        statusFuncs.startSpinner();
+        try {
+            const [currentData, historyData] = await Promise.all([
+                postPromise("host", "get_tile_content_task", {tile_module_name: props.resource_name}),
+                postPromise("host", "get_checkpoint_dates_task", {module_name: props.resource_name}),
+            ]);
+            const checkpoints = historyData.checkpoints || [];
+            setHistoryList(checkpoints);
+            setCurrentSource(currentData.tile_content);
+            if (checkpoints.length === 0) {
+                setLoadMessage("No saved history is available for this tile.");
+                setInitialized(true);
+                return;
             }
+            setSelectedDate(checkpoints[0].updatestring);
+            await loadCheckpoint(checkpoints[0], currentData.tile_content);
+        } catch (error) {
+            setLoadMessage(error && error.message ? error.message : "No saved history is available for this tile.");
+            reportError("Error loading tile history", error);
+        } finally {
+            setInitialized(true);
+            statusFuncs.stopSpinner();
         }
     }
 
-    function handleEditChange(new_code) {
-        set_edit_content(new_code)
-    }
+    async function loadCheckpoint(checkpoint, suppliedCurrentSource = null) {
+        if (!checkpoint) return;
+        const requestId = ++requestCounter.current;
+        statusFuncs.startSpinner();
+        try {
+            const currentCodePromise = suppliedCurrentSource == null
+                ? postPromise("host", "get_tile_content_task", {tile_module_name: props.resource_name})
+                : Promise.resolve({tile_content: suppliedCurrentSource});
+            const [currentData, checkpointData] = await Promise.all([
+                currentCodePromise,
+                postPromise("host", "get_checkpoint_code_task", {
+                    module_name: props.resource_name,
+                    updatestring_for_sort: checkpoint.updatestring_for_sort,
+                }),
+            ]);
+            if (requestId !== requestCounter.current) return;
 
-    function doCheckpointPromise() {
-        return new Promise (async function (resolve, reject) {
-            let data = postPromise("host", "checkpoint_module_task", {"module_name": props.resource_name});
-            if (data.success) {
-                resolve(data)
-            }
-            else {
-                reject(data)
-            }
-        })
-    }
+            const currentCode = currentData.tile_content;
+            const oldCode = checkpointData.module_code;
+            setCurrentSource(currentCode);
+            setHistoricalSource(oldCode);
+            setLoadMessage("");
 
-    function checkpointThenSaveFromLeft() {
-        doCheckpointPromise()
-            .then(function () {
-                postPromise("host", "get_checkpoint_dates_task", {"module_name": resource_name})
-                    .then((data) => {
-                        set_history_list(data["checkpoints"])
-                    })
-                    .catch((data)=>{
-                        errorDrawerFuncs.addErrorDrawerEntry({
-                            title: "Error getting checkpoint dates",
-                            content: "message" in data ? data.message : ""
-                        });
-                    });
-                saveFromLeft()
-            })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error checkpointing module",
-                    content: "message" in data ? data.message : ""
+            try {
+                const parsed = await postPromise("module_viewer", "parse_tile_history_versions", {
+                    current_code: currentCode,
+                    historical_code: oldCode,
                 });
-            })
+                if (requestId !== requestCounter.current) return;
+                setComparison(parsed.comparison);
+                setShowRaw(false);
+                const allItems = parsed.comparison.sections.flatMap(section => section.items);
+                const firstItem = allItems.find(item => item.status !== "unchanged") || allItems[0];
+                setSelectedItemKey(firstItem ? firstItem.key : null);
+            } catch (parseError) {
+                if (requestId !== requestCounter.current) return;
+                setComparison(null);
+                setShowRaw(true);
+                setLoadMessage("This version could not be parsed as a Tilemaker tile. Showing its raw source instead.");
+                reportError("Could not build structured tile history", parseError);
+            }
+        } catch (error) {
+            if (requestId === requestCounter.current) {
+                setLoadMessage("The selected checkpoint could not be loaded.");
+                reportError("Error getting checkpoint", error);
+            }
+        } finally {
+            if (requestId === requestCounter.current) statusFuncs.stopSpinner();
+        }
     }
 
-    function saveFromLeft() {
-        let data_dict = {
-            "module_name": props.resource_name,
-            "module_code": edit_content_ref.current
-        };
-        postPromise("host", "update_from_left_task", data_dict)
-            .then(()=>{
-                statusFuncs.statusMessage("Updated from left")
-            })
-            .catch((data)=>{
-                errorDrawerFuncs.addErrorDrawerEntry({
-                    title: "Error updating from left",
-                    content: "message" in data ? data.message : ""
-                });
-            })
+    async function handleSelectChange(value) {
+        if (!value) return;
+        const checkpoint = historyList.find(item => item.updatestring === value);
+        if (!checkpoint) return;
+        setSelectedDate(value);
+        await loadCheckpoint(checkpoint);
     }
 
-    function _dirty() {
-        return edit_content_ref.current != savedContent.current
+    async function restoreSelectedCheckpoint() {
+        if (!historicalSource || historicalSource === currentSource) return;
+        const shouldRestore = window.confirm(
+            `Restore ${props.resource_name} from ${selectedDate}? The current version will be checkpointed first.`
+        );
+        if (!shouldRestore) return;
+        statusFuncs.startSpinner();
+        try {
+            await postPromise("host", "checkpoint_module_task", {module_name: props.resource_name});
+            await postPromise("host", "update_from_left_task", {
+                module_name: props.resource_name,
+                module_code: historicalSource,
+            });
+            const historyData = await postPromise("host", "get_checkpoint_dates_task", {
+                module_name: props.resource_name,
+            });
+            setHistoryList(historyData.checkpoints || []);
+            const checkpoint = (historyData.checkpoints || []).find(
+                item => item.updatestring === selectedDate
+            );
+            if (checkpoint) await loadCheckpoint(checkpoint);
+            statusFuncs.statusMessage("Checkpoint restored");
+        } catch (error) {
+            reportError("Error restoring checkpoint", error);
+        } finally {
+            statusFuncs.stopSpinner();
+        }
     }
 
-    let option_list = history_list.map((item) => item["updatestring"]);
+    const selectedItem = useMemo(() => {
+        if (!comparison || !selectedItemKey) return null;
+        for (const section of comparison.sections) {
+            const found = section.items.find(item => item.key === selectedItemKey);
+            if (found) return found;
+        }
+        return null;
+    }, [comparison, selectedItemKey]);
+
+    const optionList = historyList.map(item => item.updatestring);
+    const menuSpecs = {
+        History: [
+            {
+                name_text: "Restore selected checkpoint",
+                icon_name: "history",
+                click_handler: restoreSelectedCheckpoint,
+            },
+            {
+                name_text: showRaw ? "Show structured comparison" : "Show raw source",
+                icon_name: showRaw ? "diagram-tree" : "code",
+                click_handler: () => setShowRaw(!showRaw),
+            },
+        ],
+    };
+    const disabledMenuItems = [];
+    const canRestore = Boolean(historicalSource) && historicalSource !== currentSource;
+    if (!canRestore) disabledMenuItems.push("Restore selected checkpoint");
+    if (!comparison) {
+        disabledMenuItems.push(showRaw ? "Show structured comparison" : "Show raw source");
+    }
+
+    const outerClass = `merge-viewer-outer history-viewer-outer ${
+        settingsContext.isDark() ? "bp6-dark" : "light-theme"
+    }`;
+    const editorItem = showRaw ? {
+        key: "raw-source",
+        name: "Raw tile source",
+        status: currentSource === historicalSource ? "unchanged" : "changed",
+        mode: "python",
+        current_text: currentSource,
+        historical_text: historicalSource,
+    } : selectedItem;
+
     return (
-            <Fragment>
-                {!props.controlled} {
-                    <TacticNavbar is_authenticated={window.is_authenticated}
-                                  selected={null}
-                                  show_api_links={true}
-                                  user_name={window.username}/>
-                }
-                <MergeViewerApp connection_status={connection_status}
-                                initialized={initialized}
-                                resource_name={props.resource_name}
-                                option_list={option_list}
-                                select_val={history_popup_val}
-                                edit_content={edit_content_ref.current}
-                                right_content={right_content}
-                                handleSelectChange={handleSelectChange}
-                                handleEditChange={handleEditChange}
-                                saveHandler={checkpointThenSaveFromLeft}
-            />
+        <Fragment>
+            {!props.controlled &&
+                <TacticNavbar is_authenticated={window.is_authenticated}
+                              selected={null}
+                              show_api_links={true}
+                              user_name={window.username}/>
+            }
+            <div className={outerClass} style={{
+                width: `calc(100% - ${ICON_BAR_WIDTH}px)`,
+                flexGrow: 1,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
+                position: "relative",
+            }}>
+                <TacticMenubar menu_specs={menuSpecs}
+                               disabled_items={disabledMenuItems}
+                               connection_status={connectionStatus}
+                               showIconBar={true}
+                               showErrorDrawerButton={true}
+                               showMetadataDrawerButton={false}
+                               showAssistantDrawerButton={true}
+                               showSettingsDrawerButton={true}
+                               showPoolDrawerButton={true}
+                               showRefresh={false}
+                               showClose={false}
+                               resource_name={props.resource_name}
+                               controlled={false}/>
+
+                <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "7px 14px",
+                    borderBottom: "1px solid rgba(128, 128, 128, .3)",
+                }}>
+                    <strong style={{marginRight: "auto"}}>Current vs.</strong>
+                    <BpSelect options={optionList}
+                              onChange={handleSelectChange}
+                              buttonIcon="history"
+                              value={selectedDate}/>
+                    <ButtonGroup>
+                        <Button icon={showRaw ? "diagram-tree" : "code"}
+                                disabled={!comparison}
+                                onClick={() => setShowRaw(!showRaw)}>
+                            {showRaw ? "Structured" : "Raw source"}
+                        </Button>
+                        <Button icon="history"
+                                intent="warning"
+                                disabled={!canRestore}
+                                onClick={restoreSelectedCheckpoint}>
+                            Restore
+                        </Button>
+                    </ButtonGroup>
+                </div>
+
+                {loadMessage &&
+                    <Callout intent={comparison ? "warning" : "primary"} style={{margin: 10}}>
+                        {loadMessage}
+                    </Callout>}
+
+                {initialized && editorItem &&
+                    <div style={{display: "flex", flex: "1 1 0", minHeight: 0, minWidth: 0}}>
+                        {!showRaw && comparison &&
+                            <div style={{
+                                width: 300,
+                                flex: "0 0 300px",
+                                borderRight: "1px solid rgba(128, 128, 128, .3)",
+                                minHeight: 0,
+                            }}>
+                                <HistoryNavigator sections={comparison.sections}
+                                                  selectedItemKey={selectedItemKey}
+                                                  onSelect={setSelectedItemKey}/>
+                            </div>}
+                        <div style={{
+                            display: "flex",
+                            flex: "1 1 0",
+                            flexDirection: "column",
+                            minHeight: 0,
+                            minWidth: 0,
+                            padding: "0 14px 14px",
+                        }}>
+                            <div style={{display: "flex", alignItems: "center", gap: 8, padding: "8px 0 5px"}}>
+                                <strong>{editorItem.name}</strong>
+                                {statusTag(editorItem.status)}
+                                <span style={{marginLeft: "auto", opacity: 0.7}}>Current</span>
+                                <span style={{marginLeft: "calc(50% - 100px)", opacity: 0.7}}>{selectedDate}</span>
+                            </div>
+                            <ReactCodemirrorMergeView6 key={`${editorItem.key}:${editorItem.mode}`}
+                                                       editor_content={editorItem.current_text}
+                                                       right_content={editorItem.historical_text}
+                                                       mode={editorItem.mode}
+                                                       readOnly={true}/>
+                        </div>
+                    </div>}
+            </div>
         </Fragment>
-    )
+    );
 }
 
 
 HistoryViewerApp = memo(HistoryViewerApp);
 
 if (!window.in_context) {
-    try {
-        history_viewer_main().then();
-    }
-    catch(e) {
-        console.log("Error at the top level")
-    }
+    history_viewer_main().then();
 }
