@@ -146,28 +146,30 @@ def build_tile_history_comparison(current, historical):
     sections = [
         {
             "id": "overview",
-            "title": "Tile",
+            "title": "Definition",
             "icon": "application",
             "items": [_single_item(
                 "overview", "Tile definition", overview_current, overview_historical,
                 kind="structured",
             )],
         },
-        {
-            "id": "globals",
-            "title": "Globals",
-            "icon": "globe",
-            "items": [_single_item(
-                "globals", "globals", current.get("globals_info"), historical.get("globals_info")
-            )],
-        },
+        # {
+        #     "id": "globals",
+        #     "title": "Globals",
+        #     "icon": "globe",
+        #     "items": [_single_item(
+        #         "globals", "globals", current.get("globals_info"), historical.get("globals_info")
+        #     )],
+        # },
         {
             "id": "render_content",
             "title": "Required",
             "icon": "control",
             "items": [_single_item(
-                "render_content", "render_content",
-                current.get("render_content_info"), historical.get("render_content_info")
+                "globals", "globals", current.get("globals_info"), historical.get("globals_info")),
+                _single_item(
+                    "render_content", "render_content", current.get("render_content_info"),
+                    historical.get("render_content_info")
             )],
         },
         {

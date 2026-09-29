@@ -214268,10 +214268,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/tag/tag.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/callout/callout.js");
 /* harmony import */ var _react_codemirror_mergeview6__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./react-codemirror-mergeview6 */ "./static/tactic_js/react-codemirror-mergeview6.jsx");
 /* harmony import */ var _selector_advanced__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./selector_advanced */ "./static/tactic_js/selector_advanced.jsx");
@@ -214428,11 +214428,59 @@ function HistoryNavigator(_ref) {
     _useState2 = _slicedToArray(_useState, 2),
     openSections = _useState2[0],
     setOpenSections = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(false),
+    _useState4 = _slicedToArray(_useState3, 2),
+    showChangesOnly = _useState4[0],
+    setShowChangesOnly = _useState4[1];
   function toggleSection(sectionId) {
     setOpenSections(function (previous) {
       return _objectSpread(_objectSpread({}, previous), {}, _defineProperty({}, sectionId, !previous[sectionId]));
     });
   }
+  function setAllSections(isOpen) {
+    var nextState = {};
+    var _iterator2 = _createForOfIteratorHelper(sections),
+      _step2;
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var section = _step2.value;
+        nextState[section.id] = isOpen;
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+    setOpenSections(nextState);
+  }
+  function toggleChangesOnly() {
+    var nextValue = !showChangesOnly;
+    setShowChangesOnly(nextValue);
+    if (nextValue) {
+      var selectedItem = sections.flatMap(function (section) {
+        return section.items;
+      }).find(function (item) {
+        return item.key === selectedItemKey;
+      });
+      if (selectedItem && selectedItem.status === "unchanged") {
+        var firstChangedItem = sections.flatMap(function (section) {
+          return section.items;
+        }).find(function (item) {
+          return item.status !== "unchanged";
+        });
+        if (firstChangedItem) onSelect(firstChangedItem.key);
+      }
+    }
+  }
+  var visibleSections = showChangesOnly ? sections.map(function (section) {
+    return _objectSpread(_objectSpread({}, section), {}, {
+      items: section.items.filter(function (item) {
+        return item.status !== "unchanged";
+      })
+    });
+  }).filter(function (section) {
+    return section.items.length > 0;
+  }) : sections;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("div", {
     className: "maker-navigator",
     style: {
@@ -214440,7 +214488,39 @@ function HistoryNavigator(_ref) {
       overflow: "auto",
       padding: "8px 6px 16px"
     }
-  }, sections.map(function (section) {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.ButtonGroup, {
+    fill: false,
+    variant: "minimal",
+    style: {
+      marginBottom: 8,
+      display: "flex",
+      justifyContent: "flex-end"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Button, {
+    icon: "collapse-all",
+    size: "small",
+    title: "Collapse all sections",
+    "aria-label": "Collapse all sections",
+    onClick: function onClick() {
+      return setAllSections(false);
+    }
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Button, {
+    icon: "expand-all",
+    size: "small",
+    title: "Expand all sections",
+    "aria-label": "Expand all sections",
+    onClick: function onClick() {
+      return setAllSections(true);
+    }
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Button, {
+    icon: "delta",
+    size: "small",
+    active: showChangesOnly,
+    intent: showChangesOnly ? "primary" : "none",
+    "aria-pressed": showChangesOnly,
+    title: "Show only changed, added, or removed items",
+    onClick: toggleChangesOnly
+  })), visibleSections.map(function (section) {
     var isOpen = openSections[section.id] !== false;
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("div", {
       key: section.id,
@@ -214448,7 +214528,7 @@ function HistoryNavigator(_ref) {
       style: {
         marginBottom: 5
       }
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Button, {
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Button, {
       variant: "minimal",
       className: "nav-section-button",
       icon: section.icon,
@@ -214476,13 +214556,13 @@ function HistoryNavigator(_ref) {
         opacity: 0.65,
         fontSize: 11
       }
-    }, section.items.length), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Icon, {
+    }, section.items.length), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.Icon, {
       icon: isOpen ? "chevron-down" : "chevron-right",
       size: 12
-    }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.Collapse, {
+    }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Collapse, {
       isOpen: isOpen
     }, section.items.map(function (item) {
-      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Button, {
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Button, {
         key: item.key,
         variant: "minimal",
         intent: selectedItemKey === item.key ? "primary" : "none",
@@ -214517,45 +214597,51 @@ function HistoryNavigator(_ref) {
         padding: "2px 20px"
       }
     }, "None")));
-  }));
+  }), showChangesOnly && visibleSections.length === 0 && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("div", {
+    style: {
+      opacity: 0.65,
+      fontSize: 12,
+      padding: "8px 10px"
+    }
+  }, "No changed items"));
 }
 function HistoryViewerApp(props) {
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(props.history_list),
-    _useState4 = _slicedToArray(_useState3, 2),
-    historyList = _useState4[0],
-    setHistoryList = _useState4[1];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(""),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(props.history_list),
     _useState6 = _slicedToArray(_useState5, 2),
-    selectedDate = _useState6[0],
-    setSelectedDate = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(null),
+    historyList = _useState6[0],
+    setHistoryList = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(""),
     _useState8 = _slicedToArray(_useState7, 2),
-    comparison = _useState8[0],
-    setComparison = _useState8[1];
+    selectedDate = _useState8[0],
+    setSelectedDate = _useState8[1];
   var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(null),
     _useState0 = _slicedToArray(_useState9, 2),
-    selectedItemKey = _useState0[0],
-    setSelectedItemKey = _useState0[1];
-  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(""),
+    comparison = _useState0[0],
+    setComparison = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(null),
     _useState10 = _slicedToArray(_useState1, 2),
-    currentSource = _useState10[0],
-    setCurrentSource = _useState10[1];
+    selectedItemKey = _useState10[0],
+    setSelectedItemKey = _useState10[1];
   var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(""),
     _useState12 = _slicedToArray(_useState11, 2),
-    historicalSource = _useState12[0],
-    setHistoricalSource = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(false),
+    currentSource = _useState12[0],
+    setCurrentSource = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(""),
     _useState14 = _slicedToArray(_useState13, 2),
-    showRaw = _useState14[0],
-    setShowRaw = _useState14[1];
+    historicalSource = _useState14[0],
+    setHistoricalSource = _useState14[1];
   var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(false),
     _useState16 = _slicedToArray(_useState15, 2),
-    initialized = _useState16[0],
-    setInitialized = _useState16[1];
-  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(""),
+    showRaw = _useState16[0],
+    setShowRaw = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(false),
     _useState18 = _slicedToArray(_useState17, 2),
-    loadMessage = _useState18[0],
-    setLoadMessage = _useState18[1];
+    initialized = _useState18[0],
+    setInitialized = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_2__.useState)(""),
+    _useState20 = _slicedToArray(_useState19, 2),
+    loadMessage = _useState20[0],
+    setLoadMessage = _useState20[1];
   var requestCounter = (0,react__WEBPACK_IMPORTED_MODULE_2__.useRef)(0);
   var connectionStatus = (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_12__.useConnection)(props.tsocket, initSocket);
   var statusFuncs = (0,react__WEBPACK_IMPORTED_MODULE_2__.useContext)(_toaster__WEBPACK_IMPORTED_MODULE_7__.StatusContext);
@@ -214873,20 +214959,20 @@ function HistoryViewerApp(props) {
   }
   var selectedItem = (0,react__WEBPACK_IMPORTED_MODULE_2__.useMemo)(function () {
     if (!comparison || !selectedItemKey) return null;
-    var _iterator2 = _createForOfIteratorHelper(comparison.sections),
-      _step2;
+    var _iterator3 = _createForOfIteratorHelper(comparison.sections),
+      _step3;
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var section = _step2.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var section = _step3.value;
         var found = section.items.find(function (item) {
           return item.key === selectedItemKey;
         });
         if (found) return found;
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator2.f();
+      _iterator3.f();
     }
     return null;
   }, [comparison, selectedItemKey]);
@@ -214953,27 +215039,23 @@ function HistoryViewerApp(props) {
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("div", {
     style: {
       display: "flex",
-      alignItems: "center",
+      justifyContent: "flex-end",
       gap: 10,
       padding: "7px 14px",
       borderBottom: "1px solid rgba(128, 128, 128, .3)"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("strong", {
-    style: {
-      marginRight: "auto"
-    }
-  }, "Current vs."), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_selector_advanced__WEBPACK_IMPORTED_MODULE_5__.BpSelect, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_selector_advanced__WEBPACK_IMPORTED_MODULE_5__.BpSelect, {
     options: optionList,
     onChange: handleSelectChange,
     buttonIcon: "history",
     value: selectedDate
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Button, {
     icon: showRaw ? "diagram-tree" : "code",
     disabled: !comparison,
     onClick: function onClick() {
       return setShowRaw(!showRaw);
     }
-  }, showRaw ? "Structured" : "Raw source"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Button, {
+  }, showRaw ? "Structured" : "Raw source"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Button, {
     icon: "history",
     intent: "warning",
     disabled: !canRestore,
@@ -215013,19 +215095,21 @@ function HistoryViewerApp(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("div", {
     style: {
       display: "flex",
-      alignItems: "center",
+      justifyContent: "center",
       gap: 8,
       padding: "8px 0 5px"
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("strong", null, editorItem.name), statusTag(editorItem.status), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("span", {
     style: {
       marginLeft: "auto",
-      opacity: 0.7
+      opacity: 0.7,
+      paddingRight: 7
     }
   }, "Current"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("span", {
     style: {
       marginLeft: "calc(50% - 100px)",
-      opacity: 0.7
+      opacity: 0.7,
+      paddingRight: 7
     }
   }, selectedDate)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement(_react_codemirror_mergeview6__WEBPACK_IMPORTED_MODULE_4__.ReactCodemirrorMergeView6, {
     key: "".concat(editorItem.key, ":").concat(editorItem.mode),

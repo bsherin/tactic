@@ -93,6 +93,7 @@ function HistoryNavigator({sections, selectedItemKey, onSelect}) {
         for (const section of sections) initialState[section.id] = true;
         return initialState;
     });
+    const [showChangesOnly, setShowChangesOnly] = useState(false);
 
     function toggleSection(sectionId) {
         setOpenSections(previous => ({
@@ -101,9 +102,59 @@ function HistoryNavigator({sections, selectedItemKey, onSelect}) {
         }));
     }
 
+    function setAllSections(isOpen) {
+        const nextState = {};
+        for (const section of sections) nextState[section.id] = isOpen;
+        setOpenSections(nextState);
+    }
+
+    function toggleChangesOnly() {
+        const nextValue = !showChangesOnly;
+        setShowChangesOnly(nextValue);
+        if (nextValue) {
+            const selectedItem = sections
+                .flatMap(section => section.items)
+                .find(item => item.key === selectedItemKey);
+            if (selectedItem && selectedItem.status === "unchanged") {
+                const firstChangedItem = sections
+                    .flatMap(section => section.items)
+                    .find(item => item.status !== "unchanged");
+                if (firstChangedItem) onSelect(firstChangedItem.key);
+            }
+        }
+    }
+
+    const visibleSections = showChangesOnly
+        ? sections
+            .map(section => ({
+                ...section,
+                items: section.items.filter(item => item.status !== "unchanged"),
+            }))
+            .filter(section => section.items.length > 0)
+        : sections;
+
     return (
         <div className="maker-navigator" style={{height: "100%", overflow: "auto", padding: "8px 6px 16px"}}>
-            {sections.map(section => {
+            <ButtonGroup fill={false} variant="minimal" style={{marginBottom: 8, display: "flex", justifyContent: "flex-end"}}>
+                <Button icon="collapse-all"
+                        size="small"
+                        title="Collapse all sections"
+                        aria-label="Collapse all sections"
+                        onClick={() => setAllSections(false)}/>
+                <Button icon="expand-all"
+                        size="small"
+                        title="Expand all sections"
+                        aria-label="Expand all sections"
+                        onClick={() => setAllSections(true)}/>
+                <Button icon="delta"
+                        size="small"
+                        active={showChangesOnly}
+                        intent={showChangesOnly ? "primary" : "none"}
+                        aria-pressed={showChangesOnly}
+                        title="Show only changed, added, or removed items"
+                        onClick={toggleChangesOnly}/>
+            </ButtonGroup>
+            {visibleSections.map(section => {
                 const isOpen = openSections[section.id] !== false;
                 return (
                     <div key={section.id} className="nav-section" style={{marginBottom: 5}}>
@@ -156,6 +207,10 @@ function HistoryNavigator({sections, selectedItemKey, onSelect}) {
                     </div>
                 );
             })}
+            {showChangesOnly && visibleSections.length === 0 &&
+                <div style={{opacity: 0.65, fontSize: 12, padding: "8px 10px"}}>
+                    No changed items
+                </div>}
         </div>
     );
 }
@@ -398,12 +453,11 @@ function HistoryViewerApp(props) {
 
                 <div style={{
                     display: "flex",
-                    alignItems: "center",
+                    justifyContent: "flex-end",
                     gap: 10,
                     padding: "7px 14px",
                     borderBottom: "1px solid rgba(128, 128, 128, .3)",
                 }}>
-                    <strong style={{marginRight: "auto"}}>Current vs.</strong>
                     <BpSelect options={optionList}
                               onChange={handleSelectChange}
                               buttonIcon="history"
@@ -449,11 +503,11 @@ function HistoryViewerApp(props) {
                             minWidth: 0,
                             padding: "0 14px 14px",
                         }}>
-                            <div style={{display: "flex", alignItems: "center", gap: 8, padding: "8px 0 5px"}}>
+                            <div style={{display: "flex", justifyContent: "center", gap: 8, padding: "8px 0 5px"}}>
                                 <strong>{editorItem.name}</strong>
                                 {statusTag(editorItem.status)}
-                                <span style={{marginLeft: "auto", opacity: 0.7}}>Current</span>
-                                <span style={{marginLeft: "calc(50% - 100px)", opacity: 0.7}}>{selectedDate}</span>
+                                <span style={{marginLeft: "auto", opacity: 0.7, paddingRight: 7}}>Current</span>
+                                <span style={{marginLeft: "calc(50% - 100px)", opacity: 0.7, paddingRight: 7}}>{selectedDate}</span>
                             </div>
                             <ReactCodemirrorMergeView6 key={`${editorItem.key}:${editorItem.mode}`}
                                                        editor_content={editorItem.current_text}
