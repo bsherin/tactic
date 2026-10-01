@@ -1,4 +1,5 @@
 # /opt/homebrew/bin/aws sso login
+export AWS_PROFILE=AWSAdministratorAccess-924818964184
 aws ecs describe-services \
   --cluster tactic-cluster \
   --services $(aws ecs list-services --cluster tactic-cluster --query 'serviceArns[]' --output text) \
