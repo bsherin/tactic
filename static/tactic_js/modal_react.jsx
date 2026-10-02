@@ -10,6 +10,7 @@ import {
     Classes,
     Button,
     InputGroup,
+    TextArea,
     Intent
 } from "@blueprintjs/core";
 
@@ -26,7 +27,7 @@ export {DialogContext, withDialogs}
 
 const DialogContext = createContext(null);
 
-const dialogDict = {ModalDialog, PresentationDialog, ReportDialog, EndSessionDialog,
+const dialogDict = {ModalDialog, CommitMessageDialog, PresentationDialog, ReportDialog, EndSessionDialog,
     SelectDialog, SelectAddressDialog, SelectResourceDialog, ConfirmDialog, FileImportDialog};
 
 function withDialogs(WrappedComponent) {
@@ -86,6 +87,56 @@ function withDialogs(WrappedComponent) {
     }
     return memo(ModalFunc)
 }
+
+function CommitMessageDialog(props) {
+    const [message, setMessage] = useState("");
+    const settingsContext = useContext(SettingsContext);
+    const inputRef = useRef(null);
+
+    function submit(event) {
+        if (event) event.preventDefault();
+        props.handleSubmit(message);
+        props.handleClose();
+    }
+
+    function cancel() {
+        if (props.handleCancel) props.handleCancel();
+        props.handleClose();
+    }
+
+    return (
+        <Dialog isOpen={props.isOpen}
+                className={settingsContext.isDark() ? "bp6-dark" : ""}
+                title="Save and checkpoint"
+                onClose={cancel}
+                onOpened={() => inputRef.current && inputRef.current.focus()}
+                canEscapeKeyClose={true}>
+            <form onSubmit={submit}>
+                <DialogBody>
+                    <FormGroup label="Commit message (optional)"
+                               helperText="Describe what changed in this checkpoint.">
+                        <TextArea fill={true}
+                                  autoResize={true}
+                                  rows={4}
+                                  maxLength={1000}
+                                  inputRef={element => inputRef.current = element}
+                                  placeholder="What changed?"
+                                  value={message}
+                                  onChange={event => setMessage(event.target.value)}/>
+                    </FormGroup>
+                </DialogBody>
+                <DialogFooter actions={
+                    <Fragment>
+                        <Button onClick={cancel}>Cancel</Button>
+                        <Button intent={Intent.PRIMARY} type="submit">Save and checkpoint</Button>
+                    </Fragment>
+                }/>
+            </form>
+        </Dialog>
+    );
+}
+
+CommitMessageDialog = memo(CommitMessageDialog);
 
 function ModalDialog(props) {
     props = {
@@ -800,4 +851,3 @@ function EndSessionDialog(props) {
     )
 
 }
-

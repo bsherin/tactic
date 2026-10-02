@@ -922,11 +922,20 @@ function CreatorApp(props) {
         if (!am_selected()) {
             return false
         }
+        let commitMessage;
+        try {
+            commitMessage = await dialogFuncs.showModalPromise("CommitMessageDialog", {
+                handleClose: dialogFuncs.hideModal,
+            });
+        } catch (e) {
+            if (e !== "canceled") _logErrorStopSpinner("Error opening checkpoint dialog", e);
+            return false;
+        }
         statusFuncs.startSpinner();
         statusFuncs.statusMessage("Checkpointing");
         try {
             await doSavePromise();
-            await doCheckpointPromise();
+            await doCheckpointPromise(commitMessage);
             statusFuncs.statusMessage("Saved and checkpointed");
             statusFuncs.stopSpinner()
         } catch (e) {
@@ -1048,8 +1057,11 @@ function CreatorApp(props) {
         })
     }
 
-    function doCheckpointPromise() {
-        return postPromise("host", "checkpoint_module_task", {"module_name": _cProp("resource_name")});
+    function doCheckpointPromise(message = "") {
+        return postPromise("host", "checkpoint_module_task", {
+            "module_name": _cProp("resource_name"),
+            "message": message,
+        });
     }
 
     function setLineNumbers(line_number_dict, identifier, dispatch) {

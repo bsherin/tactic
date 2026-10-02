@@ -125,9 +125,14 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
         historical_parser = TileParser(data_dict["historical_code"], handler_methods)
         current = self.assemble_parse_information(current_parser)
         historical = self.assemble_parse_information(historical_parser)
+        comparison_args = {}
+        if "current_metadata" in data_dict:
+            comparison_args["current_metadata"] = data_dict["current_metadata"]
+        if data_dict.get("historical_metadata_available", False):
+            comparison_args["historical_metadata"] = data_dict.get("historical_metadata")
         return {
             "success": True,
-            "comparison": build_tile_history_comparison(current, historical),
+            "comparison": build_tile_history_comparison(current, historical, **comparison_args),
         }
 
     @staticmethod

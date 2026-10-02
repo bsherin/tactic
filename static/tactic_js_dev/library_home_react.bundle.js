@@ -192172,17 +192172,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/dialog/dialog.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/common/classes.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
+/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/dialog/dialog.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/dialog/dialogBody.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/textArea.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/dialog/dialogFooter.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/common/intent.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/dialog/dialogBody.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/dialog/dialogFooter.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/common/classes.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
 /* harmony import */ var _selector_advanced__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./selector_advanced */ "./static/tactic_js/selector_advanced.jsx");
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
@@ -192218,6 +192219,7 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 var DialogContext = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.createContext)(null);
 var dialogDict = {
   ModalDialog: ModalDialog,
+  CommitMessageDialog: CommitMessageDialog,
   PresentationDialog: PresentationDialog,
   ReportDialog: ReportDialog,
   EndSessionDialog: EndSessionDialog,
@@ -192279,6 +192281,59 @@ function withDialogs(WrappedComponent) {
   }
   return /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ModalFunc);
 }
+function CommitMessageDialog(props) {
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+    _useState4 = _slicedToArray(_useState3, 2),
+    message = _useState4[0],
+    setMessage = _useState4[1];
+  var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
+  var _inputRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  function submit(event) {
+    if (event) event.preventDefault();
+    props.handleSubmit(message);
+    props.handleClose();
+  }
+  function cancel() {
+    if (props.handleCancel) props.handleCancel();
+    props.handleClose();
+  }
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
+    isOpen: props.isOpen,
+    className: settingsContext.isDark() ? "bp6-dark" : "",
+    title: "Save and checkpoint",
+    onClose: cancel,
+    onOpened: function onOpened() {
+      return _inputRef.current && _inputRef.current.focus();
+    },
+    canEscapeKeyClose: true
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
+    onSubmit: submit
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.DialogBody, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
+    label: "Commit message (optional)",
+    helperText: "Describe what changed in this checkpoint."
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.TextArea, {
+    fill: true,
+    autoResize: true,
+    rows: 4,
+    maxLength: 1000,
+    inputRef: function inputRef(element) {
+      return _inputRef.current = element;
+    },
+    placeholder: "What changed?",
+    value: message,
+    onChange: function onChange(event) {
+      return setMessage(event.target.value);
+    }
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.DialogFooter, {
+    actions: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
+      onClick: cancel
+    }, "Cancel"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
+      intent: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.Intent.PRIMARY,
+      type: "submit"
+    }, "Save and checkpoint"))
+  })));
+}
+CommitMessageDialog = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(CommitMessageDialog);
 function ModalDialog(props) {
   props = _objectSpread({
     existing_names: [],
@@ -192373,7 +192428,7 @@ function ModalDialog(props) {
     try {
       for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
         var checkbox = _step2.value;
-        var new_item = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+        var new_item = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
           checked: checkbox_states[checkbox.checkname],
           label: checkbox.checktext,
           id: checkbox.checkname,
@@ -192388,7 +192443,7 @@ function ModalDialog(props) {
       _iterator2.f();
     }
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: props.isOpen,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: props.title,
@@ -192400,18 +192455,18 @@ function ModalDialog(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
     onSubmit: _submitHandler
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_BODY
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_BODY
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     label: props.field_title,
     helperText: warning_text_ref.current
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.InputGroup, {
     inputRef: _refHandler,
     onChange: _changeHandler,
     value: current_value_ref.current
   })), checkbox_items.length != 0 && checkbox_items), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER_ACTIONS
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER_ACTIONS
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
     onClick: _cancelHandler
   }, "Cancel"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
@@ -192425,27 +192480,27 @@ function PresentationDialog(props) {
     existing_names: [],
     default_name: ""
   }, props);
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    show = _useState4[0],
-    set_show = _useState4[1];
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState6 = _slicedToArray(_useState5, 2),
-    save_as_collection = _useState6[0],
-    set_save_as_collection = _useState6[1];
+    show = _useState6[0],
+    set_show = _useState6[1];
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    save_as_collection = _useState8[0],
+    set_save_as_collection = _useState8[1];
   var _useStateAndRef7 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_2__.useStateAndRef)(null),
     _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
     collection_name = _useStateAndRef8[0],
     set_collection_name = _useStateAndRef8[1],
     collection_name_ref = _useStateAndRef8[2];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
-    _useState8 = _slicedToArray(_useState7, 2),
-    use_dark_theme = _useState8[0],
-    set_use_dark_theme = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState0 = _slicedToArray(_useState9, 2),
-    warning_text = _useState0[0],
-    set_warning_text = _useState0[1];
+    use_dark_theme = _useState0[0],
+    set_use_dark_theme = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+    _useState10 = _slicedToArray(_useState1, 2),
+    warning_text = _useState10[0],
+    set_warning_text = _useState10[1];
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
   var input_ref = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -192497,7 +192552,7 @@ function PresentationDialog(props) {
   function _refHandler(the_ref) {
     input_ref.current = the_ref;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: show,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: "Create Presentation",
@@ -192506,30 +192561,30 @@ function PresentationDialog(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
     onSubmit: _submitHandler
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_BODY
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_BODY
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
     checked: use_dark_theme,
     label: "Use Dark Theme",
     id: "use_dark_check",
     key: "use_dark_check",
     onChange: _changeDark
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
     checked: save_as_collection,
     label: "Save As Collection",
     id: "save_as_collection",
     key: "save_as_collection",
     onChange: _changeSaveCollection
-  }), save_as_collection && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+  }), save_as_collection && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     label: "Collection Name",
     helperText: warning_text
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.InputGroup, {
     inputRef: _refHandler,
     onChange: _changeName,
     value: collection_name_ref.current
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER_ACTIONS
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER_ACTIONS
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
     onClick: _cancelHandler
   }, "Cancel"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
@@ -192543,34 +192598,34 @@ function ReportDialog(props) {
     existing_names: [],
     default_name: "NewReport"
   }, props);
-  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState10 = _slicedToArray(_useState1, 2),
-    show = _useState10[0],
-    set_show = _useState10[1];
   var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState12 = _slicedToArray(_useState11, 2),
-    save_as_collection = _useState12[0],
-    set_save_as_collection = _useState12[1];
-  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    show = _useState12[0],
+    set_show = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState14 = _slicedToArray(_useState13, 2),
-    collection_name = _useState14[0],
-    set_collection_name = _useState14[1];
+    save_as_collection = _useState14[0],
+    set_save_as_collection = _useState14[1];
   var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState16 = _slicedToArray(_useState15, 2),
-    use_dark_theme = _useState16[0],
-    set_use_dark_theme = _useState16[1];
-  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+    collection_name = _useState16[0],
+    set_collection_name = _useState16[1];
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState18 = _slicedToArray(_useState17, 2),
-    warning_text = _useState18[0],
-    set_warning_text = _useState18[1];
-  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    use_dark_theme = _useState18[0],
+    set_use_dark_theme = _useState18[1];
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
     _useState20 = _slicedToArray(_useState19, 2),
-    collapsible = _useState20[0],
-    set_collapsible = _useState20[1];
+    warning_text = _useState20[0],
+    set_warning_text = _useState20[1];
   var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState22 = _slicedToArray(_useState21, 2),
-    include_summaries = _useState22[0],
-    set_include_summaries = _useState22[1];
+    collapsible = _useState22[0],
+    set_collapsible = _useState22[1];
+  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState24 = _slicedToArray(_useState23, 2),
+    include_summaries = _useState24[0],
+    set_include_summaries = _useState24[1];
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
   var input_ref = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -192628,7 +192683,7 @@ function ReportDialog(props) {
   function _refHandler(the_ref) {
     input_ref.current = the_ref;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: show,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: "Create Report",
@@ -192637,42 +192692,42 @@ function ReportDialog(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
     onSubmit: _submitHandler
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_BODY
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_BODY
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
     checked: collapsible,
     label: "Collapsible Sections",
     id: "collapse_checked",
     key: "collapse_checked",
     onChange: _changeCollapsible
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
     checked: include_summaries,
     label: "Include Summaries",
     id: "include_summaries",
     key: "include_summaries",
     onChange: _changeIncludeSummaries
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
     checked: use_dark_theme,
     label: "Use Dark Theme",
     id: "use_dark_check",
     key: "use_dark_check",
     onChange: _changeDark
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
     checked: save_as_collection,
     label: "Save As Collection",
     id: "save_as_collection",
     key: "save_as_collection",
     onChange: _changeSaveCollection
-  }), save_as_collection && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+  }), save_as_collection && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     label: "Collection Name",
     helperText: warning_text
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.InputGroup, {
     inputRef: _refHandler,
     onChange: _changeName,
     value: collection_name
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER_ACTIONS
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER_ACTIONS
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
     onClick: _cancelHandler
   }, "Cancel"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
@@ -192685,14 +192740,14 @@ function SelectDialog(props) {
   props = _objectSpread({
     checkboxes: null
   }, props);
-  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState24 = _slicedToArray(_useState23, 2),
-    show = _useState24[0],
-    set_show = _useState24[1];
-  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState26 = _slicedToArray(_useState25, 2),
-    value = _useState26[0],
-    set_value = _useState26[1];
+    show = _useState26[0],
+    set_show = _useState26[1];
+  var _useState27 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+    _useState28 = _slicedToArray(_useState27, 2),
+    value = _useState28[0],
+    set_value = _useState28[1];
   var _useStateAndRef9 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_2__.useStateAndRef)({}),
     _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
     checkbox_states = _useStateAndRef0[0],
@@ -192752,7 +192807,7 @@ function SelectDialog(props) {
     try {
       for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
         var checkbox = _step4.value;
-        var new_item = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Checkbox, {
+        var new_item = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Checkbox, {
           checked: checkbox_states[checkbox.checkname],
           label: checkbox.checktext,
           id: checkbox.checkname,
@@ -192768,24 +192823,24 @@ function SelectDialog(props) {
       _iterator4.f();
     }
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: show,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: props.title,
     onClose: _cancelHandler,
     canEscapeKeyClose: true
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_BODY
-  }, props.option_list.length > 0 && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_BODY
+  }, props.option_list.length > 0 && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     title: props.select_label
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_selector_advanced__WEBPACK_IMPORTED_MODULE_1__.BpSelect, {
     options: props.option_list,
     onChange: _handleChange,
     value: value
   })), checkbox_items.length != 0 && checkbox_items), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER_ACTIONS
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER_ACTIONS
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
     onClick: _cancelHandler
   }, "Cancel"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
@@ -192795,18 +192850,18 @@ function SelectDialog(props) {
 }
 SelectDialog = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(SelectDialog);
 function SelectAddressDialog(props) {
-  var _useState27 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState28 = _slicedToArray(_useState27, 2),
-    show = _useState28[0],
-    set_show = _useState28[1];
-  var _useState29 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+  var _useState29 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState30 = _slicedToArray(_useState29, 2),
-    new_name = _useState30[0],
-    set_new_name = _useState30[1];
-  var _useState31 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(),
+    show = _useState30[0],
+    set_show = _useState30[1];
+  var _useState31 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
     _useState32 = _slicedToArray(_useState31, 2),
-    path = _useState32[0],
-    set_path = _useState32[1];
+    new_name = _useState32[0],
+    set_new_name = _useState32[1];
+  var _useState33 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(),
+    _useState34 = _slicedToArray(_useState33, 2),
+    path = _useState34[0],
+    set_path = _useState34[1];
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     set_show(true);
@@ -192829,15 +192884,15 @@ function SelectAddressDialog(props) {
     set_show(false);
     props.handleClose();
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: show,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: props.title,
     onClose: _cancelHandler,
     canEscapeKeyClose: true
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_BODY
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_BODY
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     label: "Target Directory",
     inline: true
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_pool_tree__WEBPACK_IMPORTED_MODULE_4__.PoolAddressSelector, {
@@ -192845,15 +192900,15 @@ function SelectAddressDialog(props) {
     tsocket: props.tsocket,
     select_type: props.selectType,
     setValue: set_path
-  })), props.showName && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+  })), props.showName && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     label: "New Name"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.InputGroup, {
     onChange: _changeName,
     value: new_name
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER_ACTIONS
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER_ACTIONS
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
     onClick: _cancelHandler
   }, "Cancel"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
@@ -192864,26 +192919,26 @@ function SelectAddressDialog(props) {
 SelectAddressDialog = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(SelectAddressDialog);
 var res_types = ["collection", "project", "tile", "list", "code"];
 function SelectResourceDialog(props) {
-  var _useState33 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState34 = _slicedToArray(_useState33, 2),
-    show = _useState34[0],
-    set_show = _useState34[1];
-  var _useState35 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+  var _useState35 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
     _useState36 = _slicedToArray(_useState35, 2),
-    value = _useState36[0],
-    set_value = _useState36[1];
-  var _useState37 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("collection"),
+    show = _useState36[0],
+    set_show = _useState36[1];
+  var _useState37 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
     _useState38 = _slicedToArray(_useState37, 2),
-    type = _useState38[0],
-    set_type = _useState38[1];
-  var _useState39 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    value = _useState38[0],
+    set_value = _useState38[1];
+  var _useState39 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)("collection"),
     _useState40 = _slicedToArray(_useState39, 2),
-    option_names = _useState40[0],
-    set_option_names = _useState40[1];
-  var _useState41 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    type = _useState40[0],
+    set_type = _useState40[1];
+  var _useState41 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
     _useState42 = _slicedToArray(_useState41, 2),
-    selected_resource = _useState42[0],
-    set_selected_resource = _useState42[1];
+    option_names = _useState42[0],
+    set_option_names = _useState42[1];
+  var _useState43 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState44 = _slicedToArray(_useState43, 2),
+    selected_resource = _useState44[0],
+    set_selected_resource = _useState44[1];
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
   var pushCallback = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_2__.useCallbackStack)();
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
@@ -192920,30 +192975,30 @@ function SelectResourceDialog(props) {
     set_show(false);
     props.handleClose();
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: show,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: "Select a library resource",
     onClose: _cancelHandler,
     canEscapeKeyClose: true
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_BODY
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_BODY
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     label: "Resource Type"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_selector_advanced__WEBPACK_IMPORTED_MODULE_1__.BpSelect, {
     options: res_types,
     onChange: _handleTypeChange,
     value: type
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.FormGroup, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.FormGroup, {
     label: "Specific Resource"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_selector_advanced__WEBPACK_IMPORTED_MODULE_1__.BpSelect, {
     options: option_names,
     onChange: _handleResourceChange,
     value: selected_resource
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.DIALOG_FOOTER_ACTIONS
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DIALOG_FOOTER_ACTIONS
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
     onClick: _cancelHandler
   }, "Cancel"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
@@ -192953,11 +193008,11 @@ function SelectResourceDialog(props) {
 }
 SelectResourceDialog = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(SelectResourceDialog);
 SelectResourceDialog.propTypes = {
-  handleSubmit: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().func),
-  handleClose: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().func),
-  handleCancel: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().func),
-  submit_text: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().string),
-  cancel_text: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().string)
+  handleSubmit: (prop_types__WEBPACK_IMPORTED_MODULE_17___default().func),
+  handleClose: (prop_types__WEBPACK_IMPORTED_MODULE_17___default().func),
+  handleCancel: (prop_types__WEBPACK_IMPORTED_MODULE_17___default().func),
+  submit_text: (prop_types__WEBPACK_IMPORTED_MODULE_17___default().string),
+  cancel_text: (prop_types__WEBPACK_IMPORTED_MODULE_17___default().string)
 };
 function ConfirmDialog(props) {
   props = _objectSpread({
@@ -192965,10 +193020,10 @@ function ConfirmDialog(props) {
     cancel_text: "Cancel",
     handleCancel: null
   }, props);
-  var _useState43 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState44 = _slicedToArray(_useState43, 2),
-    show = _useState44[0],
-    set_show = _useState44[1];
+  var _useState45 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState46 = _slicedToArray(_useState45, 2),
+    show = _useState46[0],
+    set_show = _useState46[1];
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     set_show(true);
@@ -192985,7 +193040,7 @@ function ConfirmDialog(props) {
       props.handleCancel();
     }
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: show,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: props.title,
@@ -192994,7 +193049,7 @@ function ConfirmDialog(props) {
     enforceFocus: true,
     usePortal: false,
     canEscapeKeyClose: true
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DialogBody, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, props.text_body)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.DialogFooter, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.DialogBody, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, props.text_body)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.DialogFooter, {
     actions: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
       onClick: _cancelHandler
     }, props.cancel_text), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
@@ -193006,10 +193061,10 @@ function ConfirmDialog(props) {
 }
 ConfirmDialog = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ConfirmDialog);
 function EndSessionDialog(props) {
-  var _useState45 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
-    _useState46 = _slicedToArray(_useState45, 2),
-    show = _useState46[0],
-    set_show = _useState46[1];
+  var _useState47 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+    _useState48 = _slicedToArray(_useState47, 2),
+    show = _useState48[0],
+    set_show = _useState48[1];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     set_show(true);
   }, []);
@@ -193018,7 +193073,7 @@ function EndSessionDialog(props) {
     window.open($SCRIPT_ROOT + "/logout/" + window.global_id, "_self");
   }
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Dialog, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Dialog, {
     isOpen: show,
     className: settingsContext.isDark() ? "bp6-dark" : "",
     title: props.title,
@@ -193026,7 +193081,7 @@ function EndSessionDialog(props) {
     enforceFocus: true,
     usePortal: false,
     canEscapeKeyClose: true
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.DialogBody, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, "Your session has timed out.")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.DialogFooter, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.DialogBody, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, "Your session has timed out.")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.DialogFooter, {
     actions: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
       type: "submit",
       intent: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.Intent.PRIMARY,

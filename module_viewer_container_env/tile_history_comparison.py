@@ -17,6 +17,9 @@ PRESENTATION_FIELDS = {
     "scrollTop",
 }
 
+METADATA_VOLATILE_FIELDS = {"updated", "mdata_uid"}
+_MISSING = object()
+
 
 def _clean(value):
     """Remove editor/source-location details that are not tile content."""
@@ -79,6 +82,51 @@ def _structured_text(item):
     return json.dumps(_clean(item), indent=2, sort_keys=True, ensure_ascii=False)
 
 
+def _clean_metadata(value):
+    """Remove fields which change on every save but carry no tile meaning."""
+    if not isinstance(value, dict):
+        return copy.deepcopy(value)
+    return {
+        key: copy.deepcopy(item)
+        for key, item in value.items()
+        if key not in METADATA_VOLATILE_FIELDS
+    }
+
+
+def _metadata_text(value):
+    if value is None:
+        return ""
+    return json.dumps(_clean_metadata(value), indent=2, sort_keys=True, ensure_ascii=False)
+
+
+def _metadata_item(current, historical=_MISSING):
+    if historical is _MISSING:
+        return {
+            "key": "metadata:metadata",
+            "name": "Metadata",
+            "status": "unavailable",
+            "kind": "structured",
+            "mode": "python",
+            "current_text": _metadata_text(current),
+            "historical_text": json.dumps({
+                "history_notice": "Metadata was not stored with this legacy history entry."
+            }, indent=2),
+        }
+    return {
+        "key": "metadata:metadata",
+        "name": "Metadata",
+        "status": (
+            "unchanged"
+            if _clean_metadata(current) == _clean_metadata(historical)
+            else "changed"
+        ),
+        "kind": "structured",
+        "mode": "python",
+        "current_text": _metadata_text(current),
+        "historical_text": _metadata_text(historical),
+    }
+
+
 def _status(current, historical):
     if current is None:
         return "removed"
@@ -130,7 +178,8 @@ def _list_items(section_id, current_items, historical_items, kind="structured", 
     return result
 
 
-def build_tile_history_comparison(current, historical):
+def build_tile_history_comparison(current, historical, current_metadata=_MISSING,
+                                  historical_metadata=_MISSING):
     """Build a Tilemaker-shaped, JSON-serializable comparison model."""
     overview_current = {
         "tile_type": current.get("tile_type"),
@@ -234,7 +283,16 @@ def build_tile_history_comparison(current, historical):
         },
     ]
 
-    counts = {name: 0 for name in ("changed", "added", "removed", "unchanged")}
+    if current_metadata is not _MISSING or historical_metadata is not _MISSING:
+        current_value = None if current_metadata is _MISSING else current_metadata
+        sections.insert(1, {
+            "id": "metadata",
+            "title": "Metadata",
+            "icon": "properties",
+            "items": [_metadata_item(current_value, historical_metadata)],
+        })
+
+    counts = {name: 0 for name in ("changed", "added", "removed", "unchanged", "unavailable")}
     for section in sections:
         section["counts"] = {name: 0 for name in counts}
         for item in section["items"]:

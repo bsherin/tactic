@@ -31,6 +31,7 @@ const STATUS_PRESENTATION = {
     added: {intent: "success", label: "added"},
     removed: {intent: "danger", label: "removed"},
     unchanged: {intent: "none", label: "unchanged"},
+    unavailable: {intent: "none", label: "unavailable"},
 };
 
 
@@ -84,6 +85,32 @@ function history_viewer_props(data, registerDirtyMethod, finalCallback) {
 function statusTag(status) {
     const presentation = STATUS_PRESENTATION[status] || STATUS_PRESENTATION.unchanged;
     return <Tag minimal={true} intent={presentation.intent}>{presentation.label}</Tag>;
+}
+
+
+function checkpointIdentity(checkpoint, index = 0) {
+    return checkpoint.checkpoint_id || `${checkpoint.updatestring_for_sort}:${index}`;
+}
+
+
+function buildHistoryOptions(historyList) {
+    const minuteCounts = {};
+    for (const checkpoint of historyList) {
+        minuteCounts[checkpoint.updatestring] = (minuteCounts[checkpoint.updatestring] || 0) + 1;
+    }
+    const labelCounts = {};
+    return historyList.map((checkpoint, index) => {
+        let label = minuteCounts[checkpoint.updatestring] > 1
+            ? (checkpoint.updatestring_detailed || checkpoint.updatestring)
+            : checkpoint.updatestring;
+        labelCounts[label] = (labelCounts[label] || 0) + 1;
+        if (labelCounts[label] > 1) label = `${label} (${labelCounts[label]})`;
+        return {
+            checkpoint,
+            id: checkpointIdentity(checkpoint, index),
+            label,
+        };
+    });
 }
 
 
@@ -151,7 +178,7 @@ function HistoryNavigator({sections, selectedItemKey, onSelect}) {
                         active={showChangesOnly}
                         intent={showChangesOnly ? "primary" : "none"}
                         aria-pressed={showChangesOnly}
-                        title="Show only changed, added, or removed items"
+                        title="Show only changed, added, removed, or unavailable items"
                         onClick={toggleChangesOnly}/>
             </ButtonGroup>
             {visibleSections.map(section => {
@@ -218,7 +245,7 @@ function HistoryNavigator({sections, selectedItemKey, onSelect}) {
 
 function HistoryViewerApp(props) {
     const [historyList, setHistoryList] = useState(props.history_list);
-    const [selectedDate, setSelectedDate] = useState("");
+    const [selectedCheckpointId, setSelectedCheckpointId] = useState("");
     const [comparison, setComparison] = useState(null);
     const [selectedItemKey, setSelectedItemKey] = useState(null);
     const [currentSource, setCurrentSource] = useState("");
@@ -279,8 +306,8 @@ function HistoryViewerApp(props) {
                 setInitialized(true);
                 return;
             }
-            setSelectedDate(checkpoints[0].updatestring);
-            await loadCheckpoint(checkpoints[0], currentData.tile_content);
+            setSelectedCheckpointId(checkpointIdentity(checkpoints[0], 0));
+            await loadCheckpoint(checkpoints[0], currentData);
         } catch (error) {
             setLoadMessage(error && error.message ? error.message : "No saved history is available for this tile.");
             reportError("Error loading tile history", error);
@@ -290,18 +317,19 @@ function HistoryViewerApp(props) {
         }
     }
 
-    async function loadCheckpoint(checkpoint, suppliedCurrentSource = null) {
+    async function loadCheckpoint(checkpoint, suppliedCurrentData = null) {
         if (!checkpoint) return;
         const requestId = ++requestCounter.current;
         statusFuncs.startSpinner();
         try {
-            const currentCodePromise = suppliedCurrentSource == null
+            const currentCodePromise = suppliedCurrentData == null
                 ? postPromise("host", "get_tile_content_task", {tile_module_name: props.resource_name})
-                : Promise.resolve({tile_content: suppliedCurrentSource});
+                : Promise.resolve(suppliedCurrentData);
             const [currentData, checkpointData] = await Promise.all([
                 currentCodePromise,
                 postPromise("host", "get_checkpoint_code_task", {
                     module_name: props.resource_name,
+                    checkpoint_id: checkpoint.checkpoint_id,
                     updatestring_for_sort: checkpoint.updatestring_for_sort,
                 }),
             ]);
@@ -317,12 +345,17 @@ function HistoryViewerApp(props) {
                 const parsed = await postPromise("module_viewer", "parse_tile_history_versions", {
                     current_code: currentCode,
                     historical_code: oldCode,
+                    current_metadata: currentData.metadata,
+                    historical_metadata: checkpointData.metadata,
+                    historical_metadata_available: checkpointData.metadata_available,
                 });
                 if (requestId !== requestCounter.current) return;
                 setComparison(parsed.comparison);
                 setShowRaw(false);
                 const allItems = parsed.comparison.sections.flatMap(section => section.items);
-                const firstItem = allItems.find(item => item.status !== "unchanged") || allItems[0];
+                const firstItem = allItems.find(item =>
+                    ["changed", "added", "removed"].includes(item.status)
+                ) || allItems.find(item => item.status === "unavailable") || allItems[0];
                 setSelectedItemKey(firstItem ? firstItem.key : null);
             } catch (parseError) {
                 if (requestId !== requestCounter.current) return;
@@ -343,21 +376,24 @@ function HistoryViewerApp(props) {
 
     async function handleSelectChange(value) {
         if (!value) return;
-        const checkpoint = historyList.find(item => item.updatestring === value);
-        if (!checkpoint) return;
-        setSelectedDate(value);
-        await loadCheckpoint(checkpoint);
+        const option = historyOptions.find(item => item.label === value);
+        if (!option) return;
+        setSelectedCheckpointId(option.id);
+        await loadCheckpoint(option.checkpoint);
     }
 
     async function restoreSelectedCheckpoint() {
         if (!historicalSource || historicalSource === currentSource) return;
         const shouldRestore = window.confirm(
-            `Restore ${props.resource_name} from ${selectedDate}? The current version will be checkpointed first.`
+            `Restore ${props.resource_name} from ${selectedLabel}? The current version will be checkpointed first.`
         );
         if (!shouldRestore) return;
         statusFuncs.startSpinner();
         try {
-            await postPromise("host", "checkpoint_module_task", {module_name: props.resource_name});
+            await postPromise("host", "checkpoint_module_task", {
+                module_name: props.resource_name,
+                message: `Automatic checkpoint before restoring ${selectedLabel}`,
+            });
             await postPromise("host", "update_from_left_task", {
                 module_name: props.resource_name,
                 module_code: historicalSource,
@@ -367,7 +403,7 @@ function HistoryViewerApp(props) {
             });
             setHistoryList(historyData.checkpoints || []);
             const checkpoint = (historyData.checkpoints || []).find(
-                item => item.updatestring === selectedDate
+                (item, index) => checkpointIdentity(item, index) === selectedCheckpointId
             );
             if (checkpoint) await loadCheckpoint(checkpoint);
             statusFuncs.statusMessage("Checkpoint restored");
@@ -387,7 +423,14 @@ function HistoryViewerApp(props) {
         return null;
     }, [comparison, selectedItemKey]);
 
-    const optionList = historyList.map(item => item.updatestring);
+    const historyOptions = useMemo(() => buildHistoryOptions(historyList), [historyList]);
+    const optionList = historyOptions.map(item => item.label);
+    const selectedOption = historyOptions.find(item => item.id === selectedCheckpointId);
+    const selectedCheckpoint = selectedOption ? selectedOption.checkpoint : null;
+    const selectedLabel = selectedOption ? selectedOption.label : "";
+    const selectedMessage = selectedCheckpoint && selectedCheckpoint.message
+        ? selectedCheckpoint.message.trim()
+        : "";
     const menuSpecs = {
         History: [
             {
@@ -454,14 +497,38 @@ function HistoryViewerApp(props) {
                 <div style={{
                     display: "flex",
                     justifyContent: "flex-end",
+                    alignItems: "center",
                     gap: 10,
                     padding: "7px 14px",
                     borderBottom: "1px solid rgba(128, 128, 128, .3)",
                 }}>
+                    {selectedCheckpoint &&
+                        <div style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            flex: "1 1 0",
+                            minWidth: 0,
+                        }}>
+                            <Tag minimal={true} intent={selectedCheckpoint.is_checkpoint ? "primary" : "none"}>
+                                {selectedCheckpoint.is_checkpoint ? "Checkpoint" : "Automatic save"}
+                            </Tag>
+                            <span title={selectedMessage}
+                                  style={{
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      opacity: selectedMessage ? 1 : 0.6,
+                                  }}>
+                                {selectedMessage || (selectedCheckpoint.is_checkpoint
+                                    ? "No commit message"
+                                    : "Saved automatically")}
+                            </span>
+                        </div>}
                     <BpSelect options={optionList}
                               onChange={handleSelectChange}
                               buttonIcon="history"
-                              value={selectedDate}/>
+                              value={selectedLabel}/>
                     <ButtonGroup>
                         <Button icon={showRaw ? "diagram-tree" : "code"}
                                 disabled={!comparison}
@@ -507,7 +574,7 @@ function HistoryViewerApp(props) {
                                 <strong>{editorItem.name}</strong>
                                 {statusTag(editorItem.status)}
                                 <span style={{marginLeft: "auto", opacity: 0.7, paddingRight: 7}}>Current</span>
-                                <span style={{marginLeft: "calc(50% - 100px)", opacity: 0.7, paddingRight: 7}}>{selectedDate}</span>
+                                <span style={{marginLeft: "calc(50% - 100px)", opacity: 0.7, paddingRight: 7}}>{selectedLabel}</span>
                             </div>
                             <ReactCodemirrorMergeView6 key={`${editorItem.key}:${editorItem.mode}`}
                                                        editor_content={editorItem.current_text}

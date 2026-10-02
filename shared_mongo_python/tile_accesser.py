@@ -1,6 +1,7 @@
 import re
 import datetime
 import copy
+import uuid
 from bson import ObjectId
 from utils import utcnow
 
@@ -289,11 +290,40 @@ class TileAccess(object):
 
     def create_recent_checkpoint(self, module_name, username=None):
         doc = self.get_tile_doc(module_name, username)
-        recent_history = doc.get("recent_history", [])
-        recent_history.append({"updated": doc["metadata"]["updated"],
-                               "tile_module": doc["tile_module"]})
-        self.db[self.get_tile_collection_name(username)].update_one({"tile_module_name": module_name},
-                                                      {'$set': {"recent_history": recent_history}})
+        checkpoint = self.build_history_entry(doc)
+        self.db[self.get_tile_collection_name(username)].update_one(
+            {"tile_module_name": module_name},
+            {"$push": {"recent_history": checkpoint}}
+        )
+
+    @staticmethod
+    def build_history_entry(doc, message=None, is_checkpoint=False):
+        """Build a history record without changing the saved tile document.
+
+        ``metadata`` and the checkpoint fields are optional additions to the
+        historical schema, so existing history records remain readable.
+        """
+        checkpoint = {
+            "history_id": str(uuid.uuid4()),
+            "updated": doc["metadata"]["updated"],
+            "tile_module": copy.deepcopy(doc["tile_module"]),
+            "metadata": copy.deepcopy(doc["metadata"]),
+        }
+        if is_checkpoint:
+            checkpoint["is_checkpoint"] = True
+            checkpoint["message"] = message or ""
+        return checkpoint
+
+    def create_checkpoint(self, module_name, message=None, username=None):
+        doc = self.get_tile_doc(module_name, username)
+        if doc is None:
+            return False
+        checkpoint = self.build_history_entry(doc, message=message, is_checkpoint=True)
+        self.db[self.get_tile_collection_name(username)].update_one(
+            {"tile_module_name": module_name},
+            {"$push": {"history": checkpoint}}
+        )
+        return True
 
     def rename_tile(self, old_name, new_name):
         if not self.tile_module_name_exists(old_name):
@@ -358,61 +388,83 @@ class TileAccess(object):
         self.db[self.tile_collection_name()].update_one({"tile_module_name": module_name},
                                                       {'$set': {"recent_history": recent_history}})
 
-    def clear_old_recent_history(self, module_name):
-        tile_dict = self.get_tile_doc(module_name)
-        if "recent_history" not in tile_dict:
-            return
-
+    @staticmethod
+    def prune_recent_history(history_entries, now=None):
+        """Apply the rolling autosave policy while retaining protected entries."""
         recent_history = []
-        yesterday = utcnow() - datetime.timedelta(days=1)
+        history_by_old_date = {}
+        now = now or utcnow()
+        yesterday = now - datetime.timedelta(days=1)
         yesterday_date = yesterday.date()
         # We want to keep every element of the recent history from yesterday or today
-        # Plus we want to keep the last entry from each date that appears.
-        for cp in tile_dict["recent_history"]:
-            cp_date = cp["updated"].date()
-            if cp_date > yesterday_date:  # If it's more recent than yesterday, keep it.
+        # Plus the last entry from each older date. Explicit checkpoints are
+        # protected even if one is ever stored in recent_history.
+        for cp in history_entries:
+            updated = cp.get("updated")
+            if cp.get("is_checkpoint") or not isinstance(updated, datetime.datetime):
                 recent_history.append(cp)
-            else:
-                found = False
-                for i, rh_item in enumerate(recent_history):
-                    if cp_date == rh_item["updated"].date():
-                        if cp["updated"] > rh_item["updated"]:
-                            recent_history[i] = cp
-                        found = True
-                        break
-                if not found:
-                    recent_history.append(cp)
-        recent_history.sort(key=lambda x: x["updated"].strftime("%Y%m%d%H%M%S"))
+                continue
+            cp_date = updated.date()
+            if cp_date >= yesterday_date:
+                recent_history.append(cp)
+                continue
+            previous = history_by_old_date.get(cp_date)
+            if previous is None or updated > previous["updated"]:
+                history_by_old_date[cp_date] = cp
+        recent_history.extend(history_by_old_date.values())
+        recent_history.sort(key=lambda x: (
+            x.get("updated").strftime("%Y%m%d%H%M%S%f")
+            if isinstance(x.get("updated"), datetime.datetime) else ""
+        ))
+        return recent_history
+
+    def clear_old_recent_history(self, module_name):
+        tile_dict = self.get_tile_doc(module_name)
+        if not tile_dict or "recent_history" not in tile_dict:
+            return
+        recent_history = self.prune_recent_history(tile_dict["recent_history"])
         self.set_recent_history(module_name, recent_history)
 
     def get_checkpoint_history(self, module_name, include_code=False):
         tile_dict = self.get_tile_doc(module_name)
         checkpoints = []
         history_list = []
+        if tile_dict is None:
+            return checkpoints
+
+        def append_checkpoint(cp, is_checkpoint, source, source_index):
+            updatestring, updatestring_for_sort = self.get_timestrings(cp["updated"])
+            fractional_seconds = cp["updated"].strftime("%f").rstrip("0")
+            updatestring_detailed = f'{updatestring}:{cp["updated"].strftime("%S")}'
+            if fractional_seconds:
+                updatestring_detailed += f".{fractional_seconds}"
+            result = {
+                "updatestring": updatestring,
+                "updatestring_detailed": updatestring_detailed,
+                "updatestring_for_sort": updatestring_for_sort,
+                "checkpoint_id": cp.get(
+                    "history_id", f'{source}:{source_index}:{cp["updated"].isoformat()}'
+                ),
+                "message": cp.get("message", ""),
+                "is_checkpoint": cp.get("is_checkpoint", is_checkpoint),
+            }
+            if include_code:
+                result["tile_module"] = cp["tile_module"]
+                result["metadata_available"] = cp.get("metadata") is not None
+                if result["metadata_available"]:
+                    result["metadata"] = self.simple_process_metadata(copy.deepcopy(cp["metadata"]))
+            checkpoints.append(result)
+
         if "history" in tile_dict:
             history = tile_dict["history"]
-            for cp in history:
+            for index, cp in enumerate(history):
                 history_list.append(cp["updated"])
-                updatestring, updatestring_for_sort = self.get_timestrings(cp["updated"])
-                if include_code:
-                    checkpoints.append({"updatestring": updatestring,
-                                        "updatestring_for_sort": updatestring_for_sort,
-                                        "tile_module": cp["tile_module"]})
-                else:
-                    checkpoints.append({"updatestring": updatestring,
-                                        "updatestring_for_sort": updatestring_for_sort})
+                append_checkpoint(cp, True, "history", index)
         if "recent_history" in tile_dict:
             recent_history = tile_dict["recent_history"]
-            for cp in recent_history:
+            for index, cp in enumerate(recent_history):
                 if cp["updated"] not in history_list:
-                    updatestring, updatestring_for_sort = self.get_timestrings(cp["updated"])
-                    if include_code:
-                        checkpoints.append({"updatestring": updatestring,
-                                            "updatestring_for_sort": updatestring_for_sort,
-                                            "tile_module": cp["tile_module"]})
-                    else:
-                        checkpoints.append({"updatestring": updatestring,
-                                            "updatestring_for_sort": updatestring_for_sort})
+                    append_checkpoint(cp, False, "recent", index)
 
         checkpoints.sort(key=lambda x: x["updatestring_for_sort"])
         checkpoints.reverse()

@@ -1,3 +1,4 @@
+import copy
 import uuid
 import re
 
@@ -68,13 +69,11 @@ class TileTasksMixin:
     def checkpoint_module_task(self, data):
         the_user = self.get_user_from_data(data)
         module_name = data["module_name"]
-        doc = the_user.get_tile_doc(module_name)
-        if doc is None:
+        message = data.get("message", "")
+        if not isinstance(message, str):
+            message = str(message)
+        if not the_user.create_checkpoint(module_name, message=message.strip()):
             return {"success": False, "message": "Tile not found."}
-        history = doc.get("history", [])
-        history.append({"updated": doc["metadata"]["updated"],
-                        "tile_module": doc["tile_module"]})
-        the_user.update_tile_from_doc(module_name, {"history": history})
         result = {"success": True, "message": "Module successfully saved and checkpointed",
                   "alert_type": "alert-success"}
         return result
@@ -83,10 +82,13 @@ class TileTasksMixin:
     def get_tile_content_task(self, data):
         the_user = self.get_user_from_data(data)
         tile_module_name = data["tile_module_name"]
-        tile_content = the_user.get_tile_content(tile_module_name)
-        if tile_content is None:
+        tile_data = the_user.get_tile_content_with_metadata(tile_module_name)
+        if tile_data is None or tile_data["tile_module"] is None:
             raise TileModuleNotFoundError(f"Tile module {tile_module_name} not found.")
-        return {"tile_content": tile_content, "success": True}
+        metadata = tile_data.get("metadata")
+        if metadata is not None:
+            metadata = the_user.simple_process_metadata(copy.deepcopy(metadata))
+        return {"tile_content": tile_data["tile_module"], "metadata": metadata, "success": True}
 
     @task_worthy
     def get_tile_names_task(self, data):
@@ -276,12 +278,22 @@ class TileTasksMixin:
     @task_worthy
     def get_checkpoint_code_task(self, data):
         the_user = self.get_user_from_data(data)
-        updatestring_for_sort = data["updatestring_for_sort"]
+        checkpoint_id = data.get("checkpoint_id")
+        updatestring_for_sort = data.get("updatestring_for_sort")
         module_name = data["module_name"]
         checkpoints = the_user.get_checkpoint_history(module_name, True)
         for cp in checkpoints:
-            if cp["updatestring_for_sort"] == updatestring_for_sort:
-                return {"success": True, "module_code": cp["tile_module"]}
+            id_matches = checkpoint_id is not None and cp["checkpoint_id"] == checkpoint_id
+            legacy_lookup_matches = checkpoint_id is None and cp["updatestring_for_sort"] == updatestring_for_sort
+            if id_matches or legacy_lookup_matches:
+                return {
+                    "success": True,
+                    "module_code": cp["tile_module"],
+                    "metadata": cp.get("metadata"),
+                    "metadata_available": cp.get("metadata_available", False),
+                    "message": cp.get("message", ""),
+                    "is_checkpoint": cp.get("is_checkpoint", False),
+                }
         return {"success": False, "message": "Checkpoint not found", "alert_type": "alert-warning"}
 
     @task_worthy

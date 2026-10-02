@@ -40,8 +40,11 @@ class TileHistoryComparisonTests(unittest.TestCase):
 
         comparison = build_tile_history_comparison(current, historical)
         globals_item = next(
-            section for section in comparison["sections"] if section["id"] == "globals"
-        )["items"][0]
+            item
+            for section in comparison["sections"]
+            for item in section["items"]
+            if item["name"] == "globals"
+        )
 
         self.assertEqual(globals_item["status"], "unchanged")
 
@@ -104,6 +107,35 @@ class TileHistoryComparisonTests(unittest.TestCase):
         )["items"][0]
 
         self.assertEqual(item["current_text"], "const answer = 42;")
+
+    def test_metadata_is_compared_without_per_save_fields(self):
+        comparison = build_tile_history_comparison(
+            parsed_tile(),
+            parsed_tile(),
+            current_metadata={"tags": "new", "notes": "hello", "updated": "now", "mdata_uid": "a"},
+            historical_metadata={"tags": "old", "notes": "hello", "updated": "then", "mdata_uid": "b"},
+        )
+        metadata = next(
+            section for section in comparison["sections"] if section["id"] == "metadata"
+        )["items"][0]
+
+        self.assertEqual(metadata["status"], "changed")
+        self.assertIn('"tags": "new"', metadata["current_text"])
+        self.assertNotIn("mdata_uid", metadata["current_text"])
+        self.assertNotIn("updated", metadata["current_text"])
+
+    def test_legacy_checkpoint_reports_metadata_as_unavailable(self):
+        comparison = build_tile_history_comparison(
+            parsed_tile(),
+            parsed_tile(),
+            current_metadata={"tags": "current"},
+        )
+        metadata = next(
+            section for section in comparison["sections"] if section["id"] == "metadata"
+        )["items"][0]
+
+        self.assertEqual(metadata["status"], "unavailable")
+        self.assertIn("legacy history entry", metadata["historical_text"])
 
 
 if __name__ == "__main__":

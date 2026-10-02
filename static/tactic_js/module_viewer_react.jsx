@@ -390,12 +390,21 @@ function ModuleViewerApp(props) {
         if (!am_selected()) {
             return false
         }
+        let commitMessage;
+        try {
+            commitMessage = await dialogFuncs.showModalPromise("CommitMessageDialog", {
+                handleClose: dialogFuncs.hideModal,
+            });
+        } catch (e) {
+            if (e !== "canceled") errorDrawerFuncs.addFromError("Error opening checkpoint dialog", e);
+            return false;
+        }
         try {
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Saving...");
             await doSavePromise();
             statusFuncs.statusMessage("Checkpointing...");
-            await doCheckpointPromise();
+            await doCheckpointPromise(commitMessage);
             statusFuncs.stopSpinner();
             statusFuncs.statusMessage("Saved and checkpointed");
         } catch (e) {
@@ -406,8 +415,11 @@ function ModuleViewerApp(props) {
         }
     }
 
-    function doCheckpointPromise() {
-        return postPromise("host", "checkpoint_module_task", {"module_name": _cProp("resource_name")});
+    function doCheckpointPromise(message = "") {
+        return postPromise("host", "checkpoint_module_task", {
+            "module_name": _cProp("resource_name"),
+            "message": message,
+        });
     }
 
     function _showHistoryViewer() {
