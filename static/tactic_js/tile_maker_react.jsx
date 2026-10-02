@@ -2497,9 +2497,8 @@ function CreatorApp(props) {
                 {/*<span className="tile-debugger-message">{debugMessage}</span>*/}
             </div>
             <Button variant="minimal"  icon="properties"
-                    style={{alignSelf: "center"}}
+                    style={{alignSelf: "center", marginRight: 10}}
                     active={debugDrawerOpen}
-                    style={{marginRight: 10}}
                     title={debugDrawerOpen ? "Hide debugger drawer" : "Show debugger drawer"}
                     onClick={() => setDebugDrawerOpen(open => !open)}>
                 Inspector
