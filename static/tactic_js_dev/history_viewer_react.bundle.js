@@ -214609,7 +214609,7 @@ function HistoryNavigator(_ref) {
     "aria-pressed": showChangesOnly,
     title: "Show only changed, added, removed, or unavailable items",
     onClick: toggleChangesOnly
-  })), visibleSections.map(function (section) {
+  }, "Changes Only")), visibleSections.map(function (section) {
     var isOpen = openSections[section.id] !== false;
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default().createElement("div", {
       key: section.id,

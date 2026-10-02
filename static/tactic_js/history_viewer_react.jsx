@@ -179,7 +179,9 @@ function HistoryNavigator({sections, selectedItemKey, onSelect}) {
                         intent={showChangesOnly ? "primary" : "none"}
                         aria-pressed={showChangesOnly}
                         title="Show only changed, added, removed, or unavailable items"
-                        onClick={toggleChangesOnly}/>
+                        onClick={toggleChangesOnly}>
+                    Changes Only
+                </Button>
             </ButtonGroup>
             {visibleSections.map(section => {
                 const isOpen = openSections[section.id] !== false;

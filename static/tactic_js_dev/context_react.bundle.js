@@ -233953,8 +233953,7 @@ function CreatorApp(props) {
     style: {
       display: "flex",
       flexDirection: "row",
-      justifyContent: "space-between",
-      marginRight: 25
+      justifyContent: "space-between"
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     className: "tile-debugger-toolbar"
@@ -234074,20 +234073,20 @@ function CreatorApp(props) {
     onClick: function onClick() {
       return sendDebugCommand("return");
     }
-  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, _defineProperty(_defineProperty(_defineProperty({
     variant: "minimal",
     icon: "properties",
     style: {
       alignSelf: "center"
     },
-    active: debugDrawerOpen,
-    title: debugDrawerOpen ? "Hide debugger drawer" : "Show debugger drawer",
-    onClick: function onClick() {
-      return setDebugDrawerOpen(function (open) {
-        return !open;
-      });
-    }
-  }, "Inspector"));
+    active: debugDrawerOpen
+  }, "style", {
+    marginRight: 10
+  }), "title", debugDrawerOpen ? "Hide debugger drawer" : "Show debugger drawer"), "onClick", function onClick() {
+    return setDebugDrawerOpen(function (open) {
+      return !open;
+    });
+  }), "Inspector"));
   var debugger_drawer = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("aside", {
     className: "tile-debugger-drawer tile-debugger-".concat(debugStatus)
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {

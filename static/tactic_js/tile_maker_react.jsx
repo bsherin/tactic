@@ -2418,7 +2418,7 @@ function CreatorApp(props) {
 
     const debugger_panel = (
         <div className={`tile-debugger-panel tile-debugger-${debugStatus}`}
-             style={{display: "flex", flexDirection: "row", justifyContent: "space-between", marginRight: 25}}>
+             style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
             <div className="tile-debugger-toolbar">
                 <FormGroup label="Configure"
                            helperText={`${debugBreakpoints.length} breakpoint${debugBreakpoints.length === 1 ? "" : "s"}`}
@@ -2499,6 +2499,7 @@ function CreatorApp(props) {
             <Button variant="minimal"  icon="properties"
                     style={{alignSelf: "center"}}
                     active={debugDrawerOpen}
+                    style={{marginRight: 10}}
                     title={debugDrawerOpen ? "Hide debugger drawer" : "Show debugger drawer"}
                     onClick={() => setDebugDrawerOpen(open => !open)}>
                 Inspector

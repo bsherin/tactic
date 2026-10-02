@@ -15,8 +15,23 @@ $option-divider-color: #ec9a3c;
     flex: 0 0 auto;
     font-size: 12px;
     margin-bottom: 10px;
-
+    margin-right: 25px;
+    padding: 10px
 }
+
+.bp6-dark {
+    .tile-debugger-panel {
+        background-color: blueprint_variables.$dark-gray1;
+    }
+}
+
+.light-theme {
+    .tile-debugger-panel {
+        background-color: blueprint_variables.$light-gray3;
+    }
+}
+
+
 
 .right-drawer-panes,
 .right-drawer-main-pane,
