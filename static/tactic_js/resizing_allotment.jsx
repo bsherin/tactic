@@ -474,6 +474,7 @@ const horizontalSeparatorLineStyle = {
     bottom: 0,
     left: "50%",
     transform: "translateX(-50%)",
+    marginBottom: 25
 };
 
 const verticalSeparatorStyle = {

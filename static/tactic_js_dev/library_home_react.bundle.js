@@ -198533,7 +198533,8 @@ var horizontalSeparatorLineStyle = {
   top: 0,
   bottom: 0,
   left: "50%",
-  transform: "translateX(-50%)"
+  transform: "translateX(-50%)",
+  marginBottom: 25
 };
 var verticalSeparatorStyle = {
   height: HANDLE_SIZE,

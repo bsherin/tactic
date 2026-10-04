@@ -2629,6 +2629,7 @@ function CreatorApp(props) {
                         {debugInterfaceVisible && debugger_panel}
                         <RightDrawerPanes
                             open={debugDrawerOpen}
+                            className="debug-hp"
                             initial_drawer_fraction={debugDrawerInitialFractionRef.current}
                             onDrawerResizeEnd={rememberDebuggerDrawerFraction}
                             main_pane={(

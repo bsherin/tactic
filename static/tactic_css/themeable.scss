@@ -314,7 +314,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         // color: blueprint_variables.$gray1 !important;
     }
 
-    .creator-hp, .library-hp, .notebook-hp, .main-vp, .context-navigator-hp, .pool-hp, .resource-viewer-hp {
+    .creator-hp, .library-hp, .debug-hp, .notebook-hp, .main-vp, .context-navigator-hp, .pool-hp, .resource-viewer-hp {
         .horizontal-separator, .vertical-separator {
             background: transparent;
         }
@@ -329,6 +329,12 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
     .draggable-pane-separator, .horizontal-separator, .vertical-separator {
         background: transparent;
+    }
+
+    .maker-nav-item {
+        &.nav-divider {
+            color: blueprint_variables.$gray1;
+        }
     }
 
     &.bp6-navbar {
@@ -574,7 +580,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         }
     }
 
-    .creator-hp, .library-hp, .notebook-hp, .main-vp, .pool-hp, .resource-viewer-hp {
+    .creator-hp, .library-hp, .debug-hp, .notebook-hp, .main-vp, .pool-hp, .resource-viewer-hp {
         .horizontal-separator {
             background: transparent;
         }
@@ -585,6 +591,12 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
     .draggable-pane-separator, .horizontal-separator {
         background-color: transparent
+    }
+
+    .maker-nav-item {
+        &.nav-divider {
+            color: blueprint_variables.$gray5;
+        }
     }
 
     #library-home-root {

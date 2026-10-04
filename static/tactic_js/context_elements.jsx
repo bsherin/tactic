@@ -221,7 +221,7 @@ function SortableContextNavigatorItem(props) {
                         {/*        tabIndex={-1} onClick={async () => {*/}
                         {/*    await refreshMe()*/}
                         {/*}}/>*/}
-                        <Button icon="delete" size="small" variant="minimal"
+                        <Button icon={<Icon size={13} icon="delete"/>} size="small" variant="minimal"
                                 className="show-on-hover context-close-button"
                                 tabIndex={-1} onClick={async () => {
                             await closeMe()

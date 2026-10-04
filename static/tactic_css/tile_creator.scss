@@ -9,8 +9,6 @@ $nav-section-font-size: 15px;
 $nav-item-font-size: 13px;
 $small-pane-buttom-offset: 10px;
 
-$option-divider-color: #ec9a3c;
-
 .tile-debugger-panel {
     flex: 0 0 auto;
     font-size: 12px;
@@ -472,8 +470,7 @@ $option-divider-color: #ec9a3c;
             }
 
             &.nav-divider{
-                font-weight: bold;
-                color: $option-divider-color;
+                font-weight: 500;
             }
 
             .cm-editor {
