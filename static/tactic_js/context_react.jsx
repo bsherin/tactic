@@ -912,6 +912,7 @@ function ContextApp(props) {
                  onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
 
                 <HorizontalPanes left_pane={left_pane}
+                                 className="context-navigator-hp"
                                  snap_left={true}
                                  minWidth={100}
                                  right_pane={right_pane}

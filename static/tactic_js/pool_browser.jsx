@@ -191,6 +191,7 @@ function PoolBrowser(props) {
             }}>
                 <HorizontalPanes
                     outer_hp_style={{}}
+                    className="pool-hp"
                     show_handle={true}
                     left_pane={left_pane}
                     right_pane={right_pane}

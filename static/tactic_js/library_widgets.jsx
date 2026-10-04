@@ -492,7 +492,7 @@ function BpSelectorTable(props) {
                       onKeyDown={props.keyHandler}
                       wrapText={true}>
                     <Fragment>
-                        <div onDoubleClick={() => props.handleRowDoubleClick(props.data_dict[rowIndex])}>
+                        <div className="bp6-text-muted" onDoubleClick={() => props.handleRowDoubleClick(props.data_dict[rowIndex])}>
                             {the_body}
                         </div>
                     </Fragment>

@@ -1149,6 +1149,7 @@ function MainApp(props) {
     let bottom_pane = (
         <HorizontalPanes left_pane={console_pane}
                          right_pane={exports_pane}
+                         className="notebook-hp"
                          show_handle={true}
                          fixed_height={mState.console_is_shrunk}
                          initial_width_fraction={mState.console_width_fraction}
@@ -1233,7 +1234,7 @@ function MainApp(props) {
                                              show_handle={true}
                                              fixed_height={mState.console_is_shrunk}
                                              initial_width_fraction={mState.console_width_fraction}
-                                             className="project-outer-padding"
+                                             className="project-outer-padding notebook-hp"
                                              handleSplitUpdate={_handleConsoleFractionChange}
                             />
                         }
@@ -1267,7 +1268,7 @@ function MainApp(props) {
                                            show_handle={true}
                                            initial_height_fraction={mState.height_fraction}
                                            handleSplitUpdate={_handleVerticalSplitUpdate}
-                                           className="project-outer-padding"
+                                           className="project-outer-padding main-vp"
                                            overflow="hidden"
                             />
                         }

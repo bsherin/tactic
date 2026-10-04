@@ -5,6 +5,6 @@ export {
 
 const SIDE_MARGIN = 15;
 const BOTTOM_MARGIN = 35;
-const STATUS_BAR_HEIGHT = 35;
+const STATUS_BAR_HEIGHT = 0;
 const INIT_CONTEXT_PANEL_WIDTH = 250;
 const ICON_BAR_WIDTH = 40;

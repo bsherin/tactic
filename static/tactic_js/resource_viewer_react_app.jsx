@@ -168,6 +168,7 @@ function ResourceViewerApp(props) {
                      marginTop: 0}}>
                 <HorizontalPanes left_pane={left_pane}
                                  show_handle={true}
+                                 className="resource-viewer-hp"
                                  right_pane={right_pane}
                                  initial_width_fraction={.65}
                                  handleResizeEnd={null}

@@ -19,7 +19,7 @@ $item-side-padding: 10px;
         overflow: hidden;
         padding-top: 100px;
         height: 100%;
-        padding-right: 15px;
+        padding-right: 5px;
         padding-left: 15px;
     }
 
@@ -40,14 +40,15 @@ $item-side-padding: 10px;
     }
 
     .context-nav-item {
-        font-size: 16px;
-        padding: 8px $item-side-padding;
+        font-size: 15px;
+        padding: 0px $item-side-padding;
         margin-left: 0;
         width: 100%;
-        opacity: .5;
+        opacity: .85;
 
         &.selected-tab-button {
             opacity: 1;
+            font-weight: 600
         }
     }
 

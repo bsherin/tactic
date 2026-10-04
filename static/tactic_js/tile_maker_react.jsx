@@ -2635,6 +2635,7 @@ function CreatorApp(props) {
                                 <ErrorBoundary custom_message="Error in HorizontalPanes">
                                     <HorizontalPanes left_pane={left_pane}
                                                      right_pane={right_pane}
+                                                     className="creator-hp"
                                                      show_handle={true}
                                                      initial_width_fraction={.2}
                                                      handleSplitUpdate={null}

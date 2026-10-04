@@ -194408,7 +194408,9 @@ function CombinedMetadata(props) {
     elevation: props.elevation,
     className: "combined-metadata accent-bg",
     style: ostyle
-  }, props.res_name != null && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.H4, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.Icon, {
+  }, props.res_name != null && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.H4, {
+    className: "bp6-text-muted"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.Icon, {
     icon: icon_dict[props.res_type],
     style: {
       marginRight: 6,
@@ -201330,6 +201332,7 @@ function BpSelectorTable(props) {
         onKeyDown: props.keyHandler,
         wrapText: true
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+        className: "bp6-text-muted",
         onDoubleClick: function onDoubleClick() {
           return props.handleRowDoubleClick(props.data_dict[rowIndex]);
         }
@@ -204938,6 +204941,7 @@ function PoolBrowser(props) {
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_6__.HorizontalPanes, {
     outer_hp_style: {},
+    className: "pool-hp",
     show_handle: true,
     left_pane: left_pane,
     right_pane: right_pane,
@@ -210044,6 +210048,7 @@ function HorizontalPanes(_ref) {
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Separator, {
     disableDoubleClick: true,
     style: horizontalSeparatorStyle,
+    className: "horizontal-separator",
     onMouseEnter: function onMouseEnter() {
       return setHover(true);
     },
@@ -210164,6 +210169,7 @@ function RightDrawerPanes(_ref2) {
     className: "right-drawer-main-pane"
   }, main_pane)), open && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Separator, {
     disableDoubleClick: true,
+    className: "horizontal-separator",
     style: horizontalSeparatorStyle,
     onMouseEnter: function onMouseEnter() {
       return setHover(true);
@@ -210259,6 +210265,7 @@ function VerticalPanes(_ref3) {
     }
   }, top_pane)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Separator, {
     disableDoubleClick: true,
+    className: className,
     style: verticalSeparatorStyle,
     onMouseEnter: function onMouseEnter() {
       return setHover(true);
@@ -210334,8 +210341,8 @@ function SnapButton(props) {
 var horizontalSeparatorStyle = {
   width: HANDLE_SIZE,
   position: "relative",
-  flexShrink: 0,
-  background: "transparent"
+  flexShrink: 0
+  // background: "transparent",
 };
 var horizontalSeparatorLineStyle = {
   position: "absolute",
@@ -210348,8 +210355,8 @@ var verticalSeparatorStyle = {
   height: HANDLE_SIZE,
   position: "relative",
   flexShrink: 0,
-  width: "100%",
-  background: "transparent"
+  width: "100%"
+  // background: "transparent",
 };
 var verticalSeparatorLineStyle = {
   position: "absolute",
@@ -210890,7 +210897,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var SIDE_MARGIN = 15;
 var BOTTOM_MARGIN = 35;
-var STATUS_BAR_HEIGHT = 35;
+var STATUS_BAR_HEIGHT = 0;
 var INIT_CONTEXT_PANEL_WIDTH = 250;
 var ICON_BAR_WIDTH = 40;
 

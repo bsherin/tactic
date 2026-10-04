@@ -185610,7 +185610,9 @@ function CombinedMetadata(props) {
     elevation: props.elevation,
     className: "combined-metadata accent-bg",
     style: ostyle
-  }, props.res_name != null && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.H4, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.Icon, {
+  }, props.res_name != null && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.H4, {
+    className: "bp6-text-muted"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.Icon, {
     icon: icon_dict[props.res_type],
     style: {
       marginRight: 6,
@@ -192673,6 +192675,7 @@ function BpSelectorTable(props) {
         onKeyDown: props.keyHandler,
         wrapText: true
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+        className: "bp6-text-muted",
         onDoubleClick: function onDoubleClick() {
           return props.handleRowDoubleClick(props.data_dict[rowIndex]);
         }
@@ -196104,6 +196107,7 @@ function PoolBrowser(props) {
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_6__.HorizontalPanes, {
     outer_hp_style: {},
+    className: "pool-hp",
     show_handle: true,
     left_pane: left_pane,
     right_pane: right_pane,
@@ -201276,6 +201280,7 @@ function HorizontalPanes(_ref) {
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Separator, {
     disableDoubleClick: true,
     style: horizontalSeparatorStyle,
+    className: "horizontal-separator",
     onMouseEnter: function onMouseEnter() {
       return setHover(true);
     },
@@ -201396,6 +201401,7 @@ function RightDrawerPanes(_ref2) {
     className: "right-drawer-main-pane"
   }, main_pane)), open && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Separator, {
     disableDoubleClick: true,
+    className: "horizontal-separator",
     style: horizontalSeparatorStyle,
     onMouseEnter: function onMouseEnter() {
       return setHover(true);
@@ -201491,6 +201497,7 @@ function VerticalPanes(_ref3) {
     }
   }, top_pane)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_resizable_panels__WEBPACK_IMPORTED_MODULE_1__.Separator, {
     disableDoubleClick: true,
+    className: className,
     style: verticalSeparatorStyle,
     onMouseEnter: function onMouseEnter() {
       return setHover(true);
@@ -201566,8 +201573,8 @@ function SnapButton(props) {
 var horizontalSeparatorStyle = {
   width: HANDLE_SIZE,
   position: "relative",
-  flexShrink: 0,
-  background: "transparent"
+  flexShrink: 0
+  // background: "transparent",
 };
 var horizontalSeparatorLineStyle = {
   position: "absolute",
@@ -201580,8 +201587,8 @@ var verticalSeparatorStyle = {
   height: HANDLE_SIZE,
   position: "relative",
   flexShrink: 0,
-  width: "100%",
-  background: "transparent"
+  width: "100%"
+  // background: "transparent",
 };
 var verticalSeparatorLineStyle = {
   position: "absolute",
@@ -201843,6 +201850,7 @@ function ResourceViewerApp(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_2__.HorizontalPanes, {
     left_pane: left_pane,
     show_handle: true,
+    className: "resource-viewer-hp",
     right_pane: right_pane,
     initial_width_fraction: .65,
     handleResizeEnd: null,
@@ -203006,7 +203014,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var SIDE_MARGIN = 15;
 var BOTTOM_MARGIN = 35;
-var STATUS_BAR_HEIGHT = 35;
+var STATUS_BAR_HEIGHT = 0;
 var INIT_CONTEXT_PANEL_WIDTH = 250;
 var ICON_BAR_WIDTH = 40;
 
@@ -203957,6 +203965,22 @@ var pane_type_icons = {
   "javascript": "function",
   "handler_method": "wrench"
 };
+var delete_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  icon: "delete",
+  size: 12
+});
+var edit_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  icon: "edit",
+  size: 12
+});
+var plus_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  icon: "plus",
+  size: 12
+});
+var plus_icon_larger = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  icon: "plus",
+  size: 13
+});
 function textRowsToArray(tstring) {
   var slist = [];
   var _iterator = _createForOfIteratorHelper(tstring.toString().split("\n")),
@@ -205495,7 +205519,10 @@ function HandlerCreator(props) {
       onChange: setSelectedChoice
     }),
     rightElement: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
-      icon: "plus",
+      icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+        icon: "plus",
+        size: 16
+      }),
       size: "small",
       variant: "minimal",
       onClick: createItemFromChoiceDict
@@ -205751,7 +205778,13 @@ function SortableNavSection(props) {
   }, props.title), props.isOpen && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(HandlerCreator, {
     choiceDict: props.choiceDict,
     dispatch: props.dispatch
-  })), !props.createFromList && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  })), !props.createFromList && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
     className: "nav-section-button",
     variant: "minimal",
     icon: props.icon,
@@ -205763,15 +205796,29 @@ function SortableNavSection(props) {
     placement: "bottom-start",
     content: createMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
-    icon: "plus",
+    icon: plus_icon_larger,
     size: "small",
     variant: "minimal"
   })) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
-    icon: "plus",
+    icon: plus_icon_larger,
     size: "small",
     variant: "minimal",
     onClick: createItem
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Collapse, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+    style: {
+      alignSelf: "center",
+      marginRight: 15
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+    style: {
+      opacity: 0.65,
+      fontSize: 11,
+      marginRight: 5
+    }
+  }, props.sub_items.length), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+    icon: props.isOpen ? "chevron-down" : "chevron-right",
+    size: 12
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Collapse, {
     className: "nav-section",
     isOpen: props.isOpen
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.DndContext, {
@@ -205899,18 +205946,6 @@ function SortableNavItem(props) {
       mpContext.toggleVisibleTab(props.identifier);
     }
   }
-  var delete_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
-    icon: "delete",
-    size: 12
-  });
-  var edit_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
-    icon: "edit",
-    size: 12
-  });
-  var plus_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
-    icon: "plus",
-    size: 12
-  });
   var contextMenu = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Menu, null, props.isDivider && !props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
       icon: "edit",
@@ -213031,6 +213066,7 @@ function CreatorApp(props) {
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.HorizontalPanes, {
       left_pane: left_pane,
       right_pane: right_pane,
+      className: "creator-hp",
       show_handle: true,
       initial_width_fraction: .2,
       handleSplitUpdate: null

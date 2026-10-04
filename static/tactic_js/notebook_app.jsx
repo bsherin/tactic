@@ -343,7 +343,7 @@ function NotebookApp(props) {
                                      show_handle={true}
                                      initial_width_fraction={mState.console_width_fraction}
                                      controlled={true}
-                                     className="project-outer-padding"
+                                     className="project-outer-padding notebook-hp"
                                      handleSplitUpdate={_handleConsoleFractionChange}
                     />
             </div>

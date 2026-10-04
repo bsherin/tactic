@@ -66,6 +66,11 @@ const pane_type_icons = {
     "handler_method": "wrench",
 };
 
+const delete_icon = <Icon icon="delete" size={12}/>;
+const edit_icon = <Icon icon="edit" size={12}/>;
+const plus_icon = <Icon icon="plus" size={12}/>;
+const plus_icon_larger = <Icon icon="plus" size={13}/>;
+
 function textRowsToArray(tstring) {
     let slist = [];
     for (let item of tstring.toString().split("\n")) {
@@ -1431,7 +1436,7 @@ function HandlerCreator(props) {
                 leftElement={<BpSelectAdvanced options={fullChoiceList}
                                                value={selectedChoice}
                                                onChange={setSelectedChoice}/>}
-                rightElement={<Button icon="plus" size="small" variant="minimal" onClick={createItemFromChoiceDict}/>}
+                rightElement={<Button icon={<Icon icon="plus" size={16}/>} size="small" variant="minimal" onClick={createItemFromChoiceDict}/>}
             />
         </div>
     )
@@ -1664,6 +1669,7 @@ function SortableNavSection(props) {
                     </ControlGroup>
                 }
                 {!props.createFromList &&
+                    <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                     <ButtonGroup>
                         <Button className="nav-section-button"
                                 variant="minimal"
@@ -1675,11 +1681,18 @@ function SortableNavSection(props) {
                         </Button>
                         {props.allowDividers ?
                             <Popover placement="bottom-start" content={createMenu}>
-                                <Button icon="plus" size="small" variant="minimal"/>
+                                <Button icon={plus_icon_larger} size="small" variant="minimal"/>
                             </Popover> :
-                            <Button icon="plus" size="small" variant="minimal" onClick={createItem}/>
+                            <Button icon={plus_icon_larger} size="small" variant="minimal" onClick={createItem}/>
                         }
                     </ButtonGroup>
+                        <span style={{alignSelf: "center", marginRight: 15}}>
+                            <span style={{opacity: 0.65, fontSize: 11, marginRight: 5}}>
+                                {props.sub_items.length}
+                            </span>
+                            <Icon icon={props.isOpen ? "chevron-down" : "chevron-right"} size={12}/>
+                        </span>
+                    </div>
                 }
                 <Collapse className="nav-section" isOpen={props.isOpen}>
                     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
@@ -1812,10 +1825,6 @@ function SortableNavItem(props) {
             mpContext.toggleVisibleTab(props.identifier);
         }
     }
-
-    const delete_icon = <Icon icon="delete" size={12}/>;
-    const edit_icon = <Icon icon="edit" size={12}/>;
-    const plus_icon = <Icon icon="plus" size={12}/>;
 
     const contextMenu = useMemo(() => {
         return (

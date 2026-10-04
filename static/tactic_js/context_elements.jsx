@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 
 import {SelectedPaneContext} from "./utilities_react";
-import {Button, Divider} from "@blueprintjs/core";
+import {Button, Divider, Icon} from "@blueprintjs/core";
 
 import {icon_dict} from "./combined_metadata";
 import {CSS} from "@dnd-kit/utilities";
@@ -152,6 +152,16 @@ function ContextNavigator(props) {
     )
 }
 
+function NavItemIcon(props) {
+    props = {
+        icon: null,
+        size: 13,
+        ...props
+    }
+
+    return <Icon icon={props.icon} size={props.size} style={{marginRight: 15}} />
+}
+
 function SortableContextNavigatorItem(props) {
     props = {
         identifier: null,
@@ -206,11 +216,11 @@ function SortableContextNavigatorItem(props) {
                 <ContextNavigatorItem {...props} />
                 {props.isSpacer ? null :
                     <div style={{alignContent: "center"}}>
-                        <Button icon="reset" size="small" variant="minimal"
-                                className="show-on-hover context-close-button"
-                                tabIndex={-1} onClick={async () => {
-                            await refreshMe()
-                        }}/>
+                        {/*<Button icon="reset" size="small" variant="minimal"*/}
+                        {/*        className="show-on-hover context-close-button"*/}
+                        {/*        tabIndex={-1} onClick={async () => {*/}
+                        {/*    await refreshMe()*/}
+                        {/*}}/>*/}
                         <Button icon="delete" size="small" variant="minimal"
                                 className="show-on-hover context-close-button"
                                 tabIndex={-1} onClick={async () => {
@@ -221,6 +231,8 @@ function SortableContextNavigatorItem(props) {
         </div>
     );
 }
+
+
 
 function ContextNavigatorItem(props) {
     props = {
@@ -258,12 +270,13 @@ function ContextNavigatorItem(props) {
         <div
             style={{flex: "1 1 0", minWidth: 0, minHeight: 0}}>
             <Button
-                icon={props.icon}
+                icon={<NavItemIcon icon={props.icon}/>}
                 fill={true}
                 alignText="left"
-                size="medium"
+                size="small"
                 variant="minimal"
                 className={outerClass}
+                textClassName="bp6-text-muted"
                 ellipsizeText={true}
                 onClick={() => {
                     props.handleTabSelect(props.identifier)

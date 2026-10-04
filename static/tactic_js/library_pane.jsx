@@ -1291,6 +1291,7 @@ function LibraryPane(props) {
                  }}
                  tabIndex="0" className="d-flex flex-column" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
                     <HorizontalPanes
+                        className="library-hp"
                         show_handle={true}
                         left_pane={left_pane}
                         right_pane={right_pane}

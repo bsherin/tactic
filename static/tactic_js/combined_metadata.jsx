@@ -634,7 +634,7 @@ function CombinedMetadata(props) {
             <Card ref={top_ref}
                   elevation={props.elevation} className="combined-metadata accent-bg" style={ostyle}>
                 {props.res_name != null &&
-                    <H4><Icon icon={icon_dict[props.res_type]}
+                    <H4 className="bp6-text-muted"><Icon icon={icon_dict[props.res_type]}
                               style={{marginRight: 6, marginBottom: 2}}/>{props.res_name}</H4>}
                 {!props.useFixedData && props.useTags && mStateRef.current.tags != null && mStateRef.current.allTags.length > 0 &&
                     <FormGroup label="Tags">

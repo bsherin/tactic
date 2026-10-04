@@ -9,7 +9,7 @@ $dark-context-item-holder-background: blueprint_variables.$dark-gray4 !important
 //$dark-context-navigator-right-border: 1px solid blueprint_variables.$light-gray4;
 $dark-context-navigator-right-border: none;
 
-$light-context-navigator-background: blueprint_variables.$light-gray4;
+$light-context-navigator-background: white;
 $light-context-item-holder-background: blueprint_variables.$light-gray2;
 $light-context-navigator-top-border: .75px solid #c5cbd3;
 
@@ -18,7 +18,7 @@ $light-context-navigator-top-border: .75px solid #c5cbd3;
 // SECTION: nav bar
 // ==============================================
 
-$light-navbar-background: blueprint_variables.$light-gray4;
+$light-navbar-background: white;
 
 // ==============================================
 // SECTION: Status Bar
@@ -303,8 +303,32 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         border-left: $light-icon-bar-border;
     }
 
-    .draggable-pane-separator {
-        background-color: #8f99a84a;
+    //.context-navigator-hp {
+    //
+    //    .draggable-pane-separator, .horizontal-separator {
+    //        background-color: blueprint_variables.$light-gray4;
+    //    }
+    //}
+
+    .context-nav-item {
+        // color: blueprint_variables.$gray1 !important;
+    }
+
+    .creator-hp, .library-hp, .notebook-hp, .main-vp, .context-navigator-hp, .pool-hp, .resource-viewer-hp {
+        .horizontal-separator, .vertical-separator {
+            background: transparent;
+        }
+        .draggable-pane-separator {
+            background-color: #11141826;
+        }
+
+        //.bp6-table-bottom-container {
+        //    color: blueprint_variables.$dark-gray5;
+        //}
+    }
+
+    .draggable-pane-separator, .horizontal-separator, .vertical-separator {
+        background: transparent;
     }
 
     &.bp6-navbar {
@@ -322,7 +346,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
     }
 
     .context-item-holder {
-        background-color: $light-context-item-holder-background;
+        //background-color: $light-context-item-holder-background;
     }
 
 
@@ -343,8 +367,9 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
 
     &.menu-bar {
         box-shadow: none;
-        border-top: 0.75px solid #c5cbd3;
-        border-bottom: 0.75px solid #c5cbd3;
+        // border-top: 0.75px solid #c5cbd3;
+        // border-bottom: 0.75px solid #c5cbd3;
+        background-color: $light-backdrop;
     }
 
     &.merge-viewer-outer &.login-body {
@@ -359,6 +384,10 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
     .combined-metadata {
         box-shadow: none;
         background-color: $light-metadata-background;
+        //.bp6-heading {
+        //    color: blueprint_variables.$gray1
+        //}
+        color: blueprint_variables.$gray1;
     }
 
     div.filepicker {
@@ -539,8 +568,23 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         border-left: $dark-icon-bar-border;
     }
 
-    .draggable-pane-separator {
-        background-color: rgb(255 255 255 / 0.15);
+    .context-navigator-hp {
+        .draggable-pane-separator, .horizontal-separator {
+            background-color: blueprint_variables.$dark-gray2;
+        }
+    }
+
+    .creator-hp, .library-hp, .notebook-hp, .main-vp, .pool-hp, .resource-viewer-hp {
+        .horizontal-separator {
+            background: transparent;
+        }
+        .draggable-pane-separator {
+            background-color: #fff3;
+        }
+    }
+
+    .draggable-pane-separator, .horizontal-separator {
+        background-color: transparent
     }
 
     #library-home-root {
@@ -558,8 +602,14 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         border-right: $dark-context-navigator-right-border;
     }
 
+    .library-hp {
+        .bp6-text-muted {
+            color: blueprint_variables.$gray5 !important;
+        }
+    }
+
     .context-item-holder {
-        background-color: $dark-context-item-holder-background;
+        //background-color: $dark-context-item-holder-background;
     }
 
     .main-panel {
@@ -583,6 +633,7 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
     &.menu-bar {
         //box-shadow: inset 0 0 0 1px #ffffff33, 0 1px 1px 0 #11141866;
         box-shadow: none;
+        background-color: $dark-backdrop;
     }
 
     &.account-settings {
@@ -593,9 +644,19 @@ $light-chat-card-bg: blueprint_variables.$light-gray5;
         background-color: $dark-backdrop;
     }
 
+    .library-hp, .resource-viewer-hp, .pool-hp {
+        .combined-metadata {
+            background-color: #383e47
+        }
+    }
+
     .combined-metadata, .exports-pane {
         box-shadow: none;
         background-color: $dark-metadata-background;
+
+        //.bp6-heading {
+        //    color: blueprint_variables.$gray5
+        //}
     }
 
     div.filepicker {

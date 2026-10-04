@@ -170,6 +170,7 @@ export function HorizontalPanes({
                 </Panel>
 
                 <Separator disableDoubleClick style={horizontalSeparatorStyle}
+                           className="horizontal-separator"
                            onMouseEnter={() => setHover(true)}
     o                      onMouseLeave={() => setHover(false)}
                 >
@@ -284,6 +285,7 @@ export function RightDrawerPanes({
 
                 {open && (
                     <Separator disableDoubleClick
+                               className="horizontal-separator"
                                style={horizontalSeparatorStyle}
                                onMouseEnter={() => setHover(true)}
                                onMouseLeave={() => setHover(false)}>
@@ -377,6 +379,7 @@ export function VerticalPanes({
                 </Panel>
 
                 <Separator disableDoubleClick
+                           className={className}
                            style={verticalSeparatorStyle}
                            onMouseEnter={() => setHover(true)}
                            onMouseLeave={() => setHover(false)}
@@ -462,7 +465,7 @@ const horizontalSeparatorStyle = {
     width: HANDLE_SIZE,
     position: "relative",
     flexShrink: 0,
-    background: "transparent",
+    // background: "transparent",
 };
 
 const horizontalSeparatorLineStyle = {
@@ -478,7 +481,7 @@ const verticalSeparatorStyle = {
     position: "relative",
     flexShrink: 0,
     width: "100%",
-    background: "transparent",
+    // background: "transparent",
 };
 
 const verticalSeparatorLineStyle = {
