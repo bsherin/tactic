@@ -192101,8 +192101,11 @@ SelectList = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(SelectList
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 var map = {
+	"./barf.js": "./static/tactic_js/codemirror_dark_themes/barf.js",
 	"./basic_dark.js": "./static/tactic_js/codemirror_dark_themes/basic_dark.js",
+	"./bespin.js": "./static/tactic_js/codemirror_dark_themes/bespin.js",
 	"./birds_of_paradise.js": "./static/tactic_js/codemirror_dark_themes/birds_of_paradise.js",
+	"./dracula.js": "./static/tactic_js/codemirror_dark_themes/dracula.js",
 	"./github_dark.js": "./static/tactic_js/codemirror_dark_themes/github_dark.js",
 	"./github_dark_alt.js": "./static/tactic_js/codemirror_dark_themes/github_dark_alt.js",
 	"./material_dark.js": "./static/tactic_js/codemirror_dark_themes/material_dark.js",
@@ -192130,6 +192133,69 @@ webpackContext.keys = function webpackContextKeys() {
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
 webpackContext.id = "./static/tactic_js/codemirror_dark_themes sync \\.js$";
+
+/***/ }),
+
+/***/ "./static/tactic_js/codemirror_dark_themes/barf.js":
+/*!*********************************************************!*\
+  !*** ./static/tactic_js/codemirror_dark_themes/barf.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   barf: () => (/* binding */ barf)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'dark',
+  settings: {
+    background: '#15191EFA',
+    foreground: '#EEF2F7',
+    caret: '#C4C4C4',
+    selection: '#90B2D557',
+    gutterBackground: '#15191EFA',
+    gutterForeground: '#aaaaaa95',
+    lineHighlight: '#57575712'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#6E6E6E'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.regexp, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.special(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.brace)],
+    color: '#5C81B3'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number,
+    color: '#C1E1B8'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.bool,
+    color: '#53667D'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definitionKeyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.modifier, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["function"](_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName)],
+    color: '#A3D295',
+    fontWeight: 'bold'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.moduleKeyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operatorKeyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operator],
+    color: '#697A8E',
+    fontWeight: 'bold'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.attributeName],
+    color: '#708E67'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["function"](_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName), _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName), _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.derefOperator],
+    color: '#fff'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.tagName,
+    color: '#A3D295'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var barf = [themeDict.themeCss, themeDict.highlightStyles];
 
 /***/ }),
 
@@ -192288,6 +192354,67 @@ var basic_dark = [themeDict.themeCss, themeDict.highlightStyles];
 
 /***/ }),
 
+/***/ "./static/tactic_js/codemirror_dark_themes/bespin.js":
+/*!***********************************************************!*\
+  !*** ./static/tactic_js/codemirror_dark_themes/bespin.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   bespin: () => (/* binding */ bespin)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'dark',
+  settings: {
+    background: '#2e241d',
+    foreground: '#BAAE9E',
+    caret: '#A7A7A7',
+    selection: '#DDF0FF33',
+    gutterBackground: '#28211C',
+    gutterForeground: '#BAAE9E90',
+    lineHighlight: '#FFFFFF08'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#666666'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.special(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.brace)],
+    color: '#54BE0D'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.regexp,
+    color: '#E9C062'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number,
+    color: '#CF6A4C'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operator],
+    color: '#5EA6EA'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName,
+    color: '#7587A6'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definitionKeyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.modifier],
+    color: '#F9EE98'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["function"](_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName)],
+    color: '#937121'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.angleBracket, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.tagName],
+    color: '#9B859D'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var bespin = [themeDict.themeCss, themeDict.highlightStyles];
+
+/***/ }),
+
 /***/ "./static/tactic_js/codemirror_dark_themes/birds_of_paradise.js":
 /*!**********************************************************************!*\
   !*** ./static/tactic_js/codemirror_dark_themes/birds_of_paradise.js ***!
@@ -192354,6 +192481,61 @@ var themeBase = {
 };
 var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
 var birds_of_paradise = [themeDict.themeCss, themeDict.highlightStyles];
+
+/***/ }),
+
+/***/ "./static/tactic_js/codemirror_dark_themes/dracula.js":
+/*!************************************************************!*\
+  !*** ./static/tactic_js/codemirror_dark_themes/dracula.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   dracula: () => (/* binding */ dracula)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'dark',
+  settings: {
+    background: '#2d2f3f',
+    foreground: '#f8f8f2',
+    caret: '#f8f8f0',
+    selection: '#44475a',
+    gutterBackground: '#282a36',
+    gutterForeground: 'rgb(144, 145, 148)',
+    lineHighlight: '#44475a'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#6272a4'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.special(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.brace)],
+    color: '#f1fa8c'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.self, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.bool, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["null"]],
+    color: '#bd93f9'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operator],
+    color: '#ff79c6'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definitionKeyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName],
+    color: '#8be9fd'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName),
+    color: '#f8f8f2'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.className, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName), _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["function"](_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName), _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.attributeName],
+    color: '#50fa7b'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var dracula = [themeDict.themeCss, themeDict.highlightStyles];
 
 /***/ }),
 
@@ -193132,8 +193314,13 @@ var rdark = [themeDict.themeCss, themeDict.highlightStyles];
 var map = {
 	"./ayu_light.js": "./static/tactic_js/codemirror_light_themes/ayu_light.js",
 	"./clouds.js": "./static/tactic_js/codemirror_light_themes/clouds.js",
+	"./espresso.js": "./static/tactic_js/codemirror_light_themes/espresso.js",
 	"./github_light.js": "./static/tactic_js/codemirror_light_themes/github_light.js",
-	"./material_light.js": "./static/tactic_js/codemirror_light_themes/material_light.js"
+	"./material_light.js": "./static/tactic_js/codemirror_light_themes/material_light.js",
+	"./rose_pine_dawn.js": "./static/tactic_js/codemirror_light_themes/rose_pine_dawn.js",
+	"./smoothy.js": "./static/tactic_js/codemirror_light_themes/smoothy.js",
+	"./solarized_light.js": "./static/tactic_js/codemirror_light_themes/solarized_light.js",
+	"./tomorrow.js": "./static/tactic_js/codemirror_light_themes/tomorrow.js"
 };
 
 
@@ -193289,6 +193476,60 @@ var themeBase = {
 };
 var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
 var clouds = [themeDict.themeCss, themeDict.highlightStyles];
+
+/***/ }),
+
+/***/ "./static/tactic_js/codemirror_light_themes/espresso.js":
+/*!**************************************************************!*\
+  !*** ./static/tactic_js/codemirror_light_themes/espresso.js ***!
+  \**************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   espresso: () => (/* binding */ espresso)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'light',
+  settings: {
+    background: '#FFFFFF',
+    foreground: '#000000',
+    caret: '#000000',
+    selection: '#80C7FF',
+    gutterBackground: '#FFFFFF',
+    gutterForeground: '#00000070',
+    lineHighlight: '#C1E2F8'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#AAAAAA'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operator, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.tagName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName],
+    color: '#2F6F9F',
+    fontWeight: 'bold'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.attributeName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName)],
+    color: '#4F9FD0'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.className, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.special(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.brace)],
+    color: '#CF4F5F'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number,
+    color: '#CF4F5F',
+    fontWeight: 'bold'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName,
+    fontWeight: 'bold'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var espresso = [themeDict.themeCss, themeDict.highlightStyles];
 
 /***/ }),
 
@@ -193552,6 +193793,287 @@ var styles = [{
   textDecoration: 'line-through'
 }];
 var material_light = [settings, styles];
+
+/***/ }),
+
+/***/ "./static/tactic_js/codemirror_light_themes/rose_pine_dawn.js":
+/*!********************************************************************!*\
+  !*** ./static/tactic_js/codemirror_light_themes/rose_pine_dawn.js ***!
+  \********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   rose_pine_dawn: () => (/* binding */ rose_pine_dawn)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'light',
+  settings: {
+    background: '#faf4ed',
+    foreground: '#575279',
+    caret: '#575279',
+    selection: '#6e6a8614',
+    gutterBackground: '#faf4ed',
+    gutterForeground: '#57527970',
+    lineHighlight: '#6e6a860d'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#9893a5'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.bool, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["null"]],
+    color: '#286983'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number,
+    color: '#d7827e'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.className,
+    color: '#d7827e'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.angleBracket, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.tagName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName],
+    color: '#56949f'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.attributeName,
+    color: '#907aa9'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.punctuation,
+    color: '#797593'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.modifier],
+    color: '#286983'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.regexp],
+    color: '#ea9d34'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName,
+    color: '#d7827e'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var rose_pine_dawn = [themeDict.themeCss, themeDict.highlightStyles];
+
+/***/ }),
+
+/***/ "./static/tactic_js/codemirror_light_themes/smoothy.js":
+/*!*************************************************************!*\
+  !*** ./static/tactic_js/codemirror_light_themes/smoothy.js ***!
+  \*************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   smoothy: () => (/* binding */ smoothy)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'light',
+  settings: {
+    background: '#FFFFFF',
+    foreground: '#000000',
+    caret: '#000000',
+    selection: '#FFFD0054',
+    gutterBackground: '#FFFFFF',
+    gutterForeground: '#00000070',
+    lineHighlight: '#00000008'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#CFCFCF'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.bool, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["null"]],
+    color: '#E66C29'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.className, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName), _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["function"](_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName), _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.labelName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName)],
+    color: '#2EB43B'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword,
+    color: '#D8B229'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operator,
+    color: '#4EA44E',
+    fontWeight: 'bold'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definitionKeyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.modifier],
+    color: '#925A47'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string,
+    color: '#704D3D'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName,
+    color: '#2F8996'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName],
+    color: '#77ACB0'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.self,
+    color: '#77ACB0',
+    fontWeight: 'bold'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.regexp,
+    color: '#E3965E'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.tagName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.angleBracket],
+    color: '#BAA827'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.attributeName,
+    color: '#B06520'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.derefOperator,
+    color: '#000'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var smoothy = [themeDict.themeCss, themeDict.highlightStyles];
+
+/***/ }),
+
+/***/ "./static/tactic_js/codemirror_light_themes/solarized_light.js":
+/*!*********************************************************************!*\
+  !*** ./static/tactic_js/codemirror_light_themes/solarized_light.js ***!
+  \*********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   solarized_light: () => (/* binding */ solarized_light)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'light',
+  settings: {
+    background: '#fef7e5',
+    foreground: '#586E75',
+    caret: '#000000',
+    selection: '#073642',
+    gutterBackground: '#fef7e5',
+    gutterForeground: '#586E7580',
+    lineHighlight: '#EEE8D5'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#93A1A1'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string,
+    color: '#2AA198'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.regexp,
+    color: '#D30102'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number,
+    color: '#D33682'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName,
+    color: '#268BD2'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operator, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.punctuation],
+    color: '#859900'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definitionKeyword, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.modifier],
+    color: '#073642',
+    fontWeight: 'bold'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.className, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.self, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName)],
+    color: '#268BD2'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["function"](_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName),
+    color: '#268BD2'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.bool, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["null"]],
+    color: '#B58900'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.tagName,
+    color: '#268BD2',
+    fontWeight: 'bold'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.angleBracket,
+    color: '#93A1A1'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.attributeName,
+    color: '#93A1A1'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName,
+    color: '#859900'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var solarized_light = [themeDict.themeCss, themeDict.highlightStyles];
+
+/***/ }),
+
+/***/ "./static/tactic_js/codemirror_light_themes/tomorrow.js":
+/*!**************************************************************!*\
+  !*** ./static/tactic_js/codemirror_light_themes/tomorrow.js ***!
+  \**************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   tomorrow: () => (/* binding */ tomorrow)
+/* harmony export */ });
+/* harmony import */ var _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @lezer/highlight */ "./node_modules/@lezer/highlight/dist/index.js");
+/* harmony import */ var _create_cm_theme__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../create_cm_theme */ "./static/tactic_js/create_cm_theme.js");
+
+
+
+var themeBase = {
+  variant: 'light',
+  settings: {
+    background: '#FFFFFF',
+    foreground: '#4D4D4C',
+    caret: '#AEAFAD',
+    selection: '#D6D6D6',
+    gutterBackground: '#FFFFFF',
+    gutterForeground: '#4D4D4C80',
+    lineHighlight: '#EFEFEF'
+  },
+  styles: [{
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.comment,
+    color: '#8E908C'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.self, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.attributeName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.regexp],
+    color: '#C82829'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.number, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.bool, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["null"]],
+    color: '#F5871F'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.className, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.typeName)],
+    color: '#C99E00'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.string, _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.special(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.brace)],
+    color: '#718C00'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.operator,
+    color: '#3E999F'
+  }, {
+    tag: [_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.definition(_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.propertyName), _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags["function"](_lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.variableName)],
+    color: '#4271AE'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.keyword,
+    color: '#8959A8'
+  }, {
+    tag: _lezer_highlight__WEBPACK_IMPORTED_MODULE_0__.tags.derefOperator,
+    color: '#4D4D4C'
+  }]
+};
+var themeDict = (0,_create_cm_theme__WEBPACK_IMPORTED_MODULE_1__.createCMTheme)(themeBase);
+var tomorrow = [themeDict.themeCss, themeDict.highlightStyles];
 
 /***/ }),
 
