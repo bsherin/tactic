@@ -8,14 +8,13 @@ import {
     highlightActiveLineGutter, highlightSpecialChars, drawSelection,
     dropCursor, rectangularSelection, crosshairCursor, keymap
 } from '@codemirror/view';
-import {HighlightStyle} from "@codemirror/language"
 import {MergeView} from "@codemirror/merge";
 
 import {EditorView, Decoration, lineNumbers} from "@codemirror/view";
 import {EditorState, Compartment} from "@codemirror/state";
 import {python} from "@codemirror/lang-python";
 import {javascript} from "@codemirror/lang-javascript";
-import {foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap} from '@codemirror/language';
+import {foldGutter, indentOnInput, bracketMatching, foldKeymap} from '@codemirror/language';
 import {history, defaultKeymap, historyKeymap} from '@codemirror/commands';
 import {highlightSelectionMatches} from '@codemirror/search';
 import {closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete';
@@ -26,7 +25,7 @@ import {indentUnit} from "@codemirror/language";
 import {StateField, StateEffect} from "@codemirror/state";
 
 import {SettingsContext} from "./settings"
-import {importTheme, themeList} from "./theme_support";
+import {importTheme} from "./theme_support";
 
 export {ReactCodemirrorMergeView6}
 
@@ -63,8 +62,7 @@ function ReactCodemirrorMergeView6(props) {
     const cmobject = useRef(null);
     const themeCompartmenta = useRef(null);
     const themeCompartmentb = useRef(null);
-    const theme = useRef(null);
-    const highlightStyle = useRef(null);
+    const themeRequestId = useRef(0);
 
     const settingsContext = useContext(SettingsContext);
 
@@ -87,6 +85,7 @@ function ReactCodemirrorMergeView6(props) {
         themeCompartmentb.current = new Compartment();
         cmobject.current = createMergeArea(code_container_ref.current);
         return () => {
+            themeRequestId.current += 1;
             if (cmobject.current) {
                 cmobject.current.destroy();
                 cmobject.current = null;
@@ -221,30 +220,29 @@ function ReactCodemirrorMergeView6(props) {
         });
     }
 
-    const switchTheme = (themeName) => {
-        if (!(themeList.includes(themeName))) {
-            themeName = "one_dark";
+    const switchTheme = async (themeName) => {
+        const requestId = ++themeRequestId.current;
+        try {
+            const themeExtension = await importTheme(
+                themeName,
+                settingsContext.settingsRef.current.theme,
+            );
+            if (requestId !== themeRequestId.current || !cmobject.current) {
+                return;
+            }
+            if (cmobject.current.a) {
+                cmobject.current.a.dispatch({
+                    effects: themeCompartmenta.current.reconfigure(themeExtension)
+                });
+            }
+            if (cmobject.current.b) {
+                cmobject.current.b.dispatch({
+                    effects: themeCompartmentb.current.reconfigure(themeExtension)
+                });
+            }
+        } catch (error) {
+            console.log("Error importing theme", error);
         }
-        importTheme(themeName, settingsContext.settingsRef.current.theme)
-            .then(theTheme => {
-                theme.current = EditorView.theme(theTheme[0]);
-                highlightStyle.current = HighlightStyle.define(theTheme[1]);
-                if (cmobject.current.a) {
-                    cmobject.current.a.dispatch({
-                        effects: themeCompartmenta.current.reconfigure([theme.current,
-                            syntaxHighlighting(highlightStyle.current)])
-                    });
-                }
-                if (cmobject.current.b) {
-                    cmobject.current.b.dispatch({
-                        effects: themeCompartmentb.current.reconfigure([theme.current,
-                            syntaxHighlighting(highlightStyle.current)])
-                    });
-                }
-            })
-            .catch(error => {
-                console.log("Error importing theme", error);
-            })
     };
 
     useEffect(() => {

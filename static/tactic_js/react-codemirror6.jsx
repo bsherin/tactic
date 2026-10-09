@@ -8,7 +8,7 @@ import {python} from "@codemirror/lang-python"
 import {javascript} from "@codemirror/lang-javascript"
 import {markdown} from "@codemirror/lang-markdown"
 import {indentUnit} from "@codemirror/language";
-import {HighlightStyle, foldAll, unfoldAll} from "@codemirror/language"
+import {foldAll, unfoldAll} from "@codemirror/language"
 import {EditorView, Decoration, ViewPlugin} from "@codemirror/view";
 import {useSocketListener} from "./tactic_socket";
 import {
@@ -36,7 +36,7 @@ import {
 } from '@codemirror/view';
 
 export {EditorView} from '@codemirror/view';
-import {foldGutter, indentOnInput, syntaxHighlighting, bracketMatching, foldKeymap} from '@codemirror/language';
+import {foldGutter, indentOnInput, bracketMatching, foldKeymap} from '@codemirror/language';
 import {history, defaultKeymap, historyKeymap, insertNewlineAndIndent} from '@codemirror/commands';
 import {highlightSelectionMatches} from '@codemirror/search';
 import {
@@ -50,7 +50,7 @@ import {
 } from '@codemirror/autocomplete';
 
 import {startCompletion} from "@codemirror/autocomplete";
-import {themeList, importTheme} from "./theme_support";
+import {importTheme} from "./theme_support";
 import {postPromise} from "./communication_react";
 
 export {ReactCodemirror6, scrollEditorPositionToCenter};
@@ -431,8 +431,7 @@ function ReactCodemirror6(props) {
     const readOnlyCompartment = useRef(new Compartment());
     const restrictCompartment = useRef(new Compartment());
     const readOnlyRef = useRef(props.readOnly);
-    const theme = useRef(null);
-    const highlightStyle = useRef(null);
+    const themeRequestId = useRef(0);
     const autocompletionArgRef = useRef({});
     const cmUniqueId = useRef(null)
     const getAIContextRef = useRef(props.getAIContext);
@@ -805,7 +804,7 @@ function ReactCodemirror6(props) {
             lineNumberCompartment.current = null;
             readOnlyCompartment.current = null;
             restrictCompartment.current = null;
-            highlightStyle.current = null;
+            themeRequestId.current += 1;
             autocompletionArgRef.current = null;
         };
     }, []);
@@ -827,24 +826,22 @@ function ReactCodemirror6(props) {
     };
 
 
-    const switchTheme = (themeName) => {
-        if (!(themeList.includes(themeName))) {
-            themeName = "one_dark";
+    const switchTheme = async (themeName) => {
+        const requestId = ++themeRequestId.current;
+        try {
+            const themeExtension = await importTheme(
+                themeName,
+                settingsContext.settingsRef.current.theme,
+            );
+            if (requestId !== themeRequestId.current || !editorView.current || !themeCompartment.current) {
+                return;
+            }
+            editorView.current.dispatch({
+                effects: themeCompartment.current.reconfigure(themeExtension)
+            });
+        } catch (error) {
+            console.log("Error importing theme", error);
         }
-        importTheme(themeName, settingsContext.settingsRef.current.theme)
-            .then(theTheme => {
-                theme.current = EditorView.theme(theTheme[0]);
-                highlightStyle.current = HighlightStyle.define(theTheme[1]);
-                if (editorView.current) {
-                    editorView.current.dispatch({
-                        effects: themeCompartment.current.reconfigure([theme.current,
-                            syntaxHighlighting(highlightStyle.current)])
-                    });
-                }
-            })
-            .catch(error => {
-                console.log("Error importing theme", error);
-            })
     };
 
     useEffect(() => {

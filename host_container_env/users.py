@@ -1,9 +1,9 @@
 
 # This module contains the User class machinery required by flask-login
 
-import re
 import os
 import copy
+import json
 import datetime
 from collections import OrderedDict
 from flask_login import UserMixin
@@ -55,13 +55,17 @@ def load_user(userid):
         return User(result)
 
 def get_full_user_data_fields():
-    static_folder = app.static_folder
-    dark_path = os.path.join(static_folder, 'tactic_js/codemirror_dark_themes')
-    light_path = os.path.join(static_folder, 'tactic_js/codemirror_light_themes')
-    dark_files = sorted(os.listdir(dark_path))
-    light_files = sorted(os.listdir(light_path))
-    dark_themes = [re.sub(r'\.js$', '', f) for f in dark_files]
-    light_themes = [re.sub(r'\.js$', '', f) for f in light_files]
+    catalog_path = os.path.join(
+        app.static_folder, 'tactic_js', 'codemirror_theme_catalog.json'
+    )
+    with open(catalog_path, encoding='utf-8') as catalog_file:
+        theme_catalog = json.load(catalog_file)['themes']
+    dark_themes = sorted(
+        theme['id'] for theme in theme_catalog if theme['variant'] == 'dark'
+    )
+    light_themes = sorted(
+        theme['id'] for theme in theme_catalog if theme['variant'] == 'light'
+    )
     ufields = copy.deepcopy(user_data_fields)
     for field in ufields:
         if field["name"] == "preferred_dark_theme":
@@ -322,5 +326,3 @@ class User(UserMixin, MongoAccess, ListAccess, CodeAccess, TileAccess, TempDataA
     @property
     def my_record(self):
         return self.db.user_collection.find_one({"username": self.username})
-
-

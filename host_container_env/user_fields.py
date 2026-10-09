@@ -82,7 +82,7 @@ user_data_fields = [
      "account_page": True,
      "withSettings": True,
      "settingsDrawerCategory": "Code Areas",
-     "type": "select", "default": "default", "options": ["default", "elegant", "juejin", "neat", "solarized", "github"],
+     "type": "select", "default": "github_light", "options": ["github_light"],
      "info_type": "setting"},
     {"name": "preferred_interface", "display_text": "preferred interface",
      "editable": True,

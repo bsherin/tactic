@@ -21,7 +21,7 @@ const HIGHLIGHT_THEMES = {
 const INITIAL_SETTINGS = {
     theme: "dark",
     preferred_dark_theme: "nord",
-    preferred_light_theme: "github",
+    preferred_light_theme: "github_light",
     library_columns: ["created", "updated", "size"],
 
 };
