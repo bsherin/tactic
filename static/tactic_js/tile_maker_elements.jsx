@@ -12,7 +12,7 @@ import {
     EntityTitle,
     H4,
     H6,
-    Menu, MenuItem, ContextMenu, Card, FormGroup, InputGroup, Popover
+    Menu, MenuDivider, MenuItem, ContextMenu, Card, FormGroup, InputGroup, Popover
 } from "@blueprintjs/core";
 import {
     DndContext,
@@ -41,6 +41,8 @@ import {postPromise} from "./communication_react";
 import {DragHandle} from "./drag_handle";
 import {SearchForm} from "./library_widgets";
 import {widgetInfo, widgetDefaults} from "./widget_info";
+import {doFlash} from "./toaster";
+import {DialogContext} from "./modal_react";
 
 export {
     CmElement, PaneElement, MakerNavigator, OptionModuleForm, WidgetModuleForm, ExportModuleForm, DividerElement, pane_type_icons,
@@ -52,6 +54,97 @@ const INITIAL_FORM_PANE_HEIGHT = 250;
 
 const NAV_ITEM_SPACER_HEIGHT = 10;
 const NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION = 20;
+const NAVIGATOR_CLIPBOARD_KEY = "tactic.tile-maker.navigator-item.v1";
+const NAVIGATOR_CLIPBOARD_TYPE = "tactic/tile-maker-navigator-item";
+
+let navigatorClipboardFallback = null;
+
+const NAVIGATOR_RUNTIME_FIELDS = new Set([
+    "cmObject",
+    "default_warning_text",
+    "firstLineNumber",
+    "helperText",
+    "identifier",
+    "lastLineNumber",
+    "name_warning_text",
+    "scrollTop",
+    "show_dot",
+]);
+
+function navigatorClipboardKey() {
+    const userId = window.user_id == null ? "anonymous" : String(window.user_id);
+    return `${NAVIGATOR_CLIPBOARD_KEY}.${userId}`;
+}
+
+function sanitizeNavigatorItem(item) {
+    const sanitizedItem = {...item};
+    for (const field of NAVIGATOR_RUNTIME_FIELDS) {
+        delete sanitizedItem[field];
+    }
+    return JSON.parse(JSON.stringify(sanitizedItem));
+}
+
+function writeNavigatorClipboard(sectionIdentifier, item, isDivider) {
+    const clipboardData = JSON.stringify({
+        type: NAVIGATOR_CLIPBOARD_TYPE,
+        version: 1,
+        sectionIdentifier,
+        isDivider,
+        item: sanitizeNavigatorItem(item),
+    });
+    navigatorClipboardFallback = clipboardData;
+    let persisted = true;
+    try {
+        window.localStorage.setItem(navigatorClipboardKey(), clipboardData);
+    } catch (error) {
+        persisted = false;
+        console.warn("Unable to persist the Tile Maker navigator clipboard", error);
+    }
+    return persisted;
+}
+
+function readNavigatorClipboard() {
+    let clipboardData = null;
+    try {
+        clipboardData = window.localStorage.getItem(navigatorClipboardKey());
+    } catch (error) {
+        console.warn("Unable to read the Tile Maker navigator clipboard", error);
+    }
+    clipboardData = clipboardData || navigatorClipboardFallback;
+    if (!clipboardData) {
+        return null;
+    }
+    try {
+        const parsed = JSON.parse(clipboardData);
+        if (parsed.type !== NAVIGATOR_CLIPBOARD_TYPE || parsed.version !== 1 || !parsed.item) {
+            return null;
+        }
+        return parsed;
+    } catch (error) {
+        console.warn("Ignoring invalid Tile Maker navigator clipboard data", error);
+        return null;
+    }
+}
+
+function uniqueNavigatorItemName(item, existingItems, forceCopyName = false) {
+    if (typeof item.name !== "string") {
+        return item.name;
+    }
+    const existingNames = new Set(existingItems.map(existingItem => existingItem.name));
+    if (!forceCopyName && !existingNames.has(item.name)) {
+        return item.name;
+    }
+    const suffix = item.kind === "divider" ? " copy" : "_copy";
+    let candidate = `${item.name}${suffix}`;
+    let copyNumber = 2;
+    while (existingNames.has(candidate)) {
+        candidate = item.kind === "divider"
+            ? `${item.name}${suffix} ${copyNumber}`
+            : `${item.name}${suffix}${copyNumber}`;
+        copyNumber += 1;
+    }
+    return candidate;
+}
 
 const pane_type_icons = {
     "option": "select",
@@ -1255,6 +1348,7 @@ function MakerNavigator(props) {
                     if (section.editable) {
                         return (
                             <SortableNavSection key={section.title} title={section.title} dispatch={section.dispatch}
+                                                sectionIdentifier={section.identifier}
                                                 setIsOpen={(isOpen)=>props.setSectionOpen(section.identifier, isOpen)}
                                                 isOpen={props.expandedSectionList.includes(section.identifier)}
                                                 registerCmObject={props.registerCmObject}
@@ -1459,6 +1553,7 @@ function NavDivider(props) {
 function SortableNavSection(props) {
     props = {
         title: "",
+        sectionIdentifier: null,
         isOpen: false,
         setIsOpen: () => {
         },
@@ -1563,6 +1658,69 @@ function SortableNavSection(props) {
         return !item.kind && typeof item.name === "string" && item.name.includes("divider");
     }
 
+    function insertNavigatorItem(sourceItem, isDivider, afterIdentifier = null, forceCopyName = false) {
+        const copiedItem = sanitizeNavigatorItem(sourceItem);
+        const newItem = isDivider
+            ? copiedItem
+            : {...props.item_base, ...copiedItem};
+        newItem.identifier = guid();
+        newItem.name = uniqueNavigatorItemName(newItem, props.sub_items, forceCopyName);
+
+        if (afterIdentifier == null) {
+            props.dispatch({type: "add_at_end", new_item: newItem});
+        } else {
+            const itemIndex = props.sub_items.findIndex(item => item.identifier === afterIdentifier);
+            const insertIndex = itemIndex === -1 ? props.sub_items.length : itemIndex + 1;
+            props.dispatch({type: "add_at_index", new_item: newItem, insert_index: insertIndex});
+        }
+
+        props.setIsOpen(true);
+        if (isDivider) {
+            mpContext.toggleExpandedSub(newItem.identifier, true);
+        } else {
+            mpContext.pushCallback(() => {
+                mpContext.toggleVisibleTab(newItem.identifier);
+            });
+        }
+    }
+
+    function duplicateNavigatorItem(item, isDivider) {
+        insertNavigatorItem(item, isDivider, item.identifier, true);
+    }
+
+    function copyNavigatorItem(item, isDivider) {
+        const persisted = writeNavigatorClipboard(props.sectionIdentifier, item, isDivider);
+        doFlash({
+            message: persisted
+                ? `Copied ${item.name}`
+                : `Copied ${item.name}, but it will only be available in this Tile Maker instance`,
+            alert_type: persisted ? "alert-success" : "alert-warning",
+            timeout: 2500,
+        });
+    }
+
+    function pasteNavigatorItem(afterIdentifier = null) {
+        const clipboardData = readNavigatorClipboard();
+        if (!clipboardData) {
+            doFlash({
+                message: "There is no Tile Maker navigator item to paste",
+                alert_type: "alert-warning",
+                timeout: 3500,
+            });
+            return;
+        }
+        if (clipboardData.sectionIdentifier !== props.sectionIdentifier) {
+            const sourceSection = String(clipboardData.sectionIdentifier).replaceAll("_", " ");
+            doFlash({
+                message: `That item was copied from ${sourceSection} and can only be pasted into the same section`,
+                alert_type: "alert-warning",
+                timeout: 5000,
+            });
+            return;
+        }
+        insertNavigatorItem(clipboardData.item, clipboardData.isDivider === true, afterIdentifier);
+    }
+
     function createItem() {
         const uid = guid();
         const new_entry = {...props.item_base, identifier: uid};
@@ -1637,9 +1795,11 @@ function SortableNavSection(props) {
                           text={props.allowDividers ? "New method" : "Create Item"}/>
                 {props.allowDividers &&
                     <MenuItem icon="minus" onClick={createDivider} text="New divider"/>}
+                <MenuDivider/>
+                <MenuItem icon="clipboard" onClick={() => pasteNavigatorItem()} text="Paste item"/>
             </Menu>
         );
-    }, [props.allowDividers, props.item_base, props.sub_items]);
+    }, [props.allowDividers, props.item_base, props.sectionIdentifier, props.sub_items]);
 
     const createMenu = (
         <Menu>
@@ -1718,6 +1878,8 @@ function SortableNavSection(props) {
                                     }
                                     return (
                                         <SortableNavItem key={item.identifier} identifier={item.identifier}
+                                                         item={item}
+                                                         sectionIdentifier={props.sectionIdentifier}
                                                          title={item.name}
                                                          registerCmObject={props.registerCmObject}
                                                          showAsCode={props.showAsCode}
@@ -1737,6 +1899,9 @@ function SortableNavSection(props) {
                                                          expanded={item.expanded ? item.expanded : false}
                                                          icon={icon}
                                                          item_list={item.item_list}
+                                                         duplicateNavigatorItem={duplicateNavigatorItem}
+                                                         copyNavigatorItem={copyNavigatorItem}
+                                                         pasteNavigatorItem={pasteNavigatorItem}
                                                          dispatch={props.dispatch}/>
                                     )
                                 })}
@@ -1758,6 +1923,8 @@ function SortableNavSection(props) {
 function SortableNavItem(props) {
     props = {
         identifier: null,
+        item: null,
+        sectionIdentifier: null,
         activeId: null,
         isSpacer: false,
         isDivider: false,
@@ -1773,6 +1940,9 @@ function SortableNavItem(props) {
         default: null,
         registerCmObject: ()=>{
         },
+        duplicateNavigatorItem: () => {},
+        copyNavigatorItem: () => {},
+        pasteNavigatorItem: () => {},
         ...props
     };
     const {
@@ -1784,6 +1954,7 @@ function SortableNavItem(props) {
     } = useSortable({id: props.identifier});
 
     const mpContext = useContext(MakerPaneContext);
+    const dialogFuncs = useContext(DialogContext);
 
     let style = {
         transform: CSS.Transform.toString(transform),
@@ -1802,8 +1973,33 @@ function SortableNavItem(props) {
     }
 
 
-    function _deleteMe() {
-        props.dispatch({type: "delete_item", identifier: props.identifier})
+    async function _deleteMe() {
+        try {
+            await dialogFuncs.showModalPromise("ConfirmDialog", {
+                title: props.isDivider ? "Delete divider" : "Delete navigator item",
+                text_body: `Are you sure that you want to delete ${props.title}?`,
+                cancel_text: "do nothing",
+                submit_text: "delete",
+                handleClose: dialogFuncs.hideModal,
+            });
+            props.dispatch({type: "delete_item", identifier: props.identifier});
+        } catch (error) {
+            if (error !== "canceled") {
+                console.error("Unable to confirm navigator item deletion", error);
+            }
+        }
+    }
+
+    function _duplicateMe() {
+        props.duplicateNavigatorItem(props.item, props.isDivider);
+    }
+
+    function _copyMe() {
+        props.copyNavigatorItem(props.item, props.isDivider);
+    }
+
+    function _pasteAfterMe() {
+        props.pasteNavigatorItem(props.identifier);
     }
 
     function _editDivider() {
@@ -1827,8 +2023,19 @@ function SortableNavItem(props) {
     }
 
     const contextMenu = useMemo(() => {
+        if (props.isSpacer) {
+            return (
+                <Menu>
+                    <MenuItem icon="clipboard" onClick={_pasteAfterMe} text="Paste item"/>
+                </Menu>
+            );
+        }
         return (
             <Menu>
+                <MenuItem icon="duplicate" onClick={_duplicateMe} text="Duplicate item"/>
+                <MenuItem icon="clipboard" onClick={_copyMe} text="Copy item"/>
+                <MenuItem icon="clipboard" onClick={_pasteAfterMe} text="Paste item below"/>
+                <MenuDivider/>
                 {props.isDivider && !props.preserveAsMethod &&
                     <MenuItem icon="edit" onClick={_editDivider} text="Rename divider"/>}
                 {props.isDivider && props.preserveAsMethod &&
@@ -1842,7 +2049,9 @@ function SortableNavItem(props) {
                           text="Delete Item"/>
             </Menu>
         );
-    }, [props.isDivider, props.preserveAsMethod, props.identifier]);
+    }, [props.isSpacer, props.isDivider, props.preserveAsMethod, props.identifier, props.title, props.item,
+        props.sectionIdentifier, props.duplicateNavigatorItem, props.copyNavigatorItem,
+        props.pasteNavigatorItem, dialogFuncs]);
 
     return (
         <ContextMenu content={contextMenu}>

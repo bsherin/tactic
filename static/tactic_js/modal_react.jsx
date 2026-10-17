@@ -778,6 +778,7 @@ function ConfirmDialog(props) {
     }, []);
 
     function _submitHandler(event) {
+        event.preventDefault();
         set_show(false);
         props.handleSubmit();
         props.handleClose();
@@ -800,16 +801,18 @@ function ConfirmDialog(props) {
                 enforceFocus={true}
                 usePortal={false}
                 canEscapeKeyClose={true}>
-            <DialogBody>
-                <p>{props.text_body}</p>
-            </DialogBody>
-            <DialogFooter actions={
-                <Fragment>
-                    <Button onClick={_cancelHandler}>{props.cancel_text}</Button>
-                    <Button type="submit" intent={Intent.PRIMARY}
-                            onClick={_submitHandler}>{props.submit_text}</Button>
-                </Fragment>
-            }/>
+            <form onSubmit={_submitHandler}>
+                <DialogBody>
+                    <p>{props.text_body}</p>
+                </DialogBody>
+                <DialogFooter actions={
+                    <Fragment>
+                        <Button type="button" onClick={_cancelHandler}>{props.cancel_text}</Button>
+                        <Button type="submit" intent={Intent.PRIMARY}
+                                autoFocus={true}>{props.submit_text}</Button>
+                    </Fragment>
+                }/>
+            </form>
         </Dialog>
     )
 }

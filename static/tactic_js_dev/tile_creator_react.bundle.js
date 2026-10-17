@@ -194386,6 +194386,7 @@ function ConfirmDialog(props) {
     set_show(true);
   }, []);
   function _submitHandler(event) {
+    event.preventDefault();
     set_show(false);
     props.handleSubmit();
     props.handleClose();
@@ -194406,15 +194407,18 @@ function ConfirmDialog(props) {
     enforceFocus: true,
     usePortal: false,
     canEscapeKeyClose: true
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
+    onSubmit: _submitHandler
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.DialogBody, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, props.text_body)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.DialogFooter, {
     actions: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
+      type: "button",
       onClick: _cancelHandler
     }, props.cancel_text), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
       type: "submit",
       intent: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.Intent.PRIMARY,
-      onClick: _submitHandler
+      autoFocus: true
     }, props.submit_text))
-  }));
+  })));
 }
 ConfirmDialog = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ConfirmDialog);
 function EndSessionDialog(props) {
@@ -198474,12 +198478,11 @@ function createPropertyListUndoAction(action, stateRef, stagedUndoEntryRef) {
       };
       break;
     case "add_at_index":
-      var insertIndex = action.insert_index;
-      var insertedItem = listBefore[insertIndex];
-      if (insertedItem) {
+      var insertedId = action.new_item.identifier;
+      if (insertedId) {
         undoAction = {
           type: "delete_item",
-          identifier: insertedItem.identifier
+          identifier: insertedId
         };
       }
       break;
@@ -200500,6 +200503,7 @@ ResourceViewerApp = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(Res
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   _searchMatcher: () => (/* binding */ _searchMatcher),
+/* harmony export */   applySearchReplacement: () => (/* binding */ applySearchReplacement),
 /* harmony export */   countOccurrences: () => (/* binding */ countOccurrences),
 /* harmony export */   isRegex: () => (/* binding */ isRegex),
 /* harmony export */   useSearch: () => (/* binding */ useSearch)
@@ -200507,15 +200511,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _widget_info__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./widget_info */ "./static/tactic_js/widget_info.jsx");
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -200524,6 +200524,12 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
 
 
 
@@ -200535,20 +200541,76 @@ function makePreview(line, matchIndex, matchLength) {
   var suffix = end < line.length ? "…" : "";
   return prefix + line.slice(start, end).trim() + suffix;
 }
+function matchMetadata(match, fieldText, matchStart) {
+  var _match$groups;
+  return {
+    matchStart: matchStart,
+    matchEnd: matchStart + match[0].length,
+    matchText: match[0],
+    captures: match.slice(1),
+    groups: (_match$groups = match.groups) !== null && _match$groups !== void 0 ? _match$groups : null,
+    fieldText: fieldText
+  };
+}
+function getSignatureInfo(item, signatureEditable) {
+  var text = getSignatureText(item);
+  var editableRanges = [];
+  if (!text || !signatureEditable) {
+    return {
+      text: text,
+      editableRanges: editableRanges
+    };
+  }
+  if (item.mode === "javascript") {
+    var start = "function ".length;
+    editableRanges.push({
+      field: "name",
+      start: start,
+      end: start + item.name.length
+    });
+  } else {
+    var _item$argString;
+    var nameStart = "def ".length;
+    editableRanges.push({
+      field: "name",
+      start: nameStart,
+      end: nameStart + item.name.length
+    });
+    var argsStart = nameStart + item.name.length + "(self, ".length;
+    editableRanges.push({
+      field: "argString",
+      start: argsStart,
+      end: argsStart + ((_item$argString = item.argString) !== null && _item$argString !== void 0 ? _item$argString : "").length
+    });
+  }
+  return {
+    text: text,
+    editableRanges: editableRanges
+  };
+}
 function getSearchResultsForItem(item, matcher) {
   var paneName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+  var signatureEditable = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
   if (!matcher || !item || item.kind === "divider" && !item.preserve_as_method) {
     return [];
   }
   var results = [];
   var matchNumber = 0;
-  var signatureText = getSignatureText(item);
+  var _getSignatureInfo = getSignatureInfo(item, signatureEditable),
+    signatureText = _getSignatureInfo.text,
+    editableRanges = _getSignatureInfo.editableRanges;
   if (signatureText) {
     matcher.lastIndex = 0;
     var match;
     while ((match = matcher.exec(signatureText)) !== null) {
-      var _ref, _item$firstLineNumber;
-      results.push({
+      var _item$editableRange$f, _ref, _item$firstLineNumber, _editableRange$field;
+      var editableRange = editableRanges.find(function (range) {
+        return match.index >= range.start && match.index + match[0].length <= range.end;
+      });
+      var replaceable = Boolean(editableRange) && match[0].length > 0;
+      var fieldText = editableRange ? String((_item$editableRange$f = item[editableRange.field]) !== null && _item$editableRange$f !== void 0 ? _item$editableRange$f : "") : signatureText;
+      var fieldMatchStart = editableRange ? match.index - editableRange.start : match.index;
+      results.push(_objectSpread({
         identifier: item.identifier,
         paneName: (_ref = paneName !== null && paneName !== void 0 ? paneName : item.name) !== null && _ref !== void 0 ? _ref : item.identifier,
         matchNumber: null,
@@ -200556,8 +200618,12 @@ function getSearchResultsForItem(item, matcher) {
         subLabel: "signature",
         lineNumber: (_item$firstLineNumber = item.firstLineNumber) !== null && _item$firstLineNumber !== void 0 ? _item$firstLineNumber : 1,
         localLineNumber: 0,
-        preview: signatureText
-      });
+        preview: signatureText,
+        field: (_editableRange$field = editableRange === null || editableRange === void 0 ? void 0 : editableRange.field) !== null && _editableRange$field !== void 0 ? _editableRange$field : null,
+        valueKind: "string",
+        replaceable: replaceable,
+        useRegexReplacement: Boolean(matcher.tacticUseRegex)
+      }, matchMetadata(match, fieldText, fieldMatchStart)));
       if (match[0].length === 0) {
         matcher.lastIndex += 1;
       }
@@ -200567,13 +200633,14 @@ function getSearchResultsForItem(item, matcher) {
     return results;
   }
   var lines = item.codeText.split("\n");
+  var lineOffset = 0;
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i];
     matcher.lastIndex = 0;
     var _match = void 0;
     while ((_match = matcher.exec(line)) !== null) {
       var _ref2, _item$firstLineNumber2, _item$firstLineNumber3;
-      results.push({
+      results.push(_objectSpread({
         identifier: item.identifier,
         paneName: (_ref2 = paneName !== null && paneName !== void 0 ? paneName : item.name) !== null && _ref2 !== void 0 ? _ref2 : item.identifier,
         matchNumber: matchNumber,
@@ -200581,18 +200648,23 @@ function getSearchResultsForItem(item, matcher) {
         subLabel: ((_item$firstLineNumber2 = item.firstLineNumber) !== null && _item$firstLineNumber2 !== void 0 ? _item$firstLineNumber2 : 1) + i,
         lineNumber: ((_item$firstLineNumber3 = item.firstLineNumber) !== null && _item$firstLineNumber3 !== void 0 ? _item$firstLineNumber3 : 1) + i,
         localLineNumber: i + 1,
-        preview: makePreview(line, _match.index, _match[0].length)
-      });
+        preview: makePreview(line, _match.index, _match[0].length),
+        field: "codeText",
+        valueKind: "string",
+        replaceable: _match[0].length > 0,
+        useRegexReplacement: Boolean(matcher.tacticUseRegex)
+      }, matchMetadata(_match, item.codeText, lineOffset + _match.index)));
       matchNumber += 1;
       if (_match[0].length === 0) {
         matcher.lastIndex += 1;
       }
     }
+    lineOffset += line.length + 1;
   }
   return results;
 }
 function getSignatureText(item) {
-  var _item$argString;
+  var _item$argString2;
   if (!item || !item.name) {
     return "";
   }
@@ -200604,7 +200676,35 @@ function getSignatureText(item) {
   if (item.name === "globals" || item.name === "render_content") {
     return "";
   }
-  return "def ".concat(item.name, "(self, ").concat((_item$argString = item.argString) !== null && _item$argString !== void 0 ? _item$argString : "", "):");
+  return "def ".concat(item.name, "(self, ").concat((_item$argString2 = item.argString) !== null && _item$argString2 !== void 0 ? _item$argString2 : "", "):");
+}
+function getEditableFormField(item, kind, field, value) {
+  if (kind === "exports" || kind === "save_attrs") {
+    return ["name", "tags"].includes(field) && typeof value === "string" ? "string" : null;
+  }
+  if (kind === "options") {
+    if (["name", "display_text", "tags"].includes(field) && typeof value === "string") {
+      return "string";
+    }
+    if (field === "default" && typeof value === "string" && item.type !== "boolean" && item.type !== "divider") {
+      return "string";
+    }
+    if (field === "special_list" && Array.isArray(value)) {
+      return "line_array";
+    }
+    return null;
+  }
+  if (kind === "widgets") {
+    var _widgetInfo$item$kind;
+    var fieldType = (_widgetInfo$item$kind = _widget_info__WEBPACK_IMPORTED_MODULE_2__.widgetInfo[item.kind]) === null || _widgetInfo$item$kind === void 0 || (_widgetInfo$item$kind = _widgetInfo$item$kind[field]) === null || _widgetInfo$item$kind === void 0 ? void 0 : _widgetInfo$item$kind.type;
+    if (["string", "text_box", "code_box", "method", "code_string"].includes(fieldType) && typeof value === "string") {
+      return "string";
+    }
+    if (fieldType === "list" && Array.isArray(value)) {
+      return "line_array";
+    }
+  }
+  return null;
 }
 function getSearchableFieldsForFormItem(item, kind) {
   var skip = new Set(["identifier", "pane_height", "cmObject", "scrollTop"]);
@@ -200622,17 +200722,20 @@ function getSearchableFieldsForFormItem(item, kind) {
     if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
       fields.push({
         field: key,
-        text: String(value)
+        text: String(value),
+        valueKind: getEditableFormField(item, kind, key, value)
       });
     } else if (Array.isArray(value)) {
       fields.push({
         field: key,
-        text: value.join("\n")
+        text: value.join("\n"),
+        valueKind: getEditableFormField(item, kind, key, value)
       });
     } else if (_typeof(value) === "object") {
       fields.push({
         field: key,
-        text: JSON.stringify(value)
+        text: JSON.stringify(value),
+        valueKind: null
       });
     }
   }
@@ -200650,13 +200753,14 @@ function getSearchResultsForFormItem(item, matcher, kind) {
     for (_iterator.s(); !(_step = _iterator.n()).done;) {
       var fieldEntry = _step.value;
       var lines = fieldEntry.text.split("\n");
+      var lineOffset = 0;
       for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
         matcher.lastIndex = 0;
         var match = void 0;
         while ((match = matcher.exec(line)) !== null) {
           var _item$name;
-          results.push({
+          results.push(_objectSpread({
             identifier: item.identifier,
             paneName: (_item$name = item.name) !== null && _item$name !== void 0 ? _item$name : item.identifier,
             matchNumber: null,
@@ -200665,12 +200769,16 @@ function getSearchResultsForFormItem(item, matcher, kind) {
             subLabel: fieldEntry.field,
             lineNumber: null,
             localLineNumber: i + 1,
-            preview: "".concat(makePreview(line, match.index, match[0].length))
-          });
+            preview: "".concat(makePreview(line, match.index, match[0].length)),
+            valueKind: fieldEntry.valueKind,
+            replaceable: Boolean(fieldEntry.valueKind) && match[0].length > 0,
+            useRegexReplacement: Boolean(matcher.tacticUseRegex)
+          }, matchMetadata(match, fieldEntry.text, lineOffset + match.index)));
           if (match[0].length === 0) {
             matcher.lastIndex += 1;
           }
         }
+        lineOffset += line.length + 1;
       }
     }
   } catch (err) {
@@ -200679,6 +200787,32 @@ function getSearchResultsForFormItem(item, matcher, kind) {
     _iterator.f();
   }
   return results;
+}
+function expandRegexReplacement(replacement, result, fieldText) {
+  return replacement.replace(/\$(\$|&|`|'|<([^>]+)>|(\d{1,2}))/g, function (token, specifier, groupName, groupNumber) {
+    var _result$captures$leng, _result$captures, _result$captures2;
+    if (specifier === "$") return "$";
+    if (specifier === "&") return result.matchText;
+    if (specifier === "`") return fieldText.slice(0, result.matchStart);
+    if (specifier === "'") return fieldText.slice(result.matchEnd);
+    if (groupName != null) {
+      var _result$groups$groupN;
+      return result.groups && Object.prototype.hasOwnProperty.call(result.groups, groupName) ? (_result$groups$groupN = result.groups[groupName]) !== null && _result$groups$groupN !== void 0 ? _result$groups$groupN : "" : token;
+    }
+    var index = Number(groupNumber);
+    return index > 0 && index <= ((_result$captures$leng = (_result$captures = result.captures) === null || _result$captures === void 0 ? void 0 : _result$captures.length) !== null && _result$captures$leng !== void 0 ? _result$captures$leng : 0) ? (_result$captures2 = result.captures[index - 1]) !== null && _result$captures2 !== void 0 ? _result$captures2 : "" : token;
+  });
+}
+function applySearchReplacement(result, currentValue, replacement) {
+  var _result$fieldText;
+  var useRegex = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  var fieldText = result.valueKind === "line_array" ? Array.isArray(currentValue) ? currentValue.join("\n") : String(currentValue !== null && currentValue !== void 0 ? currentValue : "") : String(currentValue !== null && currentValue !== void 0 ? currentValue : "");
+  if (!result.replaceable || fieldText.slice(result.matchStart, result.matchEnd) !== result.matchText) {
+    return null;
+  }
+  var insertedText = useRegex ? expandRegexReplacement(replacement, result, (_result$fieldText = result.fieldText) !== null && _result$fieldText !== void 0 ? _result$fieldText : fieldText) : replacement;
+  var updatedText = fieldText.slice(0, result.matchStart) + insertedText + fieldText.slice(result.matchEnd);
+  return result.valueKind === "line_array" ? updatedText.split("\n") : updatedText;
 }
 var REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
 function countOccurrences(query, the_text) {
@@ -200710,6 +200844,7 @@ function _searchMatcher(term) {
   var use_regex = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
   var ignore_case = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
   var regex;
+  var usesRegexSyntax = use_regex;
   var flags = "";
   if (global) {
     flags += "g";
@@ -200729,13 +200864,16 @@ function _searchMatcher(term) {
         console.log("Error creating regex, trying escaping");
         var _escapedSearchTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         regex = new RegExp(_escapedSearchTerm, flags);
+        usesRegexSyntax = false;
       }
+      regex.tacticUseRegex = usesRegexSyntax;
       return regex;
     }
   } catch (e) {
     console.log("Error creating regex", e);
     return null;
   }
+  regex.tacticUseRegex = false;
   return regex;
 }
 function searchReducer(draft, action) {
@@ -200937,17 +201075,23 @@ function useSearch(directRefs, listRefs) {
         payload: currentIds
       });
     }
-  }, [listRefs[0].current, listRefs[1].current, listRefs[2].current].concat(_toConsumableArray(formListRefs.map(function (entry) {
+  }, [].concat(_toConsumableArray(listRefs.map(function (entry) {
+    return getRef(entry).current;
+  })), _toConsumableArray(formListRefs.map(function (entry) {
     return entry.ref.current;
   }))));
+  function getRef(entry) {
+    var _entry$ref;
+    return (_entry$ref = entry.ref) !== null && _entry$ref !== void 0 ? _entry$ref : entry;
+  }
   function getIds() {
     var ids = [];
     var _iterator4 = _createForOfIteratorHelper(directRefs),
       _step4;
     try {
       for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var itemRef = _step4.value;
-        ids.push(itemRef.current["identifier"]);
+        var entry = _step4.value;
+        ids.push(getRef(entry).current["identifier"]);
       }
     } catch (err) {
       _iterator4.e(err);
@@ -200958,8 +201102,8 @@ function useSearch(directRefs, listRefs) {
       _step5;
     try {
       for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-        var listRef = _step5.value;
-        var _iterator7 = _createForOfIteratorHelper(listRef.current),
+        var _entry = _step5.value;
+        var _iterator7 = _createForOfIteratorHelper(getRef(_entry).current),
           _step7;
         try {
           for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
@@ -200981,8 +201125,8 @@ function useSearch(directRefs, listRefs) {
       _step6;
     try {
       for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        var entry = _step6.value;
-        var _iterator8 = _createForOfIteratorHelper(entry.ref.current),
+        var _entry2 = _step6.value;
+        var _iterator8 = _createForOfIteratorHelper(_entry2.ref.current),
           _step8;
         try {
           for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
@@ -201014,8 +201158,9 @@ function useSearch(directRefs, listRefs) {
     var allResults = [];
     var globalMatchNumber = 0;
     function addItemResults(item) {
+      var signatureEditable = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var reg = _searchMatcher(searchString, true, valueRef.current.use_regex);
-      var itemResults = getSearchResultsForItem(item, reg, item.name);
+      var itemResults = getSearchResultsForItem(item, reg, item.name, signatureEditable);
       var _iterator9 = _createForOfIteratorHelper(itemResults),
         _step9;
       try {
@@ -201036,8 +201181,8 @@ function useSearch(directRefs, listRefs) {
       _step0;
     try {
       for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-        var itemRef = _step0.value;
-        addItemResults(itemRef.current);
+        var entry = _step0.value;
+        addItemResults(getRef(entry).current, Boolean(entry.signatureEditable));
       }
     } catch (err) {
       _iterator0.e(err);
@@ -201048,14 +201193,14 @@ function useSearch(directRefs, listRefs) {
       _step1;
     try {
       for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
-        var entry = _step1.value;
-        var _iterator11 = _createForOfIteratorHelper(entry.ref.current),
+        var _entry3 = _step1.value;
+        var _iterator11 = _createForOfIteratorHelper(_entry3.ref.current),
           _step11;
         try {
           for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
             var item = _step11.value;
             var reg = _searchMatcher(searchString, true, valueRef.current.use_regex);
-            var itemResults = getSearchResultsForFormItem(item, reg, entry.kind);
+            var itemResults = getSearchResultsForFormItem(item, reg, _entry3.kind);
             var _iterator12 = _createForOfIteratorHelper(itemResults),
               _step12;
             try {
@@ -201087,13 +201232,13 @@ function useSearch(directRefs, listRefs) {
       _step10;
     try {
       for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-        var listRef = _step10.value;
-        var _iterator13 = _createForOfIteratorHelper(listRef.current),
+        var _entry4 = _step10.value;
+        var _iterator13 = _createForOfIteratorHelper(getRef(_entry4).current),
           _step13;
         try {
           for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
             var _item2 = _step13.value;
-            addItemResults(_item2);
+            addItemResults(_item2, Boolean(_entry4.signatureEditable));
           }
         } catch (err) {
           _iterator13.e(err);
@@ -201111,7 +201256,7 @@ function useSearch(directRefs, listRefs) {
       payload: allResults
     });
   }
-  return [value, customDispatch, valueRef];
+  return [value, customDispatch, valueRef, getAllSearchMatches];
 }
 
 /***/ }),
@@ -202556,26 +202701,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html/html.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/card/card.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controlGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/context-menu/contextMenu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/popover/popover.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html/html.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/card/card.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controlGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/context-menu/contextMenu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/popover/popover.js");
 /* harmony import */ var _dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @dnd-kit/core */ "./node_modules/@dnd-kit/core/dist/core.esm.js");
 /* harmony import */ var _dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @dnd-kit/sortable */ "./node_modules/@dnd-kit/sortable/dist/sortable.esm.js");
 /* harmony import */ var _dnd_kit_utilities__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @dnd-kit/utilities */ "./node_modules/@dnd-kit/utilities/dist/utilities.esm.js");
-/* harmony import */ var react_transition_group__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! react-transition-group */ "./node_modules/react-transition-group/esm/CSSTransition.js");
+/* harmony import */ var react_transition_group__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! react-transition-group */ "./node_modules/react-transition-group/esm/CSSTransition.js");
 /* harmony import */ var _error_boundary__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./error_boundary */ "./static/tactic_js/error_boundary.jsx");
 /* harmony import */ var _selector_advanced__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./selector_advanced */ "./static/tactic_js/selector_advanced.jsx");
 /* harmony import */ var _react_codemirror6__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./react-codemirror6 */ "./static/tactic_js/react-codemirror6.jsx");
@@ -202587,8 +202733,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _drag_handle__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./drag_handle */ "./static/tactic_js/drag_handle.jsx");
 /* harmony import */ var _library_widgets__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./library_widgets */ "./static/tactic_js/library_widgets.jsx");
 /* harmony import */ var _widget_info__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./widget_info */ "./static/tactic_js/widget_info.jsx");
+/* harmony import */ var _toaster__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./toaster */ "./static/tactic_js/toaster.jsx");
+/* harmony import */ var _modal_react__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./modal_react */ "./static/tactic_js/modal_react.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
@@ -202597,15 +202749,17 @@ function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLim
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 // noinspection JSValidateTypes
+
+
 
 
 
@@ -202629,6 +202783,90 @@ var INITIAL_CODE_PANE_HEIGHT = 330;
 var INITIAL_FORM_PANE_HEIGHT = 250;
 var NAV_ITEM_SPACER_HEIGHT = 10;
 var NAV_ITEM_SPACER_HEIGHT_EMPTY_SECTION = 20;
+var NAVIGATOR_CLIPBOARD_KEY = "tactic.tile-maker.navigator-item.v1";
+var NAVIGATOR_CLIPBOARD_TYPE = "tactic/tile-maker-navigator-item";
+var navigatorClipboardFallback = null;
+var NAVIGATOR_RUNTIME_FIELDS = new Set(["cmObject", "default_warning_text", "firstLineNumber", "helperText", "identifier", "lastLineNumber", "name_warning_text", "scrollTop", "show_dot"]);
+function navigatorClipboardKey() {
+  var userId = window.user_id == null ? "anonymous" : String(window.user_id);
+  return "".concat(NAVIGATOR_CLIPBOARD_KEY, ".").concat(userId);
+}
+function sanitizeNavigatorItem(item) {
+  var sanitizedItem = _objectSpread({}, item);
+  var _iterator = _createForOfIteratorHelper(NAVIGATOR_RUNTIME_FIELDS),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var field = _step.value;
+      delete sanitizedItem[field];
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  return JSON.parse(JSON.stringify(sanitizedItem));
+}
+function writeNavigatorClipboard(sectionIdentifier, item, isDivider) {
+  var clipboardData = JSON.stringify({
+    type: NAVIGATOR_CLIPBOARD_TYPE,
+    version: 1,
+    sectionIdentifier: sectionIdentifier,
+    isDivider: isDivider,
+    item: sanitizeNavigatorItem(item)
+  });
+  navigatorClipboardFallback = clipboardData;
+  var persisted = true;
+  try {
+    window.localStorage.setItem(navigatorClipboardKey(), clipboardData);
+  } catch (error) {
+    persisted = false;
+    console.warn("Unable to persist the Tile Maker navigator clipboard", error);
+  }
+  return persisted;
+}
+function readNavigatorClipboard() {
+  var clipboardData = null;
+  try {
+    clipboardData = window.localStorage.getItem(navigatorClipboardKey());
+  } catch (error) {
+    console.warn("Unable to read the Tile Maker navigator clipboard", error);
+  }
+  clipboardData = clipboardData || navigatorClipboardFallback;
+  if (!clipboardData) {
+    return null;
+  }
+  try {
+    var parsed = JSON.parse(clipboardData);
+    if (parsed.type !== NAVIGATOR_CLIPBOARD_TYPE || parsed.version !== 1 || !parsed.item) {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    console.warn("Ignoring invalid Tile Maker navigator clipboard data", error);
+    return null;
+  }
+}
+function uniqueNavigatorItemName(item, existingItems) {
+  var forceCopyName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  if (typeof item.name !== "string") {
+    return item.name;
+  }
+  var existingNames = new Set(existingItems.map(function (existingItem) {
+    return existingItem.name;
+  }));
+  if (!forceCopyName && !existingNames.has(item.name)) {
+    return item.name;
+  }
+  var suffix = item.kind === "divider" ? " copy" : "_copy";
+  var candidate = "".concat(item.name).concat(suffix);
+  var copyNumber = 2;
+  while (existingNames.has(candidate)) {
+    candidate = item.kind === "divider" ? "".concat(item.name).concat(suffix, " ").concat(copyNumber) : "".concat(item.name).concat(suffix).concat(copyNumber);
+    copyNumber += 1;
+  }
+  return candidate;
+}
 var pane_type_icons = {
   "option": "select",
   "widget": "widget",
@@ -202641,46 +202879,46 @@ var pane_type_icons = {
   "javascript": "function",
   "handler_method": "wrench"
 };
-var delete_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+var delete_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
   icon: "delete",
   size: 12
 });
-var edit_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+var edit_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
   icon: "edit",
   size: 12
 });
-var plus_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+var plus_icon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
   icon: "plus",
   size: 12
 });
-var plus_icon_larger = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+var plus_icon_larger = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
   icon: "plus",
   size: 13
 });
 function textRowsToArray(tstring) {
   var slist = [];
-  var _iterator = _createForOfIteratorHelper(tstring.toString().split("\n")),
-    _step;
+  var _iterator2 = _createForOfIteratorHelper(tstring.toString().split("\n")),
+    _step2;
   try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var item = _step.value;
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var item = _step2.value;
       slist.push(item);
     }
   } catch (err) {
-    _iterator.e(err);
+    _iterator2.e(err);
   } finally {
-    _iterator.f();
+    _iterator2.f();
   }
   return slist;
 }
 function arrayToTextRows(ar) {
   var nstring = "";
   var isfirst = true;
-  var _iterator2 = _createForOfIteratorHelper(ar),
-    _step2;
+  var _iterator3 = _createForOfIteratorHelper(ar),
+    _step3;
   try {
-    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-      var item = _step2.value;
+    for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+      var item = _step3.value;
       if (!isfirst) {
         nstring += "\n";
       } else {
@@ -202689,9 +202927,9 @@ function arrayToTextRows(ar) {
       nstring += String(item);
     }
   } catch (err) {
-    _iterator2.e(err);
+    _iterator3.e(err);
   } finally {
-    _iterator2.f();
+    _iterator3.f();
   }
   return nstring;
 }
@@ -202747,15 +202985,15 @@ function SimplePaneTitle(props) {
     subtitle: null,
     icon: null
   }, props);
-  var theIcon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  var theIcon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
     icon: props.icon,
     size: 13
   });
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "creator-simple-title"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.EntityTitle, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.EntityTitle, {
     title: props.title,
-    heading: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.H6,
+    heading: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.H6,
     subtitle: props.subtitle,
     icon: theIcon
   }));
@@ -202764,7 +203002,7 @@ function AnimatedItem(_ref) {
   var visible = _ref.visible,
     children = _ref.children;
   var nodeRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_transition_group__WEBPACK_IMPORTED_MODULE_18__["default"], {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_transition_group__WEBPACK_IMPORTED_MODULE_20__["default"], {
     "in": visible,
     timeout: 300,
     classNames: "fade",
@@ -202867,7 +203105,7 @@ function PaneElement(props) {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(AnimatedItem, {
     visible: props.visible,
     identifier: props.identifier
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.Card, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.Card, {
     ref: top_ref,
     key: props.identifier,
     elevation: 0,
@@ -202878,7 +203116,7 @@ function PaneElement(props) {
       display: "flex",
       flexDirection: "column"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     variant: "minimal",
     size: "small",
     icon: "cross",
@@ -202886,14 +203124,14 @@ function PaneElement(props) {
     onClick: function onClick() {
       mpContext.toggleVisibleTab(props.identifier);
     }
-  }), props.allowDelete && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }), props.allowDelete && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     variant: "minimal",
     intent: "danger",
     size: "small",
     icon: "trash",
     className: "maker-pane-button maker-pane-right-button",
     onClick: _deleteMe
-  }), !props.allowDelete && props.icon && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  }), !props.allowDelete && props.icon && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
     icon: props.icon,
     size: 20,
     intent: "primary",
@@ -202978,28 +203216,12 @@ function MetadataModule(props) {
   }
   function appendOptionText() {
     var res_string = "\n\noptions: \n\n";
-    var _iterator3 = _createForOfIteratorHelper(props.option_list_ref.current),
-      _step3;
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var opt = _step3.value;
-        res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
-      }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
-    }
-    appendToNotes(res_string);
-  }
-  function appendExportText() {
-    var res_string = "\n\nexports: \n\n";
-    var _iterator4 = _createForOfIteratorHelper(props.export_list_ref.current),
+    var _iterator4 = _createForOfIteratorHelper(props.option_list_ref.current),
       _step4;
     try {
       for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        var exp = _step4.value;
-        res_string += " * `".concat(exp.name, "` : \n");
+        var opt = _step4.value;
+        res_string += " * `".concat(opt.name, "` (").concat(opt.type, "): \n");
       }
     } catch (err) {
       _iterator4.e(err);
@@ -203008,8 +203230,24 @@ function MetadataModule(props) {
     }
     appendToNotes(res_string);
   }
+  function appendExportText() {
+    var res_string = "\n\nexports: \n\n";
+    var _iterator5 = _createForOfIteratorHelper(props.export_list_ref.current),
+      _step5;
+    try {
+      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+        var exp = _step5.value;
+        res_string += " * `".concat(exp.name, "` : \n");
+      }
+    } catch (err) {
+      _iterator5.e(err);
+    } finally {
+      _iterator5.f();
+    }
+    appendToNotes(res_string);
+  }
   function MetadataNotesButtons(props) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
       style: {
         height: "fit-content",
         alignSelf: "start",
@@ -203025,7 +203263,7 @@ function MetadataModule(props) {
         e.preventDefault();
         appendOptionText(props.appendToNotes);
       }
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
       style: {
         height: "fit-content",
         alignSelf: "start",
@@ -203057,7 +203295,7 @@ function MetadataModule(props) {
     icon: "properties"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, {
     custom_message: "Error in NativeTags"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.FormGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.FormGroup, {
     label: "Tags"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_combined_metadata__WEBPACK_IMPORTED_MODULE_10__.NativeTags, {
     key: "".concat(props.res_name, "-").concat(props.res_type, "-tags"),
@@ -203068,15 +203306,15 @@ function MetadataModule(props) {
     res_type: "tile"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, {
     custom_message: "Error in Category"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.FormGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.FormGroup, {
     label: "Category",
     key: "Category"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.InputGroup, {
     onChange: handleCategoryChange,
     value: props.metadataRef.current.category
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, {
     custom_message: "Error in Icon"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.FormGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.FormGroup, {
     label: "Icon"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_combined_metadata__WEBPACK_IMPORTED_MODULE_10__.IconSelector, {
     key: "".concat(props.res_name, "-").concat(props.res_type, "-icon-selector"),
@@ -203085,7 +203323,7 @@ function MetadataModule(props) {
     handleSelectChange: handleIconChange
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, {
     custom_message: "Error in Notes"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.FormGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.FormGroup, {
     label: "Notes"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_combined_metadata__WEBPACK_IMPORTED_MODULE_10__.NotesField, {
     key: "".concat(props.res_name, "-").concat(props.res_type, "-notes"),
@@ -203099,7 +203337,7 @@ function MetadataModule(props) {
     handleBlur: null
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(MetadataNotesButtons, null))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, {
     custom_message: "Error in bottom stuff"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.Switch, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.Switch, {
     label: "Couple save_attrs and exports",
     className: "ml-2 mb-0 mt-1",
     size: "medium",
@@ -203771,10 +204009,10 @@ function DividerElement(props) {
       position: "relative",
       width: "100%"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__.EntityTitle, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.EntityTitle, {
     title: props.text,
     icon: props.icon,
-    heading: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.H4
+    heading: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.H4
   }));
 }
 function CmElement(props) {
@@ -204012,6 +204250,7 @@ function MakerNavigator(props) {
         key: section.title,
         title: section.title,
         dispatch: section.dispatch,
+        sectionIdentifier: section.identifier,
         setIsOpen: function setIsOpen(isOpen) {
           return props.setSectionOpen(section.identifier, isOpen);
         },
@@ -204068,9 +204307,9 @@ function NavSection(props) {
   // noinspection JSValidateTypes
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "nav-section"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.ButtonGroup, {
     key: "button-group"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     variant: "minimal",
     className: "nav-section-button",
     icon: props.icon,
@@ -204078,11 +204317,11 @@ function NavSection(props) {
     onClick: function onClick() {
       setIsOpen(!isOpen);
     }
-  }, props.title), props.right_button != null && props.right_button), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Collapse, {
+  }, props.title), props.right_button != null && props.right_button), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.Collapse, {
     key: "collapse",
     isOpen: isOpen
   }, props.sub_items.filter(filterItem).map(function (item) {
-    var icon = props.icon_dict ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+    var icon = props.icon_dict ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
       icon: props.icon_dict[item[props.icon_field]],
       size: 12
     }) : null;
@@ -204129,7 +204368,7 @@ function DirectNavSection(props) {
     });
     return omni_items;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     className: className,
     icon: props.icon,
     intent: mpContext.visibleTabList.includes(props.identifier) ? "primary" : "none",
@@ -204187,15 +204426,15 @@ function HandlerCreator(props) {
       marginRight: 25,
       marginBottom: 10
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.InputGroup, {
     size: "small",
     leftElement: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_selector_advanced__WEBPACK_IMPORTED_MODULE_5__.BpSelectAdvanced, {
       options: fullChoiceList,
       value: selectedChoice,
       onChange: setSelectedChoice
     }),
-    rightElement: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
-      icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+    rightElement: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
+      icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
         icon: "plus",
         size: 16
       }),
@@ -204209,7 +204448,7 @@ function NavDivider(props) {
   props = _objectSpread({
     name: "divider"
   }, props);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.Divider, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.Divider, {
     key: name,
     style: {
       width: '90%',
@@ -204221,6 +204460,7 @@ function NavDivider(props) {
 function SortableNavSection(props) {
   props = _objectSpread({
     title: "",
+    sectionIdentifier: null,
     isOpen: false,
     setIsOpen: function setIsOpen() {},
     item_base: {},
@@ -204289,11 +204529,11 @@ function SortableNavSection(props) {
   function _getOmniItems() {
     var omni_items = [];
     ;
-    var _iterator5 = _createForOfIteratorHelper(props.sub_items),
-      _step5;
+    var _iterator6 = _createForOfIteratorHelper(props.sub_items),
+      _step6;
     try {
       var _loop = function _loop() {
-        var sub_item = _step5.value;
+        var sub_item = _step6.value;
         if (isDividerItem(sub_item)) {
           return 1; // continue
         }
@@ -204309,13 +204549,13 @@ function SortableNavSection(props) {
           }
         });
       };
-      for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
         if (_loop()) continue;
       }
     } catch (err) {
-      _iterator5.e(err);
+      _iterator6.e(err);
     } finally {
-      _iterator5.f();
+      _iterator6.f();
     }
     return omni_items;
   }
@@ -204331,6 +204571,71 @@ function SortableNavSection(props) {
     }
     // Old Tile Maker data did not have an explicit kind.
     return !item.kind && typeof item.name === "string" && item.name.includes("divider");
+  }
+  function insertNavigatorItem(sourceItem, isDivider) {
+    var afterIdentifier = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    var forceCopyName = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+    var copiedItem = sanitizeNavigatorItem(sourceItem);
+    var newItem = isDivider ? copiedItem : _objectSpread(_objectSpread({}, props.item_base), copiedItem);
+    newItem.identifier = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_7__.guid)();
+    newItem.name = uniqueNavigatorItemName(newItem, props.sub_items, forceCopyName);
+    if (afterIdentifier == null) {
+      props.dispatch({
+        type: "add_at_end",
+        new_item: newItem
+      });
+    } else {
+      var itemIndex = props.sub_items.findIndex(function (item) {
+        return item.identifier === afterIdentifier;
+      });
+      var insertIndex = itemIndex === -1 ? props.sub_items.length : itemIndex + 1;
+      props.dispatch({
+        type: "add_at_index",
+        new_item: newItem,
+        insert_index: insertIndex
+      });
+    }
+    props.setIsOpen(true);
+    if (isDivider) {
+      mpContext.toggleExpandedSub(newItem.identifier, true);
+    } else {
+      mpContext.pushCallback(function () {
+        mpContext.toggleVisibleTab(newItem.identifier);
+      });
+    }
+  }
+  function duplicateNavigatorItem(item, isDivider) {
+    insertNavigatorItem(item, isDivider, item.identifier, true);
+  }
+  function copyNavigatorItem(item, isDivider) {
+    var persisted = writeNavigatorClipboard(props.sectionIdentifier, item, isDivider);
+    (0,_toaster__WEBPACK_IMPORTED_MODULE_15__.doFlash)({
+      message: persisted ? "Copied ".concat(item.name) : "Copied ".concat(item.name, ", but it will only be available in this Tile Maker instance"),
+      alert_type: persisted ? "alert-success" : "alert-warning",
+      timeout: 2500
+    });
+  }
+  function pasteNavigatorItem() {
+    var afterIdentifier = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var clipboardData = readNavigatorClipboard();
+    if (!clipboardData) {
+      (0,_toaster__WEBPACK_IMPORTED_MODULE_15__.doFlash)({
+        message: "There is no Tile Maker navigator item to paste",
+        alert_type: "alert-warning",
+        timeout: 3500
+      });
+      return;
+    }
+    if (clipboardData.sectionIdentifier !== props.sectionIdentifier) {
+      var sourceSection = String(clipboardData.sectionIdentifier).replaceAll("_", " ");
+      (0,_toaster__WEBPACK_IMPORTED_MODULE_15__.doFlash)({
+        message: "That item was copied from ".concat(sourceSection, " and can only be pasted into the same section"),
+        alert_type: "alert-warning",
+        timeout: 5000
+      });
+      return;
+    }
+    insertNavigatorItem(clipboardData.item, clipboardData.isDivider === true, afterIdentifier);
   }
   function createItem() {
     var uid = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_7__.guid)();
@@ -204412,38 +204717,44 @@ function SortableNavSection(props) {
     });
   }
   var contextMenu = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
       icon: "plus",
       onClick: createItem,
       intent: "primary",
       text: props.allowDividers ? "New method" : "Create Item"
-    }), props.allowDividers && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    }), props.allowDividers && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
       icon: "minus",
       onClick: createDivider,
       text: "New divider"
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+      icon: "clipboard",
+      onClick: function onClick() {
+        return pasteNavigatorItem();
+      },
+      text: "Paste item"
     }));
-  }, [props.allowDividers, props.item_base, props.sub_items]);
-  var createMenu = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+  }, [props.allowDividers, props.item_base, props.sectionIdentifier, props.sub_items]);
+  var createMenu = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
     icon: "function",
     onClick: createItem,
     text: "New method"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
     icon: "minus",
     onClick: createDivider,
     text: "New divider"
   }));
   var inSubSection = false;
   var currentlyExpanded = false;
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.ContextMenu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
     content: contextMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "sortable-nav-section"
-  }, props.createFromList && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, {
+  }, props.createFromList && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.ControlGroup, {
     vertical: true,
     style: {
       alignItems: "self-start"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     className: "nav-section-button",
     variant: "minimal",
     icon: props.icon,
@@ -204460,7 +204771,7 @@ function SortableNavSection(props) {
       flexDirection: "row",
       justifyContent: "space-between"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.ButtonGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     className: "nav-section-button",
     variant: "minimal",
     icon: props.icon,
@@ -204468,14 +204779,14 @@ function SortableNavSection(props) {
     onClick: function onClick() {
       props.setIsOpen(!props.isOpen);
     }
-  }, props.title), props.allowDividers ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Popover, {
+  }, props.title), props.allowDividers ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.Popover, {
     placement: "bottom-start",
     content: createMenu
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     icon: plus_icon_larger,
     size: "small",
     variant: "minimal"
-  })) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  })) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     icon: plus_icon_larger,
     size: "small",
     variant: "minimal",
@@ -204491,10 +204802,10 @@ function SortableNavSection(props) {
       fontSize: 11,
       marginRight: 5
     }
-  }, props.sub_items.length), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  }, props.sub_items.length), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
     icon: props.isOpen ? "chevron-down" : "chevron-right",
     size: 12
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.Collapse, {
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_27__.Collapse, {
     className: "nav-section",
     isOpen: props.isOpen
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_1__.DndContext, {
@@ -204510,7 +204821,7 @@ function SortableNavSection(props) {
     if (item.identifier === activeId) {
       return null; // Don't render the item being dragged
     }
-    var icon = props.icon_dict ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+    var icon = props.icon_dict ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
       icon: props.icon_dict[item[props.icon_field]],
       size: 12
     }) : null;
@@ -204526,6 +204837,8 @@ function SortableNavSection(props) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SortableNavItem, {
       key: item.identifier,
       identifier: item.identifier,
+      item: item,
+      sectionIdentifier: props.sectionIdentifier,
       title: item.name,
       registerCmObject: props.registerCmObject,
       showAsCode: props.showAsCode,
@@ -204545,6 +204858,9 @@ function SortableNavSection(props) {
       expanded: item.expanded ? item.expanded : false,
       icon: icon,
       item_list: item.item_list,
+      duplicateNavigatorItem: duplicateNavigatorItem,
+      copyNavigatorItem: copyNavigatorItem,
+      pasteNavigatorItem: pasteNavigatorItem,
       dispatch: props.dispatch
     });
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SortableNavItem, {
@@ -204558,6 +204874,8 @@ function SortableNavSection(props) {
 function SortableNavItem(props) {
   props = _objectSpread({
     identifier: null,
+    item: null,
+    sectionIdentifier: null,
     activeId: null,
     isSpacer: false,
     isDivider: false,
@@ -204571,7 +204889,10 @@ function SortableNavItem(props) {
     showDefault: false,
     showSelf: false,
     "default": null,
-    registerCmObject: function registerCmObject() {}
+    registerCmObject: function registerCmObject() {},
+    duplicateNavigatorItem: function duplicateNavigatorItem() {},
+    copyNavigatorItem: function copyNavigatorItem() {},
+    pasteNavigatorItem: function pasteNavigatorItem() {}
   }, props);
   var _useSortable = (0,_dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_2__.useSortable)({
       id: props.identifier
@@ -204582,6 +204903,7 @@ function SortableNavItem(props) {
     transform = _useSortable.transform,
     transition = _useSortable.transition;
   var mpContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_tile_maker_support__WEBPACK_IMPORTED_MODULE_8__.MakerPaneContext);
+  var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_16__.DialogContext);
   var style = {
     transform: _dnd_kit_utilities__WEBPACK_IMPORTED_MODULE_3__.CSS.Transform.toString(transform)
   };
@@ -204597,10 +204919,51 @@ function SortableNavItem(props) {
     style.transition = transition;
   }
   function _deleteMe() {
-    props.dispatch({
-      type: "delete_item",
-      identifier: props.identifier
-    });
+    return _deleteMe2.apply(this, arguments);
+  }
+  function _deleteMe2() {
+    _deleteMe2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var _t;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.n) {
+          case 0:
+            _context.p = 0;
+            _context.n = 1;
+            return dialogFuncs.showModalPromise("ConfirmDialog", {
+              title: props.isDivider ? "Delete divider" : "Delete navigator item",
+              text_body: "Are you sure that you want to delete ".concat(props.title, "?"),
+              cancel_text: "do nothing",
+              submit_text: "delete",
+              handleClose: dialogFuncs.hideModal
+            });
+          case 1:
+            props.dispatch({
+              type: "delete_item",
+              identifier: props.identifier
+            });
+            _context.n = 3;
+            break;
+          case 2:
+            _context.p = 2;
+            _t = _context.v;
+            if (_t !== "canceled") {
+              console.error("Unable to confirm navigator item deletion", _t);
+            }
+          case 3:
+            return _context.a(2);
+        }
+      }, _callee, null, [[0, 2]]);
+    }));
+    return _deleteMe2.apply(this, arguments);
+  }
+  function _duplicateMe() {
+    props.duplicateNavigatorItem(props.item, props.isDivider);
+  }
+  function _copyMe() {
+    props.copyNavigatorItem(props.item, props.isDivider);
+  }
+  function _pasteAfterMe() {
+    props.pasteNavigatorItem(props.identifier);
   }
   function _editDivider() {
     if (props.preserveAsMethod) {
@@ -204623,54 +204986,73 @@ function SortableNavItem(props) {
     }
   }
   var contextMenu = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.Menu, null, props.isDivider && !props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    if (props.isSpacer) {
+      return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+        icon: "clipboard",
+        onClick: _pasteAfterMe,
+        text: "Paste item"
+      }));
+    }
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+      icon: "duplicate",
+      onClick: _duplicateMe,
+      text: "Duplicate item"
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+      icon: "clipboard",
+      onClick: _copyMe,
+      text: "Copy item"
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
+      icon: "clipboard",
+      onClick: _pasteAfterMe,
+      text: "Paste item below"
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.MenuDivider, null), props.isDivider && !props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
       icon: "edit",
       onClick: _editDivider,
       text: "Rename divider"
-    }), props.isDivider && props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    }), props.isDivider && props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
       icon: "code",
       onClick: _editDivider,
       text: "Edit legacy method"
-    }), props.isDivider && props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    }), props.isDivider && props.preserveAsMethod && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
       icon: "exchange",
       onClick: _convertLegacyDivider,
       text: "Convert to comment divider"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.MenuItem, {
       icon: "delete",
       onClick: _deleteMe,
       intent: "danger",
       text: "Delete Item"
     }));
-  }, [props.isDivider, props.preserveAsMethod, props.identifier]);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.ContextMenu, {
+  }, [props.isSpacer, props.isDivider, props.preserveAsMethod, props.identifier, props.title, props.item, props.sectionIdentifier, props.duplicateNavigatorItem, props.copyNavigatorItem, props.pasteNavigatorItem, dialogFuncs]);
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ContextMenu, {
     content: contextMenu
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", _extends({
     ref: setNodeRef,
     style: style
   }, attributes, listeners, {
     className: "sortable-nav-item"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_21__.ButtonGroup, null, props.isEditingDivider ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(DividerNameEditor, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.ButtonGroup, null, props.isEditingDivider ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(DividerNameEditor, {
     title: props.title,
     identifier: props.identifier,
     dispatch: props.dispatch,
     finishEditing: function finishEditing() {
       return props.setEditingDividerId(null);
     }
-  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItem, props), props.isSpacer ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItem, props), props.isSpacer ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     icon: delete_icon,
     size: "small",
     variant: "minimal",
     className: "show-on-hover",
     tabIndex: -1,
     onClick: _deleteMe
-  }), !props.isDivider ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }), !props.isDivider ? null : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     icon: edit_icon,
     size: "small",
     variant: "minimal",
     className: "show-on-hover",
     tabIndex: -1,
     onClick: _editDivider
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     icon: plus_icon,
     size: "small",
     variant: "minimal",
@@ -204713,7 +205095,7 @@ function DividerNameEditor(props) {
       props.finishEditing();
     }
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_23__.InputGroup, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_25__.InputGroup, {
     autoFocus: true,
     size: "small",
     value: value,
@@ -204746,7 +205128,7 @@ function NavItem(props) {
   }, props);
   var mpContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_tile_maker_support__WEBPACK_IMPORTED_MODULE_8__.MakerPaneContext);
   if (props.isSpacer) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
       className: "spacer-nav-item maker-nav-item",
       icon: null,
       intent: "none",
@@ -204843,7 +205225,7 @@ function NavItem(props) {
     }, props.title);
   }
   var dot_opacity = mpContext.visibleTabList.includes(props.identifier) && !props.isDivider ? 1 : 0;
-  var fullButton = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Icon, {
+  var fullButton = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
     icon: "record",
     size: 10,
     style: {
@@ -204851,7 +205233,7 @@ function NavItem(props) {
       verticalAlign: "middle"
     }
   }), buttonText);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_20__.Button, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     className: className,
     icon: props.icon,
     size: "medium",
@@ -204888,13 +205270,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
 /* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
@@ -204943,7 +205325,9 @@ function getMatchingIcon(result) {
 function SearchResultItem(props) {
   var result = props.result,
     isCurrent = props.isCurrent,
-    onSelectResult = props.onSelectResult;
+    onSelectResult = props.onSelectResult,
+    onReplaceResult = props.onReplaceResult,
+    replacementText = props.replacementText;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "makert-search-result-item ".concat(isCurrent ? "current-search-result" : ""),
     onClick: function onClick() {
@@ -204976,16 +205360,33 @@ function SearchResultItem(props) {
       minWidth: 0,
       opacity: .85
     }
-  }, result.preview));
+  }, result.preview), result.replaceable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    size: "small",
+    variant: "minimal",
+    text: "Replace",
+    onClick: function onClick(event) {
+      event.stopPropagation();
+      onReplaceResult(result, replacementText);
+    }
+  }));
 }
 function TileMakerSearchResultsPane(props) {
   var _props$searchStateRef, _props$searchStateRef2;
   props = _objectSpread({
     searchStateRef: null,
     onSelectResult: null,
+    onReplaceResult: null,
+    onReplaceAll: null,
     onClose: null
   }, props);
   var results = (_props$searchStateRef = props.searchStateRef.current.search_results) !== null && _props$searchStateRef !== void 0 ? _props$searchStateRef : [];
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+    _useState2 = _slicedToArray(_useState, 2),
+    replacementText = _useState2[0],
+    setReplacementText = _useState2[1];
+  var replaceableCount = results.filter(function (result) {
+    return result.replaceable;
+  }).length;
   var currentDividerTitle = null;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "maker-search-results-pane bp6-menu",
@@ -205008,15 +205409,39 @@ function TileMakerSearchResultsPane(props) {
       borderBottom: "1px solid rgba(128,128,128,.25)",
       flex: "0 0 auto"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
     title: "Search Results",
     subtitle: props.searchStateRef.current.search_matches === 1 ? "1 match" : "".concat((_props$searchStateRef2 = props.searchStateRef.current.search_matches) !== null && _props$searchStateRef2 !== void 0 ? _props$searchStateRef2 : 0, " matches"),
     icon: "search"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     icon: "cross",
     size: "small",
     variant: "minimal",
     onClick: props.onClose
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      padding: "8px",
+      borderBottom: "1px solid rgba(128,128,128,.25)",
+      flex: "0 0 auto"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.InputGroup, {
+    placeholder: "Replace with...",
+    value: replacementText,
+    onChange: function onChange(event) {
+      return setReplacementText(event.target.value);
+    },
+    fill: true,
+    autoCapitalize: "none",
+    autoCorrect: "off"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    intent: "primary",
+    text: replaceableCount > 0 ? "Replace All (".concat(replaceableCount, ")") : "Replace All",
+    disabled: replaceableCount === 0,
+    onClick: function onClick() {
+      return props.onReplaceAll(replacementText);
+    }
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     style: {
       overflowY: "auto",
@@ -205043,13 +205468,15 @@ function TileMakerSearchResultsPane(props) {
         padding: "8px 8px 3px 8px",
         borderTop: "1px solid rgba(128,128,128,.18)"
       }
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
       title: result.paneName,
       icon: getMatchingIcon(result)
     })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SearchResultItem, {
       result: result,
       isCurrent: isCurrent,
-      onSelectResult: props.onSelectResult
+      onSelectResult: props.onSelectResult,
+      onReplaceResult: props.onReplaceResult,
+      replacementText: replacementText
     }));
   })));
 }
@@ -205057,7 +205484,7 @@ function OldSearchResultsMenu(props) {
   var _props$searchStateRef3;
   var results = (_props$searchStateRef3 = props.searchStateRef.current.search_results) !== null && _props$searchStateRef3 !== void 0 ? _props$searchStateRef3 : [];
   if (results.length === 0) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuItem, {
       disabled: true,
       text: "No matches"
     }));
@@ -205065,7 +205492,7 @@ function OldSearchResultsMenu(props) {
   var menuDividerTitle = null;
   var showTitle = false;
   var iconName = null;
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Menu, {
     className: "maker-search-menu",
     style: {
       maxHeight: 360,
@@ -205081,12 +205508,12 @@ function OldSearchResultsMenu(props) {
     } else {
       showTitle = false;
     }
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuDivider, {
-      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.MenuDivider, {
+      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
         title: result.paneName,
         icon: iconName
       })
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuItem, {
       key: "".concat(result.identifier, "-").concat(result.matchNumber),
       icon: isCurrent ? "small-tick" : "blank",
       text: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -205242,7 +205669,7 @@ function TileMakerSearchForm(props) {
   } else {
     match_text = null;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.FormGroup, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.FormGroup, {
     helperText: match_text,
     style: {
       marginBottom: 0,
@@ -205254,7 +205681,7 @@ function TileMakerSearchForm(props) {
       marginTop: 5,
       marginBottom: 0
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.InputGroup, {
     type: "search",
     className: "search-input",
     placeholder: "Search code...",
@@ -205279,17 +205706,17 @@ function TileMakerSearchForm(props) {
       marginLeft: 5,
       padding: 2
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     onClick: props.searchNext,
     icon: "caret-down",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     onClick: props.searchPrev,
     icon: "caret-up",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     icon: "list",
     size: "small",
     disabled: !props.searchStateRef.current.search_matches,
@@ -205792,10 +206219,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash_debounce__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(lodash_debounce__WEBPACK_IMPORTED_MODULE_2__);
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
 
 
@@ -205807,6 +206235,7 @@ function useUndoRedoStacks() {
   var undoStackRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
   var redoStackRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
   var stagedUndoEntryRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  var activeUndoGroupRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var commitUndoEntry = function commitUndoEntry() {
     if (stagedUndoEntryRef && stagedUndoEntryRef.current) {
       undoStackRef.current.push(stagedUndoEntryRef.current);
@@ -205817,7 +206246,28 @@ function useUndoRedoStacks() {
     }
   };
   var scheduleCommit = lodash_debounce__WEBPACK_IMPORTED_MODULE_2___default()(commitUndoEntry, 1000);
-  return [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit];
+  var runAsUndoGroup = function runAsUndoGroup(callback) {
+    if (activeUndoGroupRef.current) {
+      return callback();
+    }
+    commitUndoEntry();
+    activeUndoGroupRef.current = [];
+    try {
+      return callback();
+    } finally {
+      var entries = activeUndoGroupRef.current;
+      activeUndoGroupRef.current = null;
+      if (entries.length > 0) {
+        undoStackRef.current.push({
+          entries: entries
+        });
+        if (undoStackRef.current.length > MAX_STACK_SIZE) {
+          undoStackRef.current.shift();
+        }
+      }
+    }
+  };
+  return [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit, activeUndoGroupRef, runAsUndoGroup];
 }
 function makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry) {
   return function handleUndo() {
@@ -205826,10 +206276,20 @@ function makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitU
     }
     var stack = undoStackRef.current;
     if (undoStackRef.current.length > 0) {
-      var _stack$pop = stack.pop(),
-        dispatch = _stack$pop.dispatch,
-        undoAction = _stack$pop.undoAction,
-        redoAction = _stack$pop.redoAction;
+      var entry = stack.pop();
+      if (entry.entries) {
+        for (var i = entry.entries.length - 1; i >= 0; i--) {
+          entry.entries[i].dispatch(entry.entries[i].undoAction);
+        }
+        redoStackRef.current.push(entry);
+        if (redoStackRef.current.length > MAX_STACK_SIZE) {
+          redoStackRef.current.shift();
+        }
+        return;
+      }
+      var dispatch = entry.dispatch,
+        undoAction = entry.undoAction,
+        redoAction = entry.redoAction;
       dispatch(undoAction);
       if (redoAction && redoStackRef) {
         redoStackRef.current.push({
@@ -205851,10 +206311,29 @@ function makeRedoHandler(redoStackRef, undoStackRef, stagedUndoEntryRef, commitU
     }
     var stack = redoStackRef.current;
     if (stack.length > 0) {
-      var _stack$pop2 = stack.pop(),
-        dispatch = _stack$pop2.dispatch,
-        redoAction = _stack$pop2.redoAction,
-        undoAction = _stack$pop2.undoAction;
+      var entry = stack.pop();
+      if (entry.entries) {
+        var _iterator = _createForOfIteratorHelper(entry.entries),
+          _step;
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var groupedEntry = _step.value;
+            groupedEntry.dispatch(groupedEntry.redoAction);
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+        undoStackRef.current.push(entry);
+        if (undoStackRef.current.length > MAX_STACK_SIZE) {
+          undoStackRef.current.shift();
+        }
+        return;
+      }
+      var dispatch = entry.dispatch,
+        redoAction = entry.redoAction,
+        undoAction = entry.undoAction;
       dispatch(redoAction);
       if (undoAction && undoStackRef) {
         undoStackRef.current.push({
@@ -205873,12 +206352,14 @@ var UndoContext = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_1__.createConte
 function withUndo(WrappedComponent) {
   function newFunc(props) {
     var _useUndoRedoStacks = useUndoRedoStacks(),
-      _useUndoRedoStacks2 = _slicedToArray(_useUndoRedoStacks, 5),
+      _useUndoRedoStacks2 = _slicedToArray(_useUndoRedoStacks, 7),
       undoStackRef = _useUndoRedoStacks2[0],
       redoStackRef = _useUndoRedoStacks2[1],
       stagedUndoEntryRef = _useUndoRedoStacks2[2],
       commitUndoEntry = _useUndoRedoStacks2[3],
-      scheduleCommit = _useUndoRedoStacks2[4];
+      scheduleCommit = _useUndoRedoStacks2[4],
+      activeUndoGroupRef = _useUndoRedoStacks2[5],
+      runAsUndoGroup = _useUndoRedoStacks2[6];
     var handleUndo = makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry);
     var handleRedo = makeRedoHandler(redoStackRef, undoStackRef, stagedUndoEntryRef, commitUndoEntry);
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(UndoContext.Provider, {
@@ -205889,7 +206370,9 @@ function withUndo(WrappedComponent) {
         redoStackRef: redoStackRef,
         stagedUndoEntryRef: stagedUndoEntryRef,
         commitUndoEntry: commitUndoEntry,
-        scheduleCommit: scheduleCommit
+        scheduleCommit: scheduleCommit,
+        activeUndoGroupRef: activeUndoGroupRef,
+        runAsUndoGroup: runAsUndoGroup
       }
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(WrappedComponent, props));
   }
@@ -205901,7 +206384,8 @@ function makeUndoable(dispatch, stateRef, createUndoAction) {
     redoStackRef = _useContext.redoStackRef,
     stagedUndoEntryRef = _useContext.stagedUndoEntryRef,
     commitUndoEntry = _useContext.commitUndoEntry,
-    scheduleCommit = _useContext.scheduleCommit;
+    scheduleCommit = _useContext.scheduleCommit,
+    activeUndoGroupRef = _useContext.activeUndoGroupRef;
   return (0,react__WEBPACK_IMPORTED_MODULE_1__.useCallback)(function (action) {
     var skipUndo = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     if (skipUndo) {
@@ -205926,7 +206410,9 @@ function makeUndoable(dispatch, stateRef, createUndoAction) {
       if (redoStackRef && redoStackRef.current) {
         redoStackRef.current = [];
       }
-      if (doDebounce) {
+      if (activeUndoGroupRef.current) {
+        activeUndoGroupRef.current.push(undoEntry);
+      } else if (doDebounce) {
         if (forceCommit) {
           commitUndoEntry();
         }
@@ -208446,7 +208932,8 @@ function CreatorApp(props) {
     handleUndo = _useContext.handleUndo,
     handleRedo = _useContext.handleRedo,
     undoStackRef = _useContext.undoStackRef,
-    redoStackRef = _useContext.redoStackRef;
+    redoStackRef = _useContext.redoStackRef,
+    runAsUndoGroup = _useContext.runAsUndoGroup;
   var _useStateAndRef = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     setVisibleTabList = _useStateAndRef2[1],
@@ -208534,7 +209021,16 @@ function CreatorApp(props) {
     _useMetadata2 = _slicedToArray(_useMetadata, 3),
     metadataDispatch = _useMetadata2[1],
     metadataRef = _useMetadata2[2];
-  var _useSearch = (0,_search_reducer__WEBPACK_IMPORTED_MODULE_21__.useSearch)([globalsInfoRef, renderContentInfoRef], [umListRef, hmListRef, jsListRef], [{
+  var _useSearch = (0,_search_reducer__WEBPACK_IMPORTED_MODULE_21__.useSearch)([globalsInfoRef, renderContentInfoRef], [{
+      ref: umListRef,
+      signatureEditable: true
+    }, {
+      ref: hmListRef,
+      signatureEditable: false
+    }, {
+      ref: jsListRef,
+      signatureEditable: true
+    }], [{
       kind: "options",
       ref: option_list_ref
     }, {
@@ -208547,10 +209043,11 @@ function CreatorApp(props) {
       kind: "save_attrs",
       ref: save_list_ref
     }]),
-    _useSearch2 = _slicedToArray(_useSearch, 3),
+    _useSearch2 = _slicedToArray(_useSearch, 4),
     searchState = _useSearch2[0],
     searchDispatch = _useSearch2[1],
-    searchStateRef = _useSearch2[2];
+    searchStateRef = _useSearch2[2],
+    refreshSearchResults = _useSearch2[3];
   var extraSelfCompletionsRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_17__.SettingsContext);
   var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_18__.DialogContext);
@@ -209450,7 +209947,7 @@ function CreatorApp(props) {
               }));
               return _CreateNewModule.apply(this, arguments);
             };
-            CreateNewModule = function _CreateNewModule2(_x5) {
+            CreateNewModule = function _CreateNewModule2(_x6) {
               return _CreateNewModule.apply(this, arguments);
             };
             doCancel = function _doCancel() {
@@ -209820,7 +210317,7 @@ function CreatorApp(props) {
     if (identifier === "render_content") {
       return renderContentInfoRef.current;
     }
-    for (var _i6 = 0, _arr6 = [option_list_ref, export_list_ref, save_list_ref, jsListRef, umListRef, hmListRef]; _i6 < _arr6.length; _i6++) {
+    for (var _i6 = 0, _arr6 = [option_list_ref, widget_list_ref, export_list_ref, save_list_ref, jsListRef, umListRef, hmListRef]; _i6 < _arr6.length; _i6++) {
       var listRef = _arr6[_i6];
       var _item4 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(identifier, listRef.current);
       if (_item4) {
@@ -209828,6 +210325,203 @@ function CreatorApp(props) {
       }
     }
     return null;
+  }
+  function getSearchReplacementTarget(identifier) {
+    var _loop2 = function _loop2() {
+        var _arr7$_i = _slicedToArray(_arr7[_i7], 2),
+          ref = _arr7$_i[0],
+          setValue = _arr7$_i[1];
+        if (ref.current.identifier === identifier) {
+          return {
+            v: {
+              item: ref.current,
+              update: function update(newItem) {
+                return setValue(_objectSpread(_objectSpread({}, ref.current), newItem));
+              }
+            }
+          };
+        }
+      },
+      _ret;
+    for (var _i7 = 0, _arr7 = [[globalsInfoRef, setGlobalsInfo], [renderContentInfoRef, setRenderContentInfo]]; _i7 < _arr7.length; _i7++) {
+      _ret = _loop2();
+      if (_ret) return _ret.v;
+    }
+    var _loop3 = function _loop3() {
+        var _arr8$_i = _slicedToArray(_arr8[_i8], 2),
+          ref = _arr8$_i[0],
+          dispatch = _arr8$_i[1];
+        var item = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(identifier, ref.current);
+        if (item) {
+          return {
+            v: {
+              item: item,
+              update: function update(newItem) {
+                return dispatch({
+                  type: "update_item",
+                  identifier: identifier,
+                  new_item: newItem
+                });
+              }
+            }
+          };
+        }
+      },
+      _ret2;
+    for (var _i8 = 0, _arr8 = [[option_list_ref, optionDispatch], [widget_list_ref, widgetDispatch], [export_list_ref, exportDispatch], [save_list_ref, saveDispatch], [jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]; _i8 < _arr8.length; _i8++) {
+      _ret2 = _loop3();
+      if (_ret2) return _ret2.v;
+    }
+    return null;
+  }
+  function replaceSearchMatches(results, replacementText) {
+    var groupedByField = new Map();
+    var _iterator11 = _createForOfIteratorHelper(results.filter(function (result) {
+        return result.replaceable && result.field;
+      })),
+      _step11;
+    try {
+      for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+        var result = _step11.value;
+        var key = "".concat(result.identifier, "\0").concat(result.field);
+        if (!groupedByField.has(key)) {
+          groupedByField.set(key, []);
+        }
+        groupedByField.get(key).push(result);
+      }
+    } catch (err) {
+      _iterator11.e(err);
+    } finally {
+      _iterator11.f();
+    }
+    var updatesByIdentifier = new Map();
+    var replacementCount = 0;
+    var _iterator12 = _createForOfIteratorHelper(groupedByField.values()),
+      _step12;
+    try {
+      for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+        var matches = _step12.value;
+        var firstMatch = matches[0];
+        var target = getSearchReplacementTarget(firstMatch.identifier);
+        if (!target || !(firstMatch.field in target.item)) {
+          continue;
+        }
+        var updatedValue = target.item[firstMatch.field];
+        var fieldReplacementCount = 0;
+        var _iterator14 = _createForOfIteratorHelper(_toConsumableArray(matches).sort(function (a, b) {
+            return b.matchStart - a.matchStart;
+          })),
+          _step14;
+        try {
+          for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+            var match = _step14.value;
+            var nextValue = (0,_search_reducer__WEBPACK_IMPORTED_MODULE_21__.applySearchReplacement)(match, updatedValue, replacementText, match.useRegexReplacement);
+            if (nextValue !== null) {
+              updatedValue = nextValue;
+              replacementCount += 1;
+              fieldReplacementCount += 1;
+            }
+          }
+        } catch (err) {
+          _iterator14.e(err);
+        } finally {
+          _iterator14.f();
+        }
+        if (fieldReplacementCount > 0) {
+          if (!updatesByIdentifier.has(firstMatch.identifier)) {
+            updatesByIdentifier.set(firstMatch.identifier, {
+              target: target,
+              newItem: {}
+            });
+          }
+          updatesByIdentifier.get(firstMatch.identifier).newItem[firstMatch.field] = updatedValue;
+        }
+      }
+    } catch (err) {
+      _iterator12.e(err);
+    } finally {
+      _iterator12.f();
+    }
+    if (updatesByIdentifier.size > 0) {
+      runAsUndoGroup(function () {
+        var _iterator13 = _createForOfIteratorHelper(updatesByIdentifier.values()),
+          _step13;
+        try {
+          for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+            var _step13$value = _step13.value,
+              target = _step13$value.target,
+              newItem = _step13$value.newItem;
+            target.update(newItem);
+          }
+        } catch (err) {
+          _iterator13.e(err);
+        } finally {
+          _iterator13.f();
+        }
+      });
+      pushCallback(refreshSearchResults);
+    }
+    return replacementCount;
+  }
+  function _replaceSearchResult(result, replacementText) {
+    var replaced = replaceSearchMatches([result], replacementText);
+    if (replaced === 0) {
+      (0,_toaster__WEBPACK_IMPORTED_MODULE_10__.doFlash)({
+        message: "That match changed before it could be replaced.",
+        alert_type: "alert-warning"
+      });
+    }
+  }
+  function _replaceAllSearchResults(_x3) {
+    return _replaceAllSearchResults2.apply(this, arguments);
+  }
+  function _replaceAllSearchResults2() {
+    _replaceAllSearchResults2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(replacementText) {
+      var _searchStateRef$curre;
+      var replaceableResults, replaced, _t9;
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.n) {
+          case 0:
+            replaceableResults = ((_searchStateRef$curre = searchStateRef.current.search_results) !== null && _searchStateRef$curre !== void 0 ? _searchStateRef$curre : []).filter(function (result) {
+              return result.replaceable;
+            });
+            if (!(replaceableResults.length === 0)) {
+              _context9.n = 1;
+              break;
+            }
+            return _context9.a(2);
+          case 1:
+            _context9.p = 1;
+            _context9.n = 2;
+            return dialogFuncs.showModalPromise("ConfirmDialog", {
+              title: "Replace all matches",
+              text_body: "Replace ".concat(replaceableResults.length, " editable ").concat(replaceableResults.length === 1 ? "match" : "matches", "?"),
+              cancel_text: "Cancel",
+              submit_text: "Replace All",
+              handleClose: dialogFuncs.hideModal
+            });
+          case 2:
+            _context9.n = 4;
+            break;
+          case 3:
+            _context9.p = 3;
+            _t9 = _context9.v;
+            if (_t9 !== "canceled") {
+              console.error("Unable to confirm replace all", _t9);
+            }
+            return _context9.a(2);
+          case 4:
+            replaced = replaceSearchMatches(replaceableResults, replacementText);
+            (0,_toaster__WEBPACK_IMPORTED_MODULE_10__.doFlash)({
+              message: "Replaced ".concat(replaced, " editable ").concat(replaced === 1 ? "match" : "matches", "."),
+              alert_type: replaced > 0 ? "alert-success" : "alert-warning"
+            });
+          case 5:
+            return _context9.a(2);
+        }
+      }, _callee9, null, [[1, 3]]);
+    }));
+    return _replaceAllSearchResults2.apply(this, arguments);
   }
   function updateGlobals(itemUpdate) {
     setGlobalsInfo(_objectSpread(_objectSpread({}, globalsInfoRef.current), itemUpdate));
@@ -209844,10 +210538,10 @@ function CreatorApp(props) {
       }
       return;
     }
-    for (var _i7 = 0, _arr7 = [[jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]; _i7 < _arr7.length; _i7++) {
-      var _arr7$_i = _slicedToArray(_arr7[_i7], 2),
-        listRef = _arr7$_i[0],
-        dispatch = _arr7$_i[1];
+    for (var _i9 = 0, _arr9 = [[jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]; _i9 < _arr9.length; _i9++) {
+      var _arr9$_i = _slicedToArray(_arr9[_i9], 2),
+        listRef = _arr9$_i[0],
+        dispatch = _arr9$_i[1];
       var existingItem = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(identifier, listRef.current);
       if (existingItem) {
         dispatch({
@@ -209863,14 +210557,14 @@ function CreatorApp(props) {
     var identifier;
     updateRenderContent(data.render_content_line_numbers);
     var umLineNumbers = data["user_methods_line_numbers"];
-    for (var _i8 = 0, _Object$keys = Object.keys(umLineNumbers); _i8 < _Object$keys.length; _i8++) {
-      var name = _Object$keys[_i8];
+    for (var _i0 = 0, _Object$keys = Object.keys(umLineNumbers); _i0 < _Object$keys.length; _i0++) {
+      var name = _Object$keys[_i0];
       identifier = getIdentifierFromNameInLIst(umListRef, name);
       setLineNumbers(umLineNumbers[name], identifier, umDispatch);
     }
     var hmLineNumbers = data["used_handler_methods_line_numbers"];
-    for (var _i9 = 0, _Object$keys2 = Object.keys(hmLineNumbers); _i9 < _Object$keys2.length; _i9++) {
-      var _name = _Object$keys2[_i9];
+    for (var _i1 = 0, _Object$keys2 = Object.keys(hmLineNumbers); _i1 < _Object$keys2.length; _i1++) {
+      var _name = _Object$keys2[_i1];
       identifier = getIdentifierFromNameInLIst(hmListRef, _name);
       setLineNumbers(hmLineNumbers[_name], identifier, hmDispatch);
     }
@@ -209908,27 +210602,27 @@ function CreatorApp(props) {
     return _refreshDebugTargets.apply(this, arguments);
   }
   function _refreshDebugTargets() {
-    _refreshDebugTargets = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+    _refreshDebugTargets = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
       var result, targets, selected;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.n) {
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
             if (window.in_context) {
-              _context9.n = 1;
+              _context0.n = 1;
               break;
             }
             throw {
               message: "Open this Tile Maker inside a running project to select a tile instance."
             };
           case 1:
-            _context9.n = 2;
+            _context0.n = 2;
             return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("main_service", "get_tile_debug_targets", {
               global_id: window.global_id,
               tile_type: props.tile_type,
               module_name: _cProp("resource_name")
             }, props.local_id);
           case 2:
-            result = _context9.v;
+            result = _context0.v;
             targets = result.targets || [];
             setDebugTargets(targets);
             selected = debugTargetIdRef.current;
@@ -209938,12 +210632,12 @@ function CreatorApp(props) {
               selected = targets.length ? targets[0].tile_id : null;
               setDebugTargetId(selected);
             }
-            return _context9.a(2, {
+            return _context0.a(2, {
               targets: targets,
               selected: selected
             });
         }
-      }, _callee9);
+      }, _callee0);
     }));
     return _refreshDebugTargets.apply(this, arguments);
   }
@@ -210035,32 +210729,32 @@ function CreatorApp(props) {
     return _selectedDebugTarget.apply(this, arguments);
   }
   function _selectedDebugTarget() {
-    _selectedDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+    _selectedDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
       var alwaysRefresh,
         targets,
         selected,
         refreshed,
         target,
-        _args0 = arguments;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+        _args1 = arguments;
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
           case 0:
-            alwaysRefresh = _args0.length > 0 && _args0[0] !== undefined ? _args0[0] : false;
+            alwaysRefresh = _args1.length > 0 && _args1[0] !== undefined ? _args1[0] : false;
             targets = debugTargetsRef.current;
             selected = debugTargetIdRef.current;
             if (!(alwaysRefresh || !targets.length || !selected)) {
-              _context0.n = 2;
+              _context1.n = 2;
               break;
             }
-            _context0.n = 1;
+            _context1.n = 1;
             return refreshDebugTargets();
           case 1:
-            refreshed = _context0.v;
+            refreshed = _context1.v;
             targets = refreshed.targets;
             selected = refreshed.selected;
           case 2:
             if (selected) {
-              _context0.n = 3;
+              _context1.n = 3;
               break;
             }
             throw {
@@ -210071,34 +210765,34 @@ function CreatorApp(props) {
               return candidate.tile_id === selected;
             });
             if (target) {
-              _context0.n = 4;
+              _context1.n = 4;
               break;
             }
             throw {
               message: "The selected running tile is no longer available."
             };
           case 4:
-            return _context0.a(2, target);
+            return _context1.a(2, target);
         }
-      }, _callee0);
+      }, _callee1);
     }));
     return _selectedDebugTarget.apply(this, arguments);
   }
-  function armDebugTarget(_x3) {
+  function armDebugTarget(_x4) {
     return _armDebugTarget.apply(this, arguments);
   }
   function _armDebugTarget() {
-    _armDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(target) {
+    _armDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(target) {
       var savedLineNumbers,
         breakpoints,
         result,
-        _args1 = arguments;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
+        _args10 = arguments;
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.n) {
           case 0:
-            savedLineNumbers = _args1.length > 1 && _args1[1] !== undefined ? _args1[1] : null;
+            savedLineNumbers = _args10.length > 1 && _args10[1] !== undefined ? _args10[1] : null;
             if (!(!sourceInfoRef.current || !sourceInfoRef.current.source_hash)) {
-              _context1.n = 1;
+              _context10.n = 1;
               break;
             }
             throw {
@@ -210106,7 +210800,7 @@ function CreatorApp(props) {
             };
           case 1:
             breakpoints = absoluteDebugBreakpoints(savedLineNumbers);
-            _context1.n = 2;
+            _context10.n = 2;
             return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)(target.tile_id, "arm_debugger", {
               breakpoints: breakpoints,
               pause_on_start: breakpoints.length === 0 && !debugPauseOnExceptionsRef.current,
@@ -210115,7 +210809,7 @@ function CreatorApp(props) {
               debug_room: props.local_id
             }, props.local_id);
           case 2:
-            result = _context1.v;
+            result = _context10.v;
             setDebugSession({
               sessionId: result.session_id,
               debugQueue: result.debug_queue,
@@ -210126,9 +210820,9 @@ function CreatorApp(props) {
             setDebugStatus("armed");
             setDebugMessage(breakpoints.length ? "Debugger enabled." : debugPauseOnExceptionsRef.current ? "Debugger enabled." : "Debugger enabled.");
           case 3:
-            return _context1.a(2);
+            return _context10.a(2);
         }
-      }, _callee1);
+      }, _callee10);
     }));
     return _armDebugTarget.apply(this, arguments);
   }
@@ -210136,54 +210830,8 @@ function CreatorApp(props) {
     return _startDebugger.apply(this, arguments);
   }
   function _startDebugger() {
-    _startDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-      var target, _t9;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.n) {
-          case 0:
-            if (!debugSessionRef.current) {
-              _context10.n = 1;
-              break;
-            }
-            return _context10.a(2);
-          case 1:
-            if (!_debuggerSourceDirty()) {
-              _context10.n = 2;
-              break;
-            }
-            setDebugMessage("Save the tile before starting the debugger.");
-            return _context10.a(2);
-          case 2:
-            setDebugStatus("starting");
-            setDebugMessage("Finding running tile instances...");
-            _context10.p = 3;
-            _context10.n = 4;
-            return selectedDebugTarget();
-          case 4:
-            target = _context10.v;
-            _context10.n = 5;
-            return armDebugTarget(target);
-          case 5:
-            _context10.n = 7;
-            break;
-          case 6:
-            _context10.p = 6;
-            _t9 = _context10.v;
-            setDebugStatus("idle");
-            setDebugMessage(debuggerErrorMessage(_t9));
-          case 7:
-            return _context10.a(2);
-        }
-      }, _callee10, null, [[3, 6]]);
-    }));
-    return _startDebugger.apply(this, arguments);
-  }
-  function syncAndStartDebugger() {
-    return _syncAndStartDebugger.apply(this, arguments);
-  }
-  function _syncAndStartDebugger() {
-    _syncAndStartDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-      var target, savedLineNumbers, _t0;
+    _startDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+      var target, _t0;
       return _regenerator().w(function (_context11) {
         while (1) switch (_context11.n) {
           case 0:
@@ -210193,15 +210841,61 @@ function CreatorApp(props) {
             }
             return _context11.a(2);
           case 1:
+            if (!_debuggerSourceDirty()) {
+              _context11.n = 2;
+              break;
+            }
+            setDebugMessage("Save the tile before starting the debugger.");
+            return _context11.a(2);
+          case 2:
             setDebugStatus("starting");
-            _context11.p = 2;
+            setDebugMessage("Finding running tile instances...");
+            _context11.p = 3;
+            _context11.n = 4;
+            return selectedDebugTarget();
+          case 4:
+            target = _context11.v;
+            _context11.n = 5;
+            return armDebugTarget(target);
+          case 5:
+            _context11.n = 7;
+            break;
+          case 6:
+            _context11.p = 6;
+            _t0 = _context11.v;
+            setDebugStatus("idle");
+            setDebugMessage(debuggerErrorMessage(_t0));
+          case 7:
+            return _context11.a(2);
+        }
+      }, _callee11, null, [[3, 6]]);
+    }));
+    return _startDebugger.apply(this, arguments);
+  }
+  function syncAndStartDebugger() {
+    return _syncAndStartDebugger.apply(this, arguments);
+  }
+  function _syncAndStartDebugger() {
+    _syncAndStartDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+      var target, savedLineNumbers, _t1;
+      return _regenerator().w(function (_context12) {
+        while (1) switch (_context12.n) {
+          case 0:
+            if (!debugSessionRef.current) {
+              _context12.n = 1;
+              break;
+            }
+            return _context12.a(2);
+          case 1:
+            setDebugStatus("starting");
+            _context12.p = 2;
             setDebugMessage("Finding the running tile instance...");
-            _context11.n = 3;
+            _context12.n = 3;
             return selectedDebugTarget(true);
           case 3:
-            target = _context11.v;
+            target = _context12.v;
             if (target.main_sid) {
-              _context11.n = 4;
+              _context12.n = 4;
               break;
             }
             throw {
@@ -210210,94 +210904,94 @@ function CreatorApp(props) {
           case 4:
             savedLineNumbers = null;
             if (!_debuggerSourceDirty()) {
-              _context11.n = 6;
+              _context12.n = 6;
               break;
             }
             setDebugMessage("Saving tile source...");
-            _context11.n = 5;
+            _context12.n = 5;
             return doSavePromise();
           case 5:
-            savedLineNumbers = _context11.v;
+            savedLineNumbers = _context12.v;
           case 6:
             setDebugMessage("Loading the saved module...");
-            _context11.n = 7;
+            _context12.n = 7;
             return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "load_tile_module_task", {
               tile_module_name: _cProp("resource_name"),
               user_id: window.user_id
             }, props.local_id);
           case 7:
             setDebugMessage("Reloading ".concat(target.tile_name, "..."));
-            _context11.n = 8;
+            _context12.n = 8;
             return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromiseMain)(target.main_sid, "reload_tile", {
               tile_id: target.tile_id,
               tile_name: target.tile_name
             }, props.local_id);
           case 8:
             setDebugMessage("Enabling debugger...");
-            _context11.n = 9;
+            _context12.n = 9;
             return armDebugTarget(target, savedLineNumbers);
           case 9:
-            _context11.n = 11;
+            _context12.n = 11;
             break;
           case 10:
-            _context11.p = 10;
-            _t0 = _context11.v;
+            _context12.p = 10;
+            _t1 = _context12.v;
             setDebugStatus("idle");
-            setDebugMessage(debuggerErrorMessage(_t0));
+            setDebugMessage(debuggerErrorMessage(_t1));
           case 11:
-            return _context11.a(2);
+            return _context12.a(2);
         }
-      }, _callee11, null, [[2, 10]]);
+      }, _callee12, null, [[2, 10]]);
     }));
     return _syncAndStartDebugger.apply(this, arguments);
   }
-  function sendDebugCommand(_x4) {
+  function sendDebugCommand(_x5) {
     return _sendDebugCommand.apply(this, arguments);
   }
   function _sendDebugCommand() {
-    _sendDebugCommand = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(command) {
-      var session, pausedSnapshot, _t1;
-      return _regenerator().w(function (_context12) {
-        while (1) switch (_context12.n) {
+    _sendDebugCommand = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(command) {
+      var session, pausedSnapshot, _t10;
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.n) {
           case 0:
             session = debugSessionRef.current;
             pausedSnapshot = debugPausedRef.current;
             if (!(!session || !pausedSnapshot)) {
-              _context12.n = 1;
+              _context13.n = 1;
               break;
             }
-            return _context12.a(2);
+            return _context13.a(2);
           case 1:
-            _context12.p = 1;
+            _context13.p = 1;
             setDebugStatus(command === "abort" ? "stopping" : "running");
             setDebugPaused(null);
             setDebugFrameIndex(0);
             setDebugMessage(command === "abort" ? "Stopping debugger." : "Running...");
-            _context12.n = 2;
+            _context13.n = 2;
             return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)(session.debugQueue, "debug_command", {
               session_id: session.sessionId,
               command: command
             }, props.local_id);
           case 2:
-            _context12.n = 5;
+            _context13.n = 5;
             break;
           case 3:
-            _context12.p = 3;
-            _t1 = _context12.v;
-            if (!debuggerSessionIsGone(_t1)) {
-              _context12.n = 4;
+            _context13.p = 3;
+            _t10 = _context13.v;
+            if (!debuggerSessionIsGone(_t10)) {
+              _context13.n = 4;
               break;
             }
             clearDebugSession();
-            return _context12.a(2);
+            return _context13.a(2);
           case 4:
             setDebugStatus("paused");
             setDebugPaused(pausedSnapshot);
-            setDebugMessage(debuggerErrorMessage(_t1));
+            setDebugMessage(debuggerErrorMessage(_t10));
           case 5:
-            return _context12.a(2);
+            return _context13.a(2);
         }
-      }, _callee12, null, [[1, 3]]);
+      }, _callee13, null, [[1, 3]]);
     }));
     return _sendDebugCommand.apply(this, arguments);
   }
@@ -210313,48 +211007,48 @@ function CreatorApp(props) {
     return _stopDebugger.apply(this, arguments);
   }
   function _stopDebugger() {
-    _stopDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
-      var session, result, _t10;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
+    _stopDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
+      var session, result, _t11;
+      return _regenerator().w(function (_context14) {
+        while (1) switch (_context14.n) {
           case 0:
             session = debugSessionRef.current;
             if (session) {
-              _context13.n = 1;
+              _context14.n = 1;
               break;
             }
-            return _context13.a(2);
+            return _context14.a(2);
           case 1:
-            _context13.p = 1;
+            _context14.p = 1;
             setDebugStatus("stopping");
             setDebugMessage("Stopping debugger...");
-            _context13.n = 2;
+            _context14.n = 2;
             return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)(session.debugQueue, "debug_command", {
               session_id: session.sessionId,
               command: "abort"
             }, props.local_id);
           case 2:
-            result = _context13.v;
+            result = _context14.v;
             if (result.state === "disarmed") {
               clearDebugSession();
             }
-            _context13.n = 5;
+            _context14.n = 5;
             break;
           case 3:
-            _context13.p = 3;
-            _t10 = _context13.v;
-            if (!debuggerSessionIsGone(_t10)) {
-              _context13.n = 4;
+            _context14.p = 3;
+            _t11 = _context14.v;
+            if (!debuggerSessionIsGone(_t11)) {
+              _context14.n = 4;
               break;
             }
             clearDebugSession();
-            return _context13.a(2);
+            return _context14.a(2);
           case 4:
-            setDebugMessage(debuggerErrorMessage(_t10));
+            setDebugMessage(debuggerErrorMessage(_t11));
           case 5:
-            return _context13.a(2);
+            return _context14.a(2);
         }
-      }, _callee13, null, [[1, 3]]);
+      }, _callee14, null, [[1, 3]]);
     }));
     return _stopDebugger.apply(this, arguments);
   }
@@ -210512,29 +211206,29 @@ function CreatorApp(props) {
       var local_number = rline_number.current;
       rline_number.current = null;
       errorDrawerFuncs.closeErrorDrawer();
-      for (var _i0 = 0, _arr8 = [globalsInfoRef.current, renderContentInfoRef.current]; _i0 < _arr8.length; _i0++) {
-        var _item6 = _arr8[_i0];
+      for (var _i10 = 0, _arr0 = [globalsInfoRef.current, renderContentInfoRef.current]; _i10 < _arr0.length; _i10++) {
+        var _item6 = _arr0[_i10];
         if (local_number >= _item6["firstLineNumber"] && local_number <= _item6["lastLineNumber"]) {
           _showAndHighlightLine(_item6, local_number);
           return;
         }
       }
-      for (var _i1 = 0, _arr9 = [umListRef, hmListRef]; _i1 < _arr9.length; _i1++) {
-        var listRef = _arr9[_i1];
-        var _iterator11 = _createForOfIteratorHelper(listRef.current),
-          _step11;
+      for (var _i11 = 0, _arr1 = [umListRef, hmListRef]; _i11 < _arr1.length; _i11++) {
+        var listRef = _arr1[_i11];
+        var _iterator15 = _createForOfIteratorHelper(listRef.current),
+          _step15;
         try {
-          for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-            var _item7 = _step11.value;
+          for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
+            var _item7 = _step15.value;
             if (local_number >= _item7["firstLineNumber"] && local_number <= _item7["lastLineNumber"]) {
               _showAndHighlightLine(_item7, local_number);
               return;
             }
           }
         } catch (err) {
-          _iterator11.e(err);
+          _iterator15.e(err);
         } finally {
-          _iterator11.f();
+          _iterator15.f();
         }
       }
     }
@@ -210684,11 +211378,11 @@ function CreatorApp(props) {
       show_search: false
     });
   };
-  var _iterator12 = _createForOfIteratorHelper(umListRef.current),
-    _step12;
+  var _iterator16 = _createForOfIteratorHelper(umListRef.current),
+    _step16;
   try {
-    var _loop3 = function _loop3() {
-      var um = _step12.value;
+    var _loop5 = function _loop5() {
+      var um = _step16.value;
       if (isUserMethodDivider(um) && !um.preserve_as_method) {
         return 1; // continue
       }
@@ -210719,19 +211413,19 @@ function CreatorApp(props) {
         });
       };
     };
-    for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-      if (_loop3()) continue;
+    for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
+      if (_loop5()) continue;
     }
   } catch (err) {
-    _iterator12.e(err);
+    _iterator16.e(err);
   } finally {
-    _iterator12.f();
+    _iterator16.f();
   }
-  var _iterator13 = _createForOfIteratorHelper(hmListRef.current),
-    _step13;
+  var _iterator17 = _createForOfIteratorHelper(hmListRef.current),
+    _step17;
   try {
-    var _loop4 = function _loop4() {
-      var hm = _step13.value;
+    var _loop6 = function _loop6() {
+      var hm = _step17.value;
       codeElemDict[hm["identifier"]] = function () {
         return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.CmElement, {
           cmState: hm,
@@ -210759,19 +211453,19 @@ function CreatorApp(props) {
         });
       };
     };
-    for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-      _loop4();
+    for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
+      _loop6();
     }
   } catch (err) {
-    _iterator13.e(err);
+    _iterator17.e(err);
   } finally {
-    _iterator13.f();
+    _iterator17.f();
   }
-  var _iterator14 = _createForOfIteratorHelper(jsListRef.current),
-    _step14;
+  var _iterator18 = _createForOfIteratorHelper(jsListRef.current),
+    _step18;
   try {
-    var _loop5 = function _loop5() {
-      var js = _step14.value;
+    var _loop7 = function _loop7() {
+      var js = _step18.value;
       codeElemDict[js["identifier"]] = function () {
         return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.CmElement, {
           cmState: js,
@@ -210799,20 +211493,20 @@ function CreatorApp(props) {
         });
       };
     };
-    for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-      _loop5();
+    for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
+      _loop7();
     }
   } catch (err) {
-    _iterator14.e(err);
+    _iterator18.e(err);
   } finally {
-    _iterator14.f();
+    _iterator18.f();
   }
   var optionElemDict = {};
-  var _iterator15 = _createForOfIteratorHelper(option_list_ref.current),
-    _step15;
+  var _iterator19 = _createForOfIteratorHelper(option_list_ref.current),
+    _step19;
   try {
-    var _loop6 = function _loop6() {
-      var opt = _step15.value;
+    var _loop8 = function _loop8() {
+      var opt = _step19.value;
       optionElemDict[opt["identifier"]] = function () {
         return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.OptionModuleForm, {
           optionItem: opt,
@@ -210820,20 +211514,20 @@ function CreatorApp(props) {
         });
       };
     };
-    for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-      _loop6();
+    for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
+      _loop8();
     }
   } catch (err) {
-    _iterator15.e(err);
+    _iterator19.e(err);
   } finally {
-    _iterator15.f();
+    _iterator19.f();
   }
   var widgetElemDict = {};
-  var _iterator16 = _createForOfIteratorHelper(widget_list_ref.current),
-    _step16;
+  var _iterator20 = _createForOfIteratorHelper(widget_list_ref.current),
+    _step20;
   try {
-    var _loop7 = function _loop7() {
-      var w = _step16.value;
+    var _loop9 = function _loop9() {
+      var w = _step20.value;
       widgetElemDict[w["identifier"]] = function () {
         return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.WidgetModuleForm, {
           widgetItem: w,
@@ -210841,20 +211535,20 @@ function CreatorApp(props) {
         });
       };
     };
-    for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-      _loop7();
+    for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+      _loop9();
     }
   } catch (err) {
-    _iterator16.e(err);
+    _iterator20.e(err);
   } finally {
-    _iterator16.f();
+    _iterator20.f();
   }
   var exportElemDict = {};
-  var _iterator17 = _createForOfIteratorHelper(export_list_ref.current),
-    _step17;
+  var _iterator21 = _createForOfIteratorHelper(export_list_ref.current),
+    _step21;
   try {
-    var _loop8 = function _loop8() {
-      var exp = _step17.value;
+    var _loop0 = function _loop0() {
+      var exp = _step21.value;
       exportElemDict[exp["identifier"]] = function () {
         return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.ExportModuleForm, {
           exportItem: exp,
@@ -210862,21 +211556,21 @@ function CreatorApp(props) {
         });
       };
     };
-    for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
-      _loop8();
+    for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
+      _loop0();
     }
   } catch (err) {
-    _iterator17.e(err);
+    _iterator21.e(err);
   } finally {
-    _iterator17.f();
+    _iterator21.f();
   }
   var saveElemDict = {};
   if (!metadataRef.current.couple_save_attrs_and_exports) {
-    var _iterator18 = _createForOfIteratorHelper(save_list_ref.current),
-      _step18;
+    var _iterator22 = _createForOfIteratorHelper(save_list_ref.current),
+      _step22;
     try {
-      var _loop2 = function _loop2() {
-        var exp = _step18.value;
+      var _loop4 = function _loop4() {
+        var exp = _step22.value;
         saveElemDict[exp["identifier"]] = function () {
           return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.ExportModuleForm, {
             exportItem: exp,
@@ -210884,13 +211578,13 @@ function CreatorApp(props) {
           });
         };
       };
-      for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
-        _loop2();
+      for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
+        _loop4();
       }
     } catch (err) {
-      _iterator18.e(err);
+      _iterator22.e(err);
     } finally {
-      _iterator18.f();
+      _iterator22.f();
     }
   }
   var sections = [{
@@ -211128,8 +211822,8 @@ function CreatorApp(props) {
     identifier: "render_content",
     pushCallback: pushCallback
   }, (_codeElemDict$render_ = codeElemDict["render_content"]) === null || _codeElemDict$render_ === void 0 ? void 0 : _codeElemDict$render_.call(codeElemDict)));
-  for (var _i10 = 0, _Object$keys3 = Object.keys(optionElemDict); _i10 < _Object$keys3.length; _i10++) {
-    var key = _Object$keys3[_i10];
+  for (var _i12 = 0, _Object$keys3 = Object.keys(optionElemDict); _i12 < _Object$keys3.length; _i12++) {
+    var key = _Object$keys3[_i12];
     if (visibleTabListRef.current.includes(key)) {
       right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
         text: "Options",
@@ -211139,9 +211833,9 @@ function CreatorApp(props) {
       break;
     }
   }
-  for (var _i11 = 0, _Object$keys4 = Object.keys(optionElemDict); _i11 < _Object$keys4.length; _i11++) {
+  for (var _i13 = 0, _Object$keys4 = Object.keys(optionElemDict); _i13 < _Object$keys4.length; _i13++) {
     var _optionElemDict$_key;
-    var _key = _Object$keys4[_i11];
+    var _key = _Object$keys4[_i13];
     var _item8 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key, option_list_ref.current);
     right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
       identifier: _key,
@@ -211156,8 +211850,8 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_optionElemDict$_key = optionElemDict[_key]) === null || _optionElemDict$_key === void 0 ? void 0 : _optionElemDict$_key.call(optionElemDict)));
   }
-  for (var _i12 = 0, _Object$keys5 = Object.keys(widgetElemDict); _i12 < _Object$keys5.length; _i12++) {
-    var _key2 = _Object$keys5[_i12];
+  for (var _i14 = 0, _Object$keys5 = Object.keys(widgetElemDict); _i14 < _Object$keys5.length; _i14++) {
+    var _key2 = _Object$keys5[_i14];
     if (visibleTabListRef.current.includes(_key2)) {
       right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
         text: "Widgets",
@@ -211167,9 +211861,9 @@ function CreatorApp(props) {
       break;
     }
   }
-  for (var _i13 = 0, _Object$keys6 = Object.keys(widgetElemDict); _i13 < _Object$keys6.length; _i13++) {
+  for (var _i15 = 0, _Object$keys6 = Object.keys(widgetElemDict); _i15 < _Object$keys6.length; _i15++) {
     var _widgetElemDict$_key;
-    var _key3 = _Object$keys6[_i13];
+    var _key3 = _Object$keys6[_i15];
     var _item9 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key3, widget_list_ref.current);
     right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
       identifier: _key3,
@@ -211184,8 +211878,8 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_widgetElemDict$_key = widgetElemDict[_key3]) === null || _widgetElemDict$_key === void 0 ? void 0 : _widgetElemDict$_key.call(widgetElemDict)));
   }
-  for (var _i14 = 0, _Object$keys7 = Object.keys(exportElemDict); _i14 < _Object$keys7.length; _i14++) {
-    var _key4 = _Object$keys7[_i14];
+  for (var _i16 = 0, _Object$keys7 = Object.keys(exportElemDict); _i16 < _Object$keys7.length; _i16++) {
+    var _key4 = _Object$keys7[_i16];
     if (visibleTabListRef.current.includes(_key4)) {
       right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
         text: "Exports",
@@ -211195,9 +211889,9 @@ function CreatorApp(props) {
       break;
     }
   }
-  for (var _i15 = 0, _Object$keys8 = Object.keys(exportElemDict); _i15 < _Object$keys8.length; _i15++) {
+  for (var _i17 = 0, _Object$keys8 = Object.keys(exportElemDict); _i17 < _Object$keys8.length; _i17++) {
     var _exportElemDict$_key;
-    var _key5 = _Object$keys8[_i15];
+    var _key5 = _Object$keys8[_i17];
     var _item0 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key5, export_list_ref.current);
     right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
       identifier: _key5,
@@ -211213,8 +211907,8 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_exportElemDict$_key = exportElemDict[_key5]) === null || _exportElemDict$_key === void 0 ? void 0 : _exportElemDict$_key.call(exportElemDict)));
   }
-  for (var _i16 = 0, _Object$keys9 = Object.keys(saveElemDict); _i16 < _Object$keys9.length; _i16++) {
-    var _key6 = _Object$keys9[_i16];
+  for (var _i18 = 0, _Object$keys9 = Object.keys(saveElemDict); _i18 < _Object$keys9.length; _i18++) {
+    var _key6 = _Object$keys9[_i18];
     if (visibleTabListRef.current.includes(_key6)) {
       right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
         text: "Save Attrs",
@@ -211224,9 +211918,9 @@ function CreatorApp(props) {
       break;
     }
   }
-  for (var _i17 = 0, _Object$keys0 = Object.keys(saveElemDict); _i17 < _Object$keys0.length; _i17++) {
+  for (var _i19 = 0, _Object$keys0 = Object.keys(saveElemDict); _i19 < _Object$keys0.length; _i19++) {
     var _saveElemDict$_key;
-    var _key7 = _Object$keys0[_i17];
+    var _key7 = _Object$keys0[_i19];
     var _item1 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key7, save_list_ref.current);
     right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
       key: _key7,
@@ -211242,11 +211936,11 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_saveElemDict$_key = saveElemDict[_key7]) === null || _saveElemDict$_key === void 0 ? void 0 : _saveElemDict$_key.call(saveElemDict)));
   }
-  var _iterator19 = _createForOfIteratorHelper(umListRef.current),
-    _step19;
+  var _iterator23 = _createForOfIteratorHelper(umListRef.current),
+    _step23;
   try {
-    for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
-      var _item10 = _step19.value;
+    for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
+      var _item10 = _step23.value;
       if (isUserMethodDivider(_item10) && !_item10.preserve_as_method) {
         continue;
       }
@@ -211260,16 +211954,16 @@ function CreatorApp(props) {
       }
     }
   } catch (err) {
-    _iterator19.e(err);
+    _iterator23.e(err);
   } finally {
-    _iterator19.f();
+    _iterator23.f();
   }
-  var _iterator20 = _createForOfIteratorHelper(umListRef.current),
-    _step20;
+  var _iterator24 = _createForOfIteratorHelper(umListRef.current),
+    _step24;
   try {
-    for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+    for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
       var _codeElemDict$_item;
-      var _item11 = _step20.value;
+      var _item11 = _step24.value;
       if (isUserMethodDivider(_item11) && !_item11.preserve_as_method) {
         continue;
       }
@@ -211287,15 +211981,15 @@ function CreatorApp(props) {
       }, (_codeElemDict$_item = codeElemDict[_item11["identifier"]]) === null || _codeElemDict$_item === void 0 ? void 0 : _codeElemDict$_item.call(codeElemDict)));
     }
   } catch (err) {
-    _iterator20.e(err);
+    _iterator24.e(err);
   } finally {
-    _iterator20.f();
+    _iterator24.f();
   }
-  var _iterator21 = _createForOfIteratorHelper(hmListRef.current),
-    _step21;
+  var _iterator25 = _createForOfIteratorHelper(hmListRef.current),
+    _step25;
   try {
-    for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
-      var _item12 = _step21.value;
+    for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
+      var _item12 = _step25.value;
       if (visibleTabListRef.current.includes(_item12["identifier"])) {
         right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
           text: "Handler Methods",
@@ -211306,16 +212000,16 @@ function CreatorApp(props) {
       }
     }
   } catch (err) {
-    _iterator21.e(err);
+    _iterator25.e(err);
   } finally {
-    _iterator21.f();
+    _iterator25.f();
   }
-  var _iterator22 = _createForOfIteratorHelper(hmListRef.current),
-    _step22;
+  var _iterator26 = _createForOfIteratorHelper(hmListRef.current),
+    _step26;
   try {
-    for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
+    for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
       var _codeElemDict$_item2;
-      var _item13 = _step22.value;
+      var _item13 = _step26.value;
       right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
         key: _item13["identifier"],
         el: _item13,
@@ -211330,15 +212024,15 @@ function CreatorApp(props) {
       }, (_codeElemDict$_item2 = codeElemDict[_item13["identifier"]]) === null || _codeElemDict$_item2 === void 0 ? void 0 : _codeElemDict$_item2.call(codeElemDict)));
     }
   } catch (err) {
-    _iterator22.e(err);
+    _iterator26.e(err);
   } finally {
-    _iterator22.f();
+    _iterator26.f();
   }
-  var _iterator23 = _createForOfIteratorHelper(jsListRef.current),
-    _step23;
+  var _iterator27 = _createForOfIteratorHelper(jsListRef.current),
+    _step27;
   try {
-    for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
-      var _item14 = _step23.value;
+    for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
+      var _item14 = _step27.value;
       if (visibleTabListRef.current.includes(_item14["identifier"])) {
         right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
           text: "Javascript Functions",
@@ -211349,16 +212043,16 @@ function CreatorApp(props) {
       }
     }
   } catch (err) {
-    _iterator23.e(err);
+    _iterator27.e(err);
   } finally {
-    _iterator23.f();
+    _iterator27.f();
   }
-  var _iterator24 = _createForOfIteratorHelper(jsListRef.current),
-    _step24;
+  var _iterator28 = _createForOfIteratorHelper(jsListRef.current),
+    _step28;
   try {
-    for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
+    for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
       var _codeElemDict$_item3;
-      var _item15 = _step24.value;
+      var _item15 = _step28.value;
       right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
         key: _item15["identifier"],
         el: _item15,
@@ -211373,9 +212067,9 @@ function CreatorApp(props) {
       }, (_codeElemDict$_item3 = codeElemDict[_item15["identifier"]]) === null || _codeElemDict$_item3 === void 0 ? void 0 : _codeElemDict$_item3.call(codeElemDict)));
     }
   } catch (err) {
-    _iterator24.e(err);
+    _iterator28.e(err);
   } finally {
-    _iterator24.f();
+    _iterator28.f();
   }
   var editor_pane = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     ref: paneListRef,
@@ -211391,6 +212085,8 @@ function CreatorApp(props) {
   var search_results_pane = showSearchResultsPane ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerSearchResultsPane, {
     searchStateRef: searchStateRef,
     onSelectResult: _selectSearchResult,
+    onReplaceResult: _replaceSearchResult,
+    onReplaceAll: _replaceAllSearchResults,
     onClose: function onClose() {
       return setShowSearchResultsPane(false);
     }
@@ -211778,9 +212474,9 @@ function tile_creator_main() {
   if (!window.in_context) {
     window.global_id = local_id;
   }
-  var tsocket = new _tactic_socket__WEBPACK_IMPORTED_MODULE_0__.TacticSocket("main", 5000, "creator", local_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
-    return _regenerator().w(function (_context14) {
-      while (1) switch (_context14.n) {
+  var tsocket = new _tactic_socket__WEBPACK_IMPORTED_MODULE_0__.TacticSocket("main", 5000, "creator", local_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
+    return _regenerator().w(function (_context15) {
+      while (1) switch (_context15.n) {
         case 0:
           tsocket.attachListener('handle-callback', function (task_packet) {
             (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.handleCallback)(task_packet, local_id);
@@ -211797,9 +212493,9 @@ function tile_creator_main() {
             (0,_tile_maker_support__WEBPACK_IMPORTED_MODULE_5__.creator_props)(data, null, gotProps, null);
           });
         case 1:
-          return _context14.a(2);
+          return _context15.a(2);
       }
-    }, _callee14);
+    }, _callee15);
   })));
 }
 if (!window.in_context) {

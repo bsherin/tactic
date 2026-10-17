@@ -1,7 +1,8 @@
 import {arraysMatch, useReducerAndRef} from "./utilities_react";
 import {useEffect} from "react";
+import {widgetInfo} from "./widget_info";
 
-export {useSearch, countOccurrences, _searchMatcher, isRegex};
+export {useSearch, countOccurrences, _searchMatcher, isRegex, applySearchReplacement};
 
 function makePreview(line, matchIndex, matchLength, context = 45) {
     const start = Math.max(0, matchIndex - context);
@@ -13,7 +14,39 @@ function makePreview(line, matchIndex, matchLength, context = 45) {
     return prefix + line.slice(start, end).trim() + suffix;
 }
 
-function getSearchResultsForItem(item, matcher, paneName = null) {
+function matchMetadata(match, fieldText, matchStart) {
+    return {
+        matchStart,
+        matchEnd: matchStart + match[0].length,
+        matchText: match[0],
+        captures: match.slice(1),
+        groups: match.groups ?? null,
+        fieldText,
+    };
+}
+
+function getSignatureInfo(item, signatureEditable) {
+    const text = getSignatureText(item);
+    const editableRanges = [];
+
+    if (!text || !signatureEditable) {
+        return {text, editableRanges};
+    }
+
+    if (item.mode === "javascript") {
+        const start = "function ".length;
+        editableRanges.push({field: "name", start, end: start + item.name.length});
+    } else {
+        const nameStart = "def ".length;
+        editableRanges.push({field: "name", start: nameStart, end: nameStart + item.name.length});
+        const argsStart = nameStart + item.name.length + "(self, ".length;
+        editableRanges.push({field: "argString", start: argsStart, end: argsStart + (item.argString ?? "").length});
+    }
+
+    return {text, editableRanges};
+}
+
+function getSearchResultsForItem(item, matcher, paneName = null, signatureEditable = false) {
     if (!matcher || !item || (item.kind === "divider" && !item.preserve_as_method)) {
         return [];
     }
@@ -21,12 +54,18 @@ function getSearchResultsForItem(item, matcher, paneName = null) {
     const results = [];
     let matchNumber = 0;
 
-    const signatureText = getSignatureText(item);
+    const {text: signatureText, editableRanges} = getSignatureInfo(item, signatureEditable);
     if (signatureText) {
         matcher.lastIndex = 0;
 
         let match;
         while ((match = matcher.exec(signatureText)) !== null) {
+            const editableRange = editableRanges.find(range =>
+                match.index >= range.start && match.index + match[0].length <= range.end
+            );
+            const replaceable = Boolean(editableRange) && match[0].length > 0;
+            const fieldText = editableRange ? String(item[editableRange.field] ?? "") : signatureText;
+            const fieldMatchStart = editableRange ? match.index - editableRange.start : match.index;
             results.push({
                 identifier: item.identifier,
                 paneName: paneName ?? item.name ?? item.identifier,
@@ -36,6 +75,11 @@ function getSearchResultsForItem(item, matcher, paneName = null) {
                 lineNumber: item.firstLineNumber ?? 1,
                 localLineNumber: 0,
                 preview: signatureText,
+                field: editableRange?.field ?? null,
+                valueKind: "string",
+                replaceable,
+                useRegexReplacement: Boolean(matcher.tacticUseRegex),
+                ...matchMetadata(match, fieldText, fieldMatchStart),
             });
 
             if (match[0].length === 0) {
@@ -49,6 +93,7 @@ function getSearchResultsForItem(item, matcher, paneName = null) {
     }
 
     const lines = item.codeText.split("\n");
+    let lineOffset = 0;
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -65,6 +110,11 @@ function getSearchResultsForItem(item, matcher, paneName = null) {
                 lineNumber: (item.firstLineNumber ?? 1) + i,
                 localLineNumber: i + 1,
                 preview: makePreview(line, match.index, match[0].length),
+                field: "codeText",
+                valueKind: "string",
+                replaceable: match[0].length > 0,
+                useRegexReplacement: Boolean(matcher.tacticUseRegex),
+                ...matchMetadata(match, item.codeText, lineOffset + match.index),
             });
 
             matchNumber += 1;
@@ -73,6 +123,7 @@ function getSearchResultsForItem(item, matcher, paneName = null) {
                 matcher.lastIndex += 1;
             }
         }
+        lineOffset += line.length + 1;
     }
 
     return results;
@@ -93,6 +144,38 @@ function getSignatureText(item) {
     }
 
     return `def ${item.name}(self, ${item.argString ?? ""}):`;
+}
+
+function getEditableFormField(item, kind, field, value) {
+    if (kind === "exports" || kind === "save_attrs") {
+        return ["name", "tags"].includes(field) && typeof value === "string" ? "string" : null;
+    }
+
+    if (kind === "options") {
+        if (["name", "display_text", "tags"].includes(field) && typeof value === "string") {
+            return "string";
+        }
+        if (field === "default" && typeof value === "string" && item.type !== "boolean" && item.type !== "divider") {
+            return "string";
+        }
+        if (field === "special_list" && Array.isArray(value)) {
+            return "line_array";
+        }
+        return null;
+    }
+
+    if (kind === "widgets") {
+        const fieldType = widgetInfo[item.kind]?.[field]?.type;
+        if (["string", "text_box", "code_box", "method", "code_string"].includes(fieldType) &&
+            typeof value === "string") {
+            return "string";
+        }
+        if (fieldType === "list" && Array.isArray(value)) {
+            return "line_array";
+        }
+    }
+
+    return null;
 }
 
 function getSearchableFieldsForFormItem(item, kind) {
@@ -117,17 +200,20 @@ function getSearchableFieldsForFormItem(item, kind) {
         if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
             fields.push({
                 field: key,
-                text: String(value)
+                text: String(value),
+                valueKind: getEditableFormField(item, kind, key, value),
             });
         } else if (Array.isArray(value)) {
             fields.push({
                 field: key,
-                text: value.join("\n")
+                text: value.join("\n"),
+                valueKind: getEditableFormField(item, kind, key, value),
             });
         } else if (typeof value === "object") {
             fields.push({
                 field: key,
-                text: JSON.stringify(value)
+                text: JSON.stringify(value),
+                valueKind: null,
             });
         }
     }
@@ -145,6 +231,7 @@ function getSearchResultsForFormItem(item, matcher, kind) {
 
     for (let fieldEntry of fields) {
         const lines = fieldEntry.text.split("\n");
+        let lineOffset = 0;
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
@@ -162,16 +249,56 @@ function getSearchResultsForFormItem(item, matcher, kind) {
                     lineNumber: null,
                     localLineNumber: i + 1,
                     preview: `${makePreview(line, match.index, match[0].length)}`,
+                    valueKind: fieldEntry.valueKind,
+                    replaceable: Boolean(fieldEntry.valueKind) && match[0].length > 0,
+                    useRegexReplacement: Boolean(matcher.tacticUseRegex),
+                    ...matchMetadata(match, fieldEntry.text, lineOffset + match.index),
                 });
 
                 if (match[0].length === 0) {
                     matcher.lastIndex += 1;
                 }
             }
+            lineOffset += line.length + 1;
         }
     }
 
     return results;
+}
+
+function expandRegexReplacement(replacement, result, fieldText) {
+    return replacement.replace(/\$(\$|&|`|'|<([^>]+)>|(\d{1,2}))/g,
+        (token, specifier, groupName, groupNumber) => {
+            if (specifier === "$") return "$";
+            if (specifier === "&") return result.matchText;
+            if (specifier === "`") return fieldText.slice(0, result.matchStart);
+            if (specifier === "'") return fieldText.slice(result.matchEnd);
+            if (groupName != null) {
+                return result.groups && Object.prototype.hasOwnProperty.call(result.groups, groupName)
+                    ? result.groups[groupName] ?? ""
+                    : token;
+            }
+            const index = Number(groupNumber);
+            return index > 0 && index <= (result.captures?.length ?? 0)
+                ? result.captures[index - 1] ?? ""
+                : token;
+        });
+}
+
+function applySearchReplacement(result, currentValue, replacement, useRegex = false) {
+    const fieldText = result.valueKind === "line_array"
+        ? (Array.isArray(currentValue) ? currentValue.join("\n") : String(currentValue ?? ""))
+        : String(currentValue ?? "");
+
+    if (!result.replaceable || fieldText.slice(result.matchStart, result.matchEnd) !== result.matchText) {
+        return null;
+    }
+
+    const insertedText = useRegex
+        ? expandRegexReplacement(replacement, result, result.fieldText ?? fieldText)
+        : replacement;
+    const updatedText = fieldText.slice(0, result.matchStart) + insertedText + fieldText.slice(result.matchEnd);
+    return result.valueKind === "line_array" ? updatedText.split("\n") : updatedText;
 }
 
 const REGEXTYPE = Object.getPrototypeOf(new RegExp("that"));
@@ -195,6 +322,7 @@ function isRegex(ob) {
 
 function _searchMatcher(term, global = false, use_regex = false, ignore_case = true) {
     let regex;
+    let usesRegexSyntax = use_regex;
     let flags = "";
     if (global) {
         flags += "g"
@@ -214,13 +342,16 @@ function _searchMatcher(term, global = false, use_regex = false, ignore_case = t
                 console.log("Error creating regex, trying escaping");
                 const escapedSearchTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 regex = new RegExp(escapedSearchTerm, flags);
+                usesRegexSyntax = false;
             }
+            regex.tacticUseRegex = usesRegexSyntax;
             return regex
         }
     } catch (e) {
         console.log("Error creating regex", e);
         return null
     }
+    regex.tacticUseRegex = false;
     return regex
 }
 
@@ -403,20 +534,21 @@ function useSearch(directRefs, listRefs, formListRefs = []) {
             customDispatch({type: "SET_ID_LIST", payload: currentIds});
         }
     }, [
-        listRefs[0].current,
-        listRefs[1].current,
-        listRefs[2].current,
+        ...listRefs.map(entry => getRef(entry).current),
         ...formListRefs.map(entry => entry.ref.current)
     ]);
 
+    function getRef(entry) {
+        return entry.ref ?? entry;
+    }
 
     function getIds() {
         let ids = [];
-        for (let itemRef of directRefs) {
-            ids.push(itemRef.current["identifier"]);
+        for (let entry of directRefs) {
+            ids.push(getRef(entry).current["identifier"]);
         }
-        for (let listRef of listRefs) {
-            for (let item of listRef.current) {
+        for (let entry of listRefs) {
+            for (let item of getRef(entry).current) {
                 ids.push(item["identifier"]);
             }
         }
@@ -439,9 +571,9 @@ function useSearch(directRefs, listRefs, formListRefs = []) {
         const allResults = [];
         let globalMatchNumber = 0;
 
-        function addItemResults(item) {
+        function addItemResults(item, signatureEditable = false) {
             const reg = _searchMatcher(searchString, true, valueRef.current.use_regex);
-            const itemResults = getSearchResultsForItem(item, reg, item.name);
+            const itemResults = getSearchResultsForItem(item, reg, item.name, signatureEditable);
 
             for (let result of itemResults) {
                 allResults.push({
@@ -452,8 +584,8 @@ function useSearch(directRefs, listRefs, formListRefs = []) {
             }
         }
 
-        for (let itemRef of directRefs) {
-            addItemResults(itemRef.current);
+        for (let entry of directRefs) {
+            addItemResults(getRef(entry).current, Boolean(entry.signatureEditable));
         }
 
         for (let entry of formListRefs) {
@@ -471,14 +603,14 @@ function useSearch(directRefs, listRefs, formListRefs = []) {
             }
         }
 
-        for (let listRef of listRefs) {
-            for (let item of listRef.current) {
-                addItemResults(item);
+        for (let entry of listRefs) {
+            for (let item of getRef(entry).current) {
+                addItemResults(item, Boolean(entry.signatureEditable));
             }
         }
 
         customDispatch({type: "SET_SEARCH_RESULTS", payload: allResults});
     }
 
-    return [value, customDispatch, valueRef];
+    return [value, customDispatch, valueRef, getAllSearchMatches];
 }

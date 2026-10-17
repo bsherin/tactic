@@ -202128,6 +202128,7 @@ function ConfirmDialog(props) {
     set_show(true);
   }, []);
   function _submitHandler(event) {
+    event.preventDefault();
     set_show(false);
     props.handleSubmit();
     props.handleClose();
@@ -202148,15 +202149,18 @@ function ConfirmDialog(props) {
     enforceFocus: true,
     usePortal: false,
     canEscapeKeyClose: true
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
+    onSubmit: _submitHandler
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.DialogBody, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, props.text_body)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.DialogFooter, {
     actions: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
+      type: "button",
       onClick: _cancelHandler
     }, props.cancel_text), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Button, {
       type: "submit",
       intent: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.Intent.PRIMARY,
-      onClick: _submitHandler
+      autoFocus: true
     }, props.submit_text))
-  }));
+  })));
 }
 ConfirmDialog = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(ConfirmDialog);
 function EndSessionDialog(props) {
@@ -210336,13 +210340,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/text/text.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/entity-title/entityTitle.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menu.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuDivider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
 /* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
@@ -210391,7 +210395,9 @@ function getMatchingIcon(result) {
 function SearchResultItem(props) {
   var result = props.result,
     isCurrent = props.isCurrent,
-    onSelectResult = props.onSelectResult;
+    onSelectResult = props.onSelectResult,
+    onReplaceResult = props.onReplaceResult,
+    replacementText = props.replacementText;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "makert-search-result-item ".concat(isCurrent ? "current-search-result" : ""),
     onClick: function onClick() {
@@ -210424,16 +210430,33 @@ function SearchResultItem(props) {
       minWidth: 0,
       opacity: .85
     }
-  }, result.preview));
+  }, result.preview), result.replaceable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    size: "small",
+    variant: "minimal",
+    text: "Replace",
+    onClick: function onClick(event) {
+      event.stopPropagation();
+      onReplaceResult(result, replacementText);
+    }
+  }));
 }
 function TileMakerSearchResultsPane(props) {
   var _props$searchStateRef, _props$searchStateRef2;
   props = _objectSpread({
     searchStateRef: null,
     onSelectResult: null,
+    onReplaceResult: null,
+    onReplaceAll: null,
     onClose: null
   }, props);
   var results = (_props$searchStateRef = props.searchStateRef.current.search_results) !== null && _props$searchStateRef !== void 0 ? _props$searchStateRef : [];
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(""),
+    _useState2 = _slicedToArray(_useState, 2),
+    replacementText = _useState2[0],
+    setReplacementText = _useState2[1];
+  var replaceableCount = results.filter(function (result) {
+    return result.replaceable;
+  }).length;
   var currentDividerTitle = null;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "maker-search-results-pane bp6-menu",
@@ -210456,15 +210479,39 @@ function TileMakerSearchResultsPane(props) {
       borderBottom: "1px solid rgba(128,128,128,.25)",
       flex: "0 0 auto"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
     title: "Search Results",
     subtitle: props.searchStateRef.current.search_matches === 1 ? "1 match" : "".concat((_props$searchStateRef2 = props.searchStateRef.current.search_matches) !== null && _props$searchStateRef2 !== void 0 ? _props$searchStateRef2 : 0, " matches"),
     icon: "search"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     icon: "cross",
     size: "small",
     variant: "minimal",
     onClick: props.onClose
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      padding: "8px",
+      borderBottom: "1px solid rgba(128,128,128,.25)",
+      flex: "0 0 auto"
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.InputGroup, {
+    placeholder: "Replace with...",
+    value: replacementText,
+    onChange: function onChange(event) {
+      return setReplacementText(event.target.value);
+    },
+    fill: true,
+    autoCapitalize: "none",
+    autoCorrect: "off"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    intent: "primary",
+    text: replaceableCount > 0 ? "Replace All (".concat(replaceableCount, ")") : "Replace All",
+    disabled: replaceableCount === 0,
+    onClick: function onClick() {
+      return props.onReplaceAll(replacementText);
+    }
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     style: {
       overflowY: "auto",
@@ -210491,13 +210538,15 @@ function TileMakerSearchResultsPane(props) {
         padding: "8px 8px 3px 8px",
         borderTop: "1px solid rgba(128,128,128,.18)"
       }
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
       title: result.paneName,
       icon: getMatchingIcon(result)
     })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SearchResultItem, {
       result: result,
       isCurrent: isCurrent,
-      onSelectResult: props.onSelectResult
+      onSelectResult: props.onSelectResult,
+      onReplaceResult: props.onReplaceResult,
+      replacementText: replacementText
     }));
   })));
 }
@@ -210505,7 +210554,7 @@ function OldSearchResultsMenu(props) {
   var _props$searchStateRef3;
   var results = (_props$searchStateRef3 = props.searchStateRef.current.search_results) !== null && _props$searchStateRef3 !== void 0 ? _props$searchStateRef3 : [];
   if (results.length === 0) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Menu, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuItem, {
       disabled: true,
       text: "No matches"
     }));
@@ -210513,7 +210562,7 @@ function OldSearchResultsMenu(props) {
   var menuDividerTitle = null;
   var showTitle = false;
   var iconName = null;
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Menu, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Menu, {
     className: "maker-search-menu",
     style: {
       maxHeight: 360,
@@ -210529,12 +210578,12 @@ function OldSearchResultsMenu(props) {
     } else {
       showTitle = false;
     }
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuDivider, {
-      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.EntityTitle, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, showTitle && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.MenuDivider, {
+      title: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
         title: result.paneName,
         icon: iconName
       })
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.MenuItem, {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.MenuItem, {
       key: "".concat(result.identifier, "-").concat(result.matchNumber),
       icon: isCurrent ? "small-tick" : "blank",
       text: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -210690,7 +210739,7 @@ function TileMakerSearchForm(props) {
   } else {
     match_text = null;
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.FormGroup, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.FormGroup, {
     helperText: match_text,
     style: {
       marginBottom: 0,
@@ -210702,7 +210751,7 @@ function TileMakerSearchForm(props) {
       marginTop: 5,
       marginBottom: 0
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.InputGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.InputGroup, {
     type: "search",
     className: "search-input",
     placeholder: "Search code...",
@@ -210727,17 +210776,17 @@ function TileMakerSearchForm(props) {
       marginLeft: 5,
       padding: 2
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     onClick: props.searchNext,
     icon: "caret-down",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     onClick: props.searchPrev,
     icon: "caret-up",
     text: undefined,
     size: "small"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     icon: "list",
     size: "small",
     disabled: !props.searchStateRef.current.search_matches,
@@ -211070,10 +211119,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash_debounce__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(lodash_debounce__WEBPACK_IMPORTED_MODULE_2__);
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 
 
 
@@ -211085,6 +211135,7 @@ function useUndoRedoStacks() {
   var undoStackRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
   var redoStackRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
   var stagedUndoEntryRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  var activeUndoGroupRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var commitUndoEntry = function commitUndoEntry() {
     if (stagedUndoEntryRef && stagedUndoEntryRef.current) {
       undoStackRef.current.push(stagedUndoEntryRef.current);
@@ -211095,7 +211146,28 @@ function useUndoRedoStacks() {
     }
   };
   var scheduleCommit = lodash_debounce__WEBPACK_IMPORTED_MODULE_2___default()(commitUndoEntry, 1000);
-  return [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit];
+  var runAsUndoGroup = function runAsUndoGroup(callback) {
+    if (activeUndoGroupRef.current) {
+      return callback();
+    }
+    commitUndoEntry();
+    activeUndoGroupRef.current = [];
+    try {
+      return callback();
+    } finally {
+      var entries = activeUndoGroupRef.current;
+      activeUndoGroupRef.current = null;
+      if (entries.length > 0) {
+        undoStackRef.current.push({
+          entries: entries
+        });
+        if (undoStackRef.current.length > MAX_STACK_SIZE) {
+          undoStackRef.current.shift();
+        }
+      }
+    }
+  };
+  return [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit, activeUndoGroupRef, runAsUndoGroup];
 }
 function makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry) {
   return function handleUndo() {
@@ -211104,10 +211176,20 @@ function makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitU
     }
     var stack = undoStackRef.current;
     if (undoStackRef.current.length > 0) {
-      var _stack$pop = stack.pop(),
-        dispatch = _stack$pop.dispatch,
-        undoAction = _stack$pop.undoAction,
-        redoAction = _stack$pop.redoAction;
+      var entry = stack.pop();
+      if (entry.entries) {
+        for (var i = entry.entries.length - 1; i >= 0; i--) {
+          entry.entries[i].dispatch(entry.entries[i].undoAction);
+        }
+        redoStackRef.current.push(entry);
+        if (redoStackRef.current.length > MAX_STACK_SIZE) {
+          redoStackRef.current.shift();
+        }
+        return;
+      }
+      var dispatch = entry.dispatch,
+        undoAction = entry.undoAction,
+        redoAction = entry.redoAction;
       dispatch(undoAction);
       if (redoAction && redoStackRef) {
         redoStackRef.current.push({
@@ -211129,10 +211211,29 @@ function makeRedoHandler(redoStackRef, undoStackRef, stagedUndoEntryRef, commitU
     }
     var stack = redoStackRef.current;
     if (stack.length > 0) {
-      var _stack$pop2 = stack.pop(),
-        dispatch = _stack$pop2.dispatch,
-        redoAction = _stack$pop2.redoAction,
-        undoAction = _stack$pop2.undoAction;
+      var entry = stack.pop();
+      if (entry.entries) {
+        var _iterator = _createForOfIteratorHelper(entry.entries),
+          _step;
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var groupedEntry = _step.value;
+            groupedEntry.dispatch(groupedEntry.redoAction);
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+        undoStackRef.current.push(entry);
+        if (undoStackRef.current.length > MAX_STACK_SIZE) {
+          undoStackRef.current.shift();
+        }
+        return;
+      }
+      var dispatch = entry.dispatch,
+        redoAction = entry.redoAction,
+        undoAction = entry.undoAction;
       dispatch(redoAction);
       if (undoAction && undoStackRef) {
         undoStackRef.current.push({
@@ -211151,12 +211252,14 @@ var UndoContext = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_1__.createConte
 function withUndo(WrappedComponent) {
   function newFunc(props) {
     var _useUndoRedoStacks = useUndoRedoStacks(),
-      _useUndoRedoStacks2 = _slicedToArray(_useUndoRedoStacks, 5),
+      _useUndoRedoStacks2 = _slicedToArray(_useUndoRedoStacks, 7),
       undoStackRef = _useUndoRedoStacks2[0],
       redoStackRef = _useUndoRedoStacks2[1],
       stagedUndoEntryRef = _useUndoRedoStacks2[2],
       commitUndoEntry = _useUndoRedoStacks2[3],
-      scheduleCommit = _useUndoRedoStacks2[4];
+      scheduleCommit = _useUndoRedoStacks2[4],
+      activeUndoGroupRef = _useUndoRedoStacks2[5],
+      runAsUndoGroup = _useUndoRedoStacks2[6];
     var handleUndo = makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry);
     var handleRedo = makeRedoHandler(redoStackRef, undoStackRef, stagedUndoEntryRef, commitUndoEntry);
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(UndoContext.Provider, {
@@ -211167,7 +211270,9 @@ function withUndo(WrappedComponent) {
         redoStackRef: redoStackRef,
         stagedUndoEntryRef: stagedUndoEntryRef,
         commitUndoEntry: commitUndoEntry,
-        scheduleCommit: scheduleCommit
+        scheduleCommit: scheduleCommit,
+        activeUndoGroupRef: activeUndoGroupRef,
+        runAsUndoGroup: runAsUndoGroup
       }
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(WrappedComponent, props));
   }
@@ -211179,7 +211284,8 @@ function makeUndoable(dispatch, stateRef, createUndoAction) {
     redoStackRef = _useContext.redoStackRef,
     stagedUndoEntryRef = _useContext.stagedUndoEntryRef,
     commitUndoEntry = _useContext.commitUndoEntry,
-    scheduleCommit = _useContext.scheduleCommit;
+    scheduleCommit = _useContext.scheduleCommit,
+    activeUndoGroupRef = _useContext.activeUndoGroupRef;
   return (0,react__WEBPACK_IMPORTED_MODULE_1__.useCallback)(function (action) {
     var skipUndo = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     if (skipUndo) {
@@ -211204,7 +211310,9 @@ function makeUndoable(dispatch, stateRef, createUndoAction) {
       if (redoStackRef && redoStackRef.current) {
         redoStackRef.current = [];
       }
-      if (doDebounce) {
+      if (activeUndoGroupRef.current) {
+        activeUndoGroupRef.current.push(undoEntry);
+      } else if (doDebounce) {
         if (forceCommit) {
           commitUndoEntry();
         }

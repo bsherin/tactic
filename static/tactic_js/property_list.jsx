@@ -210,12 +210,11 @@ function createPropertyListUndoAction(action, stateRef, stagedUndoEntryRef) {
             break;
 
         case "add_at_index":
-            const insertIndex = action.insert_index;
-            const insertedItem = listBefore[insertIndex];
-            if (insertedItem) {
+            const insertedId = action.new_item.identifier;
+            if (insertedId) {
                 undoAction = {
                     type: "delete_item",
-                    identifier: insertedItem.identifier
+                    identifier: insertedId
                 }
             }
             break;

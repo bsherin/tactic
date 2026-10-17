@@ -789,6 +789,7 @@ function ConfirmDialog(props) {
     set_show(true);
   }, []);
   function _submitHandler(event) {
+    event.preventDefault();
     set_show(false);
     props.handleSubmit();
     props.handleClose();
@@ -809,15 +810,18 @@ function ConfirmDialog(props) {
     enforceFocus: true,
     usePortal: false,
     canEscapeKeyClose: true
+  }, /*#__PURE__*/_react["default"].createElement("form", {
+    onSubmit: _submitHandler
   }, /*#__PURE__*/_react["default"].createElement(_core.DialogBody, null, /*#__PURE__*/_react["default"].createElement("p", null, props.text_body)), /*#__PURE__*/_react["default"].createElement(_core.DialogFooter, {
     actions: /*#__PURE__*/_react["default"].createElement(_react.Fragment, null, /*#__PURE__*/_react["default"].createElement(_core.Button, {
+      type: "button",
       onClick: _cancelHandler
     }, props.cancel_text), /*#__PURE__*/_react["default"].createElement(_core.Button, {
       type: "submit",
       intent: _core.Intent.PRIMARY,
-      onClick: _submitHandler
+      autoFocus: true
     }, props.submit_text))
-  }));
+  })));
 }
 ConfirmDialog = /*#__PURE__*/(0, _react.memo)(ConfirmDialog);
 function EndSessionDialog(props) {

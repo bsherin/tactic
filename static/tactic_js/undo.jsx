@@ -12,6 +12,7 @@ function useUndoRedoStacks() {
     const undoStackRef = useRef([]);
     const redoStackRef = useRef([]);
     const stagedUndoEntryRef = useRef(null);
+    const activeUndoGroupRef = useRef(null);
     const commitUndoEntry = () => {
         if (stagedUndoEntryRef && stagedUndoEntryRef.current) {
             undoStackRef.current.push(stagedUndoEntryRef.current);
@@ -22,7 +23,28 @@ function useUndoRedoStacks() {
         }
     };
     const scheduleCommit = debounce(commitUndoEntry, 1000);
-    return [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit];
+    const runAsUndoGroup = (callback) => {
+        if (activeUndoGroupRef.current) {
+            return callback();
+        }
+
+        commitUndoEntry();
+        activeUndoGroupRef.current = [];
+        try {
+            return callback();
+        } finally {
+            const entries = activeUndoGroupRef.current;
+            activeUndoGroupRef.current = null;
+            if (entries.length > 0) {
+                undoStackRef.current.push({entries});
+                if (undoStackRef.current.length > MAX_STACK_SIZE) {
+                    undoStackRef.current.shift();
+                }
+            }
+        }
+    };
+    return [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit,
+        activeUndoGroupRef, runAsUndoGroup];
 }
 
 function makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry) {
@@ -32,7 +54,18 @@ function makeUndoHandler(undoStackRef, redoStackRef, stagedUndoEntryRef, commitU
         }
         const stack = undoStackRef.current;
         if (undoStackRef.current.length > 0) {
-            const {dispatch, undoAction, redoAction} = stack.pop();
+            const entry = stack.pop();
+            if (entry.entries) {
+                for (let i = entry.entries.length - 1; i >= 0; i--) {
+                    entry.entries[i].dispatch(entry.entries[i].undoAction);
+                }
+                redoStackRef.current.push(entry);
+                if (redoStackRef.current.length > MAX_STACK_SIZE) {
+                    redoStackRef.current.shift();
+                }
+                return;
+            }
+            const {dispatch, undoAction, redoAction} = entry;
             dispatch(undoAction);
             if (redoAction && redoStackRef) {
                 redoStackRef.current.push({
@@ -55,7 +88,18 @@ function makeRedoHandler(redoStackRef, undoStackRef, stagedUndoEntryRef, commitU
         }
         const stack = redoStackRef.current;
         if (stack.length > 0) {
-            const {dispatch, redoAction, undoAction} = stack.pop();
+            const entry = stack.pop();
+            if (entry.entries) {
+                for (let groupedEntry of entry.entries) {
+                    groupedEntry.dispatch(groupedEntry.redoAction);
+                }
+                undoStackRef.current.push(entry);
+                if (undoStackRef.current.length > MAX_STACK_SIZE) {
+                    undoStackRef.current.shift();
+                }
+                return;
+            }
+            const {dispatch, redoAction, undoAction} = entry;
             dispatch(redoAction);
             if (undoAction && undoStackRef) {
                 undoStackRef.current.push({
@@ -75,12 +119,14 @@ const UndoContext = createContext(null);
 
 function withUndo(WrappedComponent) {
     function newFunc(props) {
-        const [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit] = useUndoRedoStacks();
+        const [undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit,
+            activeUndoGroupRef, runAsUndoGroup] = useUndoRedoStacks();
         const handleUndo = makeUndoHandler(undoStackRef, redoStackRef,stagedUndoEntryRef, commitUndoEntry);
         const handleRedo = makeRedoHandler(redoStackRef, undoStackRef, stagedUndoEntryRef, commitUndoEntry);
         return (
             <UndoContext.Provider
-                value={{handleUndo, handleRedo, undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit}}>
+                value={{handleUndo, handleRedo, undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry,
+                    scheduleCommit, activeUndoGroupRef, runAsUndoGroup}}>
                 <WrappedComponent {...props} />
             </UndoContext.Provider>
         )
@@ -91,7 +137,8 @@ function withUndo(WrappedComponent) {
 
 
 function makeUndoable(dispatch, stateRef, createUndoAction) {
-    const {undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit} = useContext(UndoContext);
+    const {undoStackRef, redoStackRef, stagedUndoEntryRef, commitUndoEntry, scheduleCommit,
+        activeUndoGroupRef} = useContext(UndoContext);
 
     return useCallback((action, skipUndo = false) => {
             if (skipUndo) {
@@ -112,7 +159,9 @@ function makeUndoable(dispatch, stateRef, createUndoAction) {
                 if (redoStackRef && redoStackRef.current) {
                     redoStackRef.current = [];
                 }
-                if (doDebounce) {
+                if (activeUndoGroupRef.current) {
+                    activeUndoGroupRef.current.push(undoEntry);
+                } else if (doDebounce) {
                     if (forceCommit) {
                         commitUndoEntry();
                     }

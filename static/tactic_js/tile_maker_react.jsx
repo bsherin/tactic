@@ -41,7 +41,7 @@ import {useConnection} from "./tactic_socket";
 
 import {usePropertyList, getListItemFromidentifier} from "./property_list"
 import {useStateAndRefWithUndo, withUndo, UndoContext} from "./undo";
-import {useSearch} from "./search_reducer"
+import {useSearch, applySearchReplacement} from "./search_reducer"
 import {MakerPaneContext} from "./tile_maker_support";
 import {
     CmElement,
@@ -93,7 +93,7 @@ function CreatorApp(props) {
     const paneListRef = useRef(null);
     const debugSocketListenersRef = useRef([]);
 
-    const {handleUndo, handleRedo, undoStackRef, redoStackRef} = useContext(UndoContext);
+    const {handleUndo, handleRedo, undoStackRef, redoStackRef, runAsUndoGroup} = useContext(UndoContext);
 
 
     const [, setVisibleTabList, visibleTabListRef] = useStateAndRef([]);
@@ -145,9 +145,13 @@ function CreatorApp(props) {
 
     const [, metadataDispatch, metadataRef] = useMetadata(props.mdata, true);
 
-    const [searchState, searchDispatch, searchStateRef] = useSearch(
+    const [searchState, searchDispatch, searchStateRef, refreshSearchResults] = useSearch(
         [globalsInfoRef, renderContentInfoRef],
-        [umListRef, hmListRef, jsListRef],
+        [
+            {ref: umListRef, signatureEditable: true},
+            {ref: hmListRef, signatureEditable: false},
+            {ref: jsListRef, signatureEditable: true},
+        ],
         [
             {kind: "options", ref: option_list_ref},
             {kind: "widgets", ref: widget_list_ref},
@@ -1120,13 +1124,140 @@ function CreatorApp(props) {
         if (identifier === "render_content") {
             return renderContentInfoRef.current;
         }
-        for (let listRef of [option_list_ref, export_list_ref, save_list_ref, jsListRef, umListRef, hmListRef]) {
+        for (let listRef of [option_list_ref, widget_list_ref, export_list_ref, save_list_ref,
+            jsListRef, umListRef, hmListRef]) {
             const item = getListItemFromidentifier(identifier, listRef.current);
             if (item) {
                 return item;
             }
         }
         return null
+    }
+
+    function getSearchReplacementTarget(identifier) {
+        for (let [ref, setValue] of [
+            [globalsInfoRef, setGlobalsInfo],
+            [renderContentInfoRef, setRenderContentInfo],
+        ]) {
+            if (ref.current.identifier === identifier) {
+                return {
+                    item: ref.current,
+                    update: (newItem) => setValue({...ref.current, ...newItem}),
+                };
+            }
+        }
+
+        for (let [ref, dispatch] of [
+            [option_list_ref, optionDispatch],
+            [widget_list_ref, widgetDispatch],
+            [export_list_ref, exportDispatch],
+            [save_list_ref, saveDispatch],
+            [jsListRef, jsDispatch],
+            [umListRef, umDispatch],
+            [hmListRef, hmDispatch],
+        ]) {
+            const item = getListItemFromidentifier(identifier, ref.current);
+            if (item) {
+                return {
+                    item,
+                    update: (newItem) => dispatch({type: "update_item", identifier, new_item: newItem}),
+                };
+            }
+        }
+        return null;
+    }
+
+    function replaceSearchMatches(results, replacementText) {
+        const groupedByField = new Map();
+
+        for (let result of results.filter(result => result.replaceable && result.field)) {
+            const key = `${result.identifier}\u0000${result.field}`;
+            if (!groupedByField.has(key)) {
+                groupedByField.set(key, []);
+            }
+            groupedByField.get(key).push(result);
+        }
+
+        const updatesByIdentifier = new Map();
+        let replacementCount = 0;
+
+        for (let matches of groupedByField.values()) {
+            const firstMatch = matches[0];
+            const target = getSearchReplacementTarget(firstMatch.identifier);
+            if (!target || !(firstMatch.field in target.item)) {
+                continue;
+            }
+
+            let updatedValue = target.item[firstMatch.field];
+            let fieldReplacementCount = 0;
+            for (let match of [...matches].sort((a, b) => b.matchStart - a.matchStart)) {
+                const nextValue = applySearchReplacement(
+                    match,
+                    updatedValue,
+                    replacementText,
+                    match.useRegexReplacement
+                );
+                if (nextValue !== null) {
+                    updatedValue = nextValue;
+                    replacementCount += 1;
+                    fieldReplacementCount += 1;
+                }
+            }
+
+            if (fieldReplacementCount > 0) {
+                if (!updatesByIdentifier.has(firstMatch.identifier)) {
+                    updatesByIdentifier.set(firstMatch.identifier, {target, newItem: {}});
+                }
+                updatesByIdentifier.get(firstMatch.identifier).newItem[firstMatch.field] = updatedValue;
+            }
+        }
+
+        if (updatesByIdentifier.size > 0) {
+            runAsUndoGroup(() => {
+                for (let {target, newItem} of updatesByIdentifier.values()) {
+                    target.update(newItem);
+                }
+            });
+            pushCallback(refreshSearchResults);
+        }
+
+        return replacementCount;
+    }
+
+    function _replaceSearchResult(result, replacementText) {
+        const replaced = replaceSearchMatches([result], replacementText);
+        if (replaced === 0) {
+            doFlash({message: "That match changed before it could be replaced.", alert_type: "alert-warning"});
+        }
+    }
+
+    async function _replaceAllSearchResults(replacementText) {
+        const replaceableResults = (searchStateRef.current.search_results ?? [])
+            .filter(result => result.replaceable);
+        if (replaceableResults.length === 0) {
+            return;
+        }
+
+        try {
+            await dialogFuncs.showModalPromise("ConfirmDialog", {
+                title: "Replace all matches",
+                text_body: `Replace ${replaceableResults.length} editable ${replaceableResults.length === 1 ? "match" : "matches"}?`,
+                cancel_text: "Cancel",
+                submit_text: "Replace All",
+                handleClose: dialogFuncs.hideModal,
+            });
+        } catch (error) {
+            if (error !== "canceled") {
+                console.error("Unable to confirm replace all", error);
+            }
+            return;
+        }
+
+        const replaced = replaceSearchMatches(replaceableResults, replacementText);
+        doFlash({
+            message: `Replaced ${replaced} editable ${replaced === 1 ? "match" : "matches"}.`,
+            alert_type: replaced > 0 ? "alert-success" : "alert-warning",
+        });
     }
 
     function updateGlobals(itemUpdate) {
@@ -2329,6 +2460,8 @@ function CreatorApp(props) {
         <TileMakerSearchResultsPane
             searchStateRef={searchStateRef}
             onSelectResult={_selectSearchResult}
+            onReplaceResult={_replaceSearchResult}
+            onReplaceAll={_replaceAllSearchResults}
             onClose={() => setShowSearchResultsPane(false)}
         />
     ) : null;
