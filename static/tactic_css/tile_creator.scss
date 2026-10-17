@@ -199,13 +199,16 @@ $small-pane-buttom-offset: 10px;
 .tile-debugger-local-name {
     font-family: monospace;
     font-weight: 600;
+    font-size: 12px;
 }
 
 .tile-debugger-local-type {
     opacity: .62;
+    font-size: 12px;
 }
 
 .tile-debugger-local-value {
+    font-size: 12px;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
 }
