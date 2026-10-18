@@ -205327,7 +205327,8 @@ function SearchResultItem(props) {
     isCurrent = props.isCurrent,
     onSelectResult = props.onSelectResult,
     onReplaceResult = props.onReplaceResult,
-    replacementText = props.replacementText;
+    replacementText = props.replacementText,
+    replaceMode = props.replaceMode;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "makert-search-result-item ".concat(isCurrent ? "current-search-result" : ""),
     onClick: function onClick() {
@@ -205360,7 +205361,7 @@ function SearchResultItem(props) {
       minWidth: 0,
       opacity: .85
     }
-  }, result.preview), result.replaceable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+  }, result.preview), replaceMode && result.replaceable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     size: "small",
     variant: "minimal",
     text: "Replace",
@@ -205377,6 +205378,8 @@ function TileMakerSearchResultsPane(props) {
     onSelectResult: null,
     onReplaceResult: null,
     onReplaceAll: null,
+    replaceMode: false,
+    onReplaceModeChange: null,
     onClose: null
   }, props);
   var results = (_props$searchStateRef = props.searchStateRef.current.search_results) !== null && _props$searchStateRef !== void 0 ? _props$searchStateRef : [];
@@ -205391,9 +205394,7 @@ function TileMakerSearchResultsPane(props) {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "maker-search-results-pane bp6-menu",
     style: {
-      width: 340,
-      marginLeft: 25,
-      flex: ".4 .4 0",
+      width: "100%",
       minWidth: 0,
       height: "100%",
       display: "flex",
@@ -205410,15 +205411,30 @@ function TileMakerSearchResultsPane(props) {
       flex: "0 0 auto"
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
-    title: "Search Results",
+    title: props.replaceMode ? "Search & Replace" : "Search Results",
     subtitle: props.searchStateRef.current.search_matches === 1 ? "1 match" : "".concat((_props$searchStateRef2 = props.searchStateRef.current.search_matches) !== null && _props$searchStateRef2 !== void 0 ? _props$searchStateRef2 : 0, " matches"),
     icon: "search"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 3
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    icon: props.replaceMode ? "arrow-up" : "arrow-down",
+    text: props.replaceMode ? "Replace" : "Replace",
+    size: "small",
+    variant: "minimal",
+    intent: "none",
+    onClick: function onClick() {
+      return props.onReplaceModeChange(!props.replaceMode);
+    }
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     icon: "cross",
     size: "small",
     variant: "minimal",
     onClick: props.onClose
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }))), props.replaceMode && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     style: {
       display: "flex",
       gap: 6,
@@ -205439,6 +205455,10 @@ function TileMakerSearchResultsPane(props) {
     intent: "primary",
     text: replaceableCount > 0 ? "Replace All (".concat(replaceableCount, ")") : "Replace All",
     disabled: replaceableCount === 0,
+    style: {
+      whiteSpace: "nowrap",
+      flexShrink: 0
+    },
     onClick: function onClick() {
       return props.onReplaceAll(replacementText);
     }
@@ -205476,7 +205496,8 @@ function TileMakerSearchResultsPane(props) {
       isCurrent: isCurrent,
       onSelectResult: props.onSelectResult,
       onReplaceResult: props.onReplaceResult,
-      replacementText: replacementText
+      replacementText: replacementText,
+      replaceMode: props.replaceMode
     }));
   })));
 }
@@ -208986,6 +209007,11 @@ function CreatorApp(props) {
     _useState2 = _slicedToArray(_useState, 2),
     showSearchResultsPane = _useState2[0],
     setShowSearchResultsPane = _useState2[1];
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false),
+    _useState4 = _slicedToArray(_useState3, 2),
+    searchReplaceMode = _useState4[0],
+    setSearchReplaceMode = _useState4[1];
+  var searchResultsInitialFractionRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(searchResultsPaneInitialFraction());
   function _selectSearchResult(result) {
     var _result$matchNumber;
     var isCurrent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -209171,10 +209197,10 @@ function CreatorApp(props) {
     handleKeyDown = _useHotkeys.handleKeyDown,
     handleKeyUp = _useHotkeys.handleKeyUp;
   var pushCallback = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useCallbackStack)();
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(props.resource_name),
-    _useState4 = _slicedToArray(_useState3, 2),
-    resource_name = _useState4[0],
-    set_resource_name = _useState4[1];
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(props.resource_name),
+    _useState6 = _slicedToArray(_useState5, 2),
+    resource_name = _useState6[0],
+    set_resource_name = _useState6[1];
   var _useStateAndRef9 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
     _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
     debugTargets = _useStateAndRef0[0],
@@ -209200,18 +209226,18 @@ function CreatorApp(props) {
     debugPaused = _useStateAndRef16[0],
     setDebugPaused = _useStateAndRef16[1],
     debugPausedRef = _useStateAndRef16[2];
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(0),
-    _useState6 = _slicedToArray(_useState5, 2),
-    debugFrameIndex = _useState6[0],
-    setDebugFrameIndex = _useState6[1];
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false),
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(0),
     _useState8 = _slicedToArray(_useState7, 2),
-    debugDrawerOpen = _useState8[0],
-    setDebugDrawerOpen = _useState8[1];
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(debuggerInterfaceInitialVisible),
+    debugFrameIndex = _useState8[0],
+    setDebugFrameIndex = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false),
     _useState0 = _slicedToArray(_useState9, 2),
-    debugInterfaceVisible = _useState0[0],
-    setDebugInterfaceVisible = _useState0[1];
+    debugDrawerOpen = _useState0[0],
+    setDebugDrawerOpen = _useState0[1];
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(debuggerInterfaceInitialVisible),
+    _useState10 = _slicedToArray(_useState1, 2),
+    debugInterfaceVisible = _useState10[0],
+    setDebugInterfaceVisible = _useState10[1];
   var _useStateAndRef17 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
     _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
     debugBreakpoints = _useStateAndRef18[0],
@@ -209222,10 +209248,10 @@ function CreatorApp(props) {
     debugPauseOnExceptions = _useStateAndRef20[0],
     setDebugPauseOnExceptions = _useStateAndRef20[1],
     debugPauseOnExceptionsRef = _useStateAndRef20[2];
-  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(""),
-    _useState10 = _slicedToArray(_useState1, 2),
-    debugMessage = _useState10[0],
-    setDebugMessage = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(""),
+    _useState12 = _slicedToArray(_useState11, 2),
+    debugMessage = _useState12[0],
+    setDebugMessage = _useState12[1];
   var debugDrawerInitialFractionRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(debuggerDrawerInitialFraction());
   var sourceInfoRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(props.source_info);
   var connection_status = (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_0__.useConnection)(props.tsocket, initSocket);
@@ -211077,6 +211103,22 @@ function CreatorApp(props) {
     }
     return 0.32;
   }
+  function searchResultsPaneInitialFraction() {
+    try {
+      var stored = Number(window.localStorage.getItem("tactic.tile-maker.search-results-fraction"));
+      if (Number.isFinite(stored) && stored >= 0.2 && stored <= 0.7) return stored;
+    } catch (_error) {
+      // Storage can be unavailable in privacy-restricted browser contexts.
+    }
+    return 0.32;
+  }
+  function rememberSearchResultsPaneFraction(fraction) {
+    try {
+      window.localStorage.setItem("tactic.tile-maker.search-results-fraction", String(fraction));
+    } catch (_error) {
+      // Resizing should still work when persistent storage is unavailable.
+    }
+  }
   function debuggerInterfaceInitialVisible() {
     try {
       return window.localStorage.getItem("tactic.tile-debugger.toolbar-visible") !== "false";
@@ -212087,6 +212129,8 @@ function CreatorApp(props) {
     onSelectResult: _selectSearchResult,
     onReplaceResult: _replaceSearchResult,
     onReplaceAll: _replaceAllSearchResults,
+    replaceMode: searchReplaceMode,
+    onReplaceModeChange: setSearchReplaceMode,
     onClose: function onClose() {
       return setShowSearchResultsPane(false);
     }
@@ -212126,17 +212170,16 @@ function CreatorApp(props) {
     showSearchResult: function showSearchResult(identifier) {
       showTab(identifier);
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerLocalSettings, null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
-    className: "creator-search-and-editor-row",
-    style: {
-      display: "flex",
-      flexDirection: "row",
-      flex: "1 1 0",
-      minHeight: 0,
-      minWidth: 0,
-      width: "100%"
-    }
-  }, editor_pane, search_results_pane));
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerLocalSettings, null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.RightDrawerPanes, {
+    open: showSearchResultsPane,
+    className: "maker-search-results-layout",
+    initial_drawer_fraction: searchResultsInitialFractionRef.current,
+    min_main_width: 320,
+    min_drawer_width: 280,
+    onDrawerResizeEnd: rememberSearchResultsPaneFraction,
+    main_pane: editor_pane,
+    drawer: search_results_pane
+  }));
   var debugStack = debugPaused !== null && debugPaused !== void 0 && (_debugPaused$stack = debugPaused.stack) !== null && _debugPaused$stack !== void 0 && _debugPaused$stack.length ? debugPaused.stack : debugPaused ? [{
     "function": debugPaused["function"],
     line: debugPaused.line,

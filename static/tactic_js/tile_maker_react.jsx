@@ -112,6 +112,8 @@ function CreatorApp(props) {
     const [, jsDispatch, jsListRef] = usePropertyList(props.javascript_functions_list, INITIAL_CODE_PANE_HEIGHT);
 
     const [showSearchResultsPane, setShowSearchResultsPane] = useState(false);
+    const [searchReplaceMode, setSearchReplaceMode] = useState(false);
+    const searchResultsInitialFractionRef = useRef(searchResultsPaneInitialFraction());
 
     function _selectSearchResult(result, isCurrent = false) {
         if (isCurrent) {
@@ -1613,6 +1615,24 @@ function CreatorApp(props) {
         return 0.32;
     }
 
+    function searchResultsPaneInitialFraction() {
+        try {
+            const stored = Number(window.localStorage.getItem("tactic.tile-maker.search-results-fraction"));
+            if (Number.isFinite(stored) && stored >= 0.2 && stored <= 0.7) return stored;
+        } catch (_error) {
+            // Storage can be unavailable in privacy-restricted browser contexts.
+        }
+        return 0.32;
+    }
+
+    function rememberSearchResultsPaneFraction(fraction) {
+        try {
+            window.localStorage.setItem("tactic.tile-maker.search-results-fraction", String(fraction));
+        } catch (_error) {
+            // Resizing should still work when persistent storage is unavailable.
+        }
+    }
+
     function debuggerInterfaceInitialVisible() {
         try {
             return window.localStorage.getItem("tactic.tile-debugger.toolbar-visible") !== "false";
@@ -2462,6 +2482,8 @@ function CreatorApp(props) {
             onSelectResult={_selectSearchResult}
             onReplaceResult={_replaceSearchResult}
             onReplaceAll={_replaceAllSearchResults}
+            replaceMode={searchReplaceMode}
+            onReplaceModeChange={setSearchReplaceMode}
             onClose={() => setShowSearchResultsPane(false)}
         />
     ) : null;
@@ -2501,20 +2523,16 @@ function CreatorApp(props) {
                 <TileMakerLocalSettings/>
             </div>
 
-            <div
-                className="creator-search-and-editor-row"
-                style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    flex: "1 1 0",
-                    minHeight: 0,
-                    minWidth: 0,
-                    width: "100%",
-                }}
-            >
-                {editor_pane}
-                {search_results_pane}
-            </div>
+            <RightDrawerPanes
+                open={showSearchResultsPane}
+                className="maker-search-results-layout"
+                initial_drawer_fraction={searchResultsInitialFractionRef.current}
+                min_main_width={320}
+                min_drawer_width={280}
+                onDrawerResizeEnd={rememberSearchResultsPaneFraction}
+                main_pane={editor_pane}
+                drawer={search_results_pane}
+            />
         </div>
     );
 

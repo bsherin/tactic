@@ -219303,7 +219303,8 @@ function SearchResultItem(props) {
     isCurrent = props.isCurrent,
     onSelectResult = props.onSelectResult,
     onReplaceResult = props.onReplaceResult,
-    replacementText = props.replacementText;
+    replacementText = props.replacementText,
+    replaceMode = props.replaceMode;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "makert-search-result-item ".concat(isCurrent ? "current-search-result" : ""),
     onClick: function onClick() {
@@ -219336,7 +219337,7 @@ function SearchResultItem(props) {
       minWidth: 0,
       opacity: .85
     }
-  }, result.preview), result.replaceable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+  }, result.preview), replaceMode && result.replaceable && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     size: "small",
     variant: "minimal",
     text: "Replace",
@@ -219353,6 +219354,8 @@ function TileMakerSearchResultsPane(props) {
     onSelectResult: null,
     onReplaceResult: null,
     onReplaceAll: null,
+    replaceMode: false,
+    onReplaceModeChange: null,
     onClose: null
   }, props);
   var results = (_props$searchStateRef = props.searchStateRef.current.search_results) !== null && _props$searchStateRef !== void 0 ? _props$searchStateRef : [];
@@ -219367,9 +219370,7 @@ function TileMakerSearchResultsPane(props) {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "maker-search-results-pane bp6-menu",
     style: {
-      width: 340,
-      marginLeft: 25,
-      flex: ".4 .4 0",
+      width: "100%",
       minWidth: 0,
       height: "100%",
       display: "flex",
@@ -219386,15 +219387,30 @@ function TileMakerSearchResultsPane(props) {
       flex: "0 0 auto"
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.EntityTitle, {
-    title: "Search Results",
+    title: props.replaceMode ? "Search & Replace" : "Search Results",
     subtitle: props.searchStateRef.current.search_matches === 1 ? "1 match" : "".concat((_props$searchStateRef2 = props.searchStateRef.current.search_matches) !== null && _props$searchStateRef2 !== void 0 ? _props$searchStateRef2 : 0, " matches"),
     icon: "search"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 3
+    }
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    icon: props.replaceMode ? "arrow-up" : "arrow-down",
+    text: props.replaceMode ? "Replace" : "Replace",
+    size: "small",
+    variant: "minimal",
+    intent: "none",
+    onClick: function onClick() {
+      return props.onReplaceModeChange(!props.replaceMode);
+    }
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     icon: "cross",
     size: "small",
     variant: "minimal",
     onClick: props.onClose
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }))), props.replaceMode && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     style: {
       display: "flex",
       gap: 6,
@@ -219415,6 +219431,10 @@ function TileMakerSearchResultsPane(props) {
     intent: "primary",
     text: replaceableCount > 0 ? "Replace All (".concat(replaceableCount, ")") : "Replace All",
     disabled: replaceableCount === 0,
+    style: {
+      whiteSpace: "nowrap",
+      flexShrink: 0
+    },
     onClick: function onClick() {
       return props.onReplaceAll(replacementText);
     }
@@ -219452,7 +219472,8 @@ function TileMakerSearchResultsPane(props) {
       isCurrent: isCurrent,
       onSelectResult: props.onSelectResult,
       onReplaceResult: props.onReplaceResult,
-      replacementText: replacementText
+      replacementText: replacementText,
+      replaceMode: props.replaceMode
     }));
   })));
 }

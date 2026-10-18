@@ -43,7 +43,7 @@ function getMatchingIcon(result) {
 }
 
 function SearchResultItem(props) {
-    const {result, isCurrent, onSelectResult, onReplaceResult, replacementText} = props;
+    const {result, isCurrent, onSelectResult, onReplaceResult, replacementText, replaceMode} = props;
 
     return (
         <div
@@ -82,7 +82,7 @@ function SearchResultItem(props) {
             >
                 {result.preview}
             </Text>
-            {result.replaceable &&
+            {replaceMode && result.replaceable &&
                 <Button
                     size="small"
                     variant="minimal"
@@ -103,6 +103,8 @@ function TileMakerSearchResultsPane(props) {
         onSelectResult: null,
         onReplaceResult: null,
         onReplaceAll: null,
+        replaceMode: false,
+        onReplaceModeChange: null,
         onClose: null,
         ...props
     };
@@ -116,9 +118,7 @@ function TileMakerSearchResultsPane(props) {
         <div
             className="maker-search-results-pane bp6-menu"
             style={{
-                width: 340,
-                marginLeft: 25,
-                flex: ".4 .4 0",
+                width: "100%",
                 minWidth: 0,
                 height: "100%",
                 display: "flex",
@@ -137,7 +137,7 @@ function TileMakerSearchResultsPane(props) {
                 }}
             >
                 <EntityTitle
-                    title="Search Results"
+                    title={props.replaceMode ? "Search & Replace" : "Search Results"}
                     subtitle={
                         props.searchStateRef.current.search_matches === 1
                             ? "1 match"
@@ -146,38 +146,51 @@ function TileMakerSearchResultsPane(props) {
                     icon="search"
                 />
 
-                <Button
-                    icon="cross"
-                    size="small"
-                    variant="minimal"
-                    onClick={props.onClose}
-                />
+                <div style={{display: "flex", alignItems: "center", gap: 3}}>
+                    <Button
+                        icon={props.replaceMode ? "arrow-up" : "arrow-down"}
+                        text={props.replaceMode ? "Replace" : "Replace"}
+                        size="small"
+                        variant="minimal"
+                        intent={"none"}
+                        onClick={() => props.onReplaceModeChange(!props.replaceMode)}
+                    />
+                    <Button
+                        icon="cross"
+                        size="small"
+                        variant="minimal"
+                        onClick={props.onClose}
+                    />
+                </div>
             </div>
 
-            <div
-                style={{
-                    display: "flex",
-                    gap: 6,
-                    padding: "8px",
-                    borderBottom: "1px solid rgba(128,128,128,.25)",
-                    flex: "0 0 auto",
-                }}
-            >
-                <InputGroup
-                    placeholder="Replace with..."
-                    value={replacementText}
-                    onChange={(event) => setReplacementText(event.target.value)}
-                    fill={true}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                />
-                <Button
-                    intent="primary"
-                    text={replaceableCount > 0 ? `Replace All (${replaceableCount})` : "Replace All"}
-                    disabled={replaceableCount === 0}
-                    onClick={() => props.onReplaceAll(replacementText)}
-                />
-            </div>
+            {props.replaceMode &&
+                <div
+                    style={{
+                        display: "flex",
+                        gap: 6,
+                        padding: "8px",
+                        borderBottom: "1px solid rgba(128,128,128,.25)",
+                        flex: "0 0 auto",
+                    }}
+                >
+                    <InputGroup
+                        placeholder="Replace with..."
+                        value={replacementText}
+                        onChange={(event) => setReplacementText(event.target.value)}
+                        fill={true}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                    />
+                    <Button
+                        intent="primary"
+                        text={replaceableCount > 0 ? `Replace All (${replaceableCount})` : "Replace All"}
+                        disabled={replaceableCount === 0}
+                        style={{whiteSpace: "nowrap", flexShrink: 0}}
+                        onClick={() => props.onReplaceAll(replacementText)}
+                    />
+                </div>
+            }
 
             <div
                 style={{
@@ -226,6 +239,7 @@ function TileMakerSearchResultsPane(props) {
                                 onSelectResult={props.onSelectResult}
                                 onReplaceResult={props.onReplaceResult}
                                 replacementText={replacementText}
+                                replaceMode={props.replaceMode}
                             />
                         </Fragment>
                     );
