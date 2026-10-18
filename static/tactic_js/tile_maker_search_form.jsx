@@ -11,7 +11,7 @@ import {
     EntityTitle,
     InputGroup,
     Icon,
-    Text
+    Text, Collapse
 } from "@blueprintjs/core";
 import {SettingsContext} from "./settings";
 import {AccountSwitchField} from "./account_fields";
@@ -164,7 +164,7 @@ function TileMakerSearchResultsPane(props) {
                 </div>
             </div>
 
-            {props.replaceMode &&
+            <Collapse isOpen={props.replaceMode}>
                 <div
                     style={{
                         display: "flex",
@@ -190,7 +190,7 @@ function TileMakerSearchResultsPane(props) {
                         onClick={() => props.onReplaceAll(replacementText)}
                     />
                 </div>
-            }
+            </Collapse>
 
             <div
                 style={{
