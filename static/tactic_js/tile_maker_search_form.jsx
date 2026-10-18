@@ -17,8 +17,11 @@ import {SettingsContext} from "./settings";
 import {AccountSwitchField} from "./account_fields";
 import {postPromise} from "./communication_react";
 import {doFlash} from "./toaster";
+import { RobotIcon, ListNumbersIcon } from "@blueprintjs/icons/next";
 
 export {TileMakerSearchForm, TileMakerSearchResultsPane, TileMakerLocalSettings};
+
+
 
 const dividerIconDict = {
     "code": "code",
@@ -338,8 +341,8 @@ function TileMakerLocalSettings(props) {
         _submitUpdatedField(fname, value)
     }
 
-    const lnum_icon = <Icon icon="numbered-list" size={14}/>;
-    const ai_icon = <Icon icon="intelligence" size={14}/>;
+    const lnum_icon = <ListNumbersIcon size={20} />;
+    const ai_icon = <RobotIcon size={20}/>
 
     function _submitUpdatedField(fname, fvalue) {
         let data = {};
