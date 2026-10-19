@@ -215505,7 +215505,16 @@ function TileMakerLocalSettings(props) {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "maker-local-settings",
     style: _objectSpread(_objectSpread({}, base_style), props.style)
-  }, lineNumberField, window.has_openapi_key && aiField);
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    icon: "bug",
+    variant: "minimal",
+    intent: props.debugInterfaceVisible ? "warning" : "none",
+    style: {
+      paddingBottom: 10,
+      marginRight: 10
+    },
+    onClick: props.toggleDebugInterface
+  }, "debug"), lineNumberField, window.has_openapi_key && aiField);
 }
 function TileMakerSearchForm(props) {
   props = _objectSpread({
@@ -222089,7 +222098,10 @@ function CreatorApp(props) {
     showSearchResult: function showSearchResult(identifier) {
       showTab(identifier);
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerLocalSettings, null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.RightDrawerPanes, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerLocalSettings, {
+    debugInterfaceVisible: debugInterfaceVisible,
+    toggleDebugInterface: toggleDebugInterface
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.RightDrawerPanes, {
     open: showSearchResultsPane,
     className: "maker-search-results-layout",
     initial_drawer_fraction: searchResultsInitialFractionRef.current,

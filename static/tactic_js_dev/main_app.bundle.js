@@ -229463,7 +229463,16 @@ function TileMakerLocalSettings(props) {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "maker-local-settings",
     style: _objectSpread(_objectSpread({}, base_style), props.style)
-  }, lineNumberField, window.has_openapi_key && aiField);
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    icon: "bug",
+    variant: "minimal",
+    intent: props.debugInterfaceVisible ? "warning" : "none",
+    style: {
+      paddingBottom: 10,
+      marginRight: 10
+    },
+    onClick: props.toggleDebugInterface
+  }, "debug"), lineNumberField, window.has_openapi_key && aiField);
 }
 function TileMakerSearchForm(props) {
   props = _objectSpread({

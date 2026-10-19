@@ -378,6 +378,12 @@ function TileMakerLocalSettings(props) {
     return (
         <div className="maker-local-settings"
             style={{...base_style, ...props.style}}>
+            <Button icon="bug" variant="minimal"
+                    intent={props.debugInterfaceVisible ? "warning" : "none"}
+                    style={{paddingBottom: 10, marginRight: 10}}
+                    onClick={props.toggleDebugInterface}>
+                debug
+            </Button>
             {lineNumberField}
             {window.has_openapi_key && aiField}
         </div>

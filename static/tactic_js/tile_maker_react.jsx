@@ -2523,7 +2523,8 @@ function CreatorApp(props) {
                         showTab(identifier);
                     }}
                 />
-                <TileMakerLocalSettings/>
+                <TileMakerLocalSettings debugInterfaceVisible={debugInterfaceVisible}
+                                        toggleDebugInterface={toggleDebugInterface} />
             </div>
 
             <RightDrawerPanes
