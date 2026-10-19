@@ -3,10 +3,22 @@ const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+// Preserve Blueprint's relative-color calc() expressions. postcss-calc treats
+// channel identifiers such as `l` as invalid arithmetic, even though the full
+// oklch(from ...) value is valid CSS.
+const cssMinimizerOptions = {
+    minimizerOptions: {
+        preset: ['default', {calc: false}],
+    },
+};
+
 module.exports = {
     mode: 'production',
       optimization: {
-        minimizer: [new TerserJSPlugin({extractComments: false,}), new OptimizeCSSAssetsPlugin({})],
+        minimizer: [
+          new TerserJSPlugin({extractComments: false,}),
+          new OptimizeCSSAssetsPlugin(cssMinimizerOptions),
+        ],
       },
     entry: {
       main_app:'./static/tactic_js/main_app.js',

@@ -218753,6 +218753,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
 /* harmony import */ var _codemirror_state__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @codemirror/state */ "./node_modules/@codemirror/state/dist/index.js");
 /* harmony import */ var _react_codemirror6__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./react-codemirror6 */ "./static/tactic_js/react-codemirror6.jsx");
 /* harmony import */ var _tile_maker_support__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./tile_maker_support */ "./static/tactic_js/tile_maker_support.jsx");
@@ -222033,8 +222034,11 @@ function CreatorApp(props) {
     style: {
       overflow: "auto",
       flex: "1 1 0",
+      width: "100%",
+      height: "100%",
       minHeight: 0,
       minWidth: 0,
+      boxSizing: "border-box",
       paddingBottom: 200
     },
     className: "creator-pane-list"
@@ -222387,7 +222391,9 @@ function CreatorApp(props) {
     tabIndex: "0",
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
-  }, debugInterfaceVisible && debugger_panel, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.RightDrawerPanes, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.Collapse, {
+    isOpen: debugInterfaceVisible
+  }, debugger_panel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.RightDrawerPanes, {
     open: debugDrawerOpen,
     className: "debug-hp",
     initial_drawer_fraction: debugDrawerInitialFractionRef.current,

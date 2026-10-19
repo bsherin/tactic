@@ -4,6 +4,16 @@ const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('css-minimizer-webpack-plugin');
 var webpack = require('webpack');
 
+// Blueprint emits relative color syntax such as oklch(from ... calc(l + 0.24) ...).
+// postcss-calc does not understand color-channel identifiers and reports every
+// valid expression as a lexical error, so preserve calc() expressions while
+// retaining the rest of cssnano's production optimizations.
+const cssMinimizerOptions = {
+    minimizerOptions: {
+        preset: ['default', {calc: false}],
+    },
+};
+
 module.exports = (env, argv) => {
 
     console.log("starting");
@@ -100,7 +110,10 @@ module.exports = (env, argv) => {
     if (!devmode) {
         result.mode = "production";
         result.optimization = {
-            minimizer: [new TerserJSPlugin({extractComments: false,}), new OptimizeCSSAssetsPlugin({})],
+            minimizer: [
+                new TerserJSPlugin({extractComments: false,}),
+                new OptimizeCSSAssetsPlugin(cssMinimizerOptions),
+            ],
         };
         result.output = {
             filename: '[name].production.bundle.js',

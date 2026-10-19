@@ -15,7 +15,7 @@ import {createRoot} from 'react-dom/client';
 
 import _ from 'lodash';
 
-import {Button, ButtonGroup, Switch, useHotkeys, FormGroup, HTMLSelect, Divider} from "@blueprintjs/core";
+import {Button, ButtonGroup, Switch, useHotkeys, FormGroup, HTMLSelect, Divider, Collapse} from "@blueprintjs/core";
 
 import {EditorSelection} from "@codemirror/state";
 import {scrollEditorPositionToCenter} from "./react-codemirror6";
@@ -2466,8 +2466,11 @@ function CreatorApp(props) {
             style={{
                 overflow: "auto",
                 flex: "1 1 0",
+                width: "100%",
+                height: "100%",
                 minHeight: 0,
                 minWidth: 0,
+                boxSizing: "border-box",
                 paddingBottom: 200,
             }}
             className="creator-pane-list"
@@ -2777,7 +2780,9 @@ function CreatorApp(props) {
                 }}>
                     <div className={outer_class} ref={top_ref} style={outer_style}
                          tabIndex="0" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-                        {debugInterfaceVisible && debugger_panel}
+                        <Collapse isOpen={debugInterfaceVisible}>
+                            {debugger_panel}
+                        </Collapse>
                         <RightDrawerPanes
                             open={debugDrawerOpen}
                             className="debug-hp"
