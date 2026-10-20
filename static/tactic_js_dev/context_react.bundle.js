@@ -238721,7 +238721,9 @@ function MakerNavigator(props) {
     if (section.kind == "divider") {
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavDivider, {
         key: section.name,
-        name: section.name
+        name: section.name,
+        title: section.title ? section.title : null,
+        icon: section.icon ? section.icon : null
       });
     }
     if (section.kind == "direct") {
@@ -238935,16 +238937,26 @@ function HandlerCreator(props) {
 }
 function NavDivider(props) {
   props = _objectSpread({
-    name: "divider"
+    name: "divider",
+    title: null,
+    icon: null
   }, props);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.Divider, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, props.title && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.EntityTitle, {
+    title: props.title,
+    icon: props.icon,
+    style: {
+      marginTop: 10,
+      marginLeft: 5
+    },
+    heading: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.H4
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.Divider, {
     key: name,
     style: {
       width: '90%',
       marginTop: 10,
       marginBottom: 10
     }
-  });
+  }));
 }
 function SortableNavSection(props) {
   props = _objectSpread({
@@ -242568,32 +242580,10 @@ function CreatorApp(props) {
     icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["metadata"]
   }, {
     kind: "divider",
-    name: "Required Divider",
-    visible: true
-  }, {
-    kind: "direct",
-    visible: true,
-    editable: false,
-    dispatch: function dispatch() {},
-    className: "direct-nav-section-button-mono",
-    identifier: "globals",
-    name: "globals",
-    mode: "python",
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["globals"]
-  }, {
-    kind: "direct",
-    visible: true,
-    editable: false,
-    dispatch: function dispatch() {},
-    identifier: "render_content",
-    className: "direct-nav-section-button-mono",
-    name: "render_content",
-    mode: "python",
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["render_content"]
-  }, {
-    kind: "divider",
     name: "Options Divider",
-    visible: true
+    visible: true,
+    title: "features",
+    icon: "group-item"
   }, {
     title: "options",
     identifier: "options",
@@ -242672,7 +242662,29 @@ function CreatorApp(props) {
   }, {
     kind: "divider",
     name: "Methods Divider",
-    visible: true
+    visible: true,
+    title: "code",
+    icon: "code"
+  }, {
+    kind: "direct",
+    visible: true,
+    editable: false,
+    dispatch: function dispatch() {},
+    className: "direct-nav-section-button-mono",
+    identifier: "globals",
+    name: "globals",
+    mode: "python",
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["globals"]
+  }, {
+    kind: "direct",
+    visible: true,
+    editable: false,
+    dispatch: function dispatch() {},
+    identifier: "render_content",
+    className: "direct-nav-section-button-mono",
+    name: "render_content",
+    mode: "python",
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["render_content"]
   }, {
     title: "user methods",
     identifier: "user_methods",

@@ -1333,7 +1333,9 @@ function MakerNavigator(props) {
                     let choiceDict = section.choiceDict ? section.choiceDict : null;
                     if (section.kind == "divider") {
                         return (
-                            <NavDivider key={section.name} name={section.name}/>
+                            <NavDivider key={section.name} name={section.name}
+                                        title={section.title ? section.title : null}
+                                        icon={section.icon ? section.icon: null}/>
                         )
                     }
                     if (section.kind == "direct") {
@@ -1539,14 +1541,24 @@ function HandlerCreator(props) {
 function NavDivider(props) {
     props = {
         name: "divider",
+        title: null,
+        icon: null,
         ...props
     };
     return (
-        <Divider key={name} style={{
-            width: '90%',
-            marginTop: 10,
-            marginBottom: 10
-        }}/>
+        <Fragment>
+            {props.title &&
+                <EntityTitle title={props.title} icon={props.icon}
+                             style={{marginTop: 10, marginLeft: 5}}
+                             heading={H4}/>
+            }
+            <Divider key={name} style={{
+                width: '90%',
+                marginTop: 10,
+                marginBottom: 10
+            }}/>
+
+        </Fragment>
     )
 }
 

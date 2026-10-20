@@ -2083,32 +2083,11 @@ function CreatorApp(props) {
             name: "Metadata",
             icon: pane_type_icons["metadata"],
         },
-        {kind: "divider", name: "Required Divider", visible: true},
-        {
-            kind: "direct",
-            visible: true,
-            editable: false,
-            dispatch: () => {
-            },
-            className: "direct-nav-section-button-mono",
-            identifier: "globals",
-            name: "globals",
-            mode: "python",
-            icon: pane_type_icons["globals"],
+
+        {kind: "divider", name: "Options Divider", visible: true,
+            title: "features",
+            icon: "group-item"
         },
-        {
-            kind: "direct",
-            visible: true,
-            editable: false,
-            dispatch: () => {
-            },
-            identifier: "render_content",
-            className: "direct-nav-section-button-mono",
-            name: "render_content",
-            mode: "python",
-            icon: pane_type_icons["render_content"],
-        },
-        {kind: "divider", name: "Options Divider", visible: true},
         {
             title: "options",
             identifier: "options",
@@ -2181,7 +2160,31 @@ function CreatorApp(props) {
             },
             editable: true, icon: pane_type_icons["save"], sub_items: save_list_ref.current, dispatch: saveDispatch
         },
-        {kind: "divider", name: "Methods Divider", visible: true},
+        {kind: "divider", name: "Methods Divider", visible: true, title: "code", icon: "code"},
+        {
+            kind: "direct",
+            visible: true,
+            editable: false,
+            dispatch: () => {
+            },
+            className: "direct-nav-section-button-mono",
+            identifier: "globals",
+            name: "globals",
+            mode: "python",
+            icon: pane_type_icons["globals"],
+        },
+        {
+            kind: "direct",
+            visible: true,
+            editable: false,
+            dispatch: () => {
+            },
+            identifier: "render_content",
+            className: "direct-nav-section-button-mono",
+            name: "render_content",
+            mode: "python",
+            icon: pane_type_icons["render_content"],
+        },
 
         {
             title: "user methods",

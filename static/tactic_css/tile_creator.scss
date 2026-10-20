@@ -434,6 +434,11 @@ $small-pane-buttom-offset: 10px;
     .maker-navigator {
         padding-top: $navigator-top-padding;
 
+        .bp6-entity-title {
+            margin-left: 5px;
+            margin-top: 20px;
+        }
+
         .sortable-nav-section {
             margin-top: 5px;
             overflow: hidden;
