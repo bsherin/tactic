@@ -6558,399 +6558,6 @@ function shiftElements(leftArray, rightArray, num) {
 
 /***/ }),
 
-/***/ "./node_modules/@blueprintjs/core/lib/esm/components/overlay/overlay.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/@blueprintjs/core/lib/esm/components/overlay/overlay.js ***!
-  \******************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Overlay: () => (/* binding */ Overlay)
-/* harmony export */ });
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
-/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var react_transition_group__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-transition-group */ "./node_modules/react-transition-group/esm/TransitionGroup.js");
-/* harmony import */ var react_transition_group__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react-transition-group */ "./node_modules/react-transition-group/esm/CSSTransition.js");
-/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../common */ "./node_modules/@blueprintjs/core/lib/esm/common/abstractPureComponent.js");
-/* harmony import */ var _common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../common */ "./node_modules/@blueprintjs/core/lib/esm/common/classes.js");
-/* harmony import */ var _common_props__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../common/props */ "./node_modules/@blueprintjs/core/lib/esm/common/props.js");
-/* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../common/utils */ "./node_modules/@blueprintjs/core/lib/esm/common/utils/domUtils.js");
-/* harmony import */ var _common_utils__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../common/utils */ "./node_modules/@blueprintjs/core/lib/esm/common/utils/functionUtils.js");
-/* harmony import */ var _portal_portal__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../portal/portal */ "./node_modules/@blueprintjs/core/lib/esm/components/portal/portal.js");
-/* harmony import */ var _overlayUtils__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./overlayUtils */ "./node_modules/@blueprintjs/core/lib/esm/components/overlay/overlayUtils.js");
-
-/*
- * Copyright 2015 Palantir Technologies, Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/**
- * @fileoverview This component is DEPRECATED, and the code is frozen.
- * All changes & bugfixes should be made to Overlay2 instead.
- */
-/* eslint-disable @typescript-eslint/no-deprecated */
-
-
-
-
-
-
-
-
-/**
- * Overlay component.
- *
- * @deprecated use `Overlay2` instead
- * @see https://blueprintjs.com/docs/#core/components/overlay
- */
-class Overlay extends _common__WEBPACK_IMPORTED_MODULE_3__.AbstractPureComponent {
-    static displayName = `${_common_props__WEBPACK_IMPORTED_MODULE_4__.DISPLAYNAME_PREFIX}.Overlay`;
-    static defaultProps = {
-        autoFocus: true,
-        backdropProps: {},
-        canEscapeKeyClose: true,
-        canOutsideClickClose: true,
-        enforceFocus: true,
-        hasBackdrop: true,
-        isOpen: false,
-        lazy: true,
-        shouldReturnFocusOnClose: true,
-        transitionDuration: 300,
-        transitionName: _common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY,
-        usePortal: true,
-    };
-    static getDerivedStateFromProps({ isOpen: hasEverOpened }) {
-        if (hasEverOpened) {
-            return { hasEverOpened };
-        }
-        return null;
-    }
-    static openStack = [];
-    static getLastOpened = () => Overlay.openStack[Overlay.openStack.length - 1];
-    isAutoFocusing = false;
-    lastActiveElementBeforeOpened;
-    state = {
-        hasEverOpened: this.props.isOpen,
-    };
-    /** Ref for container element, containing all children and the backdrop */
-    containerElement = (0,react__WEBPACK_IMPORTED_MODULE_2__.createRef)();
-    // An empty, keyboard-focusable div at the beginning of the Overlay content
-    startFocusTrapElement = (0,react__WEBPACK_IMPORTED_MODULE_2__.createRef)();
-    // An empty, keyboard-focusable div at the end of the Overlay content
-    endFocusTrapElement = (0,react__WEBPACK_IMPORTED_MODULE_2__.createRef)();
-    render() {
-        // oh snap! no reason to render anything at all if we're being truly lazy
-        if (this.props.lazy && !this.state.hasEverOpened) {
-            return null;
-        }
-        const { autoFocus, children, className, enforceFocus, usePortal, isOpen } = this.props;
-        // TransitionGroup types require single array of children; does not support nested arrays.
-        // So we must collapse backdrop and children into one array, and every item must be wrapped in a
-        // Transition element (no ReactText allowed).
-        const childrenWithTransitions = isOpen ? (react__WEBPACK_IMPORTED_MODULE_2__.Children.map(children, this.maybeRenderChild) ?? []) : [];
-        const maybeBackdrop = this.maybeRenderBackdrop();
-        if (maybeBackdrop !== null) {
-            childrenWithTransitions.unshift(maybeBackdrop);
-        }
-        if (isOpen && (autoFocus || enforceFocus) && childrenWithTransitions.length > 0) {
-            childrenWithTransitions.unshift(this.renderDummyElement("__start", {
-                className: _common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_START_FOCUS_TRAP,
-                onFocus: this.handleStartFocusTrapElementFocus,
-                onKeyDown: this.handleStartFocusTrapElementKeyDown,
-                ref: this.startFocusTrapElement,
-            }));
-            if (enforceFocus) {
-                childrenWithTransitions.push(this.renderDummyElement("__end", {
-                    className: _common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_END_FOCUS_TRAP,
-                    onFocus: this.handleEndFocusTrapElementFocus,
-                    ref: this.endFocusTrapElement,
-                }));
-            }
-        }
-        const containerClasses = classnames__WEBPACK_IMPORTED_MODULE_1___default()(_common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY, {
-            [_common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_OPEN]: isOpen,
-            [_common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_INLINE]: !usePortal,
-        }, className);
-        const transitionGroup = (
-        // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-        (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { "aria-live": "polite", className: containerClasses, onKeyDown: this.handleKeyDown, ref: this.containerElement, children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(react_transition_group__WEBPACK_IMPORTED_MODULE_6__["default"], { appear: true, component: null, children: childrenWithTransitions }) }));
-        if (usePortal) {
-            return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(_portal_portal__WEBPACK_IMPORTED_MODULE_7__.Portal, { className: this.props.portalClassName, container: this.props.portalContainer, stopPropagationEvents: this.props.portalStopPropagationEvents, children: transitionGroup }));
-        }
-        else {
-            return transitionGroup;
-        }
-    }
-    componentDidMount() {
-        if (this.props.isOpen) {
-            this.overlayWillOpen();
-        }
-    }
-    componentDidUpdate(prevProps) {
-        if (prevProps.isOpen && !this.props.isOpen) {
-            this.overlayWillClose();
-        }
-        else if (!prevProps.isOpen && this.props.isOpen) {
-            this.overlayWillOpen();
-        }
-    }
-    componentWillUnmount() {
-        this.overlayWillClose();
-    }
-    /**
-     * @public for testing
-     * @internal
-     */
-    bringFocusInsideOverlay() {
-        // always delay focus manipulation to just before repaint to prevent scroll jumping
-        return this.requestAnimationFrame(() => {
-            // container element may be undefined between component mounting and Portal rendering
-            // activeElement may be undefined in some rare cases in IE
-            const activeElement = (0,_common_utils__WEBPACK_IMPORTED_MODULE_8__.getActiveElement)(this.containerElement.current);
-            if (this.containerElement.current == null || activeElement == null || !this.props.isOpen) {
-                return;
-            }
-            const container = this.containerElement.current;
-            const isFocusOutsideModal = !container.contains(activeElement);
-            if (isFocusOutsideModal) {
-                this.startFocusTrapElement.current?.focus({ preventScroll: true });
-                this.isAutoFocusing = false;
-            }
-        });
-    }
-    maybeRenderChild = (child) => {
-        if ((0,_common_utils__WEBPACK_IMPORTED_MODULE_9__.isFunction)(child)) {
-            child = child();
-        }
-        if (child == null) {
-            return null;
-        }
-        // decorate the child with a few injected props
-        const tabIndex = this.props.enforceFocus || this.props.autoFocus ? 0 : undefined;
-        const decoratedChild = typeof child === "object" ? ((0,react__WEBPACK_IMPORTED_MODULE_2__.cloneElement)(child, {
-            className: classnames__WEBPACK_IMPORTED_MODULE_1___default()(child.props.className, _common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_CONTENT),
-            tabIndex,
-        })) : ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("span", { className: _common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_CONTENT, tabIndex: tabIndex, children: child }));
-        const { onOpening, onOpened, onClosing, transitionDuration, transitionName } = this.props;
-        return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(react_transition_group__WEBPACK_IMPORTED_MODULE_10__["default"], { classNames: transitionName, onEntering: onOpening, onEntered: onOpened, onExiting: onClosing, onExited: this.handleTransitionExited, timeout: transitionDuration, addEndListener: this.handleTransitionAddEnd, children: decoratedChild }));
-    };
-    maybeRenderBackdrop() {
-        const { backdropClassName, backdropProps, hasBackdrop, isOpen, transitionDuration, transitionName } = this.props;
-        if (hasBackdrop && isOpen) {
-            return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(react_transition_group__WEBPACK_IMPORTED_MODULE_10__["default"], { classNames: transitionName, timeout: transitionDuration, addEndListener: this.handleTransitionAddEnd, children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { ...backdropProps, className: classnames__WEBPACK_IMPORTED_MODULE_1___default()(_common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_BACKDROP, backdropClassName, backdropProps?.className), onMouseDown: this.handleBackdropMouseDown }) }, "__backdrop"));
-        }
-        else {
-            return null;
-        }
-    }
-    renderDummyElement(key, props) {
-        const { transitionDuration, transitionName } = this.props;
-        return ((0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)(react_transition_group__WEBPACK_IMPORTED_MODULE_10__["default"], { classNames: transitionName, addEndListener: this.handleTransitionAddEnd, timeout: transitionDuration, unmountOnExit: true, children: (0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)("div", { tabIndex: 0, ...props }) }, key));
-    }
-    /**
-     * Ensures repeatedly pressing shift+tab keeps focus inside the Overlay. Moves focus to
-     * the `endFocusTrapElement` or the first keyboard-focusable element in the Overlay (excluding
-     * the `startFocusTrapElement`), depending on whether the element losing focus is inside the
-     * Overlay.
-     */
-    handleStartFocusTrapElementFocus = (e) => {
-        if (!this.props.enforceFocus || this.isAutoFocusing) {
-            return;
-        }
-        // e.relatedTarget will not be defined if this was a programmatic focus event, as is the
-        // case when we call this.bringFocusInsideOverlay() after a user clicked on the backdrop.
-        // Otherwise, we're handling a user interaction, and we should wrap around to the last
-        // element in this transition group.
-        if (e.relatedTarget != null &&
-            this.containerElement.current?.contains(e.relatedTarget) &&
-            e.relatedTarget !== this.endFocusTrapElement.current) {
-            this.endFocusTrapElement.current?.focus({ preventScroll: true });
-        }
-    };
-    /**
-     * Wrap around to the end of the dialog if `enforceFocus` is enabled.
-     */
-    handleStartFocusTrapElementKeyDown = (e) => {
-        if (!this.props.enforceFocus) {
-            return;
-        }
-        if (e.shiftKey && e.key === "Tab") {
-            const lastFocusableElement = (0,_overlayUtils__WEBPACK_IMPORTED_MODULE_11__.getKeyboardFocusableElements)(this.containerElement).pop();
-            if (lastFocusableElement != null) {
-                lastFocusableElement.focus();
-            }
-            else {
-                this.endFocusTrapElement.current?.focus({ preventScroll: true });
-            }
-        }
-    };
-    /**
-     * Ensures repeatedly pressing tab keeps focus inside the Overlay. Moves focus to the
-     * `startFocusTrapElement` or the last keyboard-focusable element in the Overlay (excluding the
-     * `startFocusTrapElement`), depending on whether the element losing focus is inside the
-     * Overlay.
-     */
-    handleEndFocusTrapElementFocus = (e) => {
-        // No need for this.props.enforceFocus check here because this element is only rendered
-        // when that prop is true.
-        // During user interactions, e.relatedTarget will be defined, and we should wrap around to the
-        // "start focus trap" element.
-        // Otherwise, we're handling a programmatic focus event, which can only happen after a user
-        // presses shift+tab from the first focusable element in the overlay.
-        if (e.relatedTarget != null &&
-            this.containerElement.current?.contains(e.relatedTarget) &&
-            e.relatedTarget !== this.startFocusTrapElement.current) {
-            const firstFocusableElement = (0,_overlayUtils__WEBPACK_IMPORTED_MODULE_11__.getKeyboardFocusableElements)(this.containerElement).shift();
-            // ensure we don't re-focus an already active element by comparing against e.relatedTarget
-            if (!this.isAutoFocusing && firstFocusableElement != null && firstFocusableElement !== e.relatedTarget) {
-                firstFocusableElement.focus();
-            }
-            else {
-                this.startFocusTrapElement.current?.focus({ preventScroll: true });
-            }
-        }
-        else {
-            const lastFocusableElement = (0,_overlayUtils__WEBPACK_IMPORTED_MODULE_11__.getKeyboardFocusableElements)(this.containerElement).pop();
-            if (lastFocusableElement != null) {
-                lastFocusableElement.focus();
-            }
-            else {
-                // Keeps focus within Overlay even if there are no keyboard-focusable children
-                this.startFocusTrapElement.current?.focus({ preventScroll: true });
-            }
-        }
-    };
-    overlayWillClose() {
-        document.removeEventListener("focus", this.handleDocumentFocus, /* useCapture */ true);
-        document.removeEventListener("mousedown", this.handleDocumentClick);
-        const { openStack } = Overlay;
-        const stackIndex = openStack.indexOf(this);
-        if (stackIndex !== -1) {
-            openStack.splice(stackIndex, 1);
-            if (openStack.length > 0) {
-                const lastOpenedOverlay = Overlay.getLastOpened();
-                // Only bring focus back to last overlay if it had autoFocus _and_ enforceFocus enabled.
-                // If `autoFocus={false}`, it's likely that the overlay never received focus in the first place,
-                // so it would be surprising for us to send it there. See https://github.com/palantir/blueprint/issues/4921
-                if (lastOpenedOverlay.props.autoFocus && lastOpenedOverlay.props.enforceFocus) {
-                    lastOpenedOverlay.bringFocusInsideOverlay();
-                    document.addEventListener("focus", lastOpenedOverlay.handleDocumentFocus, /* useCapture */ true);
-                }
-            }
-            if (openStack.filter(o => o.props.usePortal && o.props.hasBackdrop).length === 0) {
-                document.body.classList.remove(_common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_OPEN);
-            }
-        }
-    }
-    overlayWillOpen() {
-        const { getLastOpened, openStack } = Overlay;
-        if (openStack.length > 0) {
-            document.removeEventListener("focus", getLastOpened().handleDocumentFocus, /* useCapture */ true);
-        }
-        openStack.push(this);
-        if (this.props.autoFocus) {
-            this.isAutoFocusing = true;
-            this.bringFocusInsideOverlay();
-        }
-        if (this.props.enforceFocus) {
-            // Focus events do not bubble, but setting useCapture allows us to listen in and execute
-            // our handler before all others
-            document.addEventListener("focus", this.handleDocumentFocus, /* useCapture */ true);
-        }
-        if (this.props.canOutsideClickClose && !this.props.hasBackdrop) {
-            document.addEventListener("mousedown", this.handleDocumentClick);
-        }
-        if (this.props.hasBackdrop && this.props.usePortal) {
-            // add a class to the body to prevent scrolling of content below the overlay
-            document.body.classList.add(_common__WEBPACK_IMPORTED_MODULE_5__.OVERLAY_OPEN);
-        }
-        this.lastActiveElementBeforeOpened = (0,_common_utils__WEBPACK_IMPORTED_MODULE_8__.getActiveElement)(this.containerElement.current);
-    }
-    handleTransitionExited = (node) => {
-        if (this.props.shouldReturnFocusOnClose && this.lastActiveElementBeforeOpened instanceof HTMLElement) {
-            this.lastActiveElementBeforeOpened.focus();
-        }
-        this.props.onClosed?.(node);
-    };
-    handleBackdropMouseDown = (e) => {
-        const { backdropProps, canOutsideClickClose, enforceFocus, onClose } = this.props;
-        if (canOutsideClickClose) {
-            onClose?.(e);
-        }
-        if (enforceFocus) {
-            this.bringFocusInsideOverlay();
-        }
-        backdropProps?.onMouseDown?.(e);
-    };
-    handleDocumentClick = (e) => {
-        const { canOutsideClickClose, isOpen, onClose } = this.props;
-        // get the actual target even in the Shadow DOM
-        // see https://github.com/palantir/blueprint/issues/4220
-        const eventTarget = (e.composed ? e.composedPath()[0] : e.target);
-        const stackIndex = Overlay.openStack.indexOf(this);
-        const isClickInThisOverlayOrDescendant = Overlay.openStack
-            .slice(stackIndex)
-            .some(({ containerElement: elem }) => {
-            // `elem` is the container of backdrop & content, so clicking directly on that container
-            // should not count as being "inside" the overlay.
-            return elem.current?.contains(eventTarget) && !elem.current.isSameNode(eventTarget);
-        });
-        if (isOpen && !isClickInThisOverlayOrDescendant && canOutsideClickClose) {
-            // casting to any because this is a native event
-            onClose?.(e);
-        }
-    };
-    /**
-     * When multiple Overlays are open, this event handler is only active for the most recently
-     * opened one to avoid Overlays competing with each other for focus.
-     */
-    handleDocumentFocus = (e) => {
-        // get the actual target even in the Shadow DOM
-        // see https://github.com/palantir/blueprint/issues/4220
-        const eventTarget = e.composed ? e.composedPath()[0] : e.target;
-        if (this.props.enforceFocus &&
-            this.containerElement.current != null &&
-            eventTarget instanceof Node &&
-            !this.containerElement.current.contains(eventTarget)) {
-            // prevent default focus behavior (sometimes auto-scrolls the page)
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            this.bringFocusInsideOverlay();
-        }
-    };
-    handleKeyDown = (e) => {
-        const { canEscapeKeyClose, onClose } = this.props;
-        if (e.key === "Escape" && canEscapeKeyClose) {
-            onClose?.(e);
-            // prevent other overlays from closing
-            e.stopPropagation();
-            // prevent browser-specific escape key behavior (Safari exits fullscreen)
-            e.preventDefault();
-        }
-    };
-    handleTransitionAddEnd = () => {
-        // no-op
-    };
-}
-//# sourceMappingURL=overlay.js.map
-
-/***/ }),
-
 /***/ "./node_modules/@blueprintjs/core/lib/esm/components/overlay/overlayUtils.js":
 /*!***********************************************************************************!*\
   !*** ./node_modules/@blueprintjs/core/lib/esm/components/overlay/overlayUtils.js ***!
@@ -198371,7 +197978,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _blueprintjs_select__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/select */ "./node_modules/@blueprintjs/select/lib/esm/common/classes.js");
 /* harmony import */ var _blueprintjs_select__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/select */ "./node_modules/@blueprintjs/select/lib/esm/components/query-list/queryList.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/menu/menuItem.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/overlay/overlay.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/overlay2/overlay2.js");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/inputGroup.js");
 /* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
 /* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
@@ -198558,7 +198165,7 @@ function OpenOmnibar(props) {
       onKeyDown: handleKeyDown,
       onKeyUp: handleKeyUp
     } : {};
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Overlay, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Overlay2, {
       hasBackdrop: true,
       isOpen: props.showOmnibar,
       className: _blueprintjs_select__WEBPACK_IMPORTED_MODULE_9__.OMNIBAR_OVERLAY,
@@ -198569,7 +198176,8 @@ function OpenOmnibar(props) {
       autoFocus: true,
       size: "large",
       leftIcon: "cube",
-      placeholder: "Search resources...",
+      intent: "primary",
+      placeholder: "Search all...",
       onChange: listProps.handleQueryChange,
       value: listProps.query
     }), listProps.itemList));
@@ -206714,8 +206322,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dnd_kit_sortable__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @dnd-kit/sortable */ "./node_modules/@dnd-kit/sortable/dist/sortable.esm.js");
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
 /* harmony import */ var _combined_metadata__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./combined_metadata */ "./static/tactic_js/combined_metadata.jsx");
 /* harmony import */ var _dnd_kit_utilities__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @dnd-kit/utilities */ "./node_modules/@dnd-kit/utilities/dist/utilities.esm.js");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -206790,6 +206398,7 @@ function ContextNavigator(props) {
     handleTabSelect: function handleTabSelect() {},
     closeTab: function closeTab() {},
     refreshTab: function refreshTab() {},
+    showOmnibar: function showOmnibar() {},
     tabPanelList: null,
     selectedItem: null,
     paneClosed: false
@@ -206827,7 +206436,19 @@ function ContextNavigator(props) {
   };
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "context-navigator"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_2__.DndContext, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Divider, {
+    className: "context-tab-button-content-divider"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    variant: "minimal",
+    textClassName: "bp6-text-muted",
+    onClick: props.showOmnibar,
+    intent: "primary",
+    icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItemIcon, {
+      icon: "search"
+    })
+  }, "Omnibar"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.Divider, {
+    className: "context-tab-button-content-divider"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_dnd_kit_core__WEBPACK_IMPORTED_MODULE_2__.DndContext, {
     sensors: sensors,
     collisionDetection: _dnd_kit_core__WEBPACK_IMPORTED_MODULE_2__.rectIntersection,
     onDragEnd: handleDragEnd
@@ -206875,7 +206496,7 @@ function NavItemIcon(props) {
     icon: null,
     size: 13
   }, props);
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Icon, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Icon, {
     icon: props.icon,
     size: props.size,
     style: {
@@ -206929,8 +206550,8 @@ function SortableContextNavigatorItem(props) {
     style: {
       alignContent: "center"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
-    icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Icon, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
+    icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Icon, {
       size: 13,
       icon: "delete"
     }),
@@ -206974,7 +206595,7 @@ function ContextNavigatorItem(props) {
         minWidth: 0,
         minHeight: 0
       }
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
       icon: null,
       intent: "none",
       size: "medium",
@@ -206989,7 +206610,7 @@ function ContextNavigatorItem(props) {
       minWidth: 0,
       minHeight: 0
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_9__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_8__.Button, {
     icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItemIcon, {
       icon: props.icon
     }),
@@ -247988,8 +247609,8 @@ function ContextApp(props) {
   }
   function _handleTabSelect(newTabId) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-    setSelectedTabId(newTabId);
     setLastSelectedTabId(selectedTabIdRef.current);
+    setSelectedTabId(newTabId);
     pushCallback(function () {
       setTabSelectCounter(tabSelectCounter + 1);
       if (callback) {
@@ -248388,7 +248009,8 @@ function ContextApp(props) {
     refreshTab: _refreshTab,
     dispatch: tabPanelListDispatch,
     pushCallback: pushCallback,
-    tabPanelList: tabPanelList
+    tabPanelList: tabPanelList,
+    showOmnibar: _showOpenOmnibar
   });
   var right_main_panes = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_8___default().createElement(react__WEBPACK_IMPORTED_MODULE_8__.Fragment, null, all_panels);
   var right_pane;

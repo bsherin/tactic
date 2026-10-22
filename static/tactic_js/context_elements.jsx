@@ -75,6 +75,7 @@ function ContextNavigator(props) {
         handleTabSelect: () => {},
         closeTab: () => {},
         refreshTab: () => {},
+        showOmnibar: () => {},
         tabPanelList: null,
         selectedItem: null,
         paneClosed: false,
@@ -108,6 +109,15 @@ function ContextNavigator(props) {
     };
     return (
         <div className="context-navigator">
+            <Divider className="context-tab-button-content-divider"/>
+            <Button variant="minimal"
+                    textClassName="bp6-text-muted"
+                    onClick={props.showOmnibar}
+                    intent="primary"
+                    icon={<NavItemIcon icon="search"/>}>
+                Omnibar
+            </Button>
+            <Divider className="context-tab-button-content-divider"/>
             <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
                 <SortableContext items={[...props.tabPanelList.map(i => i.identifier), '__drop_spacer__']}
                                  strategy={verticalListSortingStrategy}>

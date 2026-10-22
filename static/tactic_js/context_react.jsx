@@ -586,8 +586,9 @@ function ContextApp(props) {
     }
 
     function _handleTabSelect(newTabId, callback = null) {
+
+        setLastSelectedTabId(selectedTabIdRef.current);
         setSelectedTabId(newTabId);
-        setLastSelectedTabId(selectedTabIdRef.current,);
         pushCallback(() => {
             setTabSelectCounter(tabSelectCounter + 1);
             if (callback) {
@@ -853,6 +854,7 @@ function ContextApp(props) {
             dispatch={tabPanelListDispatch}
             pushCallback={pushCallback}
             tabPanelList={tabPanelList}
+            showOmnibar={_showOpenOmnibar}
         />
     );
     let right_main_panes = (

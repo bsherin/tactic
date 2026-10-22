@@ -2,7 +2,7 @@ import React from "react";
 import {memo, useContext, useState, useCallback, useRef, useEffect} from "react";
 
 import {QueryList, Classes} from "@blueprintjs/select"
-import {MenuItem, Overlay, InputGroup} from "@blueprintjs/core";
+import {MenuItem, Overlay2, InputGroup} from "@blueprintjs/core";
 
 import {postPromise} from "./communication_react";
 import {SettingsContext} from "./settings"
@@ -153,7 +153,7 @@ function OpenOmnibar(props) {
         const handlers = props.showOmnibar ? { onKeyDown: handleKeyDown, onKeyUp: handleKeyUp } : {};
 
         return (
-            <Overlay
+            <Overlay2
                 hasBackdrop={true}
                 isOpen={props.showOmnibar}
                 className={Classes.OMNIBAR_OVERLAY}
@@ -163,13 +163,14 @@ function OpenOmnibar(props) {
                         autoFocus={true}
                         size="large"
                         leftIcon="cube"
-                        placeholder="Search resources..."
+                        intent="primary"
+                        placeholder="Search all..."
                         onChange={listProps.handleQueryChange}
                         value={listProps.query}
                     />
                     {listProps.itemList}
                 </div>
-            </Overlay>
+            </Overlay2>
         );
     }
 
