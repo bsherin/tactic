@@ -1,27 +1,10 @@
 import React, {useMemo, useRef, useCallback, Fragment, memo} from "react";
 import {ContextMenu, Menu, EditableText, Icon} from "@blueprintjs/core";
 
-import markdownIt from 'markdown-it'
-import 'markdown-it-latex/dist/index.css'
-import markdownItLatex from 'markdown-it-latex'
-import {enableMarkdownCheckboxes, handleMarkdownCheckboxClick} from "./markdown_checkbox";
+import {handleMarkdownCheckboxClick} from "./markdown_checkbox";
+import {createMarkdownRenderer} from "./markdown_renderer";
 
-const mdi = markdownIt({
-    html: true,
-    highlight: function (str, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-            try {
-                return '<pre><code class="hljs">' +
-                    hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
-                    '</code></pre>';
-            } catch (__) {
-            }
-        }
-        return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
-    }
-});
-enableMarkdownCheckboxes(mdi, {interactive: true});
-mdi.use(markdownItLatex);
+const mdi = createMarkdownRenderer({interactiveCheckboxes: true});
 
 import {GlyphButton} from "./blueprint_react_widgets";
 import {ReactCodemirror6} from "./react-codemirror6";

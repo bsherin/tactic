@@ -2,37 +2,6 @@
 
 import React from "react";
 
-import markdownIt from 'markdown-it'
-import 'markdown-it-latex/dist/index.css'
-import markdownItLatex from 'markdown-it-latex'
-import {enableMarkdownCheckboxes} from "./markdown_checkbox";
-
-import hljs from 'highlight.js/lib/core';
-import javascript from 'highlight.js/lib/languages/javascript';
-
-hljs.registerLanguage('javascript', javascript);
-
-import python from 'highlight.js/lib/languages/python';
-
-hljs.registerLanguage('python', python);
-
-const mdi = markdownIt({
-    html: true,
-    highlight: function (str, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-            try {
-                return '<pre><code class="hljs">' +
-                    hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
-                    '</code></pre>';
-            } catch (__) {
-            }
-        }
-        return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
-    }
-});
-enableMarkdownCheckboxes(mdi);
-mdi.use(markdownItLatex);
-
 import { memo, useContext, createContext} from "react";
 import {Drawer} from "@blueprintjs/core";
 import {SettingsContext} from "./settings";

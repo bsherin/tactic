@@ -11,37 +11,10 @@ import {metadataReducer} from "./metadata_reducer";
 import {BpSelectAdvanced, renderSuggestion} from "./selector_advanced";
 import {useSocketListener} from "./tactic_socket";
 
-import hljs from 'highlight.js/lib/core';
-import javascript from 'highlight.js/lib/languages/javascript';
+import {handleMarkdownCheckboxClick} from "./markdown_checkbox";
+import {createMarkdownRenderer} from "./markdown_renderer";
 
-hljs.registerLanguage('javascript', javascript);
-
-import python from 'highlight.js/lib/languages/python';
-
-hljs.registerLanguage('python', python);
-
-import markdownIt from 'markdown-it'
-import 'markdown-it-latex/dist/index.css'
-import markdownItLatex from 'markdown-it-latex'
-import {enableMarkdownCheckboxes, handleMarkdownCheckboxClick} from "./markdown_checkbox";
-
-const mdi = markdownIt({
-    html: true,
-    highlight: function (str, lang) {
-        if (lang && hljs.getLanguage(lang)) {
-            try {
-                return '<pre><code class="hljs">' +
-                    hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
-                    '</code></pre>';
-            } catch (__) {
-            }
-        }
-        return '<pre><code class="hljs">' + mdi.utils.escapeHtml(str) + '</code></pre>';
-    }
-});
-
-enableMarkdownCheckboxes(mdi, {interactive: true});
-mdi.use(markdownItLatex);
+const mdi = createMarkdownRenderer({interactiveCheckboxes: true});
 import _ from 'lodash';
 
 import {useDebounce, guid, useImmerReducerAndRef, useCallbackStack, useRegisterActivity} from "./utilities_react";
