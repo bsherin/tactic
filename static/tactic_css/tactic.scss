@@ -92,6 +92,10 @@ body {
     z-index: 1000;
 }
 
+.bp6-dialog-body .bp6-input {
+    font-family: monospace
+}
+
 .react-grid-item.manual-resizing {
   overflow: visible !important;
 }
@@ -317,7 +321,8 @@ table {
 
     .metadata-field {
         line-height: 30px;
-        opacity: .75
+        opacity: .75;
+        font-family: monospace;
     }
     .metadata-form_group {
         margin-bottom: 2px

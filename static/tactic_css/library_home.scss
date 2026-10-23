@@ -2,7 +2,7 @@
 @use "blueprint_variables.scss";
 @use "themeable.scss";
 
-$library-table-font-size: 15px;
+$library-table-font-size: 14px;
 $library-table-line-height: 31px;
 
 $library-tree-node-font: 12px;
@@ -41,6 +41,7 @@ $library-tree-margin-top: 65px;
     .library-table-cell {
         font-size: $library-table-font-size;
         line-height: $library-table-line-height;
+        font-family: monospace;
     }
 
     .library-header-cell {

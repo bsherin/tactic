@@ -21,6 +21,10 @@ $item-side-padding: 15x;
         height: 100%;
         padding-right: 5px;
         padding-left: 15px;
+
+        .bp6-button-text {
+            font-family: monospace
+        }
     }
 
     .context-item-holder {
