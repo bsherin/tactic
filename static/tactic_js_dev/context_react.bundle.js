@@ -198175,9 +198175,9 @@ function OpenOmnibar(props) {
     }, handlers), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.InputGroup, {
       autoFocus: true,
       size: "large",
-      leftIcon: "cube",
+      leftIcon: "globe",
       intent: "primary",
-      placeholder: "Search all...",
+      placeholder: "Search everything...",
       onChange: listProps.handleQueryChange,
       value: listProps.query
     }), listProps.itemList));
@@ -206443,6 +206443,8 @@ function ContextNavigator(props) {
     textClassName: "bp6-text-muted",
     onClick: props.showOmnibar,
     intent: "primary",
+    fill: true,
+    alignText: "start",
     icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItemIcon, {
       icon: "search"
     })

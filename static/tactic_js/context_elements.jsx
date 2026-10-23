@@ -114,6 +114,8 @@ function ContextNavigator(props) {
                     textClassName="bp6-text-muted"
                     onClick={props.showOmnibar}
                     intent="primary"
+                    fill={true}
+                    alignText="start"
                     icon={<NavItemIcon icon="search"/>}>
                 Omnibar
             </Button>

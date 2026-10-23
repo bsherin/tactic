@@ -162,9 +162,9 @@ function OpenOmnibar(props) {
                     <InputGroup
                         autoFocus={true}
                         size="large"
-                        leftIcon="cube"
+                        leftIcon="globe"
                         intent="primary"
-                        placeholder="Search all..."
+                        placeholder="Search everything..."
                         onChange={listProps.handleQueryChange}
                         value={listProps.query}
                     />
