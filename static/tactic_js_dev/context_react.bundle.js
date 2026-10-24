@@ -204849,6 +204849,7 @@ function ContextNavigator(props) {
     onClick: props.showOmnibar,
     intent: "primary",
     fill: true,
+    className: "context-nav-item",
     alignText: "start",
     icon: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(NavItemIcon, {
       icon: "search"

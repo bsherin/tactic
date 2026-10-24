@@ -115,6 +115,7 @@ function ContextNavigator(props) {
                     onClick={props.showOmnibar}
                     intent="primary"
                     fill={true}
+                    className="context-nav-item"
                     alignText="start"
                     icon={<NavItemIcon icon="search"/>}>
                 Omnibar
