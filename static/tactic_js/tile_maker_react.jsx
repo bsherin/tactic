@@ -2280,36 +2280,6 @@ function CreatorApp(props) {
         </PaneElement>
     );
 
-    let gitem = globalsInfoRef.current;
-    right_pane_list.push(
-        <PaneElement key="globals" el={gitem} dispatch={null}
-                     directSet={setGlobalsInfo}
-                     pane_height={gitem["pane_height"]}
-                     pane_scroll_ref={pane_scroll_ref}
-                     icon={pane_type_icons["globals"]}
-                     updateItem={updateGlobals}
-                     visible={visibleTabListRef.current.includes("globals")}
-                     paneListRef={paneListRef}
-                     identifier="globals" pushCallback={pushCallback}>
-            {codeElemDict["globals"]?.()}
-        </PaneElement>
-    );
-
-    let item = renderContentInfoRef.current;
-    right_pane_list.push(
-        <PaneElement key="render_content" el={item} dispatch={null}
-                     directSet={setRenderContentInfo}
-                     pane_height={item["pane_height"]}
-                     pane_scroll_ref={pane_scroll_ref}
-                     icon={pane_type_icons["render_content"]}
-                     updateItem={updateRenderContent}
-                     paneListRef={paneListRef}
-                     visible={visibleTabListRef.current.includes("render_content")}
-                     identifier={"render_content"} pushCallback={pushCallback}>
-            {codeElemDict["render_content"]?.()}
-        </PaneElement>
-    );
-
     for (let key of Object.keys(optionElemDict)) {
         if (visibleTabListRef.current.includes(key)) {
             right_pane_list.push(
@@ -2395,6 +2365,42 @@ function CreatorApp(props) {
             </PaneElement>
         )
     }
+
+    if (visibleTabListRef.current.includes("globals") || visibleTabListRef.current.includes("render_content")) {
+        right_pane_list.push(
+            <DividerElement text="Base Code" key="bc-divider" icon="code"/>
+        );
+    }
+
+    let gitem = globalsInfoRef.current;
+    right_pane_list.push(
+        <PaneElement key="globals" el={gitem} dispatch={null}
+                     directSet={setGlobalsInfo}
+                     pane_height={gitem["pane_height"]}
+                     pane_scroll_ref={pane_scroll_ref}
+                     icon={pane_type_icons["globals"]}
+                     updateItem={updateGlobals}
+                     visible={visibleTabListRef.current.includes("globals")}
+                     paneListRef={paneListRef}
+                     identifier="globals" pushCallback={pushCallback}>
+            {codeElemDict["globals"]?.()}
+        </PaneElement>
+    );
+
+    let item = renderContentInfoRef.current;
+    right_pane_list.push(
+        <PaneElement key="render_content" el={item} dispatch={null}
+                     directSet={setRenderContentInfo}
+                     pane_height={item["pane_height"]}
+                     pane_scroll_ref={pane_scroll_ref}
+                     icon={pane_type_icons["render_content"]}
+                     updateItem={updateRenderContent}
+                     paneListRef={paneListRef}
+                     visible={visibleTabListRef.current.includes("render_content")}
+                     identifier={"render_content"} pushCallback={pushCallback}>
+            {codeElemDict["render_content"]?.()}
+        </PaneElement>
+    );
 
     for (let item of umListRef.current) {
         if (isUserMethodDivider(item) && !item.preserve_as_method) {

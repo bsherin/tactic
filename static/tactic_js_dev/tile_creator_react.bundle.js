@@ -220304,36 +220304,6 @@ function CreatorApp(props) {
     pane_scroll_ref: pane_scroll_ref,
     pane_height: metadataRef.current.pane_height
   }, mdata_panel));
-  var gitem = globalsInfoRef.current;
-  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
-    key: "globals",
-    el: gitem,
-    dispatch: null,
-    directSet: setGlobalsInfo,
-    pane_height: gitem["pane_height"],
-    pane_scroll_ref: pane_scroll_ref,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["globals"],
-    updateItem: updateGlobals,
-    visible: visibleTabListRef.current.includes("globals"),
-    paneListRef: paneListRef,
-    identifier: "globals",
-    pushCallback: pushCallback
-  }, (_codeElemDict$globals = codeElemDict["globals"]) === null || _codeElemDict$globals === void 0 ? void 0 : _codeElemDict$globals.call(codeElemDict)));
-  var item = renderContentInfoRef.current;
-  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
-    key: "render_content",
-    el: item,
-    dispatch: null,
-    directSet: setRenderContentInfo,
-    pane_height: item["pane_height"],
-    pane_scroll_ref: pane_scroll_ref,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["render_content"],
-    updateItem: updateRenderContent,
-    paneListRef: paneListRef,
-    visible: visibleTabListRef.current.includes("render_content"),
-    identifier: "render_content",
-    pushCallback: pushCallback
-  }, (_codeElemDict$render_ = codeElemDict["render_content"]) === null || _codeElemDict$render_ === void 0 ? void 0 : _codeElemDict$render_.call(codeElemDict)));
   for (var _i12 = 0, _Object$keys3 = Object.keys(optionElemDict); _i12 < _Object$keys3.length; _i12++) {
     var key = _Object$keys3[_i12];
     if (visibleTabListRef.current.includes(key)) {
@@ -220448,6 +220418,43 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_saveElemDict$_key = saveElemDict[_key7]) === null || _saveElemDict$_key === void 0 ? void 0 : _saveElemDict$_key.call(saveElemDict)));
   }
+  if (visibleTabListRef.current.includes("globals") || visibleTabListRef.current.includes("render_content")) {
+    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+      text: "Base Code",
+      key: "bc-divider",
+      icon: "code"
+    }));
+  }
+  var gitem = globalsInfoRef.current;
+  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+    key: "globals",
+    el: gitem,
+    dispatch: null,
+    directSet: setGlobalsInfo,
+    pane_height: gitem["pane_height"],
+    pane_scroll_ref: pane_scroll_ref,
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["globals"],
+    updateItem: updateGlobals,
+    visible: visibleTabListRef.current.includes("globals"),
+    paneListRef: paneListRef,
+    identifier: "globals",
+    pushCallback: pushCallback
+  }, (_codeElemDict$globals = codeElemDict["globals"]) === null || _codeElemDict$globals === void 0 ? void 0 : _codeElemDict$globals.call(codeElemDict)));
+  var item = renderContentInfoRef.current;
+  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+    key: "render_content",
+    el: item,
+    dispatch: null,
+    directSet: setRenderContentInfo,
+    pane_height: item["pane_height"],
+    pane_scroll_ref: pane_scroll_ref,
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["render_content"],
+    updateItem: updateRenderContent,
+    paneListRef: paneListRef,
+    visible: visibleTabListRef.current.includes("render_content"),
+    identifier: "render_content",
+    pushCallback: pushCallback
+  }, (_codeElemDict$render_ = codeElemDict["render_content"]) === null || _codeElemDict$render_ === void 0 ? void 0 : _codeElemDict$render_.call(codeElemDict)));
   var _iterator23 = _createForOfIteratorHelper(umListRef.current),
     _step23;
   try {
