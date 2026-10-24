@@ -209578,7 +209578,8 @@ function createMarkdownRenderer() {
     highlightCode = _ref$highlightCode === void 0 ? true : _ref$highlightCode;
   var md;
   var options = {
-    html: true
+    html: true,
+    linkify: true
   };
   if (highlightCode) {
     options.highlight = function (source, language) {

@@ -436,7 +436,8 @@ $small-pane-buttom-offset: 10px;
 
         .bp6-entity-title {
             margin-left: 5px;
-            margin-top: 20px;
+            margin-top: 30px;
+            text-transform: uppercase
         }
 
         .sortable-nav-section {
@@ -471,6 +472,10 @@ $small-pane-buttom-offset: 10px;
             margin-left: $nav-item-indent;
             padding: 0;
             font-size: $nav-item-font-size;
+
+            &.maker-nav-item-direct {
+                margin-left: 14px
+            }
 
             .spacer-nav-item {
                 width: 175px;

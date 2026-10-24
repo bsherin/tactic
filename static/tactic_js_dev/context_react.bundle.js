@@ -219253,7 +219253,8 @@ function createMarkdownRenderer() {
     highlightCode = _ref$highlightCode === void 0 ? true : _ref$highlightCode;
   var md;
   var options = {
-    html: true
+    html: true,
+    linkify: true
   };
   if (highlightCode) {
     options.highlight = function (source, language) {
@@ -236764,6 +236765,7 @@ function MakerNavigator(props) {
         item_list: null,
         className: section.className,
         identifier: section.identifier,
+        registerCmObject: props.registerCmObject,
         icon: section.icon
       });
     }
@@ -236890,6 +236892,84 @@ function DirectNavSection(props) {
     });
     return omni_items;
   }
+  if (props.title == "render_content") {
+    var code = "def ".concat(props.title, "():");
+    var buttonText = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_6__.ReactCodemirror6, {
+      readOnly: true,
+      isLite: true,
+      mode: "python",
+      setCMObject: props.registerCmObject,
+      show_line_numbers: false,
+      no_height: true,
+      controlled: true,
+      getEditableRanges: null,
+      restrict_edits_to_range: false,
+      className: "creator-code-header",
+      no_width: true,
+      parentService: "module_viewer",
+      handleChange: null,
+      hideLeadingChars: 4,
+      code_content: code
+    });
+    var dot_opacity = mpContext.visibleTabList.includes(props.identifier) && !props.isDivider ? 1 : 0;
+    var fullButton = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
+      icon: "record",
+      size: 10,
+      style: {
+        opacity: dot_opacity,
+        verticalAlign: "middle"
+      }
+    }), buttonText);
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
+      className: "maker-nav-item maker-nav-item-direct",
+      size: "medium",
+      variant: "minimal",
+      ellipsizeText: true,
+      text: fullButton,
+      onClick: function onClick() {
+        mpContext.toggleVisibleTab(props.identifier);
+      }
+    }));
+  }
+  if (props.title == "globals") {
+    var _code = "def ".concat(props.title);
+    var _buttonText = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_6__.ReactCodemirror6, {
+      readOnly: true,
+      isLite: true,
+      mode: "python",
+      setCMObject: props.registerCmObject,
+      show_line_numbers: false,
+      no_height: true,
+      controlled: true,
+      getEditableRanges: null,
+      restrict_edits_to_range: false,
+      className: "creator-code-header",
+      no_width: true,
+      parentService: "module_viewer",
+      handleChange: null,
+      hideLeadingChars: 4,
+      code_content: _code
+    });
+    var _dot_opacity = mpContext.visibleTabList.includes(props.identifier) && !props.isDivider ? 1 : 0;
+    var _fullButton = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_17__.Icon, {
+      icon: "record",
+      size: 10,
+      style: {
+        opacity: _dot_opacity,
+        verticalAlign: "middle"
+      }
+    }), _buttonText);
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
+      className: "maker-nav-item maker-nav-item-direct",
+      size: "medium",
+      variant: "minimal",
+      ellipsizeText: true,
+      text: _fullButton,
+      onClick: function onClick() {
+        mpContext.toggleVisibleTab(props.identifier);
+      }
+    }));
+  }
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.ControlGroup, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_22__.Button, {
     className: className,
     icon: props.icon,
@@ -236974,12 +237054,7 @@ function NavDivider(props) {
   }, props);
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, props.title && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.EntityTitle, {
     title: props.title,
-    icon: props.icon,
-    style: {
-      marginTop: 10,
-      marginLeft: 5
-    },
-    heading: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_19__.H4
+    icon: props.icon
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.Divider, {
     key: name,
     style: {
@@ -237693,7 +237768,7 @@ function NavItem(props) {
         code_content: code
       });
     } else if (props.showDefault) {
-      var _code = "".concat(props.title, " = ").concat(props["default"]);
+      var _code2 = "".concat(props.title, " = ").concat(props["default"]);
       buttonText = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_6__.ReactCodemirror6, {
         readOnly: true,
         isLite: true,
@@ -237702,24 +237777,6 @@ function NavItem(props) {
         show_line_numbers: false,
         no_height: true,
         controlled: true,
-        getEditableRanges: null,
-        restrict_edits_to_range: false,
-        className: "creator-code-header",
-        no_width: true,
-        parentService: "module_viewer",
-        handleChange: null,
-        code_content: _code
-      });
-    } else if (props.showSelf) {
-      var _code2 = "self.".concat(props.title);
-      buttonText = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_6__.ReactCodemirror6, {
-        readOnly: true,
-        isLite: true,
-        mode: props.mode,
-        show_line_numbers: false,
-        no_height: true,
-        controlled: true,
-        setCMObject: props.registerCmObject,
         getEditableRanges: null,
         restrict_edits_to_range: false,
         className: "creator-code-header",
@@ -237728,8 +237785,26 @@ function NavItem(props) {
         handleChange: null,
         code_content: _code2
       });
+    } else if (props.showSelf) {
+      var _code3 = "self.".concat(props.title);
+      buttonText = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_6__.ReactCodemirror6, {
+        readOnly: true,
+        isLite: true,
+        mode: props.mode,
+        show_line_numbers: false,
+        no_height: true,
+        controlled: true,
+        setCMObject: props.registerCmObject,
+        getEditableRanges: null,
+        restrict_edits_to_range: false,
+        className: "creator-code-header",
+        no_width: true,
+        parentService: "module_viewer",
+        handleChange: null,
+        code_content: _code3
+      });
     } else if (props.mode == "javascript") {
-      var _code3 = "function ".concat(props.title, "()");
+      var _code4 = "function ".concat(props.title, "()");
       buttonText = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_react_codemirror6__WEBPACK_IMPORTED_MODULE_6__.ReactCodemirror6, {
         readOnly: true,
         isLite: true,
@@ -237745,7 +237820,7 @@ function NavItem(props) {
         parentService: "module_viewer",
         handleChange: null,
         hideLeadingChars: 9,
-        code_content: _code3
+        code_content: _code4
       });
     }
   }

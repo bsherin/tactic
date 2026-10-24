@@ -1344,6 +1344,7 @@ function MakerNavigator(props) {
                                               item_list={null}
                                               className={section.className}
                                               identifier={section.identifier}
+                                              registerCmObject={props.registerCmObject}
                                               icon={section.icon}/>
                         )
                     }
@@ -1469,7 +1470,84 @@ function DirectNavSection(props) {
         );
         return omni_items
     }
-
+    if (props.title == "render_content") {
+        let code = `def ${props.title}():`;
+        let buttonText = (
+            <ReactCodemirror6 readOnly={true}
+                              isLite={true}
+                              mode="python"
+                              setCMObject={props.registerCmObject}
+                              show_line_numbers={false}
+                              no_height={true}
+                              controlled={true}
+                              getEditableRanges={null}
+                              restrict_edits_to_range={false}
+                              className="creator-code-header"
+                              no_width={true}
+                              parentService="module_viewer"
+                              handleChange={null}
+                              hideLeadingChars={4}
+                              code_content={code}/>
+        )
+        let dot_opacity = mpContext.visibleTabList.includes(props.identifier) && !props.isDivider ? 1 : 0
+        let fullButton = (
+            <span>
+                <Icon icon="record" size={10} style={{ opacity: dot_opacity, verticalAlign: "middle"}} />
+                {buttonText}
+            </span>
+        )
+        return (
+            <ControlGroup>
+                <Button className="maker-nav-item maker-nav-item-direct"
+                        size="medium"
+                        variant="minimal"
+                        ellipsizeText={true}
+                        text={fullButton}
+                        onClick={() => {
+                            mpContext.toggleVisibleTab(props.identifier)
+                        }}/>
+            </ControlGroup>
+        )
+    }
+    if (props.title == "globals") {
+        let code = `def ${props.title}`;
+        let buttonText = (
+            <ReactCodemirror6 readOnly={true}
+                              isLite={true}
+                              mode="python"
+                              setCMObject={props.registerCmObject}
+                              show_line_numbers={false}
+                              no_height={true}
+                              controlled={true}
+                              getEditableRanges={null}
+                              restrict_edits_to_range={false}
+                              className="creator-code-header"
+                              no_width={true}
+                              parentService="module_viewer"
+                              handleChange={null}
+                              hideLeadingChars={4}
+                              code_content={code}/>
+        )
+        let dot_opacity = mpContext.visibleTabList.includes(props.identifier) && !props.isDivider ? 1 : 0
+        let fullButton = (
+            <span>
+                <Icon icon="record" size={10} style={{ opacity: dot_opacity, verticalAlign: "middle"}} />
+                {buttonText}
+            </span>
+        )
+        return (
+            <ControlGroup>
+                <Button className="maker-nav-item maker-nav-item-direct"
+                        size="medium"
+                        variant="minimal"
+                        ellipsizeText={true}
+                        text={fullButton}
+                        onClick={() => {
+                            mpContext.toggleVisibleTab(props.identifier)
+                        }}/>
+            </ControlGroup>
+        )
+    }
     return (
         <ControlGroup>
             <Button className={className}
@@ -1548,9 +1626,7 @@ function NavDivider(props) {
     return (
         <Fragment>
             {props.title &&
-                <EntityTitle title={props.title} icon={props.icon}
-                             style={{marginTop: 10, marginLeft: 5}}
-                             heading={H4}/>
+                <EntityTitle title={props.title} icon={props.icon}/>
             }
             <Divider key={name} style={{
                 width: '90%',
