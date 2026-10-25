@@ -235815,7 +235815,9 @@ function MetadataModule(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(SimplePaneTitle, {
     title: "Metadata",
     icon: "properties"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
+    className: "maker-form-container"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, {
     custom_message: "Error in NativeTags"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_24__.FormGroup, {
     label: "Tags"
@@ -235864,8 +235866,11 @@ function MetadataModule(props) {
     className: "ml-2 mb-0 mt-1",
     size: "medium",
     checked: props.metadataRef.current.couple_save_attrs_and_exports,
+    style: {
+      paddingBottom: 10
+    },
     onChange: handleCoupleChange
-  })));
+  }))));
 }
 MetadataModule = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(MetadataModule);
 function ExportModuleForm(props) {

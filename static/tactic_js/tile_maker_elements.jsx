@@ -506,52 +506,55 @@ function MetadataModule(props) {
     return (
         <div className="creator-metadata-outer" style={outer_style}>
             <SimplePaneTitle title="Metadata" icon="properties"/>
-            <ErrorBoundary custom_message="Error in NativeTags">
-                <FormGroup label="Tags">
-                    <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
-                                tags={split_tags}
-                                all_tags={props.mdata.allTags}
-                                readOnly={props.readOnly}
-                                handleChange={handleTagsChange}
-                                res_type="tile"/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in Category">
-                <FormGroup label="Category" key="Category">
-                    <InputGroup onChange={handleCategoryChange}
-                                value={props.metadataRef.current.category}/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in Icon">
-                <FormGroup label="Icon">
-                    <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
-                                  icon_val={props.metadataRef.current.icon}
-                                  readOnly={props.readOnly}
-                                  handleSelectChange={handleIconChange}/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in Notes">
-                <FormGroup label="Notes">
-                    <NotesField key={`${props.res_name}-${props.res_type}-notes`}
-                                mStateRef={props.metadataRef}
-                                res_name={props.res_name}
-                                res_type={props.res_type}
-                                readOnly={props.readOnly}
-                                setCMObject={props.registerCmObject}
-                                handleChange={handleNotesChange}
-                                show_markdown_initial={true}
-                                handleBlur={null}
-                    />
-                    <MetadataNotesButtons/>
-                </FormGroup>
-            </ErrorBoundary>
-            <ErrorBoundary custom_message="Error in bottom stuff">
-                <Switch label="Couple save_attrs and exports"
-                        className="ml-2 mb-0 mt-1"
-                        size="medium"
-                        checked={props.metadataRef.current.couple_save_attrs_and_exports}
-                        onChange={handleCoupleChange}/>
-            </ErrorBoundary>
+            <form className="maker-form-container">
+                <ErrorBoundary custom_message="Error in NativeTags">
+                    <FormGroup label="Tags">
+                        <NativeTags key={`${props.res_name}-${props.res_type}-tags`}
+                                    tags={split_tags}
+                                    all_tags={props.mdata.allTags}
+                                    readOnly={props.readOnly}
+                                    handleChange={handleTagsChange}
+                                    res_type="tile"/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in Category">
+                    <FormGroup label="Category" key="Category">
+                        <InputGroup onChange={handleCategoryChange}
+                                    value={props.metadataRef.current.category}/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in Icon">
+                    <FormGroup label="Icon">
+                        <IconSelector key={`${props.res_name}-${props.res_type}-icon-selector`}
+                                      icon_val={props.metadataRef.current.icon}
+                                      readOnly={props.readOnly}
+                                      handleSelectChange={handleIconChange}/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in Notes">
+                    <FormGroup label="Notes">
+                        <NotesField key={`${props.res_name}-${props.res_type}-notes`}
+                                    mStateRef={props.metadataRef}
+                                    res_name={props.res_name}
+                                    res_type={props.res_type}
+                                    readOnly={props.readOnly}
+                                    setCMObject={props.registerCmObject}
+                                    handleChange={handleNotesChange}
+                                    show_markdown_initial={true}
+                                    handleBlur={null}
+                        />
+                        <MetadataNotesButtons/>
+                    </FormGroup>
+                </ErrorBoundary>
+                <ErrorBoundary custom_message="Error in bottom stuff">
+                    <Switch label="Couple save_attrs and exports"
+                            className="ml-2 mb-0 mt-1"
+                            size="medium"
+                            checked={props.metadataRef.current.couple_save_attrs_and_exports}
+                            style={{paddingBottom: 10}}
+                            onChange={handleCoupleChange}/>
+                </ErrorBoundary>
+            </form>
         </div>
     )
 }
