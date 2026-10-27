@@ -18,7 +18,9 @@ import _ from 'lodash';
 import {Button, ButtonGroup, Switch, useHotkeys, FormGroup, HTMLSelect, Divider, Collapse} from "@blueprintjs/core";
 
 import {EditorSelection} from "@codemirror/state";
+import {EditorView} from "@codemirror/view";
 import {scrollEditorPositionToCenter} from "./react-codemirror6";
+import {importTheme} from "./theme_support";
 
 import {creator_props} from "./tile_maker_support";
 import {TacticMenubar} from "./menu_utilities"
@@ -66,6 +68,18 @@ import {
 } from "./tile_maker_search_form";
 
 export {CreatorApp}
+
+function codeMirrorBackgroundColor(editorView) {
+    const elements = [editorView.contentDOM, editorView.scrollDOM, editorView.dom];
+    for (const element of elements) {
+        const backgroundColor = window.getComputedStyle(element).backgroundColor;
+        if (backgroundColor && backgroundColor !== "transparent" &&
+            backgroundColor !== "rgba(0, 0, 0, 0)") {
+            return backgroundColor;
+        }
+    }
+    return null;
+}
 
 function isUserMethodDivider(item) {
     return item && item.kind === "divider";
@@ -168,6 +182,66 @@ function CreatorApp(props) {
     const dialogFuncs = useContext(DialogContext);
     const statusFuncs = useContext(StatusContext);
     const errorDrawerFuncs = useContext(ErrorDrawerContext);
+
+    useEffect(() => {
+        let cancelled = false;
+        let probeView = null;
+        let probeHost = null;
+
+        async function syncMakerFormBackground() {
+            try {
+                const variant = settingsContext.settings.theme === "light" ? "light" : "dark";
+                const themeName = variant === "light"
+                    ? settingsContext.settings.preferred_light_theme
+                    : settingsContext.settings.preferred_dark_theme;
+                const themeExtension = await importTheme(themeName, variant);
+                if (cancelled || !top_ref.current) {
+                    return;
+                }
+
+                // Render a tiny, invisible editor so the browser resolves the generated
+                // CodeMirror theme classes for us. Theme packages do not use a stable
+                // selector for their editor background.
+                probeHost = document.createElement("div");
+                probeHost.style.cssText =
+                    "position:absolute;visibility:hidden;pointer-events:none;width:1px;height:1px;overflow:hidden";
+                top_ref.current.appendChild(probeHost);
+                probeView = new EditorView({
+                    doc: "",
+                    extensions: [themeExtension],
+                    parent: probeHost,
+                });
+
+                const backgroundColor = codeMirrorBackgroundColor(probeView);
+                if (!cancelled && backgroundColor && top_ref.current) {
+                    top_ref.current.style.setProperty("--maker-code-background-color", backgroundColor);
+                }
+            } catch (error) {
+                console.warn("Unable to determine the CodeMirror theme background", error);
+            } finally {
+                if (probeView) {
+                    probeView.destroy();
+                    probeView = null;
+                }
+                if (probeHost) {
+                    probeHost.remove();
+                    probeHost = null;
+                }
+            }
+        }
+
+        syncMakerFormBackground();
+        return () => {
+            cancelled = true;
+            if (probeView) {
+                probeView.destroy();
+            }
+            if (probeHost) {
+                probeHost.remove();
+            }
+        };
+    }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme,
+        settingsContext.settings.preferred_light_theme]);
 
     const selectedPane = useContext(SelectedPaneContext);
 

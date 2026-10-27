@@ -237882,48 +237882,50 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/hooks/hotkeys/useHotkeys.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html-select/htmlSelect.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
-/* harmony import */ var _codemirror_state__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @codemirror/state */ "./node_modules/@codemirror/state/dist/index.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/hooks/hotkeys/useHotkeys.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/formGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/html-select/htmlSelect.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/divider/divider.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttonGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/collapse/collapse.js");
+/* harmony import */ var _codemirror_state__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @codemirror/state */ "./node_modules/@codemirror/state/dist/index.js");
+/* harmony import */ var _codemirror_view__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @codemirror/view */ "./node_modules/@codemirror/view/dist/index.js");
 /* harmony import */ var _react_codemirror6__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./react-codemirror6 */ "./static/tactic_js/react-codemirror6.jsx");
-/* harmony import */ var _tile_maker_support__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./tile_maker_support */ "./static/tactic_js/tile_maker_support.jsx");
-/* harmony import */ var _menu_utilities__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./menu_utilities */ "./static/tactic_js/menu_utilities.jsx");
-/* harmony import */ var _resource_viewer_react_app__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./resource_viewer_react_app */ "./static/tactic_js/resource_viewer_react_app.jsx");
-/* harmony import */ var _resizing_allotment__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./resizing_allotment */ "./static/tactic_js/resizing_allotment.jsx");
-/* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
-/* harmony import */ var _toaster__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./toaster */ "./static/tactic_js/toaster.jsx");
-/* harmony import */ var _assistant__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./assistant */ "./static/tactic_js/assistant.jsx");
-/* harmony import */ var _sizing_tools__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./sizing_tools */ "./static/tactic_js/sizing_tools.jsx");
-/* harmony import */ var _error_drawer__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./error_drawer */ "./static/tactic_js/error_drawer.jsx");
-/* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
-/* harmony import */ var _blueprint_navbar__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./blueprint_navbar */ "./static/tactic_js/blueprint_navbar.jsx");
-/* harmony import */ var _error_boundary__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./error_boundary */ "./static/tactic_js/error_boundary.jsx");
-/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
-/* harmony import */ var _modal_react__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./modal_react */ "./static/tactic_js/modal_react.jsx");
-/* harmony import */ var _property_list__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./property_list */ "./static/tactic_js/property_list.jsx");
-/* harmony import */ var _undo__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./undo */ "./static/tactic_js/undo.jsx");
-/* harmony import */ var _search_reducer__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./search_reducer */ "./static/tactic_js/search_reducer.jsx");
-/* harmony import */ var _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./tile_maker_elements */ "./static/tactic_js/tile_maker_elements.jsx");
-/* harmony import */ var _widget_info__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./widget_info */ "./static/tactic_js/widget_info.jsx");
-/* harmony import */ var _metadata_reducer__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./metadata_reducer */ "./static/tactic_js/metadata_reducer.jsx");
-/* harmony import */ var _tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./tile_maker_search_form */ "./static/tactic_js/tile_maker_search_form.jsx");
+/* harmony import */ var _theme_support__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./theme_support */ "./static/tactic_js/theme_support.js");
+/* harmony import */ var _tile_maker_support__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./tile_maker_support */ "./static/tactic_js/tile_maker_support.jsx");
+/* harmony import */ var _menu_utilities__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./menu_utilities */ "./static/tactic_js/menu_utilities.jsx");
+/* harmony import */ var _resource_viewer_react_app__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./resource_viewer_react_app */ "./static/tactic_js/resource_viewer_react_app.jsx");
+/* harmony import */ var _resizing_allotment__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./resizing_allotment */ "./static/tactic_js/resizing_allotment.jsx");
+/* harmony import */ var _communication_react__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./communication_react */ "./static/tactic_js/communication_react.js");
+/* harmony import */ var _toaster__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./toaster */ "./static/tactic_js/toaster.jsx");
+/* harmony import */ var _assistant__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./assistant */ "./static/tactic_js/assistant.jsx");
+/* harmony import */ var _sizing_tools__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./sizing_tools */ "./static/tactic_js/sizing_tools.jsx");
+/* harmony import */ var _error_drawer__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./error_drawer */ "./static/tactic_js/error_drawer.jsx");
+/* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
+/* harmony import */ var _blueprint_navbar__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./blueprint_navbar */ "./static/tactic_js/blueprint_navbar.jsx");
+/* harmony import */ var _error_boundary__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./error_boundary */ "./static/tactic_js/error_boundary.jsx");
+/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
+/* harmony import */ var _modal_react__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./modal_react */ "./static/tactic_js/modal_react.jsx");
+/* harmony import */ var _property_list__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./property_list */ "./static/tactic_js/property_list.jsx");
+/* harmony import */ var _undo__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./undo */ "./static/tactic_js/undo.jsx");
+/* harmony import */ var _search_reducer__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./search_reducer */ "./static/tactic_js/search_reducer.jsx");
+/* harmony import */ var _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./tile_maker_elements */ "./static/tactic_js/tile_maker_elements.jsx");
+/* harmony import */ var _widget_info__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./widget_info */ "./static/tactic_js/widget_info.jsx");
+/* harmony import */ var _metadata_reducer__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./metadata_reducer */ "./static/tactic_js/metadata_reducer.jsx");
+/* harmony import */ var _tile_maker_search_form__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./tile_maker_search_form */ "./static/tactic_js/tile_maker_search_form.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o("next", 0), o("throw", 1), o("return", 2); } }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -237977,6 +237979,19 @@ if (!window.in_context) {
 
 
 
+
+
+function codeMirrorBackgroundColor(editorView) {
+  var elements = [editorView.contentDOM, editorView.scrollDOM, editorView.dom];
+  for (var _i = 0, _elements = elements; _i < _elements.length; _i++) {
+    var element = _elements[_i];
+    var backgroundColor = window.getComputedStyle(element).backgroundColor;
+    if (backgroundColor && backgroundColor !== "transparent" && backgroundColor !== "rgba(0, 0, 0, 0)") {
+      return backgroundColor;
+    }
+  }
+  return null;
+}
 function isUserMethodDivider(item) {
   return item && item.kind === "divider";
 }
@@ -238001,57 +238016,57 @@ function CreatorApp(props) {
   var pane_scroll_ref = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var paneListRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var debugSocketListenersRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
-  var _useContext = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_20__.UndoContext),
+  var _useContext = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_undo__WEBPACK_IMPORTED_MODULE_21__.UndoContext),
     handleUndo = _useContext.handleUndo,
     handleRedo = _useContext.handleRedo,
     undoStackRef = _useContext.undoStackRef,
     redoStackRef = _useContext.redoStackRef,
     runAsUndoGroup = _useContext.runAsUndoGroup;
-  var _useStateAndRef = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
+  var _useStateAndRef = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)([]),
     _useStateAndRef2 = _slicedToArray(_useStateAndRef, 3),
     setVisibleTabList = _useStateAndRef2[1],
     visibleTabListRef = _useStateAndRef2[2];
-  var _useStateAndRef3 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
+  var _useStateAndRef3 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)([]),
     _useStateAndRef4 = _slicedToArray(_useStateAndRef3, 3),
     setExpandedSubList = _useStateAndRef4[1],
     expandedSubListRef = _useStateAndRef4[2];
-  var _useStateAndRef5 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
+  var _useStateAndRef5 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)([]),
     _useStateAndRef6 = _slicedToArray(_useStateAndRef5, 3),
     setExpandedSectionList = _useStateAndRef6[1],
     expandedSectionListRef = _useStateAndRef6[2];
-  var _useStateAndRef7 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)(props.interface_state != null && "visibleMethodList" in props.interface_state ? props.interface_state.visibleMethodList : ["render_content"]),
+  var _useStateAndRef7 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)(props.interface_state != null && "visibleMethodList" in props.interface_state ? props.interface_state.visibleMethodList : ["render_content"]),
     _useStateAndRef8 = _slicedToArray(_useStateAndRef7, 3),
     setMethodsToOpen = _useStateAndRef8[1],
     methodsToOpenRef = _useStateAndRef8[2];
-  var _usePropertyList = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.usePropertyList)(props.option_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_FORM_PANE_HEIGHT, {
+  var _usePropertyList = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.usePropertyList)(props.option_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_FORM_PANE_HEIGHT, {
       special_list: []
     }),
     _usePropertyList2 = _slicedToArray(_usePropertyList, 3),
     optionDispatch = _usePropertyList2[1],
     option_list_ref = _usePropertyList2[2];
-  var _usePropertyList3 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.usePropertyList)(props.widget_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_FORM_PANE_HEIGHT, {}),
+  var _usePropertyList3 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.usePropertyList)(props.widget_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_FORM_PANE_HEIGHT, {}),
     _usePropertyList4 = _slicedToArray(_usePropertyList3, 3),
     widgetDispatch = _usePropertyList4[1],
     widget_list_ref = _usePropertyList4[2];
-  var _usePropertyList5 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.usePropertyList)(props.export_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_FORM_PANE_HEIGHT, {
+  var _usePropertyList5 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.usePropertyList)(props.export_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_FORM_PANE_HEIGHT, {
       tags: ""
     }),
     _usePropertyList6 = _slicedToArray(_usePropertyList5, 3),
     exportDispatch = _usePropertyList6[1],
     export_list_ref = _usePropertyList6[2];
-  var _usePropertyList7 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.usePropertyList)(props.additional_save_attrs ? props.additional_save_attrs : [], _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_FORM_PANE_HEIGHT),
+  var _usePropertyList7 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.usePropertyList)(props.additional_save_attrs ? props.additional_save_attrs : [], _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_FORM_PANE_HEIGHT),
     _usePropertyList8 = _slicedToArray(_usePropertyList7, 3),
     saveDispatch = _usePropertyList8[1],
     save_list_ref = _usePropertyList8[2];
-  var _usePropertyList9 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.usePropertyList)(props.user_methods_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_CODE_PANE_HEIGHT),
+  var _usePropertyList9 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.usePropertyList)(props.user_methods_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT),
     _usePropertyList0 = _slicedToArray(_usePropertyList9, 3),
     umDispatch = _usePropertyList0[1],
     umListRef = _usePropertyList0[2];
-  var _usePropertyList1 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.usePropertyList)(props.used_handler_methods_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_CODE_PANE_HEIGHT),
+  var _usePropertyList1 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.usePropertyList)(props.used_handler_methods_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT),
     _usePropertyList10 = _slicedToArray(_usePropertyList1, 3),
     hmDispatch = _usePropertyList10[1],
     hmListRef = _usePropertyList10[2];
-  var _usePropertyList11 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.usePropertyList)(props.javascript_functions_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_CODE_PANE_HEIGHT),
+  var _usePropertyList11 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.usePropertyList)(props.javascript_functions_list, _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT),
     _usePropertyList12 = _slicedToArray(_usePropertyList11, 3),
     jsDispatch = _usePropertyList12[1],
     jsListRef = _usePropertyList12[2];
@@ -238083,23 +238098,23 @@ function CreatorApp(props) {
     });
   }
   var otherCmObjects = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(new Set());
-  var _useStateAndRefWithUn = (0,_undo__WEBPACK_IMPORTED_MODULE_20__.useStateAndRefWithUndo)(_objectSpread({
-      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_CODE_PANE_HEIGHT
+  var _useStateAndRefWithUn = (0,_undo__WEBPACK_IMPORTED_MODULE_21__.useStateAndRefWithUndo)(_objectSpread({
+      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT
     }, props.render_content_info)),
     _useStateAndRefWithUn2 = _slicedToArray(_useStateAndRefWithUn, 3),
     setRenderContentInfo = _useStateAndRefWithUn2[1],
     renderContentInfoRef = _useStateAndRefWithUn2[2];
-  var _useStateAndRefWithUn3 = (0,_undo__WEBPACK_IMPORTED_MODULE_20__.useStateAndRefWithUndo)(_objectSpread({
-      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_CODE_PANE_HEIGHT
+  var _useStateAndRefWithUn3 = (0,_undo__WEBPACK_IMPORTED_MODULE_21__.useStateAndRefWithUndo)(_objectSpread({
+      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT
     }, props.globals_info)),
     _useStateAndRefWithUn4 = _slicedToArray(_useStateAndRefWithUn3, 3),
     setGlobalsInfo = _useStateAndRefWithUn4[1],
     globalsInfoRef = _useStateAndRefWithUn4[2];
-  var _useMetadata = (0,_metadata_reducer__WEBPACK_IMPORTED_MODULE_24__.useMetadata)(props.mdata, true),
+  var _useMetadata = (0,_metadata_reducer__WEBPACK_IMPORTED_MODULE_25__.useMetadata)(props.mdata, true),
     _useMetadata2 = _slicedToArray(_useMetadata, 3),
     metadataDispatch = _useMetadata2[1],
     metadataRef = _useMetadata2[2];
-  var _useSearch = (0,_search_reducer__WEBPACK_IMPORTED_MODULE_21__.useSearch)([globalsInfoRef, renderContentInfoRef], [{
+  var _useSearch = (0,_search_reducer__WEBPACK_IMPORTED_MODULE_22__.useSearch)([globalsInfoRef, renderContentInfoRef], [{
       ref: umListRef,
       signatureEditable: true
     }, {
@@ -238127,11 +238142,87 @@ function CreatorApp(props) {
     searchStateRef = _useSearch2[2],
     refreshSearchResults = _useSearch2[3];
   var extraSelfCompletionsRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)([]);
-  var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_17__.SettingsContext);
-  var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_18__.DialogContext);
-  var statusFuncs = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_toaster__WEBPACK_IMPORTED_MODULE_10__.StatusContext);
-  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_13__.ErrorDrawerContext);
-  var selectedPane = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_utilities_react__WEBPACK_IMPORTED_MODULE_14__.SelectedPaneContext);
+  var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_18__.SettingsContext);
+  var dialogFuncs = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_modal_react__WEBPACK_IMPORTED_MODULE_19__.DialogContext);
+  var statusFuncs = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_toaster__WEBPACK_IMPORTED_MODULE_11__.StatusContext);
+  var errorDrawerFuncs = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_error_drawer__WEBPACK_IMPORTED_MODULE_14__.ErrorDrawerContext);
+  (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
+    var cancelled = false;
+    var probeView = null;
+    var probeHost = null;
+    function syncMakerFormBackground() {
+      return _syncMakerFormBackground.apply(this, arguments);
+    }
+    function _syncMakerFormBackground() {
+      _syncMakerFormBackground = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var variant, themeName, themeExtension, backgroundColor, _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.n) {
+            case 0:
+              _context.p = 0;
+              variant = settingsContext.settings.theme === "light" ? "light" : "dark";
+              themeName = variant === "light" ? settingsContext.settings.preferred_light_theme : settingsContext.settings.preferred_dark_theme;
+              _context.n = 1;
+              return (0,_theme_support__WEBPACK_IMPORTED_MODULE_5__.importTheme)(themeName, variant);
+            case 1:
+              themeExtension = _context.v;
+              if (!(cancelled || !top_ref.current)) {
+                _context.n = 2;
+                break;
+              }
+              return _context.a(2);
+            case 2:
+              // Render a tiny, invisible editor so the browser resolves the generated
+              // CodeMirror theme classes for us. Theme packages do not use a stable
+              // selector for their editor background.
+              probeHost = document.createElement("div");
+              probeHost.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:1px;height:1px;overflow:hidden";
+              top_ref.current.appendChild(probeHost);
+              probeView = new _codemirror_view__WEBPACK_IMPORTED_MODULE_27__.EditorView({
+                doc: "",
+                extensions: [themeExtension],
+                parent: probeHost
+              });
+              backgroundColor = codeMirrorBackgroundColor(probeView);
+              if (!cancelled && backgroundColor && top_ref.current) {
+                top_ref.current.style.setProperty("--maker-code-background-color", backgroundColor);
+              }
+              _context.n = 4;
+              break;
+            case 3:
+              _context.p = 3;
+              _t = _context.v;
+              console.warn("Unable to determine the CodeMirror theme background", _t);
+            case 4:
+              _context.p = 4;
+              if (probeView) {
+                probeView.destroy();
+                probeView = null;
+              }
+              if (probeHost) {
+                probeHost.remove();
+                probeHost = null;
+              }
+              return _context.f(4);
+            case 5:
+              return _context.a(2);
+          }
+        }, _callee, null, [[0, 3, 4, 5]]);
+      }));
+      return _syncMakerFormBackground.apply(this, arguments);
+    }
+    syncMakerFormBackground();
+    return function () {
+      cancelled = true;
+      if (probeView) {
+        probeView.destroy();
+      }
+      if (probeHost) {
+        probeHost.remove();
+      }
+    };
+  }, [settingsContext.settings.theme, settingsContext.settings.preferred_dark_theme, settingsContext.settings.preferred_light_theme]);
+  var selectedPane = (0,react__WEBPACK_IMPORTED_MODULE_1__.useContext)(_utilities_react__WEBPACK_IMPORTED_MODULE_15__.SelectedPaneContext);
   var hotkeys = (0,react__WEBPACK_IMPORTED_MODULE_1__.useMemo)(function () {
     return [{
       combo: "Ctrl+S",
@@ -238245,35 +238336,35 @@ function CreatorApp(props) {
       }
     }];
   }, [_saveMe, _saveAndLoadModule, _saveAndCheckpoint]);
-  var _useHotkeys = (0,_blueprintjs_core__WEBPACK_IMPORTED_MODULE_26__.useHotkeys)(hotkeys),
+  var _useHotkeys = (0,_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.useHotkeys)(hotkeys),
     handleKeyDown = _useHotkeys.handleKeyDown,
     handleKeyUp = _useHotkeys.handleKeyUp;
-  var pushCallback = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useCallbackStack)();
+  var pushCallback = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useCallbackStack)();
   var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(props.resource_name),
     _useState6 = _slicedToArray(_useState5, 2),
     resource_name = _useState6[0],
     set_resource_name = _useState6[1];
-  var _useStateAndRef9 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
+  var _useStateAndRef9 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)([]),
     _useStateAndRef0 = _slicedToArray(_useStateAndRef9, 3),
     debugTargets = _useStateAndRef0[0],
     setDebugTargets = _useStateAndRef0[1],
     debugTargetsRef = _useStateAndRef0[2];
-  var _useStateAndRef1 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)(null),
+  var _useStateAndRef1 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)(null),
     _useStateAndRef10 = _slicedToArray(_useStateAndRef1, 3),
     debugTargetId = _useStateAndRef10[0],
     setDebugTargetId = _useStateAndRef10[1],
     debugTargetIdRef = _useStateAndRef10[2];
-  var _useStateAndRef11 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)(null),
+  var _useStateAndRef11 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)(null),
     _useStateAndRef12 = _slicedToArray(_useStateAndRef11, 3),
     debugSession = _useStateAndRef12[0],
     setDebugSession = _useStateAndRef12[1],
     debugSessionRef = _useStateAndRef12[2];
-  var _useStateAndRef13 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)("idle"),
+  var _useStateAndRef13 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)("idle"),
     _useStateAndRef14 = _slicedToArray(_useStateAndRef13, 3),
     debugStatus = _useStateAndRef14[0],
     setDebugStatus = _useStateAndRef14[1],
     debugStatusRef = _useStateAndRef14[2];
-  var _useStateAndRef15 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)(null),
+  var _useStateAndRef15 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)(null),
     _useStateAndRef16 = _slicedToArray(_useStateAndRef15, 3),
     debugPaused = _useStateAndRef16[0],
     setDebugPaused = _useStateAndRef16[1],
@@ -238290,12 +238381,12 @@ function CreatorApp(props) {
     _useState10 = _slicedToArray(_useState1, 2),
     debugInterfaceVisible = _useState10[0],
     setDebugInterfaceVisible = _useState10[1];
-  var _useStateAndRef17 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)([]),
+  var _useStateAndRef17 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)([]),
     _useStateAndRef18 = _slicedToArray(_useStateAndRef17, 3),
     debugBreakpoints = _useStateAndRef18[0],
     setDebugBreakpoints = _useStateAndRef18[1],
     debugBreakpointsRef = _useStateAndRef18[2];
-  var _useStateAndRef19 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.useStateAndRef)(false),
+  var _useStateAndRef19 = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.useStateAndRef)(false),
     _useStateAndRef20 = _slicedToArray(_useStateAndRef19, 3),
     debugPauseOnExceptions = _useStateAndRef20[0],
     setDebugPauseOnExceptions = _useStateAndRef20[1],
@@ -238309,10 +238400,10 @@ function CreatorApp(props) {
   var connection_status = (0,_tactic_socket__WEBPACK_IMPORTED_MODULE_0__.useConnection)(props.tsocket, initSocket);
   (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
     updateGlobals({
-      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_CODE_PANE_HEIGHT
+      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT
     });
     updateRenderContent({
-      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.INITIAL_CODE_PANE_HEIGHT
+      pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT
     });
     if (props.controlled) {
       props.registerDirtyMethod(_dirty);
@@ -238322,7 +238413,7 @@ function CreatorApp(props) {
         if (_dirty()) {
           e.preventDefault();
         }
-        (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postWithCallback)("host", "end_client_session_task", {
+        (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postWithCallback)("host", "end_client_session_task", {
           global_id: window.global_id,
           force_forward: true
         });
@@ -238343,7 +238434,7 @@ function CreatorApp(props) {
     return function () {
       var activeDebugSession = debugSessionRef.current;
       if (activeDebugSession) {
-        (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postWithCallback)(activeDebugSession.debugQueue, "debug_command", {
+        (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postWithCallback)(activeDebugSession.debugQueue, "debug_command", {
           session_id: activeDebugSession.sessionId,
           command: "abort"
         }, null, null, props.local_id);
@@ -238363,8 +238454,8 @@ function CreatorApp(props) {
         _iterator.f();
       }
       debugSocketListenersRef.current = [];
-      for (var _i = 0, _arr = [jsListRef, umListRef, hmListRef]; _i < _arr.length; _i++) {
-        var listRef = _arr[_i];
+      for (var _i2 = 0, _arr = [jsListRef, umListRef, hmListRef]; _i2 < _arr.length; _i2++) {
+        var listRef = _arr[_i2];
         destroyCmObjects(listRef);
       }
       var _iterator2 = _createForOfIteratorHelper(otherCmObjects.current),
@@ -238395,7 +238486,7 @@ function CreatorApp(props) {
       searchStateRef.current = [];
       extraSelfCompletionsRef.current = [];
       if (props.controlled) {
-        (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postWithCallback)("module_viewer", "end_module_viewer_session_task", {
+        (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postWithCallback)("module_viewer", "end_module_viewer_session_task", {
           "local_id": props.local_id
         });
       }
@@ -238549,8 +238640,8 @@ function CreatorApp(props) {
       setDebugStatus("running");
       setDebugMessage("The pause timed out; the tile event is continuing.");
     };
-    for (var _i2 = 0, _arr2 = [['debug-paused', pausedListener], ['debug-completed', completedListener], ['debug-timeout', timeoutListener]]; _i2 < _arr2.length; _i2++) {
-      var _arr2$_i = _slicedToArray(_arr2[_i2], 2),
+    for (var _i3 = 0, _arr2 = [['debug-paused', pausedListener], ['debug-completed', completedListener], ['debug-timeout', timeoutListener]]; _i3 < _arr2.length; _i3++) {
+      var _arr2$_i = _slicedToArray(_arr2[_i3], 2),
         event = _arr2$_i[0],
         listener = _arr2$_i[1];
       theSocket.attachListener(event, listener);
@@ -238558,7 +238649,7 @@ function CreatorApp(props) {
     }
     if (!window.in_context) {
       theSocket.attachListener("doFlashUser", function (data) {
-        (0,_toaster__WEBPACK_IMPORTED_MODULE_10__.doFlash)(data);
+        (0,_toaster__WEBPACK_IMPORTED_MODULE_11__.doFlash)(data);
       });
       theSocket.attachListener('close-user-windows', function (data) {
         if (!(data["originator"] == window.global_id)) {
@@ -238705,16 +238796,16 @@ function CreatorApp(props) {
         name_text: "Share",
         icon_name: "share",
         click_handler: function () {
-          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-            return _regenerator().w(function (_context) {
-              while (1) switch (_context.n) {
+          var _click_handler = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+            return _regenerator().w(function (_context2) {
+              while (1) switch (_context2.n) {
                 case 0:
-                  _context.n = 1;
-                  return (0,_resource_viewer_react_app__WEBPACK_IMPORTED_MODULE_7__.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
+                  _context2.n = 1;
+                  return (0,_resource_viewer_react_app__WEBPACK_IMPORTED_MODULE_8__.sendToRepository)("tile", _cProp("resource_name"), dialogFuncs, statusFuncs, errorDrawerFuncs);
                 case 1:
-                  return _context.a(2);
+                  return _context2.a(2);
               }
-            }, _callee);
+            }, _callee2);
           }));
           function click_handler() {
             return _click_handler.apply(this, arguments);
@@ -238771,7 +238862,7 @@ function CreatorApp(props) {
         return true;
       }
     };
-    var convertedKeys = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.convertExtraKeys)(ekeys);
+    var convertedKeys = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.convertExtraKeys)(ekeys);
     var moreKeys = [{
       key: 'Ctrl-g',
       run: function run() {
@@ -238882,8 +238973,8 @@ function CreatorApp(props) {
     var _saveState$mdata;
     var stripEditorFields = function stripEditorFields(item) {
       var cleanItem = _objectSpread({}, item);
-      for (var _i3 = 0, _arr3 = ["pane_height", "identifier", "mode", "show_dot", "helperText", "firstLineNumber", "lastLineNumber", "cmObject", "scrollTop"]; _i3 < _arr3.length; _i3++) {
-        var field = _arr3[_i3];
+      for (var _i4 = 0, _arr3 = ["pane_height", "identifier", "mode", "show_dot", "helperText", "firstLineNumber", "lastLineNumber", "cmObject", "scrollTop"]; _i4 < _arr3.length; _i4++) {
+        var field = _arr3[_i4];
         delete cleanItem[field];
       }
       return cleanItem;
@@ -238909,49 +239000,7 @@ function CreatorApp(props) {
     return _saveAndLoadModule2.apply(this, arguments);
   }
   function _saveAndLoadModule2() {
-    _saveAndLoadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-      var _t2;
-      return _regenerator().w(function (_context3) {
-        while (1) switch (_context3.n) {
-          case 0:
-            if (am_selected()) {
-              _context3.n = 1;
-              break;
-            }
-            return _context3.a(2, false);
-          case 1:
-            statusFuncs.startSpinner();
-            _context3.p = 2;
-            _context3.n = 3;
-            return doSavePromise();
-          case 3:
-            statusFuncs.statusMessage("Loading Module");
-            _context3.n = 4;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "load_tile_module_task", {
-              "tile_module_name": _cProp("resource_name"),
-              "user_id": window.user_id
-            }, props.local_id);
-          case 4:
-            statusFuncs.statusMessage("Loaded successfully");
-            statusFuncs.stopSpinner();
-            _context3.n = 6;
-            break;
-          case 5:
-            _context3.p = 5;
-            _t2 = _context3.v;
-            _logErrorStopSpinner("Error saving and loading module", _t2);
-          case 6:
-            return _context3.a(2);
-        }
-      }, _callee3, null, [[2, 5]]);
-    }));
-    return _saveAndLoadModule2.apply(this, arguments);
-  }
-  function _loadModule() {
-    return _loadModule2.apply(this, arguments);
-  }
-  function _loadModule2() {
-    _loadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+    _saveAndLoadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
       var _t3;
       return _regenerator().w(function (_context4) {
         while (1) switch (_context4.n) {
@@ -238963,25 +239012,67 @@ function CreatorApp(props) {
             return _context4.a(2, false);
           case 1:
             statusFuncs.startSpinner();
-            statusFuncs.statusMessage("Loading module...");
             _context4.p = 2;
             _context4.n = 3;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "load_tile_module_task", {
+            return doSavePromise();
+          case 3:
+            statusFuncs.statusMessage("Loading Module");
+            _context4.n = 4;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("host", "load_tile_module_task", {
+              "tile_module_name": _cProp("resource_name"),
+              "user_id": window.user_id
+            }, props.local_id);
+          case 4:
+            statusFuncs.statusMessage("Loaded successfully");
+            statusFuncs.stopSpinner();
+            _context4.n = 6;
+            break;
+          case 5:
+            _context4.p = 5;
+            _t3 = _context4.v;
+            _logErrorStopSpinner("Error saving and loading module", _t3);
+          case 6:
+            return _context4.a(2);
+        }
+      }, _callee4, null, [[2, 5]]);
+    }));
+    return _saveAndLoadModule2.apply(this, arguments);
+  }
+  function _loadModule() {
+    return _loadModule2.apply(this, arguments);
+  }
+  function _loadModule2() {
+    _loadModule2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+      var _t4;
+      return _regenerator().w(function (_context5) {
+        while (1) switch (_context5.n) {
+          case 0:
+            if (am_selected()) {
+              _context5.n = 1;
+              break;
+            }
+            return _context5.a(2, false);
+          case 1:
+            statusFuncs.startSpinner();
+            statusFuncs.statusMessage("Loading module...");
+            _context5.p = 2;
+            _context5.n = 3;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("host", "load_tile_module_task", {
               "tile_module_name": _cProp("resource_name")
             }, props.local_id);
           case 3:
             statusFuncs.statusMessage("Loaded successfully");
             statusFuncs.stopSpinner();
-            _context4.n = 5;
+            _context5.n = 5;
             break;
           case 4:
-            _context4.p = 4;
-            _t3 = _context4.v;
-            _logErrorStopSpinner("Error saving and loading module", _t3);
+            _context5.p = 4;
+            _t4 = _context5.v;
+            _logErrorStopSpinner("Error saving and loading module", _t4);
           case 5:
-            return _context4.a(2);
+            return _context5.a(2);
         }
-      }, _callee4, null, [[2, 4]]);
+      }, _callee5, null, [[2, 4]]);
     }));
     return _loadModule2.apply(this, arguments);
   }
@@ -238989,39 +239080,39 @@ function CreatorApp(props) {
     return _saveModuleAs2.apply(this, arguments);
   }
   function _saveModuleAs2() {
-    _saveModuleAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-      var data, doCancel, CreateNewModule, _CreateNewModule, _t5;
-      return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+    _saveModuleAs2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+      var data, doCancel, CreateNewModule, _CreateNewModule, _t6;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
           case 0:
             _CreateNewModule = function _CreateNewModule3() {
-              _CreateNewModule = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(new_name) {
-                var result_dict, _t4;
-                return _regenerator().w(function (_context5) {
-                  while (1) switch (_context5.n) {
+              _CreateNewModule = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(new_name) {
+                var result_dict, _t5;
+                return _regenerator().w(function (_context6) {
+                  while (1) switch (_context6.n) {
                     case 0:
                       result_dict = {
                         "new_res_name": new_name,
                         "res_to_copy": _cProp("resource_name")
                       };
-                      _context5.p = 1;
-                      _context5.n = 2;
-                      return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "create_duplicate_tile_task", result_dict);
+                      _context6.p = 1;
+                      _context6.n = 2;
+                      return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("host", "create_duplicate_tile_task", result_dict);
                     case 2:
-                      data = _context5.v;
+                      data = _context6.v;
                       _setResourceNameState(new_name, function () {
                         _saveMe();
                       });
-                      _context5.n = 4;
+                      _context6.n = 4;
                       break;
                     case 3:
-                      _context5.p = 3;
-                      _t4 = _context5.v;
-                      _logErrorStopSpinner("Error saving module", _t4);
+                      _context6.p = 3;
+                      _t5 = _context6.v;
+                      _logErrorStopSpinner("Error saving module", _t5);
                     case 4:
-                      return _context5.a(2);
+                      return _context6.a(2);
                   }
-                }, _callee5, null, [[1, 3]]);
+                }, _callee6, null, [[1, 3]]);
               }));
               return _CreateNewModule.apply(this, arguments);
             };
@@ -239032,11 +239123,11 @@ function CreatorApp(props) {
               statusFuncs.stopSpinner();
             };
             statusFuncs.startSpinner();
-            _context6.p = 1;
-            _context6.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "get_tile_names_task", {}, props.local_id);
+            _context7.p = 1;
+            _context7.n = 2;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("host", "get_tile_names_task", {}, props.local_id);
           case 2:
-            data = _context6.v;
+            data = _context7.v;
             dialogFuncs.showModal("ModalDialog", {
               title: "Save Module As",
               field_title: "New Module Name",
@@ -239047,16 +239138,16 @@ function CreatorApp(props) {
               handleCancel: doCancel,
               handleClose: dialogFuncs.hideModal
             });
-            _context6.n = 4;
+            _context7.n = 4;
             break;
           case 3:
-            _context6.p = 3;
-            _t5 = _context6.v;
-            _logErrorStopSpinner("Error saving module", _t5);
+            _context7.p = 3;
+            _t6 = _context7.v;
+            _logErrorStopSpinner("Error saving module", _t6);
           case 4:
-            return _context6.a(2);
+            return _context7.a(2);
         }
-      }, _callee6, null, [[1, 3]]);
+      }, _callee7, null, [[1, 3]]);
     }));
     return _saveModuleAs2.apply(this, arguments);
   }
@@ -239067,44 +239158,8 @@ function CreatorApp(props) {
     return _saveMe2.apply(this, arguments);
   }
   function _saveMe2() {
-    _saveMe2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-      var _t6;
-      return _regenerator().w(function (_context7) {
-        while (1) switch (_context7.n) {
-          case 0:
-            if (am_selected()) {
-              _context7.n = 1;
-              break;
-            }
-            return _context7.a(2, false);
-          case 1:
-            statusFuncs.startSpinner();
-            statusFuncs.statusMessage("Saving module...");
-            _context7.p = 2;
-            _context7.n = 3;
-            return doSavePromise();
-          case 3:
-            statusFuncs.statusMessage("Saved module");
-            statusFuncs.stopSpinner();
-            _context7.n = 5;
-            break;
-          case 4:
-            _context7.p = 4;
-            _t6 = _context7.v;
-            _logErrorStopSpinner("Error saving module", _t6);
-          case 5:
-            return _context7.a(2, false);
-        }
-      }, _callee7, null, [[2, 4]]);
-    }));
-    return _saveMe2.apply(this, arguments);
-  }
-  function _saveAndCheckpoint() {
-    return _saveAndCheckpoint2.apply(this, arguments);
-  }
-  function _saveAndCheckpoint2() {
-    _saveAndCheckpoint2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-      var commitMessage, _t7, _t8;
+    _saveMe2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      var _t7;
       return _regenerator().w(function (_context8) {
         while (1) switch (_context8.n) {
           case 0:
@@ -239114,42 +239169,78 @@ function CreatorApp(props) {
             }
             return _context8.a(2, false);
           case 1:
-            _context8.p = 1;
-            _context8.n = 2;
+            statusFuncs.startSpinner();
+            statusFuncs.statusMessage("Saving module...");
+            _context8.p = 2;
+            _context8.n = 3;
+            return doSavePromise();
+          case 3:
+            statusFuncs.statusMessage("Saved module");
+            statusFuncs.stopSpinner();
+            _context8.n = 5;
+            break;
+          case 4:
+            _context8.p = 4;
+            _t7 = _context8.v;
+            _logErrorStopSpinner("Error saving module", _t7);
+          case 5:
+            return _context8.a(2, false);
+        }
+      }, _callee8, null, [[2, 4]]);
+    }));
+    return _saveMe2.apply(this, arguments);
+  }
+  function _saveAndCheckpoint() {
+    return _saveAndCheckpoint2.apply(this, arguments);
+  }
+  function _saveAndCheckpoint2() {
+    _saveAndCheckpoint2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+      var commitMessage, _t8, _t9;
+      return _regenerator().w(function (_context9) {
+        while (1) switch (_context9.n) {
+          case 0:
+            if (am_selected()) {
+              _context9.n = 1;
+              break;
+            }
+            return _context9.a(2, false);
+          case 1:
+            _context9.p = 1;
+            _context9.n = 2;
             return dialogFuncs.showModalPromise("CommitMessageDialog", {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            commitMessage = _context8.v;
-            _context8.n = 4;
+            commitMessage = _context9.v;
+            _context9.n = 4;
             break;
           case 3:
-            _context8.p = 3;
-            _t7 = _context8.v;
-            if (_t7 !== "canceled") _logErrorStopSpinner("Error opening checkpoint dialog", _t7);
-            return _context8.a(2, false);
+            _context9.p = 3;
+            _t8 = _context9.v;
+            if (_t8 !== "canceled") _logErrorStopSpinner("Error opening checkpoint dialog", _t8);
+            return _context9.a(2, false);
           case 4:
             statusFuncs.startSpinner();
             statusFuncs.statusMessage("Checkpointing");
-            _context8.p = 5;
-            _context8.n = 6;
+            _context9.p = 5;
+            _context9.n = 6;
             return doSavePromise();
           case 6:
-            _context8.n = 7;
+            _context9.n = 7;
             return doCheckpointPromise(commitMessage);
           case 7:
             statusFuncs.statusMessage("Saved and checkpointed");
             statusFuncs.stopSpinner();
-            _context8.n = 9;
+            _context9.n = 9;
             break;
           case 8:
-            _context8.p = 8;
-            _t8 = _context8.v;
-            _logErrorStopSpinner("Error in save and checkpoint", _t8);
+            _context9.p = 8;
+            _t9 = _context9.v;
+            _logErrorStopSpinner("Error in save and checkpoint", _t9);
           case 9:
-            return _context8.a(2, false);
+            return _context9.a(2, false);
         }
-      }, _callee8, null, [[5, 8], [1, 3]]);
+      }, _callee9, null, [[5, 8], [1, 3]]);
     }));
     return _saveAndCheckpoint2.apply(this, arguments);
   }
@@ -239230,7 +239321,7 @@ function CreatorApp(props) {
     var mdata = _objectSpread({}, metadataRef.current);
     delete mdata.allTags;
     delete mdata["additional_mdata"];
-    mdata["mdata_uid"] = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.guid)();
+    mdata["mdata_uid"] = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.guid)();
     var visibleMethods = visibleTabListRef.current.map(function (identifier) {
       return getNameFromIdentifier(identifier);
     });
@@ -239282,31 +239373,31 @@ function CreatorApp(props) {
   }
   function doSavePromise() {
     return new Promise(/*#__PURE__*/function () {
-      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(resolve, reject) {
-        var saved_dict, result_dict, data, _t;
-        return _regenerator().w(function (_context2) {
-          while (1) switch (_context2.n) {
+      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(resolve, reject) {
+        var saved_dict, result_dict, data, _t2;
+        return _regenerator().w(function (_context3) {
+          while (1) switch (_context3.n) {
             case 0:
               saved_dict = _getSaveDict();
               result_dict = _objectSpread({}, saved_dict);
               result_dict["local_id"] = props.local_id;
-              _context2.p = 1;
-              _context2.n = 2;
-              return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("module_viewer", "update_module", result_dict, props.local_id);
+              _context3.p = 1;
+              _context3.n = 2;
+              return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("module_viewer", "update_module", result_dict, props.local_id);
             case 2:
-              data = _context2.v;
+              data = _context3.v;
               save_success(data, saved_dict);
               resolve(data);
-              _context2.n = 4;
+              _context3.n = 4;
               break;
             case 3:
-              _context2.p = 3;
-              _t = _context2.v;
-              reject(_t);
+              _context3.p = 3;
+              _t2 = _context3.v;
+              reject(_t2);
             case 4:
-              return _context2.a(2);
+              return _context3.a(2);
           }
-        }, _callee2, null, [[1, 3]]);
+        }, _callee3, null, [[1, 3]]);
       }));
       return function (_x, _x2) {
         return _ref.apply(this, arguments);
@@ -239315,7 +239406,7 @@ function CreatorApp(props) {
   }
   function doCheckpointPromise() {
     var message = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
-    return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "checkpoint_module_task", {
+    return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("host", "checkpoint_module_task", {
       "module_name": _cProp("resource_name"),
       "message": message
     });
@@ -239332,8 +239423,8 @@ function CreatorApp(props) {
     if (["globals", "render_content"].includes(name)) {
       return name;
     }
-    for (var _i4 = 0, _arr4 = [umListRef, hmListRef, jsListRef]; _i4 < _arr4.length; _i4++) {
-      var listRef = _arr4[_i4];
+    for (var _i5 = 0, _arr4 = [umListRef, hmListRef, jsListRef]; _i5 < _arr4.length; _i5++) {
+      var listRef = _arr4[_i5];
       var identifier = getIdentifierFromNameInLIst(listRef, name);
       if (identifier) {
         return identifier;
@@ -239362,8 +239453,8 @@ function CreatorApp(props) {
     if (["globals", "render_content"].includes(identifier)) {
       return identifier;
     }
-    for (var _i5 = 0, _arr5 = [jsListRef, umListRef, hmListRef]; _i5 < _arr5.length; _i5++) {
-      var listRef = _arr5[_i5];
+    for (var _i6 = 0, _arr5 = [jsListRef, umListRef, hmListRef]; _i6 < _arr5.length; _i6++) {
+      var listRef = _arr5[_i6];
       var name = getNameFromIdentifierInList(listRef, identifier);
       if (name) {
         return name;
@@ -239395,9 +239486,9 @@ function CreatorApp(props) {
     if (identifier === "render_content") {
       return renderContentInfoRef.current;
     }
-    for (var _i6 = 0, _arr6 = [option_list_ref, widget_list_ref, export_list_ref, save_list_ref, jsListRef, umListRef, hmListRef]; _i6 < _arr6.length; _i6++) {
-      var listRef = _arr6[_i6];
-      var _item4 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(identifier, listRef.current);
+    for (var _i7 = 0, _arr6 = [option_list_ref, widget_list_ref, export_list_ref, save_list_ref, jsListRef, umListRef, hmListRef]; _i7 < _arr6.length; _i7++) {
+      var listRef = _arr6[_i7];
+      var _item4 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.getListItemFromidentifier)(identifier, listRef.current);
       if (_item4) {
         return _item4;
       }
@@ -239406,7 +239497,7 @@ function CreatorApp(props) {
   }
   function getSearchReplacementTarget(identifier) {
     var _loop2 = function _loop2() {
-        var _arr7$_i = _slicedToArray(_arr7[_i7], 2),
+        var _arr7$_i = _slicedToArray(_arr7[_i8], 2),
           ref = _arr7$_i[0],
           setValue = _arr7$_i[1];
         if (ref.current.identifier === identifier) {
@@ -239421,15 +239512,15 @@ function CreatorApp(props) {
         }
       },
       _ret;
-    for (var _i7 = 0, _arr7 = [[globalsInfoRef, setGlobalsInfo], [renderContentInfoRef, setRenderContentInfo]]; _i7 < _arr7.length; _i7++) {
+    for (var _i8 = 0, _arr7 = [[globalsInfoRef, setGlobalsInfo], [renderContentInfoRef, setRenderContentInfo]]; _i8 < _arr7.length; _i8++) {
       _ret = _loop2();
       if (_ret) return _ret.v;
     }
     var _loop3 = function _loop3() {
-        var _arr8$_i = _slicedToArray(_arr8[_i8], 2),
+        var _arr8$_i = _slicedToArray(_arr8[_i9], 2),
           ref = _arr8$_i[0],
           dispatch = _arr8$_i[1];
-        var item = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(identifier, ref.current);
+        var item = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.getListItemFromidentifier)(identifier, ref.current);
         if (item) {
           return {
             v: {
@@ -239446,7 +239537,7 @@ function CreatorApp(props) {
         }
       },
       _ret2;
-    for (var _i8 = 0, _arr8 = [[option_list_ref, optionDispatch], [widget_list_ref, widgetDispatch], [export_list_ref, exportDispatch], [save_list_ref, saveDispatch], [jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]; _i8 < _arr8.length; _i8++) {
+    for (var _i9 = 0, _arr8 = [[option_list_ref, optionDispatch], [widget_list_ref, widgetDispatch], [export_list_ref, exportDispatch], [save_list_ref, saveDispatch], [jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]; _i9 < _arr8.length; _i9++) {
       _ret2 = _loop3();
       if (_ret2) return _ret2.v;
     }
@@ -239493,7 +239584,7 @@ function CreatorApp(props) {
         try {
           for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
             var match = _step14.value;
-            var nextValue = (0,_search_reducer__WEBPACK_IMPORTED_MODULE_21__.applySearchReplacement)(match, updatedValue, replacementText, match.useRegexReplacement);
+            var nextValue = (0,_search_reducer__WEBPACK_IMPORTED_MODULE_22__.applySearchReplacement)(match, updatedValue, replacementText, match.useRegexReplacement);
             if (nextValue !== null) {
               updatedValue = nextValue;
               replacementCount += 1;
@@ -239544,7 +239635,7 @@ function CreatorApp(props) {
   function _replaceSearchResult(result, replacementText) {
     var replaced = replaceSearchMatches([result], replacementText);
     if (replaced === 0) {
-      (0,_toaster__WEBPACK_IMPORTED_MODULE_10__.doFlash)({
+      (0,_toaster__WEBPACK_IMPORTED_MODULE_11__.doFlash)({
         message: "That match changed before it could be replaced.",
         alert_type: "alert-warning"
       });
@@ -239554,23 +239645,23 @@ function CreatorApp(props) {
     return _replaceAllSearchResults2.apply(this, arguments);
   }
   function _replaceAllSearchResults2() {
-    _replaceAllSearchResults2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(replacementText) {
+    _replaceAllSearchResults2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(replacementText) {
       var _searchStateRef$curre;
-      var replaceableResults, replaced, _t9;
-      return _regenerator().w(function (_context9) {
-        while (1) switch (_context9.n) {
+      var replaceableResults, replaced, _t0;
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.n) {
           case 0:
             replaceableResults = ((_searchStateRef$curre = searchStateRef.current.search_results) !== null && _searchStateRef$curre !== void 0 ? _searchStateRef$curre : []).filter(function (result) {
               return result.replaceable;
             });
             if (!(replaceableResults.length === 0)) {
-              _context9.n = 1;
+              _context0.n = 1;
               break;
             }
-            return _context9.a(2);
+            return _context0.a(2);
           case 1:
-            _context9.p = 1;
-            _context9.n = 2;
+            _context0.p = 1;
+            _context0.n = 2;
             return dialogFuncs.showModalPromise("ConfirmDialog", {
               title: "Replace all matches",
               text_body: "Replace ".concat(replaceableResults.length, " editable ").concat(replaceableResults.length === 1 ? "match" : "matches", "?"),
@@ -239579,25 +239670,25 @@ function CreatorApp(props) {
               handleClose: dialogFuncs.hideModal
             });
           case 2:
-            _context9.n = 4;
+            _context0.n = 4;
             break;
           case 3:
-            _context9.p = 3;
-            _t9 = _context9.v;
-            if (_t9 !== "canceled") {
-              console.error("Unable to confirm replace all", _t9);
+            _context0.p = 3;
+            _t0 = _context0.v;
+            if (_t0 !== "canceled") {
+              console.error("Unable to confirm replace all", _t0);
             }
-            return _context9.a(2);
+            return _context0.a(2);
           case 4:
             replaced = replaceSearchMatches(replaceableResults, replacementText);
-            (0,_toaster__WEBPACK_IMPORTED_MODULE_10__.doFlash)({
+            (0,_toaster__WEBPACK_IMPORTED_MODULE_11__.doFlash)({
               message: "Replaced ".concat(replaced, " editable ").concat(replaced === 1 ? "match" : "matches", "."),
               alert_type: replaced > 0 ? "alert-success" : "alert-warning"
             });
           case 5:
-            return _context9.a(2);
+            return _context0.a(2);
         }
-      }, _callee9, null, [[1, 3]]);
+      }, _callee0, null, [[1, 3]]);
     }));
     return _replaceAllSearchResults2.apply(this, arguments);
   }
@@ -239616,11 +239707,11 @@ function CreatorApp(props) {
       }
       return;
     }
-    for (var _i9 = 0, _arr9 = [[jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]; _i9 < _arr9.length; _i9++) {
-      var _arr9$_i = _slicedToArray(_arr9[_i9], 2),
+    for (var _i0 = 0, _arr9 = [[jsListRef, jsDispatch], [umListRef, umDispatch], [hmListRef, hmDispatch]]; _i0 < _arr9.length; _i0++) {
+      var _arr9$_i = _slicedToArray(_arr9[_i0], 2),
         listRef = _arr9$_i[0],
         dispatch = _arr9$_i[1];
-      var existingItem = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(identifier, listRef.current);
+      var existingItem = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.getListItemFromidentifier)(identifier, listRef.current);
       if (existingItem) {
         dispatch({
           type: "update_item",
@@ -239635,14 +239726,14 @@ function CreatorApp(props) {
     var identifier;
     updateRenderContent(data.render_content_line_numbers);
     var umLineNumbers = data["user_methods_line_numbers"];
-    for (var _i0 = 0, _Object$keys = Object.keys(umLineNumbers); _i0 < _Object$keys.length; _i0++) {
-      var name = _Object$keys[_i0];
+    for (var _i1 = 0, _Object$keys = Object.keys(umLineNumbers); _i1 < _Object$keys.length; _i1++) {
+      var name = _Object$keys[_i1];
       identifier = getIdentifierFromNameInLIst(umListRef, name);
       setLineNumbers(umLineNumbers[name], identifier, umDispatch);
     }
     var hmLineNumbers = data["used_handler_methods_line_numbers"];
-    for (var _i1 = 0, _Object$keys2 = Object.keys(hmLineNumbers); _i1 < _Object$keys2.length; _i1++) {
-      var _name = _Object$keys2[_i1];
+    for (var _i10 = 0, _Object$keys2 = Object.keys(hmLineNumbers); _i10 < _Object$keys2.length; _i10++) {
+      var _name = _Object$keys2[_i10];
       identifier = getIdentifierFromNameInLIst(hmListRef, _name);
       setLineNumbers(hmLineNumbers[_name], identifier, hmDispatch);
     }
@@ -239680,27 +239771,27 @@ function CreatorApp(props) {
     return _refreshDebugTargets.apply(this, arguments);
   }
   function _refreshDebugTargets() {
-    _refreshDebugTargets = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+    _refreshDebugTargets = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
       var result, targets, selected;
-      return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+      return _regenerator().w(function (_context1) {
+        while (1) switch (_context1.n) {
           case 0:
             if (window.in_context) {
-              _context0.n = 1;
+              _context1.n = 1;
               break;
             }
             throw {
               message: "Open this Tile Maker inside a running project to select a tile instance."
             };
           case 1:
-            _context0.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("main_service", "get_tile_debug_targets", {
+            _context1.n = 2;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("main_service", "get_tile_debug_targets", {
               global_id: window.global_id,
               tile_type: props.tile_type,
               module_name: _cProp("resource_name")
             }, props.local_id);
           case 2:
-            result = _context0.v;
+            result = _context1.v;
             targets = result.targets || [];
             setDebugTargets(targets);
             selected = debugTargetIdRef.current;
@@ -239710,12 +239801,12 @@ function CreatorApp(props) {
               selected = targets.length ? targets[0].tile_id : null;
               setDebugTargetId(selected);
             }
-            return _context0.a(2, {
+            return _context1.a(2, {
               targets: targets,
               selected: selected
             });
         }
-      }, _callee0);
+      }, _callee1);
     }));
     return _refreshDebugTargets.apply(this, arguments);
   }
@@ -239807,32 +239898,32 @@ function CreatorApp(props) {
     return _selectedDebugTarget.apply(this, arguments);
   }
   function _selectedDebugTarget() {
-    _selectedDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+    _selectedDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
       var alwaysRefresh,
         targets,
         selected,
         refreshed,
         target,
-        _args1 = arguments;
-      return _regenerator().w(function (_context1) {
-        while (1) switch (_context1.n) {
+        _args10 = arguments;
+      return _regenerator().w(function (_context10) {
+        while (1) switch (_context10.n) {
           case 0:
-            alwaysRefresh = _args1.length > 0 && _args1[0] !== undefined ? _args1[0] : false;
+            alwaysRefresh = _args10.length > 0 && _args10[0] !== undefined ? _args10[0] : false;
             targets = debugTargetsRef.current;
             selected = debugTargetIdRef.current;
             if (!(alwaysRefresh || !targets.length || !selected)) {
-              _context1.n = 2;
+              _context10.n = 2;
               break;
             }
-            _context1.n = 1;
+            _context10.n = 1;
             return refreshDebugTargets();
           case 1:
-            refreshed = _context1.v;
+            refreshed = _context10.v;
             targets = refreshed.targets;
             selected = refreshed.selected;
           case 2:
             if (selected) {
-              _context1.n = 3;
+              _context10.n = 3;
               break;
             }
             throw {
@@ -239843,16 +239934,16 @@ function CreatorApp(props) {
               return candidate.tile_id === selected;
             });
             if (target) {
-              _context1.n = 4;
+              _context10.n = 4;
               break;
             }
             throw {
               message: "The selected running tile is no longer available."
             };
           case 4:
-            return _context1.a(2, target);
+            return _context10.a(2, target);
         }
-      }, _callee1);
+      }, _callee10);
     }));
     return _selectedDebugTarget.apply(this, arguments);
   }
@@ -239860,17 +239951,17 @@ function CreatorApp(props) {
     return _armDebugTarget.apply(this, arguments);
   }
   function _armDebugTarget() {
-    _armDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(target) {
+    _armDebugTarget = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(target) {
       var savedLineNumbers,
         breakpoints,
         result,
-        _args10 = arguments;
-      return _regenerator().w(function (_context10) {
-        while (1) switch (_context10.n) {
+        _args11 = arguments;
+      return _regenerator().w(function (_context11) {
+        while (1) switch (_context11.n) {
           case 0:
-            savedLineNumbers = _args10.length > 1 && _args10[1] !== undefined ? _args10[1] : null;
+            savedLineNumbers = _args11.length > 1 && _args11[1] !== undefined ? _args11[1] : null;
             if (!(!sourceInfoRef.current || !sourceInfoRef.current.source_hash)) {
-              _context10.n = 1;
+              _context11.n = 1;
               break;
             }
             throw {
@@ -239878,8 +239969,8 @@ function CreatorApp(props) {
             };
           case 1:
             breakpoints = absoluteDebugBreakpoints(savedLineNumbers);
-            _context10.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)(target.tile_id, "arm_debugger", {
+            _context11.n = 2;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)(target.tile_id, "arm_debugger", {
               breakpoints: breakpoints,
               pause_on_start: breakpoints.length === 0 && !debugPauseOnExceptionsRef.current,
               pause_on_exceptions: debugPauseOnExceptionsRef.current,
@@ -239887,7 +239978,7 @@ function CreatorApp(props) {
               debug_room: props.local_id
             }, props.local_id);
           case 2:
-            result = _context10.v;
+            result = _context11.v;
             setDebugSession({
               sessionId: result.session_id,
               debugQueue: result.debug_queue,
@@ -239898,9 +239989,9 @@ function CreatorApp(props) {
             setDebugStatus("armed");
             setDebugMessage(breakpoints.length ? "Debugger enabled." : debugPauseOnExceptionsRef.current ? "Debugger enabled." : "Debugger enabled.");
           case 3:
-            return _context10.a(2);
+            return _context11.a(2);
         }
-      }, _callee10);
+      }, _callee11);
     }));
     return _armDebugTarget.apply(this, arguments);
   }
@@ -239908,54 +239999,8 @@ function CreatorApp(props) {
     return _startDebugger.apply(this, arguments);
   }
   function _startDebugger() {
-    _startDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-      var target, _t0;
-      return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.n) {
-          case 0:
-            if (!debugSessionRef.current) {
-              _context11.n = 1;
-              break;
-            }
-            return _context11.a(2);
-          case 1:
-            if (!_debuggerSourceDirty()) {
-              _context11.n = 2;
-              break;
-            }
-            setDebugMessage("Save the tile before starting the debugger.");
-            return _context11.a(2);
-          case 2:
-            setDebugStatus("starting");
-            setDebugMessage("Finding running tile instances...");
-            _context11.p = 3;
-            _context11.n = 4;
-            return selectedDebugTarget();
-          case 4:
-            target = _context11.v;
-            _context11.n = 5;
-            return armDebugTarget(target);
-          case 5:
-            _context11.n = 7;
-            break;
-          case 6:
-            _context11.p = 6;
-            _t0 = _context11.v;
-            setDebugStatus("idle");
-            setDebugMessage(debuggerErrorMessage(_t0));
-          case 7:
-            return _context11.a(2);
-        }
-      }, _callee11, null, [[3, 6]]);
-    }));
-    return _startDebugger.apply(this, arguments);
-  }
-  function syncAndStartDebugger() {
-    return _syncAndStartDebugger.apply(this, arguments);
-  }
-  function _syncAndStartDebugger() {
-    _syncAndStartDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
-      var target, savedLineNumbers, _t1;
+    _startDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+      var target, _t1;
       return _regenerator().w(function (_context12) {
         while (1) switch (_context12.n) {
           case 0:
@@ -239965,15 +240010,61 @@ function CreatorApp(props) {
             }
             return _context12.a(2);
           case 1:
+            if (!_debuggerSourceDirty()) {
+              _context12.n = 2;
+              break;
+            }
+            setDebugMessage("Save the tile before starting the debugger.");
+            return _context12.a(2);
+          case 2:
             setDebugStatus("starting");
-            _context12.p = 2;
+            setDebugMessage("Finding running tile instances...");
+            _context12.p = 3;
+            _context12.n = 4;
+            return selectedDebugTarget();
+          case 4:
+            target = _context12.v;
+            _context12.n = 5;
+            return armDebugTarget(target);
+          case 5:
+            _context12.n = 7;
+            break;
+          case 6:
+            _context12.p = 6;
+            _t1 = _context12.v;
+            setDebugStatus("idle");
+            setDebugMessage(debuggerErrorMessage(_t1));
+          case 7:
+            return _context12.a(2);
+        }
+      }, _callee12, null, [[3, 6]]);
+    }));
+    return _startDebugger.apply(this, arguments);
+  }
+  function syncAndStartDebugger() {
+    return _syncAndStartDebugger.apply(this, arguments);
+  }
+  function _syncAndStartDebugger() {
+    _syncAndStartDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
+      var target, savedLineNumbers, _t10;
+      return _regenerator().w(function (_context13) {
+        while (1) switch (_context13.n) {
+          case 0:
+            if (!debugSessionRef.current) {
+              _context13.n = 1;
+              break;
+            }
+            return _context13.a(2);
+          case 1:
+            setDebugStatus("starting");
+            _context13.p = 2;
             setDebugMessage("Finding the running tile instance...");
-            _context12.n = 3;
+            _context13.n = 3;
             return selectedDebugTarget(true);
           case 3:
-            target = _context12.v;
+            target = _context13.v;
             if (target.main_sid) {
-              _context12.n = 4;
+              _context13.n = 4;
               break;
             }
             throw {
@@ -239982,44 +240073,44 @@ function CreatorApp(props) {
           case 4:
             savedLineNumbers = null;
             if (!_debuggerSourceDirty()) {
-              _context12.n = 6;
+              _context13.n = 6;
               break;
             }
             setDebugMessage("Saving tile source...");
-            _context12.n = 5;
+            _context13.n = 5;
             return doSavePromise();
           case 5:
-            savedLineNumbers = _context12.v;
+            savedLineNumbers = _context13.v;
           case 6:
             setDebugMessage("Loading the saved module...");
-            _context12.n = 7;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "load_tile_module_task", {
+            _context13.n = 7;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("host", "load_tile_module_task", {
               tile_module_name: _cProp("resource_name"),
               user_id: window.user_id
             }, props.local_id);
           case 7:
             setDebugMessage("Reloading ".concat(target.tile_name, "..."));
-            _context12.n = 8;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromiseMain)(target.main_sid, "reload_tile", {
+            _context13.n = 8;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromiseMain)(target.main_sid, "reload_tile", {
               tile_id: target.tile_id,
               tile_name: target.tile_name
             }, props.local_id);
           case 8:
             setDebugMessage("Enabling debugger...");
-            _context12.n = 9;
+            _context13.n = 9;
             return armDebugTarget(target, savedLineNumbers);
           case 9:
-            _context12.n = 11;
+            _context13.n = 11;
             break;
           case 10:
-            _context12.p = 10;
-            _t1 = _context12.v;
+            _context13.p = 10;
+            _t10 = _context13.v;
             setDebugStatus("idle");
-            setDebugMessage(debuggerErrorMessage(_t1));
+            setDebugMessage(debuggerErrorMessage(_t10));
           case 11:
-            return _context12.a(2);
+            return _context13.a(2);
         }
-      }, _callee12, null, [[2, 10]]);
+      }, _callee13, null, [[2, 10]]);
     }));
     return _syncAndStartDebugger.apply(this, arguments);
   }
@@ -240027,49 +240118,49 @@ function CreatorApp(props) {
     return _sendDebugCommand.apply(this, arguments);
   }
   function _sendDebugCommand() {
-    _sendDebugCommand = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(command) {
-      var session, pausedSnapshot, _t10;
-      return _regenerator().w(function (_context13) {
-        while (1) switch (_context13.n) {
+    _sendDebugCommand = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(command) {
+      var session, pausedSnapshot, _t11;
+      return _regenerator().w(function (_context14) {
+        while (1) switch (_context14.n) {
           case 0:
             session = debugSessionRef.current;
             pausedSnapshot = debugPausedRef.current;
             if (!(!session || !pausedSnapshot)) {
-              _context13.n = 1;
+              _context14.n = 1;
               break;
             }
-            return _context13.a(2);
+            return _context14.a(2);
           case 1:
-            _context13.p = 1;
+            _context14.p = 1;
             setDebugStatus(command === "abort" ? "stopping" : "running");
             setDebugPaused(null);
             setDebugFrameIndex(0);
             setDebugMessage(command === "abort" ? "Stopping debugger." : "Running...");
-            _context13.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)(session.debugQueue, "debug_command", {
+            _context14.n = 2;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)(session.debugQueue, "debug_command", {
               session_id: session.sessionId,
               command: command
             }, props.local_id);
           case 2:
-            _context13.n = 5;
+            _context14.n = 5;
             break;
           case 3:
-            _context13.p = 3;
-            _t10 = _context13.v;
-            if (!debuggerSessionIsGone(_t10)) {
-              _context13.n = 4;
+            _context14.p = 3;
+            _t11 = _context14.v;
+            if (!debuggerSessionIsGone(_t11)) {
+              _context14.n = 4;
               break;
             }
             clearDebugSession();
-            return _context13.a(2);
+            return _context14.a(2);
           case 4:
             setDebugStatus("paused");
             setDebugPaused(pausedSnapshot);
-            setDebugMessage(debuggerErrorMessage(_t10));
+            setDebugMessage(debuggerErrorMessage(_t11));
           case 5:
-            return _context13.a(2);
+            return _context14.a(2);
         }
-      }, _callee13, null, [[1, 3]]);
+      }, _callee14, null, [[1, 3]]);
     }));
     return _sendDebugCommand.apply(this, arguments);
   }
@@ -240085,48 +240176,48 @@ function CreatorApp(props) {
     return _stopDebugger.apply(this, arguments);
   }
   function _stopDebugger() {
-    _stopDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
-      var session, result, _t11;
-      return _regenerator().w(function (_context14) {
-        while (1) switch (_context14.n) {
+    _stopDebugger = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
+      var session, result, _t12;
+      return _regenerator().w(function (_context15) {
+        while (1) switch (_context15.n) {
           case 0:
             session = debugSessionRef.current;
             if (session) {
-              _context14.n = 1;
+              _context15.n = 1;
               break;
             }
-            return _context14.a(2);
+            return _context15.a(2);
           case 1:
-            _context14.p = 1;
+            _context15.p = 1;
             setDebugStatus("stopping");
             setDebugMessage("Stopping debugger...");
-            _context14.n = 2;
-            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)(session.debugQueue, "debug_command", {
+            _context15.n = 2;
+            return (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)(session.debugQueue, "debug_command", {
               session_id: session.sessionId,
               command: "abort"
             }, props.local_id);
           case 2:
-            result = _context14.v;
+            result = _context15.v;
             if (result.state === "disarmed") {
               clearDebugSession();
             }
-            _context14.n = 5;
+            _context15.n = 5;
             break;
           case 3:
-            _context14.p = 3;
-            _t11 = _context14.v;
-            if (!debuggerSessionIsGone(_t11)) {
-              _context14.n = 4;
+            _context15.p = 3;
+            _t12 = _context15.v;
+            if (!debuggerSessionIsGone(_t12)) {
+              _context15.n = 4;
               break;
             }
             clearDebugSession();
-            return _context14.a(2);
+            return _context15.a(2);
           case 4:
-            setDebugMessage(debuggerErrorMessage(_t11));
+            setDebugMessage(debuggerErrorMessage(_t12));
           case 5:
-            return _context14.a(2);
+            return _context15.a(2);
         }
-      }, _callee14, null, [[1, 3]]);
+      }, _callee15, null, [[1, 3]]);
     }));
     return _stopDebugger.apply(this, arguments);
   }
@@ -240205,7 +240296,7 @@ function CreatorApp(props) {
       var cm = item.cmObject;
       var line = cm.state.doc.line(lnumber + 1 - item.firstLineNumber);
       cm.dispatch({
-        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_27__.EditorSelection.single(line.from, line.to)
+        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_29__.EditorSelection.single(line.from, line.to)
       });
       (0,_react_codemirror6__WEBPACK_IMPORTED_MODULE_4__.scrollEditorPositionToCenter)(cm, line.from);
       cm.focus();
@@ -240233,7 +240324,7 @@ function CreatorApp(props) {
       var cm = item.cmObject;
       var line = cm.state.doc.line(editorLineNumber);
       cm.dispatch({
-        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_27__.EditorSelection.single(line.from, line.to)
+        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_29__.EditorSelection.single(line.from, line.to)
       });
       (0,_react_codemirror6__WEBPACK_IMPORTED_MODULE_4__.scrollEditorPositionToCenter)(cm, line.from);
       cm.focus();
@@ -240300,15 +240391,15 @@ function CreatorApp(props) {
       var local_number = rline_number.current;
       rline_number.current = null;
       errorDrawerFuncs.closeErrorDrawer();
-      for (var _i10 = 0, _arr0 = [globalsInfoRef.current, renderContentInfoRef.current]; _i10 < _arr0.length; _i10++) {
-        var _item6 = _arr0[_i10];
+      for (var _i11 = 0, _arr0 = [globalsInfoRef.current, renderContentInfoRef.current]; _i11 < _arr0.length; _i11++) {
+        var _item6 = _arr0[_i11];
         if (local_number >= _item6["firstLineNumber"] && local_number <= _item6["lastLineNumber"]) {
           _showAndHighlightLine(_item6, local_number);
           return;
         }
       }
-      for (var _i11 = 0, _arr1 = [umListRef, hmListRef]; _i11 < _arr1.length; _i11++) {
-        var listRef = _arr1[_i11];
+      for (var _i12 = 0, _arr1 = [umListRef, hmListRef]; _i12 < _arr1.length; _i12++) {
+        var listRef = _arr1[_i12];
         var _iterator15 = _createForOfIteratorHelper(listRef.current),
           _step15;
         try {
@@ -240417,7 +240508,7 @@ function CreatorApp(props) {
   var codeElemDict = {};
   var gi = globalsInfoRef.current;
   codeElemDict["globals"] = function () {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.CmElement, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.CmElement, {
       cmState: gi,
       getAIContext: getAIContext,
       aiContextGroup: "globals",
@@ -240446,7 +240537,7 @@ function CreatorApp(props) {
   };
   var ri = renderContentInfoRef.current;
   codeElemDict["render_content"] = function () {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.CmElement, {
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.CmElement, {
       cmState: ri,
       getAIContext: getAIContext,
       aiContextGroup: "render_content",
@@ -240481,7 +240572,7 @@ function CreatorApp(props) {
         return 1; // continue
       }
       codeElemDict[um["identifier"]] = function () {
-        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.CmElement, {
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.CmElement, {
           cmState: um,
           getAIContext: getAIContext,
           aiContextGroup: "user_methods",
@@ -240521,7 +240612,7 @@ function CreatorApp(props) {
     var _loop6 = function _loop6() {
       var hm = _step17.value;
       codeElemDict[hm["identifier"]] = function () {
-        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.CmElement, {
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.CmElement, {
           cmState: hm,
           getAIContext: getAIContext,
           aiContextGroup: "used_handler_methods",
@@ -240561,7 +240652,7 @@ function CreatorApp(props) {
     var _loop7 = function _loop7() {
       var js = _step18.value;
       codeElemDict[js["identifier"]] = function () {
-        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.CmElement, {
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.CmElement, {
           cmState: js,
           getAIContext: getAIContext,
           aiContextGroup: "javascript_functions",
@@ -240602,7 +240693,7 @@ function CreatorApp(props) {
     var _loop8 = function _loop8() {
       var opt = _step19.value;
       optionElemDict[opt["identifier"]] = function () {
-        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.OptionModuleForm, {
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.OptionModuleForm, {
           optionItem: opt,
           dispatch: optionDispatch
         });
@@ -240623,7 +240714,7 @@ function CreatorApp(props) {
     var _loop9 = function _loop9() {
       var w = _step20.value;
       widgetElemDict[w["identifier"]] = function () {
-        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.WidgetModuleForm, {
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.WidgetModuleForm, {
           widgetItem: w,
           dispatch: widgetDispatch
         });
@@ -240644,7 +240735,7 @@ function CreatorApp(props) {
     var _loop0 = function _loop0() {
       var exp = _step21.value;
       exportElemDict[exp["identifier"]] = function () {
-        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.ExportModuleForm, {
+        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.ExportModuleForm, {
           exportItem: exp,
           dispatch: exportDispatch
         });
@@ -240666,7 +240757,7 @@ function CreatorApp(props) {
       var _loop4 = function _loop4() {
         var exp = _step22.value;
         saveElemDict[exp["identifier"]] = function () {
-          return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.ExportModuleForm, {
+          return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.ExportModuleForm, {
             exportItem: exp,
             dispatch: saveDispatch
           });
@@ -240689,7 +240780,7 @@ function CreatorApp(props) {
     identifier: "metadata",
     className: "direct-nav-section-button",
     name: "Metadata",
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["metadata"]
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["metadata"]
   }, {
     kind: "divider",
     name: "Options Divider",
@@ -240702,8 +240793,8 @@ function CreatorApp(props) {
     kind: "section",
     visible: true,
     editable: true,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["option"],
-    icon_dict: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.option_icons,
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["option"],
+    icon_dict: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.option_icons,
     icon_field: "type",
     showDefault: false,
     showSelf: true,
@@ -240725,8 +240816,8 @@ function CreatorApp(props) {
     kind: "section",
     visible: true,
     editable: true,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["widget"],
-    icon_dict: _widget_info__WEBPACK_IMPORTED_MODULE_23__.widgetIcons,
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["widget"],
+    icon_dict: _widget_info__WEBPACK_IMPORTED_MODULE_24__.widgetIcons,
     icon_field: "kind",
     showDefault: false,
     showSelf: true,
@@ -240748,7 +240839,7 @@ function CreatorApp(props) {
     kind: "section",
     visible: true,
     editable: true,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["export"],
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["export"],
     showAsCode: true,
     showSelf: true,
     mode: "python",
@@ -240768,7 +240859,7 @@ function CreatorApp(props) {
       tags: ""
     },
     editable: true,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["save"],
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["save"],
     sub_items: save_list_ref.current,
     dispatch: saveDispatch
   }, {
@@ -240786,7 +240877,7 @@ function CreatorApp(props) {
     identifier: "globals",
     name: "globals",
     mode: "python",
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["globals"]
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["globals"]
   }, {
     kind: "direct",
     visible: true,
@@ -240796,13 +240887,13 @@ function CreatorApp(props) {
     className: "direct-nav-section-button-mono",
     name: "render_content",
     mode: "python",
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["render_content"]
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["render_content"]
   }, {
     title: "user methods",
     identifier: "user_methods",
     visible: true,
     editable: true,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["user_method"],
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["user_method"],
     mode: "python",
     showAsCode: true,
     showSignature: true,
@@ -240831,7 +240922,7 @@ function CreatorApp(props) {
       mode: "python",
       firstLineNumber: 1
     },
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["handler_method"],
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["handler_method"],
     showSignature: true,
     sub_items: hmListRef.current,
     createFromList: true,
@@ -240842,7 +240933,7 @@ function CreatorApp(props) {
     identifier: "javascript",
     visible: true,
     editable: true,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["javascript"],
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["javascript"],
     mode: "javascript",
     showAsCode: true,
     item_base: {
@@ -240855,7 +240946,7 @@ function CreatorApp(props) {
     dispatch: jsDispatch,
     sub_items: jsListRef.current
   }];
-  var left_pane = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(react__WEBPACK_IMPORTED_MODULE_1__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.MakerNavigator, {
+  var left_pane = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(react__WEBPACK_IMPORTED_MODULE_1__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.MakerNavigator, {
     handleTabSelect: _handleTabSelect,
     registerCmObject: registerCmObject,
     expandedSectionList: expandedSectionListRef.current,
@@ -240865,7 +240956,7 @@ function CreatorApp(props) {
     is_d3: my_props.is_d3,
     sections: sections
   }));
-  var mdata_panel = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.MetadataModule, {
+  var mdata_panel = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.MetadataModule, {
     res_name: _cProp("resource_name"),
     res_type: "tile",
     registerCmObject: registerCmObject,
@@ -240876,7 +240967,7 @@ function CreatorApp(props) {
     export_list_ref: export_list_ref
   });
   var right_pane_list = [];
-  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
     identifier: "metadata",
     key: "metadata",
     dispatch: metadataDispatch,
@@ -240886,22 +240977,22 @@ function CreatorApp(props) {
     pane_scroll_ref: pane_scroll_ref,
     pane_height: metadataRef.current.pane_height
   }, mdata_panel));
-  for (var _i12 = 0, _Object$keys3 = Object.keys(optionElemDict); _i12 < _Object$keys3.length; _i12++) {
-    var key = _Object$keys3[_i12];
+  for (var _i13 = 0, _Object$keys3 = Object.keys(optionElemDict); _i13 < _Object$keys3.length; _i13++) {
+    var key = _Object$keys3[_i13];
     if (visibleTabListRef.current.includes(key)) {
-      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
         text: "Options",
         key: "options-divider",
-        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["option"]
+        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["option"]
       }));
       break;
     }
   }
-  for (var _i13 = 0, _Object$keys4 = Object.keys(optionElemDict); _i13 < _Object$keys4.length; _i13++) {
+  for (var _i14 = 0, _Object$keys4 = Object.keys(optionElemDict); _i14 < _Object$keys4.length; _i14++) {
     var _optionElemDict$_key;
-    var _key = _Object$keys4[_i13];
-    var _item8 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key, option_list_ref.current);
-    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+    var _key = _Object$keys4[_i14];
+    var _item8 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.getListItemFromidentifier)(_key, option_list_ref.current);
+    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
       identifier: _key,
       key: _key,
       pane_height: _item8.pane_height,
@@ -240914,22 +241005,22 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_optionElemDict$_key = optionElemDict[_key]) === null || _optionElemDict$_key === void 0 ? void 0 : _optionElemDict$_key.call(optionElemDict)));
   }
-  for (var _i14 = 0, _Object$keys5 = Object.keys(widgetElemDict); _i14 < _Object$keys5.length; _i14++) {
-    var _key2 = _Object$keys5[_i14];
+  for (var _i15 = 0, _Object$keys5 = Object.keys(widgetElemDict); _i15 < _Object$keys5.length; _i15++) {
+    var _key2 = _Object$keys5[_i15];
     if (visibleTabListRef.current.includes(_key2)) {
-      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
         text: "Widgets",
         key: "widgets-divider",
-        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["widget"]
+        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["widget"]
       }));
       break;
     }
   }
-  for (var _i15 = 0, _Object$keys6 = Object.keys(widgetElemDict); _i15 < _Object$keys6.length; _i15++) {
+  for (var _i16 = 0, _Object$keys6 = Object.keys(widgetElemDict); _i16 < _Object$keys6.length; _i16++) {
     var _widgetElemDict$_key;
-    var _key3 = _Object$keys6[_i15];
-    var _item9 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key3, widget_list_ref.current);
-    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+    var _key3 = _Object$keys6[_i16];
+    var _item9 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.getListItemFromidentifier)(_key3, widget_list_ref.current);
+    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
       identifier: _key3,
       key: _key3,
       pane_height: _item9.pane_height,
@@ -240942,22 +241033,22 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_widgetElemDict$_key = widgetElemDict[_key3]) === null || _widgetElemDict$_key === void 0 ? void 0 : _widgetElemDict$_key.call(widgetElemDict)));
   }
-  for (var _i16 = 0, _Object$keys7 = Object.keys(exportElemDict); _i16 < _Object$keys7.length; _i16++) {
-    var _key4 = _Object$keys7[_i16];
+  for (var _i17 = 0, _Object$keys7 = Object.keys(exportElemDict); _i17 < _Object$keys7.length; _i17++) {
+    var _key4 = _Object$keys7[_i17];
     if (visibleTabListRef.current.includes(_key4)) {
-      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
         text: "Exports",
         key: "exports-divider",
-        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["export"]
+        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["export"]
       }));
       break;
     }
   }
-  for (var _i17 = 0, _Object$keys8 = Object.keys(exportElemDict); _i17 < _Object$keys8.length; _i17++) {
+  for (var _i18 = 0, _Object$keys8 = Object.keys(exportElemDict); _i18 < _Object$keys8.length; _i18++) {
     var _exportElemDict$_key;
-    var _key5 = _Object$keys8[_i17];
-    var _item0 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key5, export_list_ref.current);
-    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+    var _key5 = _Object$keys8[_i18];
+    var _item0 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.getListItemFromidentifier)(_key5, export_list_ref.current);
+    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
       identifier: _key5,
       key: _key5,
       el: _item0,
@@ -240971,22 +241062,22 @@ function CreatorApp(props) {
       pushCallback: pushCallback
     }, (_exportElemDict$_key = exportElemDict[_key5]) === null || _exportElemDict$_key === void 0 ? void 0 : _exportElemDict$_key.call(exportElemDict)));
   }
-  for (var _i18 = 0, _Object$keys9 = Object.keys(saveElemDict); _i18 < _Object$keys9.length; _i18++) {
-    var _key6 = _Object$keys9[_i18];
+  for (var _i19 = 0, _Object$keys9 = Object.keys(saveElemDict); _i19 < _Object$keys9.length; _i19++) {
+    var _key6 = _Object$keys9[_i19];
     if (visibleTabListRef.current.includes(_key6)) {
-      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
         text: "Save Attrs",
         key: "save-divider",
-        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["save"]
+        icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["save"]
       }));
       break;
     }
   }
-  for (var _i19 = 0, _Object$keys0 = Object.keys(saveElemDict); _i19 < _Object$keys0.length; _i19++) {
+  for (var _i20 = 0, _Object$keys0 = Object.keys(saveElemDict); _i20 < _Object$keys0.length; _i20++) {
     var _saveElemDict$_key;
-    var _key7 = _Object$keys0[_i19];
-    var _item1 = (0,_property_list__WEBPACK_IMPORTED_MODULE_19__.getListItemFromidentifier)(_key7, save_list_ref.current);
-    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+    var _key7 = _Object$keys0[_i20];
+    var _item1 = (0,_property_list__WEBPACK_IMPORTED_MODULE_20__.getListItemFromidentifier)(_key7, save_list_ref.current);
+    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
       key: _key7,
       identifier: _key7,
       el: _item1,
@@ -241001,21 +241092,21 @@ function CreatorApp(props) {
     }, (_saveElemDict$_key = saveElemDict[_key7]) === null || _saveElemDict$_key === void 0 ? void 0 : _saveElemDict$_key.call(saveElemDict)));
   }
   if (visibleTabListRef.current.includes("globals") || visibleTabListRef.current.includes("render_content")) {
-    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+    right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
       text: "Base Code",
       key: "bc-divider",
       icon: "code"
     }));
   }
   var gitem = globalsInfoRef.current;
-  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
     key: "globals",
     el: gitem,
     dispatch: null,
     directSet: setGlobalsInfo,
     pane_height: gitem["pane_height"],
     pane_scroll_ref: pane_scroll_ref,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["globals"],
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["globals"],
     updateItem: updateGlobals,
     visible: visibleTabListRef.current.includes("globals"),
     paneListRef: paneListRef,
@@ -241023,14 +241114,14 @@ function CreatorApp(props) {
     pushCallback: pushCallback
   }, (_codeElemDict$globals = codeElemDict["globals"]) === null || _codeElemDict$globals === void 0 ? void 0 : _codeElemDict$globals.call(codeElemDict)));
   var item = renderContentInfoRef.current;
-  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+  right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
     key: "render_content",
     el: item,
     dispatch: null,
     directSet: setRenderContentInfo,
     pane_height: item["pane_height"],
     pane_scroll_ref: pane_scroll_ref,
-    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["render_content"],
+    icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["render_content"],
     updateItem: updateRenderContent,
     paneListRef: paneListRef,
     visible: visibleTabListRef.current.includes("render_content"),
@@ -241046,10 +241137,10 @@ function CreatorApp(props) {
         continue;
       }
       if (visibleTabListRef.current.includes(_item10["identifier"])) {
-        right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+        right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
           text: "User Methods",
           key: "um-divider",
-          icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["user_method"]
+          icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["user_method"]
         }));
         break;
       }
@@ -241068,7 +241159,7 @@ function CreatorApp(props) {
       if (isUserMethodDivider(_item11) && !_item11.preserve_as_method) {
         continue;
       }
-      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
         key: _item11["identifier"],
         el: _item11,
         pane_height: _item11["pane_height"],
@@ -241092,10 +241183,10 @@ function CreatorApp(props) {
     for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
       var _item12 = _step25.value;
       if (visibleTabListRef.current.includes(_item12["identifier"])) {
-        right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+        right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
           text: "Handler Methods",
           key: "hm-divider",
-          icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["handler_method"]
+          icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["handler_method"]
         }));
         break;
       }
@@ -241111,7 +241202,7 @@ function CreatorApp(props) {
     for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
       var _codeElemDict$_item2;
       var _item13 = _step26.value;
-      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
         key: _item13["identifier"],
         el: _item13,
         dispatch: hmDispatch,
@@ -241135,10 +241226,10 @@ function CreatorApp(props) {
     for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
       var _item14 = _step27.value;
       if (visibleTabListRef.current.includes(_item14["identifier"])) {
-        right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.DividerElement, {
+        right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.DividerElement, {
           text: "Javascript Functions",
           key: "js-divider",
-          icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.pane_type_icons["javascript"]
+          icon: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.pane_type_icons["javascript"]
         }));
         break;
       }
@@ -241154,7 +241245,7 @@ function CreatorApp(props) {
     for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
       var _codeElemDict$_item3;
       var _item15 = _step28.value;
-      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_22__.PaneElement, {
+      right_pane_list.push(/*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.PaneElement, {
         key: _item15["identifier"],
         el: _item15,
         dispatch: jsDispatch,
@@ -241186,7 +241277,7 @@ function CreatorApp(props) {
     },
     className: "creator-pane-list"
   }, right_pane_list);
-  var search_results_pane = showSearchResultsPane ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerSearchResultsPane, {
+  var search_results_pane = showSearchResultsPane ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_26__.TileMakerSearchResultsPane, {
     searchStateRef: searchStateRef,
     onSelectResult: _selectSearchResult,
     onReplaceResult: _replaceSearchResult,
@@ -241215,7 +241306,7 @@ function CreatorApp(props) {
       justifyContent: "space-between",
       padding: "0px 8px"
     }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerSearchForm, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_26__.TileMakerSearchForm, {
     regex: false,
     allow_regex: true,
     field_width: 200,
@@ -241232,10 +241323,10 @@ function CreatorApp(props) {
     showSearchResult: function showSearchResult(identifier) {
       showTab(identifier);
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_25__.TileMakerLocalSettings, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_search_form__WEBPACK_IMPORTED_MODULE_26__.TileMakerLocalSettings, {
     debugInterfaceVisible: debugInterfaceVisible,
     toggleDebugInterface: toggleDebugInterface
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.RightDrawerPanes, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_9__.RightDrawerPanes, {
     open: showSearchResultsPane,
     className: "maker-search-results-layout",
     initial_drawer_fraction: searchResultsInitialFractionRef.current,
@@ -241281,11 +241372,11 @@ function CreatorApp(props) {
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
     className: "tile-debugger-toolbar"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.FormGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.FormGroup, {
     label: "Configure",
     helperText: "".concat(debugBreakpoints.length, " breakpoint").concat(debugBreakpoints.length === 1 ? "" : "s"),
     className: "tile-debugger-panel-section"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_29__.HTMLSelect, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.HTMLSelect, {
     "aria-label": "Running tile instance",
     value: debugTargetId || "",
     disabled: debugSession != null,
@@ -241293,7 +241384,7 @@ function CreatorApp(props) {
       return setDebugTargetId(event.target.value || null);
     },
     options: availableInstances
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     variant: "minimal",
     size: "small",
     icon: "refresh",
@@ -241304,7 +241395,7 @@ function CreatorApp(props) {
         return setDebugMessage(debuggerErrorMessage(error));
       });
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "small",
     icon: "clean",
     variant: "minimal",
@@ -241317,7 +241408,7 @@ function CreatorApp(props) {
     onClick: function onClick() {
       return clearAllBreakpoints();
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_31__.Switch, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.Switch, {
     className: "tile-debugger-exception-toggle",
     label: "Exceptions",
     title: "Pause where tile code raises an exception",
@@ -241331,41 +241422,41 @@ function CreatorApp(props) {
     onChange: function onChange(event) {
       return setDebugPauseOnExceptions(event.target.checked);
     }
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Divider, {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.Divider, {
     className: "tile-debugger-panel-divider "
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.FormGroup, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.FormGroup, {
     label: "Enable",
     helperText: debugMessage,
     className: "tile-debugger-panel-section"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ButtonGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.ButtonGroup, {
     variant: "minimal"
-  }, debugSession != null && debugStatus != "starting" ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }, debugSession != null && debugStatus != "starting" ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "small",
     icon: "stop",
     intent: "danger",
     title: "Stop debugging",
     disabled: false,
     onClick: stopDebugger
-  }, "Stop Debug") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }, "Stop Debug") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "small",
     icon: "sensor",
     disabled: false,
     onClick: startDebugger
-  }, "Enable Debug"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }, "Enable Debug"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "small",
     icon: "changes",
     title: "Save source changes, load the module, reload this tile, and arm the debugger",
     loading: debugStatus === "starting",
     disabled: debugSession != null || debugStatus === "starting",
     onClick: syncAndStartDebugger
-  }, "Sync & Enable"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Divider, {
+  }, "Sync & Enable"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.Divider, {
     className: "tile-debugger-panel-divider "
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_28__.FormGroup, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.FormGroup, {
     label: "Step",
     className: "tile-debugger-panel-section"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_33__.ButtonGroup, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_35__.ButtonGroup, {
     className: "tile-debugger-step-buttons"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "medium",
     icon: "double-chevron-right",
     title: "Continue",
@@ -241373,7 +241464,7 @@ function CreatorApp(props) {
     onClick: function onClick() {
       return sendDebugCommand("continue");
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "medium",
     icon: "arrow-down",
     title: "Step into",
@@ -241381,7 +241472,7 @@ function CreatorApp(props) {
     onClick: function onClick() {
       return sendDebugCommand("step");
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "medium",
     icon: "arrow-right",
     title: "Step over",
@@ -241389,7 +241480,7 @@ function CreatorApp(props) {
     onClick: function onClick() {
       return sendDebugCommand("next");
     }
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     size: "medium",
     icon: "arrow-up",
     title: "Step out",
@@ -241397,7 +241488,7 @@ function CreatorApp(props) {
     onClick: function onClick() {
       return sendDebugCommand("return");
     }
-  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     variant: "minimal",
     icon: "properties",
     style: {
@@ -241420,7 +241511,7 @@ function CreatorApp(props) {
     className: "tile-debugger-title"
   }, "Debugger"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", {
     className: "tile-debugger-drawer-status"
-  }, debugStatus)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_30__.Button, {
+  }, debugStatus)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_32__.Button, {
     variant: "minimal",
     size: "small",
     icon: "cross",
@@ -241473,7 +241564,7 @@ function CreatorApp(props) {
     className: "tile-debugger-drawer-empty"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", null, debugMessage || "Enable debugging to inspect the call stack and local variables.")));
   var outer_style = {
-    width: "calc(100% - ".concat(_sizing_tools__WEBPACK_IMPORTED_MODULE_12__.ICON_BAR_WIDTH, "px)"),
+    width: "calc(100% - ".concat(_sizing_tools__WEBPACK_IMPORTED_MODULE_13__.ICON_BAR_WIDTH, "px)"),
     height: "100%",
     flexGrow: 1,
     display: 'flex',
@@ -241491,14 +241582,14 @@ function CreatorApp(props) {
       outer_class = outer_class + " light-theme";
     }
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_16__.ErrorBoundary, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_17__.ErrorBoundary, {
     custom_message: "Error at top level"
-  }, !window.in_context && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprint_navbar__WEBPACK_IMPORTED_MODULE_15__.TacticNavbar, {
+  }, !window.in_context && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprint_navbar__WEBPACK_IMPORTED_MODULE_16__.TacticNavbar, {
     is_authenticated: window.is_authenticated,
     selected: null,
     show_api_links: true,
     user_name: window.username
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_menu_utilities__WEBPACK_IMPORTED_MODULE_6__.TacticMenubar, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_menu_utilities__WEBPACK_IMPORTED_MODULE_7__.TacticMenubar, {
     menu_specs: menu_specs(),
     disabled_items: menu_disabled_items(),
     connection_status: connection_status,
@@ -241514,9 +241605,9 @@ function CreatorApp(props) {
     showSettingsDrawerButton: true,
     showPoolDrawerButton: true,
     controlled: props.controlled
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_16__.ErrorBoundary, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_17__.ErrorBoundary, {
     custom_message: "Error outside context provider"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_support__WEBPACK_IMPORTED_MODULE_5__.MakerPaneContext.Provider, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_tile_maker_support__WEBPACK_IMPORTED_MODULE_6__.MakerPaneContext.Provider, {
     value: {
       visibleTabList: visibleTabListRef.current,
       setVisibleTabList: setVisibleTabList,
@@ -241537,16 +241628,16 @@ function CreatorApp(props) {
     tabIndex: "0",
     onKeyDown: handleKeyDown,
     onKeyUp: handleKeyUp
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_34__.Collapse, {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_36__.Collapse, {
     isOpen: debugInterfaceVisible
-  }, debugger_panel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.RightDrawerPanes, {
+  }, debugger_panel), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_9__.RightDrawerPanes, {
     open: debugDrawerOpen,
     className: "debug-hp",
     initial_drawer_fraction: debugDrawerInitialFractionRef.current,
     onDrawerResizeEnd: rememberDebuggerDrawerFraction,
-    main_pane: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_16__.ErrorBoundary, {
+    main_pane: /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_17__.ErrorBoundary, {
       custom_message: "Error in HorizontalPanes"
-    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_8__.HorizontalPanes, {
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_resizing_allotment__WEBPACK_IMPORTED_MODULE_9__.HorizontalPanes, {
       left_pane: left_pane,
       right_pane: right_pane,
       className: "creator-hp",
@@ -241560,7 +241651,7 @@ function CreatorApp(props) {
 CreatorApp = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_1__.memo)(CreatorApp);
 function tile_creator_main() {
   function gotProps(the_props) {
-    var CreatorAppPlus = (0,_undo__WEBPACK_IMPORTED_MODULE_20__.withUndo)((0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.withRegisterActivity)((0,_settings__WEBPACK_IMPORTED_MODULE_17__.withSettings)((0,_modal_react__WEBPACK_IMPORTED_MODULE_18__.withDialogs)((0,_error_drawer__WEBPACK_IMPORTED_MODULE_13__.withErrorDrawer)((0,_toaster__WEBPACK_IMPORTED_MODULE_10__.withStatus)((0,_assistant__WEBPACK_IMPORTED_MODULE_11__.withAssistant)(CreatorApp)))))));
+    var CreatorAppPlus = (0,_undo__WEBPACK_IMPORTED_MODULE_21__.withUndo)((0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.withRegisterActivity)((0,_settings__WEBPACK_IMPORTED_MODULE_18__.withSettings)((0,_modal_react__WEBPACK_IMPORTED_MODULE_19__.withDialogs)((0,_error_drawer__WEBPACK_IMPORTED_MODULE_14__.withErrorDrawer)((0,_toaster__WEBPACK_IMPORTED_MODULE_11__.withStatus)((0,_assistant__WEBPACK_IMPORTED_MODULE_12__.withAssistant)(CreatorApp)))))));
     var the_element = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(CreatorAppPlus, _extends({}, the_props, {
       controlled: false,
       changeName: null
@@ -241579,19 +241670,19 @@ function tile_creator_main() {
       }
     }, the_element));
   }
-  (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.renderSpinnerMessage)("Starting up ...", '#creator-root');
-  var local_id = "a" + (0,_utilities_react__WEBPACK_IMPORTED_MODULE_14__.guid)();
+  (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.renderSpinnerMessage)("Starting up ...", '#creator-root');
+  var local_id = "a" + (0,_utilities_react__WEBPACK_IMPORTED_MODULE_15__.guid)();
   if (!window.in_context) {
     window.global_id = local_id;
   }
-  var tsocket = new _tactic_socket__WEBPACK_IMPORTED_MODULE_0__.TacticSocket("main", 5000, "creator", local_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
-    return _regenerator().w(function (_context15) {
-      while (1) switch (_context15.n) {
+  var tsocket = new _tactic_socket__WEBPACK_IMPORTED_MODULE_0__.TacticSocket("main", 5000, "creator", local_id, /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
+    return _regenerator().w(function (_context16) {
+      while (1) switch (_context16.n) {
         case 0:
           tsocket.attachListener('handle-callback', function (task_packet) {
-            (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.handleCallback)(task_packet, local_id);
+            (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.handleCallback)(task_packet, local_id);
           });
-          (0,_communication_react__WEBPACK_IMPORTED_MODULE_9__.postPromise)("host", "initiate_creator_in_context", {
+          (0,_communication_react__WEBPACK_IMPORTED_MODULE_10__.postPromise)("host", "initiate_creator_in_context", {
             tile_module_name: window.module_name,
             global_id: window.global_id,
             local_id: local_id
@@ -241600,12 +241691,12 @@ function tile_creator_main() {
             data.local_id = local_id;
             data.read_only = window.read_only;
             data.is_repository = window.is_repository;
-            (0,_tile_maker_support__WEBPACK_IMPORTED_MODULE_5__.creator_props)(data, null, gotProps, null);
+            (0,_tile_maker_support__WEBPACK_IMPORTED_MODULE_6__.creator_props)(data, null, gotProps, null);
           });
         case 1:
-          return _context15.a(2);
+          return _context16.a(2);
       }
-    }, _callee15);
+    }, _callee16);
   })));
 }
 if (!window.in_context) {
