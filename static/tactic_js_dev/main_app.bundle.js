@@ -230072,6 +230072,9 @@ function InputWidget(props) {
     _useState6 = _slicedToArray(_useState5, 2),
     localValue = _useState6[0],
     setLocalValue = _useState6[1];
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    setLocalValue(props.widgetData.value);
+  }, [props.widgetData.value]);
   var _useWidget25 = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id),
     _useWidget26 = _slicedToArray(_useWidget25, 2),
     widgetSet = _useWidget26[1];

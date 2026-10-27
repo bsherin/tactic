@@ -684,6 +684,9 @@ function InputWidget(props) {
     const [helperText, setHelperText] = useState("")
 
     const [localValue, setLocalValue] = useState(props.widgetData.value);
+    useEffect(() => {
+        setLocalValue(props.widgetData.value);
+    }, [props.widgetData.value]);
     const [, widgetSet] = useWidget(props.widgetId, props.local_id, props.console_id, props.tile_id);
     const [, doUpdate] = useDebounce((data)=>{
         if (props.validator) {
