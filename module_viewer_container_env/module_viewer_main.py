@@ -156,10 +156,12 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
                                                        "method_body": insert_indents(m["codeText"], 2)})
 
         javascript_functions_list_of_dicts = []
+        jscript = {}
         if "javascript_functions" in data_dict:
             for f in data_dict["javascript_functions"]:
                 javascript_functions_list_of_dicts.append({"name": f["name"],
                                                            "code": f["codeText"]})
+                jscript[f["name"]] = f["codeText"]
         globals_code = data_dict["globals_info"]["codeText"]
         standard_methods_list_of_dicts = []
         m = data_dict["render_content_info"]
@@ -183,7 +185,9 @@ class ModuleViewerWorker(QWorker, CopilotMixin, MongoAccess, TileAccess):
             if "special_list" in opt_dict:
                 opt_dict["special_list"] = str(opt_dict["special_list"])
         widgets = data_dict["widgets"]
-
+        for v in widgets:
+            if v["kind"] == "javascript" and v["function_name"] is not None:
+                v["code"] = jscript.get(v["function_name"], "")
         if len(globals_code) > 0 and globals_code[-1] == "\n":
             globals_code = globals_code[:-1]
         with app.test_request_context():

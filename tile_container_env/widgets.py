@@ -355,8 +355,27 @@ class DividerWidget(Widget):
 
 class JavascriptWidget(Widget):
     widget_kind = "javascript"
-    extra_fields = ["style", "code", "to_render"]
-    defaults = {"style": None, "code": "", "to_render": False}
+    extra_fields = ["style", "code", "function_name", "to_render"]
+    defaults = {"style": None, "code": "", "to_render": False, "function_name": None}
+
+    def set_code(self, function_name=None):
+        if function_name is None:
+            function_name = self.function_name
+        if function_name is not None:
+            print("in set code with function_name:", function_name)
+            self.set({"function_name": function_name})
+
+    @staticmethod
+    def get_js_code(name):
+        for fdict in Tile.jscript:
+            if fdict["name"] == name:
+                return fdict["code"]
+        return None
+
+    def set(self, widget_data):
+        if "function_name" in widget_data:
+            widget_data["code"] = self.get_js_code(widget_data["function_name"])
+        super().set(widget_data)
 
 
 class RawHtmlWidget(Widget):

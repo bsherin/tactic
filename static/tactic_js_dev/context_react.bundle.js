@@ -243886,7 +243886,8 @@ var widgetInfo = {
   },
   javascript: {
     value: codeTextBoxField(),
-    code: codeTextBoxField()
+    function_name: stringField(),
+    style: styleField()
   }
 };
 function baseWidgetFields(kind) {
