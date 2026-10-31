@@ -211495,11 +211495,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _tactic_css_pool_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../tactic_css/pool.scss */ "./static/tactic_css/pool.scss");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/breadcrumbs/breadcrumb.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/breadcrumbs/breadcrumbs.js");
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controlGroup.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/breadcrumbs/breadcrumb.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/forms/controls.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/breadcrumbs/breadcrumbs.js");
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _combined_metadata__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./combined_metadata */ "./static/tactic_js/combined_metadata.jsx");
 /* harmony import */ var _pool_tree__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pool_tree */ "./static/tactic_js/pool_tree.jsx");
@@ -211649,6 +211650,11 @@ function PoolBrowser(props) {
       return func;
     });
   }
+  function setWorkingDirectory() {
+    (0,_communication_react__WEBPACK_IMPORTED_MODULE_7__.postPromise)("host", "update_settings", {
+      "workingDirectory": currentRootPathRef.current
+    }).then(function () {});
+  }
   var fixed_data = {
     created: selected_resource_ref.current.created,
     updated: selected_resource_ref.current.updated,
@@ -211668,7 +211674,8 @@ function PoolBrowser(props) {
     style: {
       maxHeight: "100%",
       position: "relative",
-      overflow: "scroll"
+      overflow: "scroll",
+      flex: "1 1 0"
     }
   }, (props.am_selected || have_activated) && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_pool_tree__WEBPACK_IMPORTED_MODULE_4__.PoolContext.Provider, {
     value: {
@@ -211684,10 +211691,19 @@ function PoolBrowser(props) {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(PoolBreadcrumbs, {
     path: currentRootPathRef.current,
     setRoot: setRoot
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.ControlGroup, {
+    vertical: false
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Button, {
+    variant: "minimal",
+    text: "Set Default",
+    textClassName: "pool-breadcrumbs-button-text bp6-breadcrumb",
+    className: "bp6-control",
+    onClick: setWorkingDirectory,
+    size: "small"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(PoolHiddenSwitch, {
     showHidden: showHidden,
     setShowHidden: setShowHidden
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_pool_context_menu__WEBPACK_IMPORTED_MODULE_5__.PoolTreeWithContextMenu, {
+  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_pool_context_menu__WEBPACK_IMPORTED_MODULE_5__.PoolTreeWithContextMenu, {
     value: valueRef.current,
     setRoot: setRoot,
     currentRootPath: currentRootPathRef.current,
@@ -211757,12 +211773,12 @@ function PoolBreadcrumb(props) {
     crumbSize: "large"
   }, props);
   var iconSize = props.crumbSize == "small" ? 12 : 16;
-  var theIcon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.Icon, {
+  var theIcon = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Icon, {
     icon: props.icon,
     size: iconSize
   });
   var crumClassName = props.crumbSize == "small" ? "small-pool-breadcrumb" : "pool-breadcrumb";
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Breadcrumb, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.Breadcrumb, {
     className: crumClassName,
     key: props.path,
     icon: theIcon,
@@ -211773,18 +211789,91 @@ function PoolHiddenSwitch(props) {
   function handleShowHiddenChange(event) {
     props.setShowHidden(event.target.checked);
   }
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.Switch, {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Switch, {
     label: "show hidden",
     size: "medium",
+    className: "pool-hidden-switch",
     checked: props.showHidden,
     onChange: handleShowHiddenChange
   });
 }
 var s3_prefix = "s3://tactic-user-storage/users";
+function getPoolRoot(path) {
+  if (!path) return null;
+  var s3RootMatch = path.match(/^(s3:\/\/[^/]+\/users\/[^/]+)/);
+  if (s3RootMatch) return s3RootMatch[1];
+  var firstPart = path.split("/").find(function (part) {
+    return part !== "";
+  });
+  return firstPart ? "/".concat(firstPart) : null;
+}
+function normalizePoolPath(rawPath, currentPath) {
+  var path = rawPath.trim();
+  var poolRoot = getPoolRoot(currentPath);
+  if (!path) {
+    return {
+      error: "Enter a pool folder path."
+    };
+  }
+  if (!poolRoot) {
+    return {
+      error: "The pool root is not available yet."
+    };
+  }
+  if (!path.startsWith("/") && !path.startsWith("s3://")) {
+    var rootName = poolRoot.slice(poolRoot.lastIndexOf("/") + 1);
+    path = path === rootName || path.startsWith(rootName + "/") ? poolRoot.slice(0, poolRoot.lastIndexOf("/") + 1) + path : "".concat(poolRoot, "/").concat(path);
+  }
+  if (path.startsWith("s3://")) {
+    path = "s3://" + path.slice("s3://".length).split("/").filter(Boolean).join("/");
+  } else {
+    path = "/" + path.split("/").filter(Boolean).join("/");
+  }
+  var pathParts = path.startsWith("s3://") ? path.slice("s3://".length).split("/") : path.split("/");
+  if (pathParts.some(function (part) {
+    return part === "." || part === "..";
+  })) {
+    return {
+      error: "Pool paths cannot contain . or .. segments."
+    };
+  }
+  if (path !== poolRoot && !path.startsWith(poolRoot + "/")) {
+    return {
+      error: "The path must stay inside ".concat(poolRoot, ".")
+    };
+  }
+  return {
+    path: path
+  };
+}
 function PoolBreadcrumbs(props) {
   props = _objectSpread({
     crumbSize: "large"
   }, props);
+  var _useState1 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(false),
+    _useState10 = _slicedToArray(_useState1, 2),
+    isEditing = _useState10[0],
+    setIsEditing = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(props.path || ""),
+    _useState12 = _slicedToArray(_useState11, 2),
+    draftPath = _useState12[0],
+    setDraftPath = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_1__.useState)(""),
+    _useState14 = _slicedToArray(_useState13, 2),
+    pathError = _useState14[0],
+    setPathError = _useState14[1];
+  var pathInputRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
+  (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
+    if (!isEditing) {
+      setDraftPath(props.path || "");
+    }
+  }, [props.path, isEditing]);
+  (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
+    if (isEditing && pathInputRef.current) {
+      pathInputRef.current.focus();
+      pathInputRef.current.select();
+    }
+  }, [isEditing]);
   function clickFunc(path) {
     return function () {
       props.setRoot({
@@ -211832,10 +211921,34 @@ function PoolBreadcrumbs(props) {
       crumbSize: props.crumbSize
     }));
   }
-  function setWorkingDirectory() {
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_7__.postPromise)("host", "update_settings", {
-      "workingDirectory": props.path
-    }).then(function () {});
+  function beginEditing() {
+    setDraftPath(props.path || "");
+    setPathError("");
+    setIsEditing(true);
+  }
+  function cancelEditing() {
+    setDraftPath(props.path || "");
+    setPathError("");
+    setIsEditing(false);
+  }
+  function submitPath(event) {
+    event.preventDefault();
+    var result = normalizePoolPath(draftPath, props.path);
+    if (result.error) {
+      setPathError(result.error);
+      return;
+    }
+    props.setRoot({
+      fullpath: result.path
+    });
+    setPathError("");
+    setIsEditing(false);
+  }
+  function handlePathKeyDown(event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelEditing();
+    }
   }
   var crumbs = pathToCrumbs(props.path);
   var theClass = "pool-breadcrumbs";
@@ -211843,22 +211956,63 @@ function PoolBreadcrumbs(props) {
     theClass = "pool-breadcrumbs-small";
   }
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
+    className: "pool-breadcrumbs-row"
+  }, isEditing ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("div", {
+    className: "pool-breadcrumbs-editor"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("form", {
+    className: "pool-breadcrumbs-path-form",
+    onSubmit: submitPath
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.ControlGroup, {
     style: {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "flex-start"
-    }
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_13__.Breadcrumbs, {
+      width: "100%"
+    },
+    fill: true,
+    vertical: false
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("input", {
+    ref: pathInputRef,
+    className: "bp6-input bp6-fill ".concat(pathError ? "bp6-intent-danger" : ""),
+    value: draftPath,
+    onChange: function onChange(event) {
+      setDraftPath(event.target.value);
+      setPathError("");
+    },
+    onKeyDown: handlePathKeyDown,
+    "aria-label": "Pool folder path",
+    "aria-invalid": pathError !== "",
+    title: pathError || "Enter a pool folder path",
+    spellCheck: false
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Button, {
+    type: "submit",
+    variant: "minimal",
+    icon: "arrow-right",
+    "aria-label": "Go to pool folder",
+    title: "Go to folder",
+    size: "small"
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Button, {
+    type: "button",
+    variant: "minimal",
+    icon: "cross",
+    onClick: cancelEditing,
+    "aria-label": "Cancel path editing",
+    title: "Cancel",
+    size: "small"
+  }))), pathError && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", {
+    className: "pool-breadcrumbs-path-error",
+    role: "alert"
+  }, pathError)) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_10__.ControlGroup, {
+    className: "pool-breadcrumbs-navigation"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_15__.Breadcrumbs, {
     className: theClass,
     breadcrumbRenderer: renderBreadcrumb,
     items: crumbs
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_14__.Button, {
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_11__.Button, {
     variant: "minimal",
-    text: "Set Default",
-    textClassName: "pool-breadcrumbs-button-text bp6-breadcrumb",
-    onClick: setWorkingDirectory,
+    icon: "edit",
+    onClick: beginEditing,
+    "aria-label": "Edit pool folder path",
+    title: "Edit path",
     size: "small"
-  }));
+  })));
 }
 
 /***/ }),

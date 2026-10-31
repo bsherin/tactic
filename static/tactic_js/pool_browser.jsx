@@ -4,7 +4,7 @@ import React from "react";
 
 import {Fragment, useState, useEffect, useRef, memo, useContext} from "react";
 
-import {Breadcrumb, Breadcrumbs, Switch, Icon, Button} from "@blueprintjs/core";
+import {Breadcrumb, Breadcrumbs, Switch, Icon, Button, ControlGroup} from "@blueprintjs/core";
 
 import {useStateAndRef} from "./utilities_react";
 
@@ -104,6 +104,13 @@ function PoolBrowser(props) {
         setTreeRefreshFunc(() => func)
     }
 
+
+    function setWorkingDirectory() {
+        postPromise("host", "update_settings", {"workingDirectory": currentRootPathRef.current}).then(() => {
+        })
+    }
+
+
     let fixed_data = {
         created: selected_resource_ref.current.created,
         updated: selected_resource_ref.current.updated,
@@ -123,7 +130,7 @@ function PoolBrowser(props) {
     let left_pane = (
         <Fragment>
             <div className="d-flex flex-column resource-viewer-left-pane-holder top-padded"
-                 style={{maxHeight: "100%", position: "relative", overflow: "scroll"}}>
+                 style={{maxHeight: "100%", position: "relative", overflow: "scroll", flex: "1 1 0"}}>
                 {(props.am_selected || have_activated) &&
                     <PoolContext.Provider value={{
                         workingPath: null, setWorkingPath: () => {
@@ -131,7 +138,16 @@ function PoolBrowser(props) {
                     }}>
                         <div className="d-flex flex-row" style={{justifyContent: "space-between", marginBottom: 10}}>
                             <PoolBreadcrumbs path={currentRootPathRef.current} setRoot={setRoot}/>
-                            <PoolHiddenSwitch showHidden={showHidden} setShowHidden={setShowHidden}/>
+                            <ControlGroup vertical={false}>
+                                <Button variant="minimal"
+                                        text="Set Default"
+                                        textClassName="pool-breadcrumbs-button-text bp6-breadcrumb"
+                                        className="bp6-control"
+                                        onClick={setWorkingDirectory}
+                                        size="small"/>
+
+                                <PoolHiddenSwitch showHidden={showHidden} setShowHidden={setShowHidden}/>
+                            </ControlGroup>
                         </div>
                         <PoolTreeWithContextMenu value={valueRef.current}
                                                  setRoot={setRoot}
@@ -230,6 +246,7 @@ function PoolHiddenSwitch(props) {
     return (
         <Switch label="show hidden"
                 size="medium"
+                className="pool-hidden-switch"
                 checked={props.showHidden}
                 onChange={handleShowHiddenChange}
         />
@@ -238,11 +255,76 @@ function PoolHiddenSwitch(props) {
 
 const s3_prefix = "s3://tactic-user-storage/users";
 
+function getPoolRoot(path) {
+    if (!path) return null;
+
+    const s3RootMatch = path.match(/^(s3:\/\/[^/]+\/users\/[^/]+)/);
+    if (s3RootMatch) return s3RootMatch[1];
+
+    const firstPart = path.split("/").find(part => part !== "");
+    return firstPart ? `/${firstPart}` : null
+}
+
+function normalizePoolPath(rawPath, currentPath) {
+    let path = rawPath.trim();
+    const poolRoot = getPoolRoot(currentPath);
+
+    if (!path) {
+        return {error: "Enter a pool folder path."}
+    }
+    if (!poolRoot) {
+        return {error: "The pool root is not available yet."}
+    }
+
+    if (!path.startsWith("/") && !path.startsWith("s3://")) {
+        const rootName = poolRoot.slice(poolRoot.lastIndexOf("/") + 1);
+        path = path === rootName || path.startsWith(rootName + "/")
+            ? poolRoot.slice(0, poolRoot.lastIndexOf("/") + 1) + path
+            : `${poolRoot}/${path}`
+    }
+
+    if (path.startsWith("s3://")) {
+        path = "s3://" + path.slice("s3://".length).split("/").filter(Boolean).join("/")
+    } else {
+        path = "/" + path.split("/").filter(Boolean).join("/")
+    }
+
+    const pathParts = path.startsWith("s3://")
+        ? path.slice("s3://".length).split("/")
+        : path.split("/");
+    if (pathParts.some(part => part === "." || part === "..")) {
+        return {error: "Pool paths cannot contain . or .. segments."}
+    }
+    if (path !== poolRoot && !path.startsWith(poolRoot + "/")) {
+        return {error: `The path must stay inside ${poolRoot}.`}
+    }
+
+    return {path}
+}
+
 function PoolBreadcrumbs(props) {
     props = {
         crumbSize: "large",
         ...props
     }
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [draftPath, setDraftPath] = useState(props.path || "");
+    const [pathError, setPathError] = useState("");
+    const pathInputRef = useRef(null);
+
+    useEffect(() => {
+        if (!isEditing) {
+            setDraftPath(props.path || "")
+        }
+    }, [props.path, isEditing]);
+
+    useEffect(() => {
+        if (isEditing && pathInputRef.current) {
+            pathInputRef.current.focus();
+            pathInputRef.current.select()
+        }
+    }, [isEditing]);
 
     function clickFunc(path) {
         return () => {
@@ -283,9 +365,36 @@ function PoolBreadcrumbs(props) {
         )
     }
 
-    function setWorkingDirectory() {
-        postPromise("host", "update_settings", {"workingDirectory": props.path}).then(() => {
-        })
+    function beginEditing() {
+        setDraftPath(props.path || "");
+        setPathError("");
+        setIsEditing(true)
+    }
+
+    function cancelEditing() {
+        setDraftPath(props.path || "");
+        setPathError("");
+        setIsEditing(false)
+    }
+
+    function submitPath(event) {
+        event.preventDefault();
+        const result = normalizePoolPath(draftPath, props.path);
+        if (result.error) {
+            setPathError(result.error);
+            return
+        }
+
+        props.setRoot({fullpath: result.path});
+        setPathError("");
+        setIsEditing(false)
+    }
+
+    function handlePathKeyDown(event) {
+        if (event.key === "Escape") {
+            event.preventDefault();
+            cancelEditing()
+        }
     }
 
     const crumbs = pathToCrumbs(props.path);
@@ -294,14 +403,53 @@ function PoolBreadcrumbs(props) {
         theClass = "pool-breadcrumbs-small"
     }
     return (
-        <div style={{display: "flex", flexDirection: "row", justifyContent: "flex-start"}}>
-            <Breadcrumbs className={theClass}
-                         breadcrumbRenderer={renderBreadcrumb} items={crumbs}/>
-            <Button variant="minimal"
-                    text="Set Default"
-                    textClassName="pool-breadcrumbs-button-text bp6-breadcrumb"
-                    onClick={setWorkingDirectory}
-                    size="small"/>
+        <div className="pool-breadcrumbs-row">
+            {isEditing ?
+                <div className="pool-breadcrumbs-editor">
+                    <form className="pool-breadcrumbs-path-form" onSubmit={submitPath}>
+                        <ControlGroup style={{width: "100%"}} fill={true} vertical={false}>
+                            <input ref={pathInputRef}
+                                   className={`bp6-input bp6-fill ${pathError ? "bp6-intent-danger" : ""}`}
+                                   value={draftPath}
+                                   onChange={event => {
+                                       setDraftPath(event.target.value);
+                                       setPathError("")
+                                   }}
+                                   onKeyDown={handlePathKeyDown}
+                                   aria-label="Pool folder path"
+                                   aria-invalid={pathError !== ""}
+                                   title={pathError || "Enter a pool folder path"}
+                                   spellCheck={false}/>
+                            <Button type="submit"
+                                    variant="minimal"
+                                    icon="arrow-right"
+                                    aria-label="Go to pool folder"
+                                    title="Go to folder"
+                                    size="small"/>
+                            <Button type="button"
+                                    variant="minimal"
+                                    icon="cross"
+                                    onClick={cancelEditing}
+                                    aria-label="Cancel path editing"
+                                    title="Cancel"
+                                    size="small"/>
+                        </ControlGroup>
+                    </form>
+                    {pathError &&
+                        <span className="pool-breadcrumbs-path-error" role="alert">{pathError}</span>}
+                </div>
+                :
+                <ControlGroup className="pool-breadcrumbs-navigation">
+                    <Breadcrumbs className={theClass}
+                                 breadcrumbRenderer={renderBreadcrumb} items={crumbs}/>
+                    <Button variant="minimal"
+                            icon="edit"
+                            onClick={beginEditing}
+                            aria-label="Edit pool folder path"
+                            title="Edit path"
+                            size="small"/>
+                </ControlGroup>}
+
         </div>
     )
 }
