@@ -85,6 +85,26 @@ function isUserMethodDivider(item) {
     return item && item.kind === "divider";
 }
 
+function definitionNameFromEditor(view) {
+    if (!view || !view.state) {
+        return null;
+    }
+
+    const selection = view.state.selection.main;
+    let candidate = view.state.doc.sliceString(selection.from, selection.to).trim();
+
+    if (candidate === "") {
+        const word = view.state.wordAt(selection.head);
+        if (word) {
+            candidate = view.state.doc.sliceString(word.from, word.to);
+        }
+    }
+
+    // Accept both a bare name and a selected qualified name such as self.render_table.
+    const match = candidate.match(/(?:^|\.)([A-Za-z_$][\w$]*)$/);
+    return match ? match[1] : null;
+}
+
 function CreatorApp(props) {
     props = {
         controlled: false,
@@ -148,6 +168,7 @@ function CreatorApp(props) {
     }
 
     const otherCmObjects = useRef(new Set());
+    const definitionCmObjectsRef = useRef(new Map());
 
     const [, setRenderContentInfo, renderContentInfoRef] = useStateAndRefWithUndo({
         pane_height: INITIAL_CODE_PANE_HEIGHT,
@@ -447,6 +468,7 @@ function CreatorApp(props) {
             }
 
             otherCmObjects.current.clear();
+            definitionCmObjectsRef.current.clear();
             clearUndoStack(undoStackRef);
 
             errorDrawerFuncs.setGoToLineNumber(null);
@@ -623,6 +645,17 @@ function CreatorApp(props) {
         }
     }
 
+    function registerDefinitionCmObject(identifier, cmObject, previousCmObject = null) {
+        registerCmObject(cmObject, previousCmObject);
+
+        if (previousCmObject && definitionCmObjectsRef.current.get(identifier) === previousCmObject) {
+            definitionCmObjectsRef.current.delete(identifier);
+        }
+        if (cmObject) {
+            definitionCmObjectsRef.current.set(identifier, cmObject);
+        }
+    }
+
     function menu_specs() {
         return {
             Save: [{name_text: "Save", icon_name: "saved", click_handler: _saveMe, key_bindings: ['Ctrl+S']},
@@ -754,11 +787,58 @@ function CreatorApp(props) {
         })
     }
 
+    function _focusDefinitionWhenReady(identifier, attemptsRemaining = 30) {
+        const cm = definitionCmObjectsRef.current.get(identifier);
+        if (!cm) {
+            if (attemptsRemaining > 0) {
+                requestAnimationFrame(() => {
+                    _focusDefinitionWhenReady(identifier, attemptsRemaining - 1);
+                });
+            }
+            return;
+        }
+
+        const name = getNameFromIdentifier(identifier);
+        const nameStart = name ? cm.state.doc.toString().indexOf(name) : -1;
+        if (nameStart >= 0) {
+            cm.dispatch({
+                selection: EditorSelection.single(nameStart, nameStart + name.length)
+            });
+        }
+        cm.focus();
+
+        const target = cm.dom.closest(".maker-pane");
+        const scroller = paneListRef.current;
+        if (target && scroller) {
+            const targetRect = target.getBoundingClientRect();
+            const scrollerRect = scroller.getBoundingClientRect();
+            const targetCenter = targetRect.top - scrollerRect.top +
+                scroller.scrollTop + targetRect.height / 2;
+            scroller.scrollTo({
+                top: targetCenter - scroller.clientHeight / 2,
+                behavior: "smooth",
+            });
+        }
+    }
+
+    function _goToDefinition(view) {
+        const name = definitionNameFromEditor(view);
+        const identifier = name ? getIdentifierFromName(name) : null;
+        if (!identifier) {
+            return false;
+        }
+
+        showTab(identifier);
+        _focusDefinitionWhenReady(identifier);
+        return true;
+    }
+
     function _extraKeys() {
         const ekeys = {
             'Ctrl-s': _saveMe,
             'Ctrl-l': _saveAndLoadModule,
             'Ctrl-m': _saveAndCheckpoint,
+            'Ctrl-b': _goToDefinition,
             'Ctrl-f': () => {
                 search_ref.current.focus();
                 return true
@@ -1973,6 +2053,7 @@ function CreatorApp(props) {
                        cmObjectRef={null}
                        name={gi["name"]}
                        registerCmObject={registerCmObject}
+                       registerDefinitionCmObject={registerDefinitionCmObject}
                        identifier={"globals"}
                        extraKeys={_extraKeys}
                        saveAndCheckpoint={_saveAndCheckpoint}
@@ -2002,6 +2083,7 @@ function CreatorApp(props) {
                        cmObjectRef={null}
                        name={ri["name"]}
                        registerCmObject={registerCmObject}
+                       registerDefinitionCmObject={registerDefinitionCmObject}
                        identifier={"render_content"}
                        extraKeys={_extraKeys}
                        saveAndCheckpoint={_saveAndCheckpoint}
@@ -2033,6 +2115,7 @@ function CreatorApp(props) {
                            cmObjectRef={null}
                            name={um["name"]}
                            registerCmObject={registerCmObject}
+                           registerDefinitionCmObject={registerDefinitionCmObject}
                            identifier={um["identifier"]}
                            extraKeys={_extraKeys}
                            saveAndCheckpoint={_saveAndCheckpoint}
@@ -2060,6 +2143,7 @@ function CreatorApp(props) {
                            cmDispatch={hmDispatch}
                            cmObjectRef={null}
                            registerCmObject={registerCmObject}
+                           registerDefinitionCmObject={registerDefinitionCmObject}
                            name={hm["name"]}
                            identifier={hm["identifier"]}
                            extraKeys={_extraKeys}
@@ -2088,6 +2172,7 @@ function CreatorApp(props) {
                            cmDispatch={jsDispatch}
                            cmObjectRef={null}
                            registerCmObject={registerCmObject}
+                           registerDefinitionCmObject={registerDefinitionCmObject}
                            name={js["name"]}
                            identifier={js["identifier"]}
                            extraKeys={_extraKeys}

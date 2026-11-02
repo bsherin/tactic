@@ -212539,6 +212539,7 @@ function CmElement(props) {
     no_height: false,
     allowSignatureChange: true,
     registerCmObject: null,
+    registerDefinitionCmObject: null,
     getAIContext: null,
     aiContextGroup: null
   }, props);
@@ -212640,7 +212641,14 @@ function CmElement(props) {
     name: props.name,
     argString: props.argString,
     mode: props.cmState.mode,
-    registerCmObject: props.registerCmObject,
+    registerCmObject: function registerCmObject(cmObject) {
+      var previousCmObject = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      if (props.registerDefinitionCmObject) {
+        props.registerDefinitionCmObject(props.identifier, cmObject, previousCmObject);
+      } else if (props.registerCmObject) {
+        props.registerCmObject(cmObject, previousCmObject);
+      }
+    },
     allowSignatureChange: props.allowSignatureChange,
     handleNameChange: handleNameChange,
     handleArgChange: handleArgChange
@@ -217576,6 +217584,23 @@ function codeMirrorBackgroundColor(editorView) {
 function isUserMethodDivider(item) {
   return item && item.kind === "divider";
 }
+function definitionNameFromEditor(view) {
+  if (!view || !view.state) {
+    return null;
+  }
+  var selection = view.state.selection.main;
+  var candidate = view.state.doc.sliceString(selection.from, selection.to).trim();
+  if (candidate === "") {
+    var word = view.state.wordAt(selection.head);
+    if (word) {
+      candidate = view.state.doc.sliceString(word.from, word.to);
+    }
+  }
+
+  // Accept both a bare name and a selected qualified name such as self.render_table.
+  var match = candidate.match(/(?:^|\.)([A-Za-z_$][\w$]*)$/);
+  return match ? match[1] : null;
+}
 function CreatorApp(props) {
   var _codeElemDict$globals, _codeElemDict$render_, _debugPaused$stack;
   props = _objectSpread({
@@ -217679,6 +217704,7 @@ function CreatorApp(props) {
     });
   }
   var otherCmObjects = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(new Set());
+  var definitionCmObjectsRef = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(new Map());
   var _useStateAndRefWithUn = (0,_undo__WEBPACK_IMPORTED_MODULE_21__.useStateAndRefWithUndo)(_objectSpread({
       pane_height: _tile_maker_elements__WEBPACK_IMPORTED_MODULE_23__.INITIAL_CODE_PANE_HEIGHT
     }, props.render_content_info)),
@@ -218054,6 +218080,7 @@ function CreatorApp(props) {
         _iterator2.f();
       }
       otherCmObjects.current.clear();
+      definitionCmObjectsRef.current.clear();
       clearUndoStack(undoStackRef);
       errorDrawerFuncs.setGoToLineNumber(null);
       visibleTabListRef.current = null;
@@ -218259,6 +218286,16 @@ function CreatorApp(props) {
       otherCmObjects.current.add(cmObject);
     }
   }
+  function registerDefinitionCmObject(identifier, cmObject) {
+    var previousCmObject = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    registerCmObject(cmObject, previousCmObject);
+    if (previousCmObject && definitionCmObjectsRef.current.get(identifier) === previousCmObject) {
+      definitionCmObjectsRef.current["delete"](identifier);
+    }
+    if (cmObject) {
+      definitionCmObjectsRef.current.set(identifier, cmObject);
+    }
+  }
   function menu_specs() {
     return {
       Save: [{
@@ -218429,11 +218466,53 @@ function CreatorApp(props) {
       showTab(searchStateRef.current.current_search_cm);
     });
   }
+  function _focusDefinitionWhenReady(identifier) {
+    var attemptsRemaining = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 30;
+    var cm = definitionCmObjectsRef.current.get(identifier);
+    if (!cm) {
+      if (attemptsRemaining > 0) {
+        requestAnimationFrame(function () {
+          _focusDefinitionWhenReady(identifier, attemptsRemaining - 1);
+        });
+      }
+      return;
+    }
+    var name = getNameFromIdentifier(identifier);
+    var nameStart = name ? cm.state.doc.toString().indexOf(name) : -1;
+    if (nameStart >= 0) {
+      cm.dispatch({
+        selection: _codemirror_state__WEBPACK_IMPORTED_MODULE_29__.EditorSelection.single(nameStart, nameStart + name.length)
+      });
+    }
+    cm.focus();
+    var target = cm.dom.closest(".maker-pane");
+    var scroller = paneListRef.current;
+    if (target && scroller) {
+      var targetRect = target.getBoundingClientRect();
+      var scrollerRect = scroller.getBoundingClientRect();
+      var targetCenter = targetRect.top - scrollerRect.top + scroller.scrollTop + targetRect.height / 2;
+      scroller.scrollTo({
+        top: targetCenter - scroller.clientHeight / 2,
+        behavior: "smooth"
+      });
+    }
+  }
+  function _goToDefinition(view) {
+    var name = definitionNameFromEditor(view);
+    var identifier = name ? getIdentifierFromName(name) : null;
+    if (!identifier) {
+      return false;
+    }
+    showTab(identifier);
+    _focusDefinitionWhenReady(identifier);
+    return true;
+  }
   function _extraKeys() {
     var ekeys = {
       'Ctrl-s': _saveMe,
       'Ctrl-l': _saveAndLoadModule,
       'Ctrl-m': _saveAndCheckpoint,
+      'Ctrl-b': _goToDefinition,
       'Ctrl-f': function CtrlF() {
         search_ref.current.focus();
         return true;
@@ -220103,6 +220182,7 @@ function CreatorApp(props) {
       cmObjectRef: null,
       name: gi["name"],
       registerCmObject: registerCmObject,
+      registerDefinitionCmObject: registerDefinitionCmObject,
       identifier: "globals",
       extraKeys: _extraKeys,
       saveAndCheckpoint: _saveAndCheckpoint,
@@ -220131,6 +220211,7 @@ function CreatorApp(props) {
       cmObjectRef: null,
       name: ri["name"],
       registerCmObject: registerCmObject,
+      registerDefinitionCmObject: registerDefinitionCmObject,
       identifier: "render_content",
       extraKeys: _extraKeys,
       saveAndCheckpoint: _saveAndCheckpoint,
@@ -220165,6 +220246,7 @@ function CreatorApp(props) {
           cmObjectRef: null,
           name: um["name"],
           registerCmObject: registerCmObject,
+          registerDefinitionCmObject: registerDefinitionCmObject,
           identifier: um["identifier"],
           extraKeys: _extraKeys,
           saveAndCheckpoint: _saveAndCheckpoint,
@@ -220204,6 +220286,7 @@ function CreatorApp(props) {
           cmDispatch: hmDispatch,
           cmObjectRef: null,
           registerCmObject: registerCmObject,
+          registerDefinitionCmObject: registerDefinitionCmObject,
           name: hm["name"],
           identifier: hm["identifier"],
           extraKeys: _extraKeys,
@@ -220244,6 +220327,7 @@ function CreatorApp(props) {
           cmDispatch: jsDispatch,
           cmObjectRef: null,
           registerCmObject: registerCmObject,
+          registerDefinitionCmObject: registerDefinitionCmObject,
           name: js["name"],
           identifier: js["identifier"],
           extraKeys: _extraKeys,

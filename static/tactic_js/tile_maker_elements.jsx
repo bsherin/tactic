@@ -1175,6 +1175,7 @@ function CmElement(props) {
         no_height: false,
         allowSignatureChange: true,
         registerCmObject: null,
+        registerDefinitionCmObject: null,
         getAIContext: null,
         aiContextGroup: null,
         ...props
@@ -1249,7 +1250,15 @@ function CmElement(props) {
             <SignatureHeader name={props.name}
                              argString={props.argString}
                              mode={props.cmState.mode}
-                             registerCmObject={props.registerCmObject}
+                             registerCmObject={(cmObject, previousCmObject = null) => {
+                                 if (props.registerDefinitionCmObject) {
+                                     props.registerDefinitionCmObject(
+                                         props.identifier, cmObject, previousCmObject
+                                     );
+                                 } else if (props.registerCmObject) {
+                                     props.registerCmObject(cmObject, previousCmObject);
+                                 }
+                             }}
                              allowSignatureChange={props.allowSignatureChange}
                              handleNameChange={handleNameChange}
                              handleArgChange={handleArgChange}/>
