@@ -32,6 +32,8 @@ const SelectedPaneContext = createContext({
     counter: 0,
     addOmniItems: () => {
     },
+    addGlobalOmniItems: () => {
+    },
     closeTab: () => {
     },
     refreshTab: () => {

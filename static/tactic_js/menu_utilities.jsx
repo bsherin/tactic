@@ -43,6 +43,7 @@ function TacticMenubar(props) {
         extraButtons: null,
         suggestionGlyphs: [],
         connection_status: null,
+        globalOmniMenus: [],
         ...props
     };
     const settingsContext = useContext(SettingsContext);
@@ -59,6 +60,7 @@ function TacticMenubar(props) {
                                  key={menu_name + String(mcounter)}
                                  disabled_items={props.disabled_items}
                                  menu_items={props.menu_specs[menu_name]}
+                                 omniScope={props.globalOmniMenus.includes(menu_name) ? "global" : "pane"}
                                  controlled={props.controlled}
             />)
         }
@@ -330,6 +332,7 @@ function MenuComponent(props) {
         alt_button: null,
         position: PopoverPosition.BOTTOM_LEFT,
         createOmniItems: true,
+        omniScope: "pane",
         ...props
     };
     const replacers = [
@@ -341,7 +344,12 @@ function MenuComponent(props) {
 
     useEffect(() => {
         if (props.createOmniItems && window.in_context && "addOmniItems" in selectedPane) {
-            selectedPane.addOmniItems(_getOmniItems())
+            const omniItems = _getOmniItems();
+            if (props.omniScope === "global" && "addGlobalOmniItems" in selectedPane) {
+                selectedPane.addGlobalOmniItems(omniItems)
+            } else {
+                selectedPane.addOmniItems(omniItems)
+            }
         }
     }, []);
 
@@ -377,7 +385,7 @@ function MenuComponent(props) {
             let icon_name = props.icon_dict.hasOwnProperty(choice) ? props.icon_dict[choice] : null;
             omni_items.push(
                 {
-                    category: "Menu Option",
+                    category: props.omniScope === "global" ? "Global" : "Menu Option",
                     display_text: choice,
                     search_text: choice,
                     icon_name: icon_name,
@@ -484,6 +492,7 @@ function ToolMenu(props) {
                            icon_dict={icon_dict()}
                            binding_dict={binding_dict()}
                            disabled_items={props.disabled_items}
+                           omniScope={props.omniScope}
                            hidden_items={[]}
             />
         </Fragment>

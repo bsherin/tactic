@@ -193190,7 +193190,8 @@ function LibraryMenubar(props) {
     showMetadataDrawerButton: false,
     showAssistantDrawerButton: true,
     showSettingsDrawerButton: true,
-    showPoolDrawerButton: true
+    showPoolDrawerButton: true,
+    globalOmniMenus: ["New"]
   });
 }
 LibraryMenubar = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_0__.memo)(LibraryMenubar);
@@ -198275,7 +198276,8 @@ function TacticMenubar(props) {
     disabled_items: [],
     extraButtons: null,
     suggestionGlyphs: [],
-    connection_status: null
+    connection_status: null,
+    globalOmniMenus: []
   }, props);
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_1__.SettingsContext);
   var menus;
@@ -198291,6 +198293,7 @@ function TacticMenubar(props) {
         key: menu_name + String(mcounter),
         disabled_items: props.disabled_items,
         menu_items: props.menu_specs[menu_name],
+        omniScope: props.globalOmniMenus.includes(menu_name) ? "global" : "pane",
         controlled: props.controlled
       }));
     }
@@ -198581,13 +198584,19 @@ function MenuComponent(props) {
     icon_dict: {},
     alt_button: null,
     position: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_12__.PopoverPosition.BOTTOM_LEFT,
-    createOmniItems: true
+    createOmniItems: true,
+    omniScope: "pane"
   }, props);
   var replacers = [["CTRL+", "^"], ["COMMAND+", "⌘"]];
   var selectedPane = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_utilities_react__WEBPACK_IMPORTED_MODULE_3__.SelectedPaneContext);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (props.createOmniItems && window.in_context && "addOmniItems" in selectedPane) {
-      selectedPane.addOmniItems(_getOmniItems());
+      var omniItems = _getOmniItems();
+      if (props.omniScope === "global" && "addGlobalOmniItems" in selectedPane) {
+        selectedPane.addGlobalOmniItems(omniItems);
+      } else {
+        selectedPane.addOmniItems(omniItems);
+      }
     }
   }, []);
   function _filter_on_match_list(opt_name) {
@@ -198624,7 +198633,7 @@ function MenuComponent(props) {
         if (choice.startsWith("divider")) continue;
         var icon_name = props.icon_dict.hasOwnProperty(choice) ? props.icon_dict[choice] : null;
         omni_items.push({
-          category: "Menu Option",
+          category: props.omniScope === "global" ? "Global" : "Menu Option",
           display_text: choice,
           search_text: choice,
           icon_name: icon_name,
@@ -198754,6 +198763,7 @@ function ToolMenu(props) {
     icon_dict: icon_dict(),
     binding_dict: binding_dict(),
     disabled_items: props.disabled_items,
+    omniScope: props.omniScope,
     hidden_items: []
   }));
 }
@@ -208153,6 +208163,7 @@ var SelectedPaneContext = /*#__PURE__*/(0,react__WEBPACK_IMPORTED_MODULE_1__.cre
   amSelected: amSelected,
   counter: 0,
   addOmniItems: function addOmniItems() {},
+  addGlobalOmniItems: function addGlobalOmniItems() {},
   closeTab: function closeTab() {},
   refreshTab: function refreshTab() {}
 });

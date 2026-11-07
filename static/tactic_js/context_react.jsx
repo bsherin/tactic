@@ -699,7 +699,8 @@ function ContextApp(props) {
                 tab_id: "library",
                 selectedTabIdRef,
                 amSelected,
-                addOmniItems: (items)=>{_addOmniItems("libary", items)},
+                addOmniItems: (items)=>{_addOmniItems("library", items)},
+                addGlobalOmniItems: (items)=>{_addOmniItems("global", items)},
             }}>
             <ContextPaneElement identifier="library">
                 <div id="library-home-root"

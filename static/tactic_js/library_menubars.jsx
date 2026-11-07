@@ -82,6 +82,7 @@ function LibraryMenubar(props) {
                           showAssistantDrawerButton={true}
                           showSettingsDrawerButton={true}
                           showPoolDrawerButton={true}
+                          globalOmniMenus={["New"]}
     />
 }
 
