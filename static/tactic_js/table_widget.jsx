@@ -92,6 +92,8 @@ const tableDataDefault = {
     maxRows: 50,
     className: "",
     style: {},
+    hasRowClick: false,
+    hasHeaderClick: false,
 };
 
 function TableWidget(props) {
@@ -121,7 +123,7 @@ function TableWidget(props) {
     const table_ref = useRef(null);
     const didRender = useRef(false);
 
-    const [, widgetSet] = useWidget(
+    const [, widgetSet, widgetAction] = useWidget(
         props.widgetId, props.local_id, props.console_id, props.tile_id,
         "table",
         props.row, props.dispatch);
@@ -211,7 +213,11 @@ function TableWidget(props) {
             }
             return (
                 <Cell key={column_name}
-                      interactive={false}
+                      className={props.widgetData.hasRowClick
+                          ? `tactic-table-clickable-row tactic-table-row-${rowIndex}`
+                          : undefined}
+                      interactive={props.widgetData.hasRowClick}
+                      style={props.widgetData.hasRowClick ? {cursor: "pointer"} : undefined}
                       truncated={true}
                       tabIndex={-1}
                       wrapText={true}>
@@ -289,6 +295,39 @@ function TableWidget(props) {
         setFixedRowHeights(Array(dataDictList.length).fill(DEFAULT_ROW_HEIGHT));
     }
 
+    function _indexFromClass(element, prefix) {
+        const indexClass = Array.from(element.classList).find(className => className.startsWith(prefix));
+        if (!indexClass) return null;
+        const index = Number(indexClass.slice(prefix.length));
+        return Number.isInteger(index) ? index : null;
+    }
+
+    function handleTableClick(event) {
+        if (!(event.target instanceof Element)) return;
+
+        if (props.widgetData.hasRowClick) {
+            const rowCell = event.target.closest(".tactic-table-clickable-row");
+            if (rowCell && event.currentTarget.contains(rowCell)) {
+                const rowIndex = _indexFromClass(rowCell, "tactic-table-row-");
+                if (rowIndex !== null) {
+                    widgetAction({action: "row_click", row_index: rowIndex});
+                }
+                return;
+            }
+        }
+
+        if (props.widgetData.hasHeaderClick) {
+            if (event.target.closest(".bp6-table-resize-handle-target")) return;
+            const headerCell = event.target.closest(".tactic-table-clickable-header");
+            if (headerCell && event.currentTarget.contains(headerCell)) {
+                const columnIndex = _indexFromClass(headerCell, "tactic-table-column-");
+                if (columnIndex !== null) {
+                    widgetAction({action: "header_click", column_index: columnIndex});
+                }
+            }
+        }
+    }
+
     function _columnHeaderNameRenderer(the_text) {
         let the_body;
         the_text = String(the_text);
@@ -297,9 +336,15 @@ function TableWidget(props) {
     }
 
     let column_names = columnNames();
-    let columns = column_names.map((column_name) => {
+    let columns = column_names.map((column_name, columnIndex) => {
         const cellRenderer = _cellRendererCreator(column_name);
         const columnHeaderCellRenderer = () => <ColumnHeaderCell name={column_name}
+                                                                 className={props.widgetData.hasHeaderClick
+                                                                     ? `tactic-table-clickable-header tactic-table-column-${columnIndex}`
+                                                                     : undefined}
+                                                                 style={props.widgetData.hasHeaderClick
+                                                                     ? {cursor: "pointer"}
+                                                                     : undefined}
                                                                  nameRenderer={_columnHeaderNameRenderer}
         />;
 
@@ -321,7 +366,11 @@ function TableWidget(props) {
     }
     return (
         <ErrorBoundary key={props.widgetId}>
-            <div style={outer_style} key={props.widgetId}>
+            <div style={outer_style}
+                 key={props.widgetId}
+                 onClick={(props.widgetData.hasRowClick || props.widgetData.hasHeaderClick)
+                     ? handleTableClick
+                     : undefined}>
                 <Table ref={table_ref}
                        numRows={dataDictList.length}
                        columns={columns}

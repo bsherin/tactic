@@ -124,6 +124,8 @@ let widgetInfo = {
     },
     table : {
         value: objectField(),
+        on_row_click: methodField(),
+        on_header_click: methodField(),
         style: styleField()
     },
     matplotlib: {

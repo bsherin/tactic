@@ -188,12 +188,10 @@ class TileBase(DataAccessMixin, FilteringMixin, LibraryAccessMixin, ObjectAPIMix
                 edited_spec = copy.copy(spec)
                 # del edited_spec["name"]
                 del edited_spec["kind"]
-                if "on_click" in edited_spec:
-                    meth = self.get_attr(edited_spec["on_click"])
-                    edited_spec["on_click"] = meth
-                if "on_change" in edited_spec:
-                    meth = self.get_attr(edited_spec["on_change"])
-                    edited_spec["on_change"] = meth
+                for callback_name in ("on_click", "on_change", "on_row_click", "on_header_click"):
+                    if callback_name in edited_spec:
+                        meth = self.get_attr(edited_spec[callback_name])
+                        edited_spec[callback_name] = meth
                 if "style" in edited_spec:
                     converted_style = self.convert_style(edited_spec["style"])
                     if converted_style is None:

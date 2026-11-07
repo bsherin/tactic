@@ -472,6 +472,7 @@ INITIAL_TABLE_ROWS = 25
 
 class TableWidget(Widget):
     widget_kind = "table"
+    function_fields = Widget.function_fields + ["on_row_click", "on_header_click"]
     extra_fields = ["style", "className", "maxColumnWidth", "maxRows", "expandRows", "to_render"]
     defaults = {
         "maxColumnWidth": None,
@@ -504,7 +505,45 @@ class TableWidget(Widget):
             "className": self.className,
             "style": self.style,
             "availableRows": min(len(self._value), MAX_TABLE_SIZE),
+            "hasRowClick": self.on_row_click is not None,
+            "hasHeaderClick": self.on_header_click is not None,
         }
+
+    def action(self, value=None):
+        if not isinstance(value, dict):
+            return super().action(value)
+
+        action = value.get("action")
+        if action == "row_click":
+            row_index = value.get("row_index")
+            if not isinstance(row_index, int) or isinstance(row_index, bool):
+                return
+            if row_index < 0 or row_index >= min(len(self._value), self.maxRows):
+                return
+            self._invoke_click_handler("on_row_click", self._value[row_index], row_index)
+        elif action == "header_click":
+            column_index = value.get("column_index")
+            if not isinstance(column_index, int) or isinstance(column_index, bool):
+                return
+            column_names = list(self._value[0].keys()) if self._value else []
+            if column_index < 0 or column_index >= len(column_names):
+                return
+            self._invoke_click_handler("on_header_click", column_names[column_index], column_index)
+        else:
+            super().action(value)
+
+    def _invoke_click_handler(self, field_name, *args):
+        handler_name = getattr(self, field_name, None)
+        if handler_name is None:
+            return
+
+        if getattr(self, f"{field_name}_is_method", False):
+            getattr(Tile, handler_name)(*args)
+            self.update_exports_if_necessary()
+        elif in_pseudo_tile:
+            getattr(sys.modules["pseudo_tile_base"], handler_name)(*args)
+        else:
+            getattr(sys.modules["tile_env"], handler_name)(*args)
 
     def preprocess_widget_data(self, widget_data):
         if "value" in widget_data:

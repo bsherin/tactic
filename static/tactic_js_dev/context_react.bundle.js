@@ -231825,7 +231825,9 @@ var tableDataDefault = {
   expandRows: false,
   maxRows: 50,
   className: "",
-  style: {}
+  style: {},
+  hasRowClick: false,
+  hasHeaderClick: false
 };
 function TableWidget(props) {
   props = _objectSpread(_objectSpread({
@@ -231860,8 +231862,9 @@ function TableWidget(props) {
   var table_ref = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var didRender = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(false);
   var _useWidget = (0,_widgets__WEBPACK_IMPORTED_MODULE_2__.useWidget)(props.widgetId, props.local_id, props.console_id, props.tile_id, "table", props.row, props.dispatch),
-    _useWidget2 = _slicedToArray(_useWidget, 2),
-    widgetSet = _useWidget2[1];
+    _useWidget2 = _slicedToArray(_useWidget, 3),
+    widgetSet = _useWidget2[1],
+    widgetAction = _useWidget2[2];
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     if (props.widgetData.expandRows) {
       _updateRowHeights();
@@ -231948,7 +231951,11 @@ function TableWidget(props) {
       }
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_table__WEBPACK_IMPORTED_MODULE_5__.Cell, {
         key: column_name,
-        interactive: false,
+        className: props.widgetData.hasRowClick ? "tactic-table-clickable-row tactic-table-row-".concat(rowIndex) : undefined,
+        interactive: props.widgetData.hasRowClick,
+        style: props.widgetData.hasRowClick ? {
+          cursor: "pointer"
+        } : undefined,
         truncated: true,
         tabIndex: -1,
         wrapText: true
@@ -232058,6 +232065,43 @@ function TableWidget(props) {
   function resetRowHeights() {
     setFixedRowHeights(Array(dataDictList.length).fill(DEFAULT_ROW_HEIGHT));
   }
+  function _indexFromClass(element, prefix) {
+    var indexClass = Array.from(element.classList).find(function (className) {
+      return className.startsWith(prefix);
+    });
+    if (!indexClass) return null;
+    var index = Number(indexClass.slice(prefix.length));
+    return Number.isInteger(index) ? index : null;
+  }
+  function handleTableClick(event) {
+    if (!(event.target instanceof Element)) return;
+    if (props.widgetData.hasRowClick) {
+      var rowCell = event.target.closest(".tactic-table-clickable-row");
+      if (rowCell && event.currentTarget.contains(rowCell)) {
+        var rowIndex = _indexFromClass(rowCell, "tactic-table-row-");
+        if (rowIndex !== null) {
+          widgetAction({
+            action: "row_click",
+            row_index: rowIndex
+          });
+        }
+        return;
+      }
+    }
+    if (props.widgetData.hasHeaderClick) {
+      if (event.target.closest(".bp6-table-resize-handle-target")) return;
+      var headerCell = event.target.closest(".tactic-table-clickable-header");
+      if (headerCell && event.currentTarget.contains(headerCell)) {
+        var columnIndex = _indexFromClass(headerCell, "tactic-table-column-");
+        if (columnIndex !== null) {
+          widgetAction({
+            action: "header_click",
+            column_index: columnIndex
+          });
+        }
+      }
+    }
+  }
   function _columnHeaderNameRenderer(the_text) {
     var the_body;
     the_text = String(the_text);
@@ -232067,11 +232111,15 @@ function TableWidget(props) {
     return the_body;
   }
   var column_names = columnNames();
-  var columns = column_names.map(function (column_name) {
+  var columns = column_names.map(function (column_name, columnIndex) {
     var cellRenderer = _cellRendererCreator(column_name);
     var columnHeaderCellRenderer = function columnHeaderCellRenderer() {
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_table__WEBPACK_IMPORTED_MODULE_7__.ColumnHeaderCell, {
         name: column_name,
+        className: props.widgetData.hasHeaderClick ? "tactic-table-clickable-header tactic-table-column-".concat(columnIndex) : undefined,
+        style: props.widgetData.hasHeaderClick ? {
+          cursor: "pointer"
+        } : undefined,
         nameRenderer: _columnHeaderNameRenderer
       });
     };
@@ -232097,7 +232145,8 @@ function TableWidget(props) {
     key: props.widgetId
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     style: outer_style,
-    key: props.widgetId
+    key: props.widgetId,
+    onClick: props.widgetData.hasRowClick || props.widgetData.hasHeaderClick ? handleTableClick : undefined
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_table__WEBPACK_IMPORTED_MODULE_9__.Table, {
     ref: table_ref,
     numRows: dataDictList.length,
@@ -244051,6 +244100,8 @@ var widgetInfo = {
   },
   table: {
     value: objectField(),
+    on_row_click: methodField(),
+    on_header_click: methodField(),
     style: styleField()
   },
   matplotlib: {
