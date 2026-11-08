@@ -4,6 +4,7 @@ import {
     Cell,
     Column,
     Table,
+    RegionCardinality, SelectionModes,
     ColumnHeaderCell, TruncatedFormat, Regions,
 } from "@blueprintjs/table";
 import {FormGroup} from "@blueprintjs/core";
@@ -364,6 +365,7 @@ function TableWidget(props) {
     if (cwidths && cwidths.length != column_names.length) {
         cwidths = null;
     }
+    let selectionModes = [SelectionModes.NONE];
     return (
         <ErrorBoundary key={props.widgetId}>
             <div style={outer_style}
@@ -381,6 +383,7 @@ function TableWidget(props) {
                        enableColumnResizing={true}
                        defaultRowHeight={27}
                        columnWidths={cwidths}
+                       selectionModes={selectionModes}
                        onCompleteRender={_onCompleteRender}
                        enableRowHeader={false}>
                     {columns}

@@ -224883,6 +224883,7 @@ function TableWidget(props) {
   if (cwidths && cwidths.length != column_names.length) {
     cwidths = null;
   }
+  var selectionModes = [_blueprintjs_table__WEBPACK_IMPORTED_MODULE_6__.SelectionModes.NONE];
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_error_boundary__WEBPACK_IMPORTED_MODULE_3__.ErrorBoundary, {
     key: props.widgetId
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -224900,6 +224901,7 @@ function TableWidget(props) {
     enableColumnResizing: true,
     defaultRowHeight: 27,
     columnWidths: cwidths,
+    selectionModes: selectionModes,
     onCompleteRender: _onCompleteRender,
     enableRowHeader: false
   }, columns), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
