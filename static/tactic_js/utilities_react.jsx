@@ -117,7 +117,12 @@ function useDeepCompareEffect(callback, dependencies) {
 
 const RegisterActivityContext = React.createContext(null);
 
-const activity_interval_msecs = window.activity_interval * 1000
+const configured_activity_interval_msecs = Number(window.activity_interval) * 1000;
+const activity_interval_msecs = (
+    Number.isFinite(configured_activity_interval_msecs) && configured_activity_interval_msecs > 0
+        ? configured_activity_interval_msecs
+        : 60000
+);
 function useLocalRegisterActivity() {
     const current_timer = useRef(null);
     const waiting = useRef(false);
@@ -153,11 +158,20 @@ function ActivityTracker() {
     const [, registerActivity] = useRegisterActivity();
 
     useEffect(()=>{
-        postPromise("host", "register_client_interaction", {
+        const sendHeartbeat = () => postPromise("host", "register_client_interaction", {
                 global_id: window.global_id,
                 username: window.username,
             })
-            .then(()=>{})
+            .catch(()=>{});
+
+        // Session liveness must not depend on clicks or keystrokes. A user can
+        // legitimately wait for a long-running tile without interacting.
+        sendHeartbeat();
+        const heartbeatTimer = window.setInterval(
+            sendHeartbeat,
+            Math.max(activity_interval_msecs, 10000)
+        );
+        return () => window.clearInterval(heartbeatTimer);
     }, [])
 
     useEffect(() => {

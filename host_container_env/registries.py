@@ -279,6 +279,12 @@ class TileContainerRegistry(ServiceRegistry):
                 self.set_container_info(tile_id, "memory_usage_mb", str(data["memory_usage_mb"]))
             if "memory_limit_mb" in data:
                 self.set_container_info(tile_id, "memory_limit_mb", str(data["memory_limit_mb"]))
+            self.set_container_info_from_dict(tile_id, {
+                "execution_active": str(bool(data.get("execution_active", False))).lower(),
+                "execution_task_type": data.get("execution_task_type"),
+                "execution_task_id": data.get("execution_task_id"),
+                "execution_duration_secs": str(data.get("execution_duration_secs", 0)),
+            })
 
     def sweep_tiles(self):
         log.debug("sweep_tiles", category="tile_management")

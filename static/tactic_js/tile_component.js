@@ -78,6 +78,10 @@ function TileComponent(props) {
     max_console_lines: 100,
     memory_usage: 0,
     memory_limit: null,
+    execution_active: false,
+    execution_unresponsive: false,
+    execution_task_type: null,
+    execution_duration_secs: 0,
     onTileResizeLive: null,
     onTileResizeStop: null
   }, props);
@@ -755,7 +759,16 @@ function TileComponent(props) {
     intent: "danger",
     handleClick: _stopMe,
     icon: "stop"
-  }), props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
+  }), props.execution_unresponsive && !props.show_spinner && /*#__PURE__*/_react["default"].createElement(_blueprint_react_widgets.GlyphButton, {
+    intent: "danger",
+    handleClick: _stopMe,
+    icon: "stop"
+  }), props.execution_unresponsive && /*#__PURE__*/_react["default"].createElement("span", {
+    className: "tile-status-indicator",
+    style: {
+      marginRight: 8
+    }
+  }, "".concat(props.execution_task_type || "tile event", " running ").concat(Math.round(props.execution_duration_secs), "s")), props.show_spinner && /*#__PURE__*/_react["default"].createElement(_core.Spinner, {
     size: 17
   }), props.loading_status == "loaded" && /*#__PURE__*/_react["default"].createElement(_memory_utilities.MemoryIndicator, {
     usage: props.memory_usage,

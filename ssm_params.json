@@ -92,6 +92,21 @@
       "type": "String"
     },
     {
+      "name": "TILE_EVENT_SOFT_TIMEOUT_SECS",
+      "value": "120",
+      "type": "String"
+    },
+    {
+      "name": "TILE_EVENT_HARD_TIMEOUT_SECS",
+      "value": "0",
+      "type": "String"
+    },
+    {
+      "name": "TILE_EVENT_KILL_GRACE_SECS",
+      "value": "30",
+      "type": "String"
+    },
+    {
       "name": "HEARTBEAT_INTERVAL_SECS",
       "value": "10",
       "type": "String"

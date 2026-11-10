@@ -65,6 +65,10 @@ function TileComponent(props) {
         max_console_lines: 100,
         memory_usage: 0,
         memory_limit: null,
+        execution_active: false,
+        execution_unresponsive: false,
+        execution_task_type: null,
+        execution_duration_secs: 0,
         onTileResizeLive: null,
         onTileResizeStop: null,
         ...props
@@ -560,6 +564,14 @@ function TileComponent(props) {
                             {props.show_spinner && <GlyphButton intent="danger"
                                                                 handleClick={_stopMe}
                                                                 icon="stop"/>}
+                            {props.execution_unresponsive && !props.show_spinner &&
+                                <GlyphButton intent="danger"
+                                             handleClick={_stopMe}
+                                             icon="stop"/>}
+                            {props.execution_unresponsive &&
+                                <span className="tile-status-indicator" style={{marginRight: 8}}>
+                                    {`${props.execution_task_type || "tile event"} running ${Math.round(props.execution_duration_secs)}s`}
+                                </span>}
                             {props.show_spinner && <Spinner size={17}/>}
                             {props.loading_status == "loaded" &&
                                 <MemoryIndicator usage={props.memory_usage} limit={props.memory_limit}/>

@@ -55,10 +55,12 @@ class LoadSaveTasksMixin:
 
     @task_worthy
     def end_main_session_task(self, data):
-        sess = self.get_session(data["sid"])
+        sess = self.get_session_if_exists(data["sid"], "end_main_session_task")
+        if sess is None:
+            return {"success": True, "already_closed": True}
         sess.end_session()
         self.mworker.post_task("host", "destroy_child_tiles_task", {"local_id": data["sid"]})
-        return
+        return {"success": True}
 
     @task_worthy
     def get_open_sessions_task(self, data):
@@ -1621,7 +1623,13 @@ class ConsoleTasksMixin:
     @task_worthy_manual_submit
     def exec_console_code(self, data, task_packet):
         sid = data["local_id"]
-        sess = self.get_session(sid)
+        sess = self.get_session_if_exists(sid, "exec_console_code")
+        if sess is None:
+            self.mworker.submit_response(
+                task_packet,
+                {"success": False, "message": "This session is no longer open."},
+            )
+            return
         def do_exec():
             the_code = data["the_code"]
             data["pipe_dict"] = sess.pipe_dict
@@ -1636,7 +1644,9 @@ class ConsoleTasksMixin:
     @task_worthy
     def stop_console_code(self, data):
         sid = data["local_id"]
-        sess = self.get_session(sid)
+        sess = self.get_session_if_exists(sid, "stop_console_code")
+        if sess is None:
+            return {"success": True, "already_closed": True}
         data["pipe_dict"] = sess.pipe_dict
         data["am_notebook"] = sess.am_notebook_type
         self.mworker.post_task(sess.pseudo_tile_id, "stop_console_code", data)
@@ -1645,7 +1655,9 @@ class ConsoleTasksMixin:
     @task_worthy
     def stop_all_console_code(self, data):
         sid = data["local_id"]
-        sess = self.get_session(sid)
+        sess = self.get_session_if_exists(sid, "stop_all_console_code")
+        if sess is None:
+            return {"success": True, "already_closed": True}
         data["pipe_dict"] = sess.pipe_dict
         data["am_notebook"] = sess.am_notebook_type
         self.mworker.post_task(sess.pseudo_tile_id, "stop_all_console_code", data)

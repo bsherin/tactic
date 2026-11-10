@@ -256,15 +256,20 @@ class QWorker(ExceptionMixin):
             log.exception(special_string)
         return
 
-    def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None):
+    def post_packet(self, dest_id, task_packet, reply_to=None, callback_id=None,
+                    delivery_mode=2, expiration=None):
         connection, channel = self._ensure_channel()
         declare_queue(channel, dest_id)
+        expiration_msecs = None
+        if expiration is not None:
+            expiration_msecs = str(max(1, int(float(expiration) * 1000)))
         channel.basic_publish(exchange='',
                               routing_key=dest_id,
                               properties=pika.BasicProperties(
                                   reply_to=reply_to,
                                   correlation_id=callback_id,
-                                  delivery_mode=2
+                                  delivery_mode=delivery_mode,
+                                  expiration=expiration_msecs,
                               ),
                               body=json.dumps(task_packet))
         return
@@ -287,7 +292,8 @@ class QWorker(ExceptionMixin):
         return connection, channel
 
     def post_task(self, dest_id, task_type, task_data=None, callback_func=None,
-                  callback_data=None, expiration=None, special_reply_to=None):
+                  callback_data=None, expiration=None, special_reply_to=None,
+                  delivery_mode=2):
         new_id = new_task_id()
         with bind_request(new_id, "presend", task_type):
             try:
@@ -321,7 +327,8 @@ class QWorker(ExceptionMixin):
                               "response_data": None,
                               "reply_to": reply_to,
                               "expiration": expiration}
-                self.post_packet(dest_id, new_packet, reply_to, callback_id)
+                self.post_packet(dest_id, new_packet, reply_to, callback_id,
+                                 delivery_mode=delivery_mode, expiration=expiration)
 
             except Exception as ex:
                 log.exception("error in post_task", task_type=task_type, my_id=self.my_id)

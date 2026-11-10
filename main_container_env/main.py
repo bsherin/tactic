@@ -24,6 +24,7 @@ from aws_helpers import get_ssm_parameter
 from tactic_logging import log
 
 from main_session import MainSessionStore, MainSessionAccessor
+from session_store_s3 import SessionNotFoundError
 
 INITIAL_LEFT_FRACTION = .69
 
@@ -61,6 +62,16 @@ class mainWindow(MongoAccess, StateTasksMixin, LoadSaveTasksMixin, TileCreationT
 
     def get_session(self, sid):
         return MainSessionAccessor.create(self.ss, sid)
+
+    def get_session_if_exists(self, sid, operation="session request"):
+        try:
+            return self.get_session(sid)
+        except SessionNotFoundError:
+            # Browser shutdown, timeout, and delayed tile callbacks can all race
+            # with session cleanup. They are stale requests, not service errors.
+            log.info("Ignoring request for closed session",
+                     sid=sid, operation=operation)
+            return None
 
     def am_notebook_type(self, sid):
         sess = self.get_session(sid)

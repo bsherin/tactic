@@ -154,6 +154,33 @@ function tilesReducer(tile_list, action) {
                 }
             });
             break;
+        case "update_widget_data_batch": {
+            const updatesByTile = new Map();
+            for (const update of action.updates) {
+                if (!updatesByTile.has(update.tile_id)) {
+                    updatesByTile.set(update.tile_id, []);
+                }
+                updatesByTile.get(update.tile_id).push(update);
+            }
+            new_items = tile_list.map(t => {
+                const tileUpdates = updatesByTile.get(t.tile_id);
+                if (!tileUpdates) {
+                    return t;
+                }
+                let new_t = {...t};
+                let frontContent = t.front_content;
+                for (const update of tileUpdates) {
+                    frontContent = recursivelySetWidgetData(
+                        frontContent,
+                        update.widgetId,
+                        update.widgetData
+                    );
+                }
+                new_t["front_content"] = frontContent;
+                return fixTileFrontContent(new_t);
+            });
+            break;
+        }
         case "move_item":
             let old_list = [...tile_list];
             new_items = arrayMove(old_list, action.oldIndex, action.newIndex);

@@ -16,6 +16,7 @@ import sys
 import time
 import os
 import re
+import threading
 from gevent import subprocess
 from list_tasks_mixin import ListTasksMixin
 from code_tasks_mixin import CodeTasksMixin
@@ -29,7 +30,7 @@ from container_tasks_mixin import ContainerTasksMixin
 from across_accounts_mixin import AcrossAccountsTasksMixin
 from pool_tasks_mixin import PoolTasksMixin
 from account_tasks_mixin import AccountTasksMixin
-from rabbit_manage import get_pika_connection_with_retries
+from rabbit_manage import get_pika_connection_with_retries, declare_queue, TILE_TELEMETRY_QUEUE
 from rabbit_admin import delete_wait_queues
 from ecs_tile_backend import ECSTileBackend
 from docker_tile_backend import DockerTileBackend
@@ -49,6 +50,9 @@ from service_controls import get_true_current_log_level, get_redis_log_level, ap
 loaded_tile_manager.delete_all()
 
 use_s3 = get_ssm_parameter("USE_S3", "true").lower() == "true"
+tile_event_soft_timeout_secs = float(get_ssm_parameter("TILE_EVENT_SOFT_TIMEOUT_SECS", 120))
+tile_event_hard_timeout_secs = float(get_ssm_parameter("TILE_EVENT_HARD_TIMEOUT_SECS", 0))
+tile_event_kill_grace_secs = float(get_ssm_parameter("TILE_EVENT_KILL_GRACE_SECS", 30))
 
 utility_interval = int(get_ssm_parameter("HOST_UTILITY_INTERVAL_SECS", 60))
 publishing_interval = int(get_ssm_parameter("METRIC_PUBLISH_INTERVAL_SECS", 180))
@@ -99,6 +103,59 @@ class HostUtilityWorker:
 
     def start(self):
         socketio.start_background_task(target=self.utility_loop)
+
+
+class TileTelemetryWorker:
+    """Consumes lossy tile UI updates without occupying the host control worker."""
+
+    def __init__(self, worker):
+        self.worker = worker
+        self.connection = None
+        self.channel = None
+
+    def handle_delivery(self, channel, method, _props, body):
+        channel.basic_ack(delivery_tag=method.delivery_tag)
+        try:
+            task_packet = json.loads(body)
+            if task_packet.get("task_type") != "emit_tile_message":
+                log.warning("Ignoring task on tile telemetry queue",
+                            task_type=task_packet.get("task_type"))
+                return
+            self.worker.emit_tile_message(task_packet.get("task_data") or {})
+        except Exception:
+            log.exception("Error handling tile telemetry")
+
+    def consume_loop(self):
+        while True:
+            try:
+                self.connection, self.channel = get_pika_connection_with_retries()
+                if self.connection is None or self.channel is None:
+                    time.sleep(5)
+                    continue
+                declare_queue(self.channel, TILE_TELEMETRY_QUEUE)
+                self.channel.basic_qos(prefetch_count=100)
+                self.channel.basic_consume(
+                    queue=TILE_TELEMETRY_QUEUE,
+                    auto_ack=False,
+                    on_message_callback=self.handle_delivery,
+                )
+                self.channel.start_consuming()
+            except Exception:
+                log.exception("Tile telemetry consumer lost its connection")
+                try:
+                    if self.connection and not self.connection.is_closed:
+                        self.connection.close()
+                except Exception:
+                    pass
+                time.sleep(5)
+
+    def start(self):
+        thread = threading.Thread(
+            target=self.consume_loop,
+            name="tile-telemetry-consumer",
+            daemon=True,
+        )
+        thread.start()
 
 
 class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTasksMixin,ContainerTasksMixin,
@@ -333,6 +390,47 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
                     "local_id": local_id
                 }
                 self.emit_tile_message(tmsg)
+
+                execution_active = bool(data.get("execution_active", False))
+                execution_duration = float(data.get("execution_duration_secs", 0))
+                execution_unresponsive = (
+                    execution_active
+                    and execution_duration >= tile_event_soft_timeout_secs
+                )
+                self.emit_tile_message({
+                    "tile_message": "tileExecutionStatus",
+                    "tile_id": tile_id,
+                    "local_id": local_id,
+                    "execution_active": execution_active,
+                    "execution_unresponsive": execution_unresponsive,
+                    "execution_task_type": data.get("execution_task_type"),
+                    "execution_duration_secs": execution_duration,
+                })
+
+                if (execution_active and tile_event_hard_timeout_secs > 0
+                        and execution_duration >= tile_event_hard_timeout_secs):
+                    kill_requested_at = cont_dict.get("execution_kill_requested_at")
+                    execution_task_id = data.get("execution_task_id")
+                    kill_requested_task_id = cont_dict.get("execution_kill_requested_task_id")
+                    if (kill_requested_at is None
+                            or kill_requested_task_id != execution_task_id):
+                        self.tile_registry.set_container_info_from_dict(tile_id, {
+                            "execution_kill_requested_at": str(time.time()),
+                            "execution_kill_requested_task_id": execution_task_id,
+                        })
+                        self.post_task(f"kill_{tile_id}", "StopMe", {})
+                    elif (time.time() - float(kill_requested_at)) >= tile_event_kill_grace_secs:
+                        log.warning("Force terminating unresponsive tile",
+                                    tile_id=tile_id,
+                                    execution_duration_secs=execution_duration)
+                        self.destroy_tile(tile_id, notify=True, force_terminate=True)
+                elif cont_dict.get("execution_kill_requested_at") is not None:
+                    self.tile_registry.set_container_info_from_dict(
+                        tile_id, {
+                            "execution_kill_requested_at": None,
+                            "execution_kill_requested_task_id": None,
+                        }
+                    )
 
     @task_worthy
     def register_client_interaction(self, data):
@@ -822,6 +920,8 @@ class HostWorker(QWorker, ListTasksMixin, CodeTasksMixin, TileTasksMixin, UserTa
 log.debug("creating host worker")
 tactic_app.host_worker = HostWorker()
 tactic_app.utility_worker = HostUtilityWorker(tactic_app.host_worker)
+tactic_app.tile_telemetry_worker = TileTelemetryWorker(tactic_app.host_worker)
 log.debug("starting host worker")
 tactic_app.host_worker.start()
 tactic_app.utility_worker.start()
+tactic_app.tile_telemetry_worker.start()

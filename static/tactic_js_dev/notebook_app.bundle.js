@@ -220245,7 +220245,8 @@ function useDeepCompareEffect(callback, dependencies) {
   }, [currentDependenciesRef.current]);
 }
 var RegisterActivityContext = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createContext(null);
-var activity_interval_msecs = window.activity_interval * 1000;
+var configured_activity_interval_msecs = Number(window.activity_interval) * 1000;
+var activity_interval_msecs = Number.isFinite(configured_activity_interval_msecs) && configured_activity_interval_msecs > 0 ? configured_activity_interval_msecs : 60000;
 function useLocalRegisterActivity() {
   var current_timer = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var waiting = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(false);
@@ -220276,10 +220277,20 @@ function ActivityTracker() {
     _useRegisterActivity2 = _slicedToArray(_useRegisterActivity, 2),
     registerActivity = _useRegisterActivity2[1];
   (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_3__.postPromise)("host", "register_client_interaction", {
-      global_id: window.global_id,
-      username: window.username
-    }).then(function () {});
+    var sendHeartbeat = function sendHeartbeat() {
+      return (0,_communication_react__WEBPACK_IMPORTED_MODULE_3__.postPromise)("host", "register_client_interaction", {
+        global_id: window.global_id,
+        username: window.username
+      })["catch"](function () {});
+    };
+
+    // Session liveness must not depend on clicks or keystrokes. A user can
+    // legitimately wait for a long-running tile without interacting.
+    sendHeartbeat();
+    var heartbeatTimer = window.setInterval(sendHeartbeat, Math.max(activity_interval_msecs, 10000));
+    return function () {
+      return window.clearInterval(heartbeatTimer);
+    };
   }, []);
   (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
     var handler = function handler() {

@@ -97,6 +97,22 @@ class QWorkerInterruptTests(unittest.TestCase):
         self.assertIs(qworker_alt.pika_connections[caller_thread_name], caller_connection)
         self.assertIsNone(qworker_alt.thread)
 
+    def test_ephemeral_publish_sets_delivery_mode_and_expiration(self):
+        worker = qworker_alt.QWorker.__new__(qworker_alt.QWorker)
+        channel = MagicMock()
+        with patch.object(worker, "_ensure_channel", return_value=(MagicMock(), channel)), \
+                patch.object(qworker_alt, "declare_queue"):
+            worker.post_packet(
+                "telemetry_tile_widgets",
+                {"task_type": "emit_tile_message"},
+                delivery_mode=1,
+                expiration=5,
+            )
+
+        properties = channel.basic_publish.call_args.kwargs["properties"]
+        self.assertEqual(properties["delivery_mode"], 1)
+        self.assertEqual(properties["expiration"], "5000")
+
 
 if __name__ == "__main__":
     unittest.main()

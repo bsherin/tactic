@@ -9,6 +9,9 @@ from aws_detection import on_aws
 
 
 service_names = ["host", "main_service", "log_streamer", "module_viewer"]
+TILE_TELEMETRY_QUEUE = "telemetry_tile_widgets"
+TILE_TELEMETRY_TTL_MSECS = 10_000
+TILE_TELEMETRY_MAX_LENGTH = 2_000
 
 use_gevent = os.environ.get("USE_GEVENT", "False").lower() == "true"
 
@@ -80,10 +83,25 @@ def get_pika_connection():
     return connection, channel
 
 def declare_queue(channel, qname):
-    if qname in service_names or qname.startswith("tile_"):
+    if qname == TILE_TELEMETRY_QUEUE:
+        declare_tile_telemetry_queue(channel, qname)
+    elif qname in service_names or qname.startswith("tile_"):
         declare_durable_queue(channel, qname)
     else:
         declare_regular_queue(channel, qname)
+
+def declare_tile_telemetry_queue(channel, qname=TILE_TELEMETRY_QUEUE):
+    channel.queue_declare(
+        queue=qname,
+        durable=False,
+        auto_delete=False,
+        exclusive=False,
+        arguments={
+            "x-message-ttl": TILE_TELEMETRY_TTL_MSECS,
+            "x-max-length": TILE_TELEMETRY_MAX_LENGTH,
+            "x-overflow": "drop-head",
+        }
+    )
 
 def declare_durable_queue(channel, qname):
     channel.queue_declare(

@@ -37,10 +37,13 @@ try:
     from communication_utils import make_python_object_jsonizable
 
     from rabbit_manage import sleep_until_rabbit_alive
+    from rabbit_manage import TILE_TELEMETRY_QUEUE
     import sys
     import time
     import widgets
     import pika
+    from execution_monitor import ExecutionMonitor
+    from reload_update_coalescer import LatestUpdateCoalescer
     from aws_detection import on_aws, am_fargate
 
     from qworker_alt import MAX_PIKA_RETRIES, add_qw_pika_connection
@@ -223,6 +226,7 @@ class HeartbeatGenerator:
                 self.task_data["memory_limit_mb"] = limit_bytes // (1024 * 1024)
             else:
                 self.task_data["memory_limit_mb"] = None
+            self.task_data.update(self.worker.execution_monitor.snapshot())
             try:
                 new_packet = {"source": self.tile_id,
                               "task_id": new_id,
@@ -263,8 +267,24 @@ class TileWorker(QWorker):
         self.get_megaplex_task_now = False
         self.use_svg = True
         self.debugger = None
+        self.execution_monitor = ExecutionMonitor()
+        self.reload_update_coalescer = LatestUpdateCoalescer(
+            snapshot=self.get_reload_dict,
+            send=self._post_reload_dict,
+            on_result=self._update_cached_sid,
+        )
 
         log.info("initialized tileworker", my_id=self.my_id)
+
+    def handle_event(self, task_packet):
+        token = self.execution_monitor.start(
+            task_packet.get("task_type", "unknown"),
+            task_packet.get("task_id"),
+        )
+        try:
+            return super().handle_event(task_packet)
+        finally:
+            self.execution_monitor.finish(token)
 
     @task_worthy
     def restart(self, _data):
@@ -291,7 +311,17 @@ class TileWorker(QWorker):
             data = {}
         data["tile_message"] = message
         data["tile_id"] = self.my_id
-        self.ask_host("emit_tile_message", data)
+        if message == "tileWidgetUpdate":
+            data["local_id"] = self.tile_instance.sid
+            self.post_task(
+                TILE_TELEMETRY_QUEUE,
+                "emit_tile_message",
+                data,
+                expiration=5,
+                delivery_mode=1,
+            )
+        else:
+            self.ask_host("emit_tile_message", data)
         return
 
     def emit_to_client(self, message, data):
@@ -365,6 +395,7 @@ class TileWorker(QWorker):
     def get_options(self, _data_dict):
         the_class = class_info["tile_class"]
         self.tile_instance = the_class(0, 0)
+        self._reset_reload_update_coalescer()
         tile_env.Tile = self.tile_instance
         opt_dict = self.tile_instance.options
         export_list = self.tile_instance.exports
@@ -402,6 +433,7 @@ class TileWorker(QWorker):
     def recreate_from_save(self, data):
         try:
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
+            self._reset_reload_update_coalescer()
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
@@ -468,19 +500,28 @@ class TileWorker(QWorker):
         reload_attrs["widget_saves"] = self.tile_instance.get_widget_saves()
         return reload_attrs
 
-    def send_updated_reload_dict(self):
-        def update_cached_sid(result):
-            if result and result.get("success") and result.get("sid"):
-                self.tile_instance.sid = result["sid"]
+    def _post_reload_dict(self, reload_dict, callback):
+        self.post_to_main(
+            "update_reload_dict",
+            {"tile_id": self.my_id, "reload_dict": reload_dict},
+            callback_func=callback,
+        )
 
-        self.post_to_main("update_reload_dict",
-                          {"tile_id": self.my_id, "reload_dict": self.get_reload_dict()},
-                          callback_func=update_cached_sid)
+    def _update_cached_sid(self, result):
+        if result and result.get("success") and result.get("sid"):
+            self.tile_instance.sid = result["sid"]
+
+    def _reset_reload_update_coalescer(self):
+        self.reload_update_coalescer.reset()
+
+    def send_updated_reload_dict(self):
+        self.reload_update_coalescer.request_update()
         return
 
     @task_worthy
     def reinstantiate_tile(self, reload_dict):
         self.tile_instance = class_info["tile_class"](None, None, tile_name=reload_dict["tile_name"])
+        self._reset_reload_update_coalescer()
         tile_env.Tile = self.tile_instance
         widgets.Tile = self.tile_instance
         widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile
@@ -516,6 +557,7 @@ class TileWorker(QWorker):
     @task_worthy
     def instantiate_as_pseudo_tile(self, data):
         self.tile_instance = PseudoTileClass()
+        self._reset_reload_update_coalescer()
         self.set_environ_from_creds(data["creds"])
         pseudo_tile_base.Tile = self.tile_instance
         widgets.Tile = self.tile_instance
@@ -570,6 +612,7 @@ class TileWorker(QWorker):
     def instantiate_tile_class(self, data):
         try:
             self.tile_instance = class_info["tile_class"](None, None, tile_name=data["tile_name"])
+            self._reset_reload_update_coalescer()
             tile_env.Tile = self.tile_instance
             widgets.Tile = self.tile_instance
             widgets.in_pseudo_tile = self.tile_instance.in_pseudo_tile

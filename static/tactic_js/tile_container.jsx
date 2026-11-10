@@ -1,4 +1,4 @@
-import React, {memo, useContext, useEffect, useState, useCallback, useMemo} from "react";
+import React, {memo, useContext, useEffect, useState, useCallback, useMemo, useRef} from "react";
 import _ from "lodash";
 import {useCallbackStack} from "./utilities_react";
 import {postWithCallbackMain} from "./communication_react";
@@ -11,6 +11,8 @@ import {GridTileContainer} from "./grid_container";
 
 export {TileContainer}
 
+const MAX_PENDING_WIDGET_UPDATES = 1000;
+
 function TileContainer(props) {
     props = {
         ...props
@@ -18,6 +20,9 @@ function TileContainer(props) {
 
     const settingsContext = useContext(SettingsContext);
     const [dragging, setDragging] = useState(false);
+    const pendingWidgetUpdates = useRef(new Map());
+    const widgetUpdateFrame = useRef(null);
+    const droppedWidgetUpdates = useRef(0);
 
     const pushCallback = useCallbackStack();
 
@@ -35,6 +40,7 @@ function TileContainer(props) {
                 tileWidgetUpdate: updateWidgetData,
                 updateMemoryUsage: _updateMemoryUsage,
                 updateTileStatus: _handleTileStatusMessage,
+                tileExecutionStatus: _handleTileExecutionStatus,
                 sourceSynchronized: (tile_id) => _setTileValue(tile_id, "source_changed", false),
             }
             if (data["tile_message"] in handlerDict) {
@@ -57,6 +63,15 @@ function TileContainer(props) {
             return
         }
         _setTileValue(tile_id, "loading_status", data.status)
+    }
+
+    function _handleTileExecutionStatus(tile_id, data) {
+        _setTileState(tile_id, {
+            execution_active: data.execution_active,
+            execution_unresponsive: data.execution_unresponsive,
+            execution_task_type: data.execution_task_type,
+            execution_duration_secs: data.execution_duration_secs
+        });
     }
 
     function getTileEntry(tile_id) {
@@ -159,14 +174,45 @@ function TileContainer(props) {
         })
     }
 
+    function flushWidgetUpdates() {
+        widgetUpdateFrame.current = null;
+        const updates = Array.from(pendingWidgetUpdates.current.values());
+        pendingWidgetUpdates.current.clear();
+        if (updates.length > 0) {
+            props.tileDispatch({
+                type: "update_widget_data_batch",
+                updates
+            });
+        }
+        if (droppedWidgetUpdates.current > 0) {
+            console.warn(`Dropped ${droppedWidgetUpdates.current} excessive tile widget updates`);
+            droppedWidgetUpdates.current = 0;
+        }
+    }
+
     function updateWidgetData(tile_id, data) {
-        props.tileDispatch({
-            type: "update_widget_data",
-            tile_id: tile_id,
+        const updateKey = `${tile_id}\u0000${data["widgetId"]}`;
+        const pending = pendingWidgetUpdates.current;
+        if (!pending.has(updateKey) && pending.size >= MAX_PENDING_WIDGET_UPDATES) {
+            droppedWidgetUpdates.current += 1;
+            return;
+        }
+        pending.set(updateKey, {
+            tile_id,
             widgetId: data["widgetId"],
             widgetData: data["widgetData"]
-        })
+        });
+        if (widgetUpdateFrame.current === null) {
+            widgetUpdateFrame.current = window.requestAnimationFrame(flushWidgetUpdates);
+        }
     }
+
+    useEffect(() => () => {
+        if (widgetUpdateFrame.current !== null) {
+            window.cancelAnimationFrame(widgetUpdateFrame.current);
+        }
+        pendingWidgetUpdates.current.clear();
+    }, []);
 
     const setGridLayout = useCallback((layout) => {
           const layoutById = Object.fromEntries(

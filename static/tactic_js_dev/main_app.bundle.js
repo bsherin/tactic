@@ -225854,6 +225854,10 @@ function TileComponent(props) {
     max_console_lines: 100,
     memory_usage: 0,
     memory_limit: null,
+    execution_active: false,
+    execution_unresponsive: false,
+    execution_task_type: null,
+    execution_duration_secs: 0,
     onTileResizeLive: null,
     onTileResizeStop: null
   }, props);
@@ -226531,7 +226535,16 @@ function TileComponent(props) {
     intent: "danger",
     handleClick: _stopMe,
     icon: "stop"
-  }), props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Spinner, {
+  }), props.execution_unresponsive && !props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprint_react_widgets__WEBPACK_IMPORTED_MODULE_3__.GlyphButton, {
+    intent: "danger",
+    handleClick: _stopMe,
+    icon: "stop"
+  }), props.execution_unresponsive && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+    className: "tile-status-indicator",
+    style: {
+      marginRight: 8
+    }
+  }, "".concat(props.execution_task_type || "tile event", " running ").concat(Math.round(props.execution_duration_secs), "s")), props.show_spinner && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_18__.Spinner, {
     size: 17
   }), props.loading_status == "loaded" && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_memory_utilities__WEBPACK_IMPORTED_MODULE_13__.MemoryIndicator, {
     usage: props.memory_usage,
@@ -226656,6 +226669,7 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 
 
 
+var MAX_PENDING_WIDGET_UPDATES = 1000;
 function TileContainer(props) {
   props = _objectSpread({}, props);
   var settingsContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_settings__WEBPACK_IMPORTED_MODULE_5__.SettingsContext);
@@ -226663,6 +226677,9 @@ function TileContainer(props) {
     _useState2 = _slicedToArray(_useState, 2),
     dragging = _useState2[0],
     setDragging = _useState2[1];
+  var pendingWidgetUpdates = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(new Map());
+  var widgetUpdateFrame = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var droppedWidgetUpdates = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(0);
   var pushCallback = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_2__.useCallbackStack)();
   function _handleTileSourceChange(data) {
     _markSourceChange(data.tile_type);
@@ -226682,6 +226699,7 @@ function TileContainer(props) {
         tileWidgetUpdate: updateWidgetData,
         updateMemoryUsage: _updateMemoryUsage,
         updateTileStatus: _handleTileStatusMessage,
+        tileExecutionStatus: _handleTileExecutionStatus,
         sourceSynchronized: function sourceSynchronized(tile_id) {
           return _setTileValue(tile_id, "source_changed", false);
         }
@@ -226703,6 +226721,14 @@ function TileContainer(props) {
       return;
     }
     _setTileValue(tile_id, "loading_status", data.status);
+  }
+  function _handleTileExecutionStatus(tile_id, data) {
+    _setTileState(tile_id, {
+      execution_active: data.execution_active,
+      execution_unresponsive: data.execution_unresponsive,
+      execution_task_type: data.execution_task_type,
+      execution_duration_secs: data.execution_duration_secs
+    });
   }
   function getTileEntry(tile_id) {
     var _iterator = _createForOfIteratorHelper(props.tile_list.current),
@@ -226822,14 +226848,45 @@ function TileContainer(props) {
       javascript_arg_dict: null
     });
   }
+  function flushWidgetUpdates() {
+    widgetUpdateFrame.current = null;
+    var updates = Array.from(pendingWidgetUpdates.current.values());
+    pendingWidgetUpdates.current.clear();
+    if (updates.length > 0) {
+      props.tileDispatch({
+        type: "update_widget_data_batch",
+        updates: updates
+      });
+    }
+    if (droppedWidgetUpdates.current > 0) {
+      console.warn("Dropped ".concat(droppedWidgetUpdates.current, " excessive tile widget updates"));
+      droppedWidgetUpdates.current = 0;
+    }
+  }
   function updateWidgetData(tile_id, data) {
-    props.tileDispatch({
-      type: "update_widget_data",
+    var updateKey = "".concat(tile_id, "\0").concat(data["widgetId"]);
+    var pending = pendingWidgetUpdates.current;
+    if (!pending.has(updateKey) && pending.size >= MAX_PENDING_WIDGET_UPDATES) {
+      droppedWidgetUpdates.current += 1;
+      return;
+    }
+    pending.set(updateKey, {
       tile_id: tile_id,
       widgetId: data["widgetId"],
       widgetData: data["widgetData"]
     });
+    if (widgetUpdateFrame.current === null) {
+      widgetUpdateFrame.current = window.requestAnimationFrame(flushWidgetUpdates);
+    }
   }
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    return function () {
+      if (widgetUpdateFrame.current !== null) {
+        window.cancelAnimationFrame(widgetUpdateFrame.current);
+      }
+      pendingWidgetUpdates.current.clear();
+    };
+  }, []);
   var setGridLayout = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(function (layout) {
     var layoutById = Object.fromEntries(layout.map(function (item) {
       return [item.i, item];
@@ -226918,6 +226975,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _grid_container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid_container */ "./static/tactic_js/grid_container.jsx");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -227079,6 +227137,48 @@ function tilesReducer(tile_list, action) {
         }
       });
       break;
+    case "update_widget_data_batch":
+      {
+        var updatesByTile = new Map();
+        var _iterator = _createForOfIteratorHelper(action.updates),
+          _step;
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var update = _step.value;
+            if (!updatesByTile.has(update.tile_id)) {
+              updatesByTile.set(update.tile_id, []);
+            }
+            updatesByTile.get(update.tile_id).push(update);
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+        new_items = tile_list.map(function (t) {
+          var tileUpdates = updatesByTile.get(t.tile_id);
+          if (!tileUpdates) {
+            return t;
+          }
+          var new_t = _objectSpread({}, t);
+          var frontContent = t.front_content;
+          var _iterator2 = _createForOfIteratorHelper(tileUpdates),
+            _step2;
+          try {
+            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+              var update = _step2.value;
+              frontContent = recursivelySetWidgetData(frontContent, update.widgetId, update.widgetData);
+            }
+          } catch (err) {
+            _iterator2.e(err);
+          } finally {
+            _iterator2.f();
+          }
+          new_t["front_content"] = frontContent;
+          return fixTileFrontContent(new_t);
+        });
+        break;
+      }
     case "move_item":
       var old_list = _toConsumableArray(tile_list);
       new_items = (0,_utilities_react__WEBPACK_IMPORTED_MODULE_0__.arrayMove)(old_list, action.oldIndex, action.newIndex);
@@ -229148,7 +229248,8 @@ function useDeepCompareEffect(callback, dependencies) {
   }, [currentDependenciesRef.current]);
 }
 var RegisterActivityContext = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createContext(null);
-var activity_interval_msecs = window.activity_interval * 1000;
+var configured_activity_interval_msecs = Number(window.activity_interval) * 1000;
+var activity_interval_msecs = Number.isFinite(configured_activity_interval_msecs) && configured_activity_interval_msecs > 0 ? configured_activity_interval_msecs : 60000;
 function useLocalRegisterActivity() {
   var current_timer = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(null);
   var waiting = (0,react__WEBPACK_IMPORTED_MODULE_1__.useRef)(false);
@@ -229179,10 +229280,20 @@ function ActivityTracker() {
     _useRegisterActivity2 = _slicedToArray(_useRegisterActivity, 2),
     registerActivity = _useRegisterActivity2[1];
   (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
-    (0,_communication_react__WEBPACK_IMPORTED_MODULE_3__.postPromise)("host", "register_client_interaction", {
-      global_id: window.global_id,
-      username: window.username
-    }).then(function () {});
+    var sendHeartbeat = function sendHeartbeat() {
+      return (0,_communication_react__WEBPACK_IMPORTED_MODULE_3__.postPromise)("host", "register_client_interaction", {
+        global_id: window.global_id,
+        username: window.username
+      })["catch"](function () {});
+    };
+
+    // Session liveness must not depend on clicks or keystrokes. A user can
+    // legitimately wait for a long-running tile without interacting.
+    sendHeartbeat();
+    var heartbeatTimer = window.setInterval(sendHeartbeat, Math.max(activity_interval_msecs, 10000));
+    return function () {
+      return window.clearInterval(heartbeatTimer);
+    };
   }, []);
   (0,react__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
     var handler = function handler() {
