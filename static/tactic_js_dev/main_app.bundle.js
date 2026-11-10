@@ -219085,7 +219085,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/common/classes.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/icon/icon.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/components/button/buttons.js");
+/* harmony import */ var _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @blueprintjs/core */ "./node_modules/@blueprintjs/core/lib/esm/common/classes.js");
 /* harmony import */ var _utilities_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utilities_react */ "./static/tactic_js/utilities_react.jsx");
 /* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./settings */ "./static/tactic_js/settings.jsx");
 /* harmony import */ var _pool_browser__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./pool_browser */ "./static/tactic_js/pool_browser.jsx");
@@ -219219,21 +219221,22 @@ function PoolDrawer(props) {
     "aria-hidden": !props.show_drawer
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "bp6-drawer-header"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-    className: "bp6-icon bp6-icon-folder-close"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.Icon, {
+    icon: "folder-close"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
     className: "bp6-heading"
-  }, props.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
-    type: "button",
-    className: "bp6-button bp6-minimal bp6-icon-cross",
+  }, props.title), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_blueprintjs_core__WEBPACK_IMPORTED_MODULE_6__.Button, {
+    variant: "minimal",
+    icon: "cross",
+    "aria-label": "Close",
     onClick: props.onClose
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.DRAWER_BODY,
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.DRAWER_BODY,
     style: {
       minHeight: 0
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_5__.DIALOG_BODY,
+    className: _blueprintjs_core__WEBPACK_IMPORTED_MODULE_7__.DIALOG_BODY,
     style: {
       height: "100%",
       minHeight: 0

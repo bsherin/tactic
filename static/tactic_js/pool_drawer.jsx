@@ -1,7 +1,7 @@
 import React, {createContext, useCallback, useMemo} from "react";
 import {Fragment, useState, useEffect, memo, useContext} from "react";
 
-import {Drawer, Classes} from "@blueprintjs/core";
+import {Button, Classes, Icon} from "@blueprintjs/core";
 
 import {useStateAndRef} from "./utilities_react";
 import {SettingsContext} from "./settings";
@@ -129,11 +129,12 @@ function PoolDrawer(props) {
             aria-hidden={!props.show_drawer}
         >
             <div className="bp6-drawer-header">
-                <span className="bp6-icon bp6-icon-folder-close" />
+                <Icon icon="folder-close" />
                 <h4 className="bp6-heading">{props.title}</h4>
-                <button
-                    type="button"
-                    className="bp6-button bp6-minimal bp6-icon-cross"
+                <Button
+                    variant="minimal"
+                    icon="cross"
+                    aria-label="Close"
                     onClick={props.onClose}
                 />
             </div>
