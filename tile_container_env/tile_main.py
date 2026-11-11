@@ -276,16 +276,6 @@ class TileWorker(QWorker):
 
         log.info("initialized tileworker", my_id=self.my_id)
 
-    def handle_event(self, task_packet):
-        token = self.execution_monitor.start(
-            task_packet.get("task_type", "unknown"),
-            task_packet.get("task_id"),
-        )
-        try:
-            return super().handle_event(task_packet)
-        finally:
-            self.execution_monitor.finish(token)
-
     @task_worthy
     def restart(self, _data):
         clear_user_creds()
@@ -364,11 +354,18 @@ class TileWorker(QWorker):
         return self.debugger.disarm(data.get("session_id"))
 
     def handle_event(self, task_packet):
-        if self.debugger and self.debugger.should_trace(task_packet.get("task_type")):
-            return self.debugger.run_event(
-                lambda: super(TileWorker, self).handle_event(task_packet)
-            )
-        return super().handle_event(task_packet)
+        token = self.execution_monitor.start(
+            task_packet.get("task_type", "unknown"),
+            task_packet.get("task_id"),
+        )
+        try:
+            if self.debugger and self.debugger.should_trace(task_packet.get("task_type")):
+                return self.debugger.run_event(
+                    lambda: super(TileWorker, self).handle_event(task_packet)
+                )
+            return super().handle_event(task_packet)
+        finally:
+            self.execution_monitor.finish(token)
 
     def send_error_entry(self, title, content, line_number):
         data = {"message": "add-error-drawer-entry",
