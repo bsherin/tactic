@@ -428,6 +428,8 @@ class MatplotlibWidget(Widget):
             del alt_wdata["to_render"]
         if "name" in alt_wdata:
             del alt_wdata["name"]
+        if "style" in alt_wdata:
+            del alt_wdata["style"]
         self.fig = Figure(**alt_wdata)
         if "figsize" not in wdata:
             self.size_to_tile()
